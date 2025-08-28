@@ -42,11 +42,58 @@ from ..utils.settings import (
     get_type,
 )
 from ..utils.transform import ResizeTransform, box_to_point4, point4_to_box
-from ..utils.types import HTML, AnnotationDict, Chunks, ImageDict, PathLikeOrStr, PixelValues, Text_, csv
+from ..utils.types import HTML, AnnotationDict, Chunks, ImageDict, PathLikeOrStr, PixelValues, csv
 from ..utils.viz import draw_boxes, interactive_imshow, viz_handler
 from .annotation import CategoryAnnotation, ContainerAnnotation, ImageAnnotation, ann_from_dict
 from .box import BoundingBox, crop_box_from_image
 from .image import Image
+
+
+@dataclass(frozen=True)
+class Text_:
+    """
+    Immutable dataclass for storing structured text extraction results.
+
+    Attributes:
+        text: The concatenated text string.
+        words: List of word strings.
+        ann_ids: List of annotation IDs for each word.
+        token_classes: List of token class names for each word.
+        token_class_ann_ids: List of annotation IDs for each token class.
+        token_tags: List of token tag names for each word.
+        token_tag_ann_ids: List of annotation IDs for each token tag.
+        token_class_ids: List of token class IDs.
+        token_tag_ids: List of token tag IDs.
+    """
+
+    text: str = ""
+    words: list[str] = field(default_factory=list)
+    ann_ids: list[str] = field(default_factory=list)
+    token_classes: list[str] = field(default_factory=list)
+    token_class_ann_ids: list[str] = field(default_factory=list)
+    token_tags: list[str] = field(default_factory=list)
+    token_tag_ann_ids: list[str] = field(default_factory=list)
+    token_class_ids: list[str] = field(default_factory=list)
+    token_tag_ids: list[str] = field(default_factory=list)
+
+    def as_dict(self) -> dict[str, Union[list[str], str]]:
+        """
+        Returns the Text_ as a dictionary.
+
+        Returns:
+            A dictionary representation of the Text_ dataclass.
+        """
+        return {
+            "text": self.text,
+            "words": self.words,
+            "ann_ids": self.ann_ids,
+            "token_classes": self.token_classes,
+            "token_class_ann_ids": self.token_class_ann_ids,
+            "token_tags": self.token_tags,
+            "token_tag_ann_ids": self.token_tag_ann_ids,
+            "token_class_ids": self.token_class_ids,
+            "token_tag_ids": self.token_tag_ids,
+        }
 
 
 class ImageAnnotationBaseView(ImageAnnotation):
@@ -263,41 +310,73 @@ class Layout(ImageAnnotationBaseView):
         """
         words = self.get_ordered_words()
         if words:
-            characters, ann_ids, token_classes, token_tags, token_classes_ids, token_tag_ids = zip(
-                *[
-                    (
-                        word.characters,
-                        word.annotation_id,
-                        word.token_class,
-                        word.token_tag,
-                        word.get_sub_category(WordType.TOKEN_CLASS).category_id
-                        if WordType.TOKEN_CLASS in word.sub_categories
-                        else None,
-                        word.get_sub_category(WordType.TOKEN_TAG).category_id
-                        if WordType.TOKEN_TAG in word.sub_categories
-                        else None,
-                    )
-                    for word in words
-                ]
+            (
+                characters,
+                ann_ids,
+                token_classes,
+                token_class_ann_ids,
+                token_tags,
+                token_tag_ann_ids,
+                token_classes_ids,
+                token_tag_ids,
+            ) = map(
+                list,
+                zip(
+                    *[
+                        (
+                            word.characters,
+                            word.annotation_id,
+                            word.token_class,
+                            word.get_sub_category(WordType.TOKEN_CLASS).annotation_id
+                            if WordType.TOKEN_CLASS in word.sub_categories
+                            else None,
+                            word.token_tag,
+                            word.get_sub_category(WordType.TOKEN_TAG).annotation_id
+                            if WordType.TOKEN_TAG in word.sub_categories
+                            else None,
+                            word.get_sub_category(WordType.TOKEN_CLASS).category_id
+                            if WordType.TOKEN_CLASS in word.sub_categories
+                            else None,
+                            word.get_sub_category(WordType.TOKEN_TAG).category_id
+                            if WordType.TOKEN_TAG in word.sub_categories
+                            else None,
+                        )
+                        for word in words
+                    ]
+                ),
             )
         else:
-            characters, ann_ids, token_classes, token_tags, token_classes_ids, token_tag_ids = (
-                [],  # type: ignore
-                [],  # type: ignore
-                [],  # type: ignore
-                [],  # type: ignore
-                [],  # type: ignore
-                [],  # type: ignore
+            (
+                characters,
+                ann_ids,
+                token_classes,
+                token_class_ann_ids,
+                token_tags,
+                token_tag_ann_ids,
+                token_classes_ids,
+                token_tag_ids,
+            ) = (
+                [],
+                [],
+                [],
+                [],
+                [],
+                [],
+                [],
+                [],
             )
-        return {
-            "text": " ".join(characters),
-            "words": characters,
-            "ann_ids": ann_ids,
-            "token_classes": token_classes,
-            "token_tags": token_tags,
-            "token_class_ids": token_classes_ids,
-            "token_tag_ids": token_tag_ids,
-        }
+
+        return Text_(
+            text=" ".join(characters),  # type: ignore
+            words=characters,  # type: ignore
+            ann_ids=ann_ids,  # type: ignore
+            token_classes=token_classes,  # type: ignore
+            token_class_ann_ids=token_class_ann_ids,  # type: ignore
+            token_tags=token_tags,  # type: ignore
+            token_tag_ann_ids=token_tag_ann_ids,  # type: ignore
+            token_class_ids=token_classes_ids,  # type: ignore
+            token_tag_ids=token_tag_ids,  # type: ignore
+        )
 
     def get_attribute_names(self) -> set[str]:
         attr_names = (
@@ -387,9 +466,9 @@ class Table(Layout):
             A list of a table cells.
         """
         cell_anns: list[Cell] = []
-        for row_number in range(1, self.number_of_rows + 1):  # type: ignore
-            cell_anns.extend(self.row(row_number))  # type: ignore
-
+        if self.number_of_rows:
+            for row_number in range(1, self.number_of_rows + 1):  # type: ignore
+                cell_anns.extend(self.row(row_number))  # type: ignore
         return cell_anns
 
     @property
@@ -626,26 +705,33 @@ class Table(Layout):
         words: list[str] = []
         ann_ids: list[str] = []
         token_classes: list[str] = []
+        token_class_ann_ids: list[str] = []
         token_tags: list[str] = []
+        token_tag_ann_ids: list[str] = []
         token_class_ids: list[str] = []
         token_tag_ids: list[str] = []
         for cell in cells:
-            text.append(cell.text_["text"])
-            words.extend(cell.text_["words"])
-            ann_ids.extend(cell.text_["ann_ids"])
-            token_classes.extend(cell.text_["token_classes"])
-            token_tags.extend(cell.text_["token_tags"])
-            token_class_ids.extend(cell.text_["token_class_ids"])
-            token_tag_ids.extend(cell.text_["token_tag_ids"])
-        return {
-            "text": " ".join(text),
-            "words": words,
-            "ann_ids": ann_ids,
-            "token_classes": token_classes,
-            "token_tags": token_tags,
-            "token_class_ids": token_class_ids,
-            "token_tag_ids": token_tag_ids,
-        }
+            text_ = cell.text_
+            text.append(text_.text)
+            words.extend(text_.words)
+            ann_ids.extend(text_.ann_ids)
+            token_classes.extend(text_.token_classes)
+            token_class_ann_ids.extend(text_.token_class_ann_ids)
+            token_tags.extend(text_.token_tags)
+            token_tag_ann_ids.extend(text_.token_tag_ann_ids)
+            token_class_ids.extend(text_.token_class_ids)
+            token_tag_ids.extend(text_.token_tag_ids)
+        return Text_(
+            text=" ".join(text),
+            words=words,
+            ann_ids=ann_ids,
+            token_classes=token_classes,
+            token_class_ann_ids=token_class_ann_ids,
+            token_tags=token_tags,
+            token_tag_ann_ids=token_tag_ann_ids,
+            token_class_ids=token_class_ids,
+            token_tag_ids=token_tag_ids,
+        )
 
     @property
     def words(self) -> list[ImageAnnotationBaseView]:
@@ -1053,7 +1139,7 @@ class Page(Image):
 
             ```python
                 {"text": text string,
-                 "text_list": list of single words,
+                 "words": list of single words,
                  "annotation_ids": word annotation ids}
          ```
         """
@@ -1062,26 +1148,33 @@ class Page(Image):
         words: list[str] = []
         ann_ids: list[str] = []
         token_classes: list[str] = []
+        token_class_ann_ids: list[str] = []
         token_tags: list[str] = []
+        token_tag_ann_ids: list[str] = []
         token_class_ids: list[str] = []
         token_tag_ids: list[str] = []
         for block in block_with_order:
-            text.append(block.text_["text"])  # type: ignore
-            words.extend(block.text_["words"])  # type: ignore
-            ann_ids.extend(block.text_["ann_ids"])  # type: ignore
-            token_classes.extend(block.text_["token_classes"])  # type: ignore
-            token_tags.extend(block.text_["token_tags"])  # type: ignore
-            token_class_ids.extend(block.text_["token_class_ids"])  # type: ignore
-            token_tag_ids.extend(block.text_["token_tag_ids"])  # type: ignore
-        return {
-            "text": " ".join(text),
-            "words": words,
-            "ann_ids": ann_ids,
-            "token_classes": token_classes,
-            "token_tags": token_tags,
-            "token_class_ids": token_class_ids,
-            "token_tag_ids": token_tag_ids,
-        }
+            text_ = block.text_
+            text.append(text_.text)  # type: ignore
+            words.extend(text_.words)  # type: ignore
+            ann_ids.extend(text_.ann_ids)  # type: ignore
+            token_classes.extend(text_.token_classes)  # type: ignore
+            token_class_ann_ids.extend(text_.token_class_ann_ids)  # type: ignore
+            token_tags.extend(text_.token_tags)  # type: ignore
+            token_tag_ann_ids.extend(text_.token_tag_ann_ids)  # type: ignore
+            token_class_ids.extend(text_.token_class_ids)  # type: ignore
+            token_tag_ids.extend(text_.token_tag_ids)  # type: ignore
+        return Text_(
+            text=" ".join(text),
+            words=words,
+            ann_ids=ann_ids,
+            token_classes=token_classes,
+            token_class_ann_ids=token_class_ann_ids,
+            token_tags=token_tags,
+            token_tag_ann_ids=token_tag_ann_ids,
+            token_class_ids=token_class_ids,
+            token_tag_ids=token_tag_ann_ids,
+        )
 
     def get_layout_context(self, annotation_id: str, context_size: int = 3) -> list[ImageAnnotationBaseView]:
         """

@@ -408,6 +408,7 @@ class MergeDataset(DatasetBase):
 
 class DatasetCardDict(TypedDict):
     """DatasetCardDict"""
+
     name: str
     dataset_type: Union[str, Any]
     location: str

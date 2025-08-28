@@ -19,9 +19,10 @@
 `ServiceFactory` for building analyzers
 """
 
+from __future__ import annotations
 
 from os import environ
-from typing import Union
+from typing import TYPE_CHECKING, Union
 
 from lazy_imports import try_import
 
@@ -29,6 +30,18 @@ from ..extern.base import ImageTransformer, ObjectDetector, PdfMiner
 from ..extern.d2detect import D2FrcnnDetector, D2FrcnnTracingDetector
 from ..extern.doctrocr import DoctrTextlineDetector, DoctrTextRecognizer
 from ..extern.hfdetr import HFDetrDerivedDetector
+from ..extern.hflayoutlm import (
+    HFLayoutLmSequenceClassifier,
+    HFLayoutLmTokenClassifier,
+    HFLayoutLmv2SequenceClassifier,
+    HFLayoutLmv2TokenClassifier,
+    HFLayoutLmv3SequenceClassifier,
+    HFLayoutLmv3TokenClassifier,
+    HFLiltSequenceClassifier,
+    HFLiltTokenClassifier,
+    get_tokenizer_from_model_class,
+)
+from ..extern.hflm import HFLmSequenceClassifier, HFLmTokenClassifier
 from ..extern.model import ModelCatalog, ModelDownloadManager
 from ..extern.pdftext import PdfPlumberTextDetector
 from ..extern.tessocr import TesseractOcrDetector, TesseractRotationTransformer
@@ -45,6 +58,7 @@ from ..pipe.common import (
 )
 from ..pipe.doctectionpipe import DoctectionPipe
 from ..pipe.layout import ImageLayoutService, skip_if_category_or_service_extracted
+from ..pipe.lm import LMSequenceClassifierService, LMTokenClassifierService
 from ..pipe.order import TextOrderService
 from ..pipe.refine import TableSegmentationRefinementService
 from ..pipe.segment import PubtablesSegmentationService, TableSegmentationService
@@ -59,6 +73,10 @@ from ..utils.transform import PadTransform
 
 with try_import() as image_guard:
     from botocore.config import Config  # type: ignore
+
+if TYPE_CHECKING:
+    from ..extern.hflayoutlm import LayoutSequenceModels, LayoutTokenModels
+    from ..extern.hflm import LmSequenceModels, LmTokenModels
 
 
 __all__ = [
@@ -842,6 +860,226 @@ class ServiceFactory:
         return ServiceFactory._build_text_order_service(config)
 
     @staticmethod
+    def _build_sequence_classifier(config: AttrDict) -> Union[LayoutSequenceModels, LmSequenceModels]:
+        """
+        Builds and returns a sequence classifier instance.
+
+        Args:
+            config: Configuration object that determines the type of sequence classifier to construct.
+
+        Returns:
+            A sequence classifier instance constructed according to the specified configuration.
+        """
+        config_path = ModelCatalog.get_full_path_configs(config.LM_SEQUENCE_CLASS.WEIGHTS)
+        weights_path = ModelDownloadManager.maybe_download_weights_and_configs(config.LM_SEQUENCE_CLASS.WEIGHTS)
+        profile = ModelCatalog.get_profile(config.LM_SEQUENCE_CLASS.WEIGHTS)
+        categories = profile.categories if profile.categories is not None else {}
+        use_xlm_tokenizer = "xlm_tokenizer" == profile.architecture
+
+        if profile.model_wrapper in ("HFLayoutLmSequenceClassifier",):
+            return HFLayoutLmSequenceClassifier(
+                path_config_json=config_path,
+                path_weights=weights_path,
+                categories=categories,
+                device=config.DEVICE,
+                use_xlm_tokenizer=use_xlm_tokenizer,
+            )
+        if profile.model_wrapper in ("HFLayoutLmv2SequenceClassifier",):
+            return HFLayoutLmv2SequenceClassifier(
+                path_config_json=config_path,
+                path_weights=weights_path,
+                categories=categories,
+                device=config.DEVICE,
+                use_xlm_tokenizer=use_xlm_tokenizer,
+            )
+        if profile.model_wrapper in ("HFLayoutLmv3SequenceClassifier",):
+            return HFLayoutLmv3SequenceClassifier(
+                path_config_json=config_path,
+                path_weights=weights_path,
+                categories=categories,
+                device=config.DEVICE,
+                use_xlm_tokenizer=use_xlm_tokenizer,
+            )
+        if profile.model_wrapper in ("HFLiltSequenceClassifier",):
+            return HFLiltSequenceClassifier(
+                path_config_json=config_path,
+                path_weights=weights_path,
+                categories=categories,
+                device=config.DEVICE,
+                use_xlm_tokenizer=use_xlm_tokenizer,
+            )
+        if profile.model_wrapper in ("HFLmSequenceClassifier",):
+            return HFLmSequenceClassifier(
+                path_config_json=config_path,
+                path_weights=weights_path,
+                categories=categories,
+                device=config.DEVICE,
+                use_xlm_tokenizer=use_xlm_tokenizer,
+            )
+        raise ValueError(f"Unsupported model wrapper: {profile.model_wrapper}")
+
+    @staticmethod
+    def build_sequence_classifier(config: AttrDict) -> Union[LayoutSequenceModels, LmSequenceModels]:
+        """
+        Builds and returns a sequence classifier instance.
+
+        Args:
+            config: Configuration object that determines the type of sequence classifier to construct.
+
+        Returns:
+            A sequence classifier instance constructed according to the specified configuration.
+        """
+        return ServiceFactory._build_sequence_classifier(config)
+
+    @staticmethod
+    def _build_sequence_classifier_service(
+        config: AttrDict, sequence_classifier: Union[LayoutSequenceModels, LmSequenceModels]
+    ) -> LMSequenceClassifierService:
+        """
+        Building a sequence classifier service.
+
+        Args:
+            config: Configuration object.
+            sequence_classifier: Sequence classifier instance.
+
+        Returns:
+            LMSequenceClassifierService: Text order service instance.
+        """
+        tokenizer_fast = get_tokenizer_from_model_class(
+            sequence_classifier.model.__class__.__name__, sequence_classifier.use_xlm_tokenizer
+        )
+
+        return LMSequenceClassifierService(
+            tokenizer=tokenizer_fast,
+            language_model=sequence_classifier,
+            use_other_as_default_category=config.LM_SEQUENCE_CLASS.USE_OTHER_AS_DEFAULT_CATEGORY,
+        )
+
+    @staticmethod
+    def build_sequence_classifier_service(
+        config: AttrDict, sequence_classifier: Union[LayoutSequenceModels, LmSequenceModels]
+    ) -> LMSequenceClassifierService:
+        """
+        Building a sequence classifier service.
+
+        Args:
+            config: Configuration object.
+            sequence_classifier: Sequence classifier instance.
+
+        Returns:
+            LMSequenceClassifierService: Text order service instance.
+        """
+        return ServiceFactory._build_sequence_classifier_service(config, sequence_classifier)
+
+    @staticmethod
+    def _build_token_classifier(config: AttrDict) -> Union[LayoutTokenModels, LmTokenModels]:
+        """
+        Builds and returns a token classifier model.
+
+        Args:
+            config: Configuration object.
+
+        Returns:
+            The instantiated token classifier model.
+        """
+        config_path = ModelCatalog.get_full_path_configs(config.LM_TOKEN_CLASS.WEIGHTS)
+        weights_path = ModelDownloadManager.maybe_download_weights_and_configs(config.LM_TOKEN_CLASS.WEIGHTS)
+        profile = ModelCatalog.get_profile(config.LM_TOKEN_CLASS.WEIGHTS)
+        categories = profile.categories if profile.categories is not None else {}
+        use_xlm_tokenizer = "xlm_tokenizer" == profile.architecture
+        if profile.model_wrapper in ("HFLayoutLmTokenClassifier",):
+            return HFLayoutLmTokenClassifier(
+                path_config_json=config_path,
+                path_weights=weights_path,
+                categories=categories,
+                device=config.DEVICE,
+                use_xlm_tokenizer=use_xlm_tokenizer,
+            )
+        if profile.model_wrapper in ("HFLayoutLmv2TokenClassifier",):
+            return HFLayoutLmv2TokenClassifier(
+                path_config_json=config_path,
+                path_weights=weights_path,
+                categories=categories,
+                device=config.DEVICE,
+            )
+        if profile.model_wrapper in ("HFLayoutLmv3TokenClassifier",):
+            return HFLayoutLmv3TokenClassifier(
+                path_config_json=config_path,
+                path_weights=weights_path,
+                categories=categories,
+                device=config.DEVICE,
+            )
+        if profile.model_wrapper in ("HFLiltTokenClassifier",):
+            return HFLiltTokenClassifier(
+                path_config_json=config_path,
+                path_weights=weights_path,
+                categories=categories,
+                device=config.DEVICE,
+            )
+        if profile.model_wrapper in ("HFLmTokenClassifier",):
+            return HFLmTokenClassifier(
+                path_config_json=config_path,
+                path_weights=weights_path,
+                categories=categories,
+            )
+        raise ValueError(f"Unsupported model wrapper: {profile.model_wrapper}")
+
+    @staticmethod
+    def build_token_classifier(config: AttrDict) -> Union[LayoutTokenModels, LmTokenModels]:
+        """
+        Builds and returns a token classifier model.
+
+        Args:
+            config: Configuration object.
+
+        Returns:
+            The instantiated token classifier model.
+        """
+        return ServiceFactory._build_token_classifier(config)
+
+    @staticmethod
+    def _build_token_classifier_service(
+        config: AttrDict, token_classifier: Union[LayoutTokenModels, LmTokenModels]
+    ) -> LMTokenClassifierService:
+        """
+        Building a token classifier service.
+
+        Args:
+            config: Configuration object.
+            token_classifier: Token classifier instance.
+
+        Returns:
+             A LMTokenClassifierService instance.
+        """
+        tokenizer_fast = get_tokenizer_from_model_class(
+            token_classifier.model.__class__.__name__, token_classifier.use_xlm_tokenizer
+        )
+
+        return LMTokenClassifierService(
+            tokenizer=tokenizer_fast,
+            language_model=token_classifier,
+            use_other_as_default_category=config.LM_TOKEN_CLASS.USE_OTHER_AS_DEFAULT_CATEGORY,
+            segment_positions=config.LM_TOKEN_CLASS.SEGMENT_POSITIONS,
+            sliding_window_stride=config.LM_TOKEN_CLASS.SLIDING_WINDOW_STRIDE,
+        )
+
+    @staticmethod
+    def build_token_classifier_service(
+        config: AttrDict, token_classifier: Union[LayoutTokenModels, LmTokenModels]
+    ) -> LMTokenClassifierService:
+        """
+        Building a token classifier service.
+
+        Args:
+            config: Configuration object.
+            token_classifier: Token classifier instance.
+
+        Returns:
+             A LMTokenClassifierService instance.
+        """
+        return ServiceFactory._build_token_classifier_service(config, token_classifier)
+
+    @staticmethod
     def _build_page_parsing_service(config: AttrDict) -> PageParsingService:
         """
         Building a page parsing service.
@@ -954,6 +1192,16 @@ class ServiceFactory:
         if config.USE_LINE_MATCHER:
             line_list_matching_service = ServiceFactory.build_line_matching_service(config)
             pipe_component_list.append(line_list_matching_service)
+
+        if config.USE_LM_SEQUENCE_CLASS:
+            sequence_classifier = ServiceFactory.build_sequence_classifier(config)
+            sequence_classifier_service = ServiceFactory.build_sequence_classifier_service(config, sequence_classifier)
+            pipe_component_list.append(sequence_classifier_service)
+
+        if config.USE_LM_TOKEN_CLASS:
+            token_classifier = ServiceFactory.build_token_classifier(config)
+            token_classifier_service = ServiceFactory.build_token_classifier_service(config, token_classifier)
+            pipe_component_list.append(token_classifier_service)
 
         page_parsing_service = ServiceFactory.build_page_parsing_service(config)
 
