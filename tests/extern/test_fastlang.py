@@ -28,6 +28,7 @@ from pytest import mark
 
 from deepdoctection.extern.fastlang import FasttextLangDetector
 from deepdoctection.extern.model import ModelCatalog, ModelDownloadManager
+from deepdoctection.utils.settings import Languages
 
 
 def get_mock_lang_detect_result(text_string: str) -> Tuple[Tuple[str], npt.NDArray[float32]]:  # pylint: disable = W0613
@@ -41,7 +42,7 @@ class TestFasttextLangDetector:
     """
 
     @staticmethod
-    @mark.additional
+    @mark.additional_deprecated
     @patch("deepdoctection.extern.fastlang.load_model", MagicMock(return_value=MagicMock()))
     def test_fasttext_lang_detector_predicts_language() -> None:
         """
@@ -61,11 +62,11 @@ class TestFasttextLangDetector:
         result = fasttest_predictor.predict("Un leggero dialetto italiano")
 
         # Assert
-        assert result.text == "ita"
+        assert result.class_name == Languages.ITALIAN
         assert result.score == 0.99414486
 
     @staticmethod
-    @mark.additional
+    @mark.additional_deprecated
     def test_non_mock_fasttext_lang_detector_predicts_language() -> None:
         """
         Detector calls model.predict(text_string) and processes returned results correctly. This test case does not use
@@ -85,5 +86,5 @@ class TestFasttextLangDetector:
         result = fasttest_predictor.predict("Un leggero dialetto italiano")
 
         # Assert
-        assert result.text == "ita"
+        assert result.class_name == Languages.ITALIAN
         assert 0.9 <= result.score <= 1.0  # type: ignore

@@ -20,6 +20,7 @@ Module for token classification pipeline
 """
 from __future__ import annotations
 
+import inspect
 from copy import copy
 from typing import TYPE_CHECKING, Any, Callable, Literal, Optional, Sequence, Union
 
@@ -32,6 +33,7 @@ from .registry import pipeline_component_registry
 
 if TYPE_CHECKING:
     from ..extern.hflayoutlm import LayoutSequenceModels, LayoutTokenModels
+    from ..extern.hflm import LmSequenceModels, LmTokenModels
 
 
 @pipeline_component_registry.register("LMTokenClassifierService")
@@ -70,7 +72,7 @@ class LMTokenClassifierService(PipelineComponent):
     def __init__(
         self,
         tokenizer: Any,
-        language_model: LayoutTokenModels,
+        language_model: Union[LayoutTokenModels, LmTokenModels],
         padding: Literal["max_length", "do_not_pad", "longest"] = "max_length",
         truncation: bool = True,
         return_overflowing_tokens: bool = False,
@@ -124,7 +126,7 @@ class LMTokenClassifierService(PipelineComponent):
                                            might not get sent to the model because they are categorized as not
                                            eligible token (e.g. empty string). If set to `True` it will assign all
                                            words without token the `BioTag.outside` token.
-            segment_positions: Using bounding boxes of segment instead of words improves model accuracy
+            segment_positions: Using bounding boxes of segments instead of words improves model accuracy
                                significantly for models that have been trained on segments rather than words.
                                Choose a single or a sequence of layout segments to use their bounding boxes. Note,
                                that the layout segments need to have a child-relationship with words. If a word
@@ -271,6 +273,8 @@ class LMTokenClassifierService(PipelineComponent):
                 f"You want to use {type(self.tokenizer)} but you should use {tokenizer_class_name} "
                 f"in this framework"
             )
+        func_params = inspect.signature(self.mapping_to_lm_input_func).parameters
+        self.required_kwargs = {k: v for k, v in self.required_kwargs.items() if k in func_params}
 
     @staticmethod
     def image_to_features_func(mapping_str: str) -> Callable[..., Callable[[Image], Optional[Any]]]:
@@ -318,7 +322,7 @@ class LMSequenceClassifierService(PipelineComponent):
     def __init__(
         self,
         tokenizer: Any,
-        language_model: LayoutSequenceModels,
+        language_model: Union[LayoutSequenceModels, LmSequenceModels],
         padding: Literal["max_length", "do_not_pad", "longest"] = "max_length",
         truncation: bool = True,
         return_overflowing_tokens: bool = False,
