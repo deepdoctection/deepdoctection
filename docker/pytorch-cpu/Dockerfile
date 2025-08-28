@@ -16,4 +16,4 @@ RUN apt-get update && \
 
 RUN python3 -m pip install --no-cache-dir --extra-index-url https://download.pytorch.org/whl/cpu torch torchvision
 
-RUN python3 -m pip install --no-cache-dir ".[source-pt]"
+RUN python3 -m pip install --no-cache-dir ".[pt]"

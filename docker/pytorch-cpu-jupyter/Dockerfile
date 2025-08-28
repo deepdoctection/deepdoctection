@@ -17,6 +17,6 @@ RUN apt-get update && \
 RUN python3 -m pip install --no-cache-dir --extra-index-url https://download.pytorch.org/whl/cpu torch torchvision && \
     python3 -m pip install --no-cache-dir jupyter
 
-RUN python3 -m pip install --no-cache-dir ".[source-pt]"
+RUN python3 -m pip install --no-cache-dir ".[pt]"
 
 CMD ["jupyter", "notebook", "--allow-root", "--port=8888", "--no-browser", "--ip=0.0.0.0"]
