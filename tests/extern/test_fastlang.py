@@ -42,7 +42,7 @@ class TestFasttextLangDetector:
     """
 
     @staticmethod
-    @mark.additional
+    @mark.additional_deprecated
     @patch("deepdoctection.extern.fastlang.load_model", MagicMock(return_value=MagicMock()))
     def test_fasttext_lang_detector_predicts_language() -> None:
         """
@@ -66,7 +66,7 @@ class TestFasttextLangDetector:
         assert result.score == 0.99414486
 
     @staticmethod
-    @mark.additional
+    @mark.additional_deprecated
     def test_non_mock_fasttext_lang_detector_predicts_language() -> None:
         """
         Detector calls model.predict(text_string) and processes returned results correctly. This test case does not use

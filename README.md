@@ -152,7 +152,7 @@ alt="text" width="40%">
 
 - Linux or macOS. Windows is not supported but there is a [Dockerfile](./docker/pytorch-cpu-jupyter/Dockerfile) available.
 - Python >= 3.9
-- 2.2 \<= PyTorch **or** 2.11 \<= Tensorflow < 2.16. (For lower Tensorflow versions the code will only run on a GPU).
+- 2.6 \<= PyTorch **or** 2.11 \<= Tensorflow < 2.16. (For lower Tensorflow versions the code will only run on a GPU).
   Tensorflow support will be stopped from Python 3.11 onwards.
 - To fine-tune models, a GPU is recommended.
 
@@ -179,7 +179,7 @@ For a simple setup which is enough to parse documents with the default setting, 
 
 ```
 pip install transformers
-pip install python-doctr==0.9.0
+pip install python-doctr==0.10.0 # If you use Python 3.10 or higher you can use the latest version.
 pip install deepdoctection
 ```
 
@@ -187,7 +187,7 @@ pip install deepdoctection
 
 ```
 pip install tensorpack
-pip install python-doctr==0.9.0
+pip install python-doctr==0.10.0 # If you use Python 3.10 or higher you can use the latest version.
 pip install deepdoctection
 ```
 

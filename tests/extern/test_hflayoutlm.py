@@ -248,7 +248,7 @@ class TestHFLayoutLmv2TokenClassifier:
             "input_ids": torch.tensor(layoutlm_v2_input["input_ids"]),
             "attention_mask": torch.tensor(layoutlm_v2_input["attention_mask"]),
             "token_type_ids": torch.tensor(layoutlm_v2_input["token_type_ids"]),
-            "image": torch.tensor(layoutlm_v2_input["image"]),
+            "image": torch.tensor(layoutlm_v2_input["image"], dtype=torch.int32),
         }
 
         results = layoutlm_v2.predict(**inputs)
@@ -341,7 +341,7 @@ class TestHFLayoutLmv3TokenClassifier:
             "input_ids": torch.tensor(layoutlm_v2_input["input_ids"]),
             "attention_mask": torch.tensor(layoutlm_v2_input["attention_mask"]),
             "token_type_ids": torch.tensor(layoutlm_v2_input["token_type_ids"]),
-            "pixel_values": torch.tensor(layoutlm_v2_input["image"]),
+            "pixel_values": torch.tensor(layoutlm_v2_input["image"], dtype=torch.int32),
         }
 
         results = layoutlm_v3.predict(**inputs)
@@ -436,7 +436,7 @@ class TestHFLayoutLmv2SequenceClassifier:
             "input_ids": torch.tensor(layoutlm_v2_input["input_ids"]),
             "attention_mask": torch.tensor(layoutlm_v2_input["attention_mask"]),
             "token_type_ids": torch.tensor(layoutlm_v2_input["token_type_ids"]),
-            "image": torch.tensor(layoutlm_v2_input["image"]),
+            "image": torch.tensor(layoutlm_v2_input["image"], dtype=torch.int32),
         }
 
         results = layoutlm_v2.predict(**inputs)
@@ -483,7 +483,7 @@ class TestHFLayoutLmv3SequenceClassifier:
             "input_ids": torch.tensor(layoutlm_v2_input["input_ids"]),
             "attention_mask": torch.tensor(layoutlm_v2_input["attention_mask"]),
             "token_type_ids": torch.tensor(layoutlm_v2_input["token_type_ids"]),
-            "pixel_values": torch.tensor(layoutlm_v2_input["image"]),
+            "pixel_values": torch.tensor(layoutlm_v2_input["image"], dtype=torch.int32),
         }
 
         results = layoutlm_v3.predict(**inputs)

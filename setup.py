@@ -51,7 +51,7 @@ _DEPS = [
     "lxml>=4.9.1",
     "mock==4.0.3",
     "networkx>=2.7.1",
-    "numpy>=1.21,<2.0",
+    "numpy>2.0", # When using fasttext-wheel, downgrading to numpy<1.x is required
     "opencv-python==4.8.0.76",  # this is not required anymore, but we keep its version as a reference
     "packaging>=20.0",
     "Pillow>=10.0.0",
@@ -89,8 +89,8 @@ _DEPS = [
     "pdfplumber>=0.11.0",
     "tensorflow-addons>=0.17.1",
     "tf2onnx>=1.9.2",
-    "python-doctr==0.9.0",
-    "fasttext-wheel",
+    "python-doctr==0.10.0",
+    #"fasttext-wheel",
     # dev dependencies
     "python-dotenv==1.0.0",
     "click",  # version will not break black
@@ -147,7 +147,7 @@ dist_deps = deps_list(
 additional_deps = deps_list(
     "boto3",
     "pdfplumber",
-    "fasttext-wheel",
+    #"fasttext-wheel",
     "jdeskew",
     "apted",
     "distance",
