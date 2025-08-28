@@ -67,8 +67,9 @@ pip install deepdoctection
 
 ```
 pip install tensorpack
-pip install python-doctr==0.9.0
 pip install deepdoctection
+pip install "numpy>=1.21,<2.0" --upgrade --force-reinstall  # because TF 2.11 does not support numpy 2.0 
+pip install "python-doctr==0.9.0"
 ```
 
 Both setups are sufficient to run the [**introduction notebook**](https://github.com/deepdoctection/notebooks/blob/main/Get_Started.ipynb). 
