@@ -423,7 +423,7 @@ class VizPackageHandler:
 
     @staticmethod
     def _cv2_read_image(path: PathLikeOrStr) -> PixelValues:
-        return cv2.imread(os.fspath(path), cv2.IMREAD_COLOR).astype(np.uint8) # type: ignore
+        return cv2.imread(os.fspath(path), cv2.IMREAD_COLOR).astype(np.uint8)  # type: ignore
 
     @staticmethod
     def _pillow_read_image(path: PathLikeOrStr) -> PixelValues:
@@ -517,7 +517,7 @@ class VizPackageHandler:
     @staticmethod
     def _cv2_convert_b64_to_np(image: B64Str) -> PixelValues:
         np_array = np.fromstring(base64.b64decode(image), np.uint8)  # type: ignore
-        np_array = cv2.imdecode(np_array, cv2.IMREAD_COLOR).astype(np.float32) # type: ignore
+        np_array = cv2.imdecode(np_array, cv2.IMREAD_COLOR).astype(np.float32)  # type: ignore
         return np_array.astype(uint8)
 
     @staticmethod

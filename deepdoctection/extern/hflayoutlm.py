@@ -1024,12 +1024,9 @@ class HFLayoutLmv2SequenceClassifier(HFLayoutLmSequenceClassifierBase):
         else:
             raise ValueError(f"images must be list but is {type(images)}")
 
-        result = predict_sequence_classes_from_layoutlm(input_ids,
-                                                        attention_mask,
-                                                        token_type_ids,
-                                                        boxes,
-                                                        self.model,
-                                                        images)
+        result = predict_sequence_classes_from_layoutlm(
+            input_ids, attention_mask, token_type_ids, boxes, self.model, images
+        )
 
         result.class_id += 1
         result.class_name = self.categories.categories[result.class_id]
@@ -1123,12 +1120,9 @@ class HFLayoutLmv3SequenceClassifier(HFLayoutLmSequenceClassifierBase):
         else:
             raise ValueError(f"images must be list but is {type(images)}")
 
-        result = predict_sequence_classes_from_layoutlm(input_ids,
-                                                        attention_mask,
-                                                        token_type_ids,
-                                                        boxes,
-                                                        self.model,
-                                                        images)
+        result = predict_sequence_classes_from_layoutlm(
+            input_ids, attention_mask, token_type_ids, boxes, self.model, images
+        )
 
         result.class_id += 1
         result.class_name = self.categories.categories[result.class_id]
