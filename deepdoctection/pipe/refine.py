@@ -448,7 +448,7 @@ class TableSegmentationRefinementService(PipelineComponent):
         """
         if not networkx_available():
             raise ModuleNotFoundError(
-                "TableSegmentationRefinementService requires networkx." "Please install separately."
+                "TableSegmentationRefinementService requires networkx. Please install separately."
             )
         self.table_name = table_names
         self.cell_names = cell_names

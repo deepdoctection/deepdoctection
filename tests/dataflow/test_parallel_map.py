@@ -34,7 +34,7 @@ def map_to_one(dp):
     return np.ones(dp[0].shape)
 
 
-@mark.basic
+@mark.additional
 def test_multithread_map_data_non_strict() -> None:
     """Test MultiThreadMapData non strict"""
 
@@ -50,7 +50,7 @@ def test_multithread_map_data_non_strict() -> None:
     assert len(output) == 20
 
 
-@mark.basic
+@mark.additional
 def test_multithread_map_data_strict() -> None:
     """Test MultiThreadMapData strict"""
 
