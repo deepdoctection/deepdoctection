@@ -263,7 +263,7 @@ class PredictorBase(ABC):
         requirements = cls.get_requirements()
         name = cls.__name__ if hasattr(cls, "__name__") else cls.__class__.__name__
         if not all(requirement[1] for requirement in requirements):
-            raise ImportError(
+            raise ModuleNotFoundError(
                 "\n".join(
                     [f"{name} has the following dependencies:"]
                     + [requirement[2] for requirement in requirements if not requirement[1]]

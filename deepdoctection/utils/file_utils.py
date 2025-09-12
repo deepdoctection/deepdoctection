@@ -8,6 +8,7 @@
 Utilities for maintaining dependencies and dealing with external library packages. Parts of this file is adapted from
 <https://github.com/huggingface/transformers/blob/master/src/transformers/file_utils.py>
 """
+import importlib.metadata
 import importlib.util
 import multiprocessing as mp
 import string
@@ -17,7 +18,6 @@ from shutil import which
 from types import ModuleType
 from typing import Any, Union, no_type_check
 
-import importlib_metadata
 import numpy as np
 from packaging import version
 
@@ -72,9 +72,9 @@ def get_tf_version() -> str:
 
         for pkg in candidates:
             try:
-                tf_version = importlib_metadata.version(pkg)
+                tf_version = importlib.metadata.version(pkg)
                 break
-            except importlib_metadata.PackageNotFoundError:
+            except importlib.metadata.PackageNotFoundError:
                 pass
     return tf_version
 
@@ -175,6 +175,19 @@ def get_pytorch_requirement() -> Requirement:
     return "torch", pytorch_available(), _PYTORCH_ERR_MSG
 
 
+_PYZMQ_AVAILABLE = importlib.util.find_spec("zmq") is not None
+
+
+def pyzmq_available() -> bool:
+    """
+    Returns whether pyzmq is installed.
+
+    Returns:
+        bool: True if pyzmq is installed, False otherwise.
+    """
+    return bool(_PYZMQ_AVAILABLE)
+
+
 # lxml
 _LXML_AVAILABLE = importlib.util.find_spec("lxml") is not None
 _LXML_ERR_MSG = f"lxml must be installed. {_GENERIC_ERR_MSG}"
@@ -232,7 +245,7 @@ _DISTANCE_ERR_MSG = f"distance must be installed. {_GENERIC_ERR_MSG}"
 
 def distance_available() -> bool:
     """
-    Returns whether `distance` is available.
+    Returns True if `distance` is available.
 
     Returns:
         bool: `True` if `distance` is available, False otherwise.
@@ -250,6 +263,22 @@ def get_distance_requirement() -> Requirement:
     return "distance", distance_available(), _DISTANCE_ERR_MSG
 
 
+# networkx
+_NETWORKX_AVAILABLE = importlib.util.find_spec("networkx") is not None
+
+
+def networkx_available() -> bool:
+    """
+    Checks if networkx is installed.
+
+    Returns:
+        bool: True if networkx is installed, False otherwise.
+    :return:
+    """
+    return bool(_NETWORKX_AVAILABLE)
+
+
+# numpy
 _NUMPY_V1_ERR_MSG = "numpy v1 must be installed."
 
 
