@@ -271,6 +271,7 @@ _IMPORT_STRUCTURE = {
         "MultiThreadPipelineComponent",
         "DoctectionPipe",
         "LanguageDetectionService",
+        "skip_if_category_or_service_extracted",
         "ImageLayoutService",
         "LMTokenClassifierService",
         "LMSequenceClassifierService",
