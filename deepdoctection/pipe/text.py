@@ -129,6 +129,17 @@ class TextExtractionService(PipelineComponent):
                     width, height = self.predictor.get_width_height(predictor_input)  # type: ignore
 
                 for detect_result in detect_result_list:
+                    if width is not None and height is not None:
+                        box = detect_result.box
+                        if box[0] >= width:
+                            continue
+                        if box[1] >= height:
+                            continue
+                        if box[2] >= width:
+                            continue
+                        if box[3] >= height:
+                            continue
+
                     if isinstance(self.predictor, TextRecognizer):
                         detect_ann_id = detect_result.uuid
                     else:

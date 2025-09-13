@@ -428,6 +428,8 @@ class List(Layout):
             A list of words order by reading order. Words with no `reading_order` will not be returned"""
         try:
             list_items = self.list_items
+            if not list_items:
+                return super().get_ordered_words()
             all_words = []
             list_items.sort(key=lambda x: x.bbox[1])
             for list_item in list_items:
@@ -755,6 +757,8 @@ class Table(Layout):
         """
         try:
             cells = self.cells
+            if not cells:
+                return super().get_ordered_words()
             all_words = []
             cells.sort(key=lambda x: (x.ROW_NUMBER, x.COLUMN_NUMBER))
             for cell in cells:
