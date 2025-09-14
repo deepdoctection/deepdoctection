@@ -318,7 +318,7 @@ class Image:
         return _Img(self.image)
 
     @property
-    def width(self) -> float:
+    def width(self) -> int:
         """
         `width`
         """
@@ -327,7 +327,7 @@ class Image:
         return self._bbox.width
 
     @property
-    def height(self) -> float:
+    def height(self) -> int:
         """
         `height`
         """
@@ -335,7 +335,7 @@ class Image:
             raise ImageError("Height not available. Call set_width_height first")
         return self._bbox.height
 
-    def set_width_height(self, width: float, height: float) -> None:
+    def set_width_height(self, width: int, height: int) -> None:
         """
         Defines bounding box of the image if not already set. Use this, if you do not want to keep the image separated
         for memory reasons.
@@ -345,7 +345,7 @@ class Image:
             height: height of image
         """
         if self._bbox is None:
-            self._bbox = BoundingBox(ulx=0.0, uly=0.0, height=height, width=width, absolute_coords=True)
+            self._bbox = BoundingBox(ulx=0, uly=0, height=height, width=width, absolute_coords=True)
             self._self_embedding()
 
     def set_embedding(self, image_id: str, bounding_box: BoundingBox) -> None:

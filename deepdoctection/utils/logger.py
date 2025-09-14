@@ -143,6 +143,42 @@ class FileFormatter(logging.Formatter):
 
 
 _LOG_DIR = None
+
+def _coerce_log_level(val: Any) -> Union[int,str]:
+    """Normalize environment log level values.
+
+    Accepts integer values (e.g., ``20``), numeric strings (``"20"``),
+    or names case-insensitively (``"info"``, ``"Warn"``, ...). Returns
+    either an integer level number or a valid uppercase level name
+    accepted by the :mod:`logging` module.
+
+    Args:
+        val: The raw value from the environment variable ``LOG_LEVEL``.
+
+    Returns:
+        int | str: The corresponding logging level as an int or an
+        uppercase string. Defaults to ``"INFO"`` if the input is invalid.
+    """
+    if isinstance(val, int):
+        return val
+    if val is None:
+        return "INFO"
+    s = str(val).strip()
+    if s.isdigit():
+        return int(s)
+    name = s.upper()
+    if name == "WARN":
+        name = "WARNING"
+    if name in logging._nameToLevel:  # noqa: SLF001
+        return name
+    lvl = logging.getLevelName(name)
+    return lvl if isinstance(lvl, int) else "INFO"
+
+
+# resolve level from LOG_LEVEL only
+_ENV_LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO")
+_RESOLVED_LOG_LEVEL = _coerce_log_level(_ENV_LOG_LEVEL)
+
 _CONFIG_DICT: dict[str, Any] = {
     "version": 1,
     "disable_existing_loggers": False,
@@ -155,7 +191,7 @@ _CONFIG_DICT: dict[str, Any] = {
     },
     "root": {
         "handlers": ["streamhandler"],
-        "level": os.environ.get("LOG_LEVEL", "INFO"),
+        "level": _RESOLVED_LOG_LEVEL,
         "propagate": os.environ.get("LOG_PROPAGATE", "False") in ENV_VARS_TRUE,
     },
 }

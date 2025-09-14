@@ -77,6 +77,9 @@ class SimpleTransformService(PipelineComponent):
                         score=ann.score,
                         class_id=ann.category_id,
                         uuid=ann.annotation_id,
+                        angle=detection_result.angle,
+                        image_width=dp.width, # we need the original width, not the transformed width
+                        image_height=dp.height, # same with height
                     )
                 )
             output_detect_results = self.transform_predictor.transform_coords(detect_results)
