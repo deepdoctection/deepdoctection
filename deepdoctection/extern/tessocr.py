@@ -28,15 +28,17 @@ from errno import ENOENT
 from itertools import groupby
 from os import environ, fspath
 from pathlib import Path
-from typing import Any, Mapping, Optional, Union
+from typing import Any, Mapping, Optional, Union, Sequence
 
 from packaging.version import InvalidVersion, Version, parse
+import numpy as np
 
 from ..utils.context import save_tmp_file, timeout_manager
 from ..utils.error import DependencyError, TesseractError
 from ..utils.file_utils import _TESS_PATH, get_tesseract_requirement
 from ..utils.metacfg import config_to_cli_str, set_config_by_yaml
 from ..utils.settings import LayoutType, ObjectTypes, PageType
+from ..utils.transform import RotationTransform
 from ..utils.types import PathLikeOrStr, PixelValues, Requirement
 from ..utils.viz import viz_handler
 from .base import DetectionResult, ImageTransformer, ModelCategories, ObjectDetector
@@ -464,6 +466,19 @@ class TesseractRotationTransformer(ImageTransformer):
             The rotated image as a numpy array.
         """
         return viz_handler.rotate_image(np_img, specification.angle)  # type: ignore
+
+    def transform_coords(self, detect_results: Sequence[DetectionResult]) -> Sequence[DetectionResult]:
+        if detect_results:
+            if detect_results[0].angle:
+                rotator = RotationTransform(detect_results[0].angle)
+                rotator.image_width = detect_results[0].image_width
+                rotator.image_height = detect_results[0].image_height
+                transformed_coords = rotator.apply_coords(np.asarray([detect_result.box for detect_result
+                                                 in detect_results], dtype=float))
+                for idx, detect_result in enumerate(detect_results):
+                    detect_result.box = transformed_coords[idx, :].tolist()
+        return detect_results
+
 
     def predict(self, np_img: PixelValues) -> DetectionResult:
         """

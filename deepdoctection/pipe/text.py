@@ -132,13 +132,7 @@ class TextExtractionService(PipelineComponent):
                     if width is not None and height is not None:
                         box = detect_result.box
                         if box:
-                            if box[0] >= width:
-                                continue
-                            if box[1] >= height:
-                                continue
-                            if box[2] >= width:
-                                continue
-                            if box[3] >= height:
+                            if box[0] >= width or box[1] >= height or box[2] >= width or box[3] >= height:
                                 continue
 
                     if isinstance(self.predictor, TextRecognizer):

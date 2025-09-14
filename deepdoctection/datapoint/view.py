@@ -1058,6 +1058,8 @@ class Page(Image):
         Returns:
             A `Page` instance with all annotations as `ImageAnnotationBaseView` subclasses.
         """
+        if isinstance(image_orig, Page):
+            raise ImageError("Page.from_image() cannot be called on a Page instance.")
 
         if text_container is None:
             text_container = IMAGE_DEFAULTS.TEXT_CONTAINER
