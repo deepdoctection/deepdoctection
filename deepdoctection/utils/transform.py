@@ -408,8 +408,8 @@ class RotationTransform(BaseTransform):
             angle: Angle to rotate the image. Must be one of 90, 180, 270, or 360 degrees.
         """
         self.angle = angle
-        self.image_width: Optional[int] = None
-        self.image_height: Optional[int] = None
+        self.image_width: Optional[Union[int, float]] = None
+        self.image_height: Optional[Union[int, float]] = None
 
     def apply_image(self, img: PixelValues) -> PixelValues:
         """

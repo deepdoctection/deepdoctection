@@ -470,7 +470,7 @@ class TesseractRotationTransformer(ImageTransformer):
     def transform_coords(self, detect_results: Sequence[DetectionResult]) -> Sequence[DetectionResult]:
         if detect_results:
             if detect_results[0].angle:
-                rotator = RotationTransform(detect_results[0].angle)
+                rotator = RotationTransform(detect_results[0].angle)  # type: ignore
                 rotator.image_width = detect_results[0].image_width
                 rotator.image_height = detect_results[0].image_height
                 transformed_coords = rotator.apply_coords(np.asarray([detect_result.box for detect_result
