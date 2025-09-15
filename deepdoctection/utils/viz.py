@@ -20,10 +20,11 @@ Visualisation utils. Copied and pasted from
 """
 
 import base64
+import hashlib
 import os
 import sys
 from io import BytesIO
-from typing import Any, Optional, Sequence, no_type_check
+from typing import Any, Optional, Sequence, Tuple, Union, no_type_check
 
 import numpy as np
 import numpy.typing as npt
@@ -177,17 +178,23 @@ _COLORS = (
 )
 
 
-def random_color(rgb: bool = True, maximum: int = 255) -> tuple[int, int, int]:
+def random_color(
+    rgb: bool = True, maximum: int = 255, deterministic_input_str: Optional[str] = None
+) -> tuple[int, int, int]:
     """
     Args:
         rgb: Whether to return RGB colors or BGR colors.
         maximum: Either 255 or 1.
+        deterministic_input_str: A string to use for deterministic color generation.
 
     Returns:
         A tuple of three integers representing the color.
     """
-
-    idx = np.random.randint(0, len(_COLORS))
+    if deterministic_input_str:
+        hash_digest = hashlib.md5(deterministic_input_str.encode("utf-8")).hexdigest()
+        idx = int(hash_digest, 16) % len(_COLORS)
+    else:
+        idx = np.random.randint(0, len(_COLORS))
     ret = _COLORS[idx] * maximum
     if not rgb:
         ret = ret[::-1]
@@ -197,7 +204,7 @@ def random_color(rgb: bool = True, maximum: int = 255) -> tuple[int, int, int]:
 def draw_boxes(
     np_image: PixelValues,
     boxes: npt.NDArray[float32],
-    category_names_list: Optional[list[Optional[str]]] = None,
+    category_names_list: Optional[list[Tuple[Union[str, None], Union[str, None]]]] = None,
     color: Optional[BGR] = None,
     font_scale: float = 1.0,
     rectangle_thickness: int = 4,
@@ -210,7 +217,8 @@ def draw_boxes(
     Args:
         np_image: Image as `np.ndarray`.
         boxes: A numpy array of shape Nx4 where each row is `[x1, y1, x2, y2]`.
-        category_names_list: List of N category names.
+        category_names_list: List of N tuples. The first element is the category name, whereas the second element is
+                             the value, that is going to be displayed in the text box..
         color: A 3-tuple BGR color (in range `[0, 255]`).
         font_scale: Font scale of text box.
         rectangle_thickness: Thickness of bounding box.
@@ -230,13 +238,14 @@ def draw_boxes(
     category_to_color = {}
     if box_color_by_category and category_names_list is not None:
         category_names = set(category_names_list)
-        category_to_color = {category: random_color() for category in category_names}
-
+        category_to_color = {
+            category[1]: random_color(deterministic_input_str=category[1]) for category in category_names
+        }
     boxes = np.array(boxes, dtype="int32")
     if category_names_list is not None:
         assert len(category_names_list) == len(boxes), f"{len(category_names_list)} != {len(boxes)}"
     else:
-        category_names_list = [None] * len(boxes)
+        category_names_list = [(None, None)] * len(boxes)
     areas = (boxes[:, 2] - boxes[:, 0] + 1) * (boxes[:, 3] - boxes[:, 1] + 1)
     sorted_inds = np.argsort(-areas)  # draw large ones first
     assert areas.min() > 0, areas.min()
@@ -255,12 +264,12 @@ def draw_boxes(
         np_image = cv2.cvtColor(np_image, cv2.COLOR_GRAY2BGR).astype(np.uint8)
     for i in sorted_inds:
         box = boxes[i, :]
-        choose_color = category_to_color.get(category_names_list[i]) if category_to_color is not None else color
+        choose_color = category_to_color.get(category_names_list[i][1]) if category_to_color is not None else color
         if choose_color is None:
             choose_color = random_color()
-        if category_names_list[i] is not None:
+        if category_names_list[i][0] is not None:
             np_image = viz_handler.draw_text(
-                np_image, (box[0], box[1]), category_names_list[i], color=choose_color, font_scale=font_scale
+                np_image, (box[0], box[1]), category_names_list[i][0], color=choose_color, font_scale=font_scale
             )
         np_image = viz_handler.draw_rectangle(
             np_image, (box[0], box[1], box[2], box[3]), choose_color, rectangle_thickness

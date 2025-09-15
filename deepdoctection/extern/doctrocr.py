@@ -586,8 +586,8 @@ class DocTrRotationTransformer(ImageTransformer):
         if detect_results:
             if detect_results[0].angle:
                 self.rotator.set_angle(detect_results[0].angle)  # type: ignore
-                self.rotator.set_image_width(detect_results[0].image_width) # type: ignore
-                self.rotator.set_image_height(detect_results[0].image_height) # type: ignore
+                self.rotator.set_image_width(detect_results[0].image_width)  # type: ignore
+                self.rotator.set_image_height(detect_results[0].image_height)  # type: ignore
                 transformed_coords = self.rotator.apply_coords(
                     np.asarray([detect_result.box for detect_result in detect_results], dtype=float)
                 )
