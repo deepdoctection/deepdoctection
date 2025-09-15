@@ -263,7 +263,7 @@ class PredictorBase(ABC):
         requirements = cls.get_requirements()
         name = cls.__name__ if hasattr(cls, "__name__") else cls.__class__.__name__
         if not all(requirement[1] for requirement in requirements):
-            raise ImportError(
+            raise ModuleNotFoundError(
                 "\n".join(
                     [f"{name} has the following dependencies:"]
                     + [requirement[2] for requirement in requirements if not requirement[1]]
@@ -334,6 +334,11 @@ class DetectionResult:
         block: block number. For reading order from some ocr predictors
         line: line number. For reading order from some ocr predictors
         uuid: uuid. For assigning detection result (e.g. text to image annotations)
+        relationships: A dictionary of relationships. Each key is a relationship type and each value is a list of
+                       uuids of the related annotations.
+        angle: angle of rotation in degrees. Only used for text detection.
+        image_width: image width
+        image_height: image height
     """
 
     box: Optional[list[float]] = None
@@ -348,6 +353,8 @@ class DetectionResult:
     uuid: Optional[str] = None
     relationships: Optional[dict[str, Any]] = None
     angle: Optional[float] = None
+    image_width: Optional[Union[int, float]] = None
+    image_height: Optional[Union[int, float]] = None
 
 
 class ObjectDetector(PredictorBase, ABC):

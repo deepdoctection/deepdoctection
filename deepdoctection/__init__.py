@@ -25,7 +25,7 @@ from .utils.logger import LoggingRecord, logger
 
 # pylint: enable=wrong-import-position
 
-__version__ = "0.45.0"
+__version__ = "0.46"
 
 _IMPORT_STRUCTURE = {
     "analyzer": ["config_sanity_checks", "get_dd_analyzer", "ServiceFactory", "update_cfg_from_defaults"],
@@ -271,6 +271,7 @@ _IMPORT_STRUCTURE = {
         "MultiThreadPipelineComponent",
         "DoctectionPipe",
         "LanguageDetectionService",
+        "skip_if_category_or_service_extracted",
         "ImageLayoutService",
         "LMTokenClassifierService",
         "LMSequenceClassifierService",
@@ -310,12 +311,14 @@ _IMPORT_STRUCTURE = {
         "get_tensorpack_requirement",
         "pytorch_available",
         "get_pytorch_requirement",
+        "pyzmq_available",
         "lxml_available",
         "get_lxml_requirement",
         "apted_available",
         "get_apted_requirement",
         "distance_available",
         "get_distance_requirement",
+        "networkx_available",
         "numpy_v1_available",
         "get_numpy_v1_requirement",
         "transformers_available",

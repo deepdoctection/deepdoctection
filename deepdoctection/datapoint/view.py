@@ -428,6 +428,8 @@ class List(Layout):
             A list of words order by reading order. Words with no `reading_order` will not be returned"""
         try:
             list_items = self.list_items
+            if not list_items:
+                return super().get_ordered_words()
             all_words = []
             list_items.sort(key=lambda x: x.bbox[1])
             for list_item in list_items:
@@ -755,6 +757,8 @@ class Table(Layout):
         """
         try:
             cells = self.cells
+            if not cells:
+                return super().get_ordered_words()
             all_words = []
             cells.sort(key=lambda x: (x.ROW_NUMBER, x.COLUMN_NUMBER))
             for cell in cells:
@@ -1054,6 +1058,8 @@ class Page(Image):
         Returns:
             A `Page` instance with all annotations as `ImageAnnotationBaseView` subclasses.
         """
+        if isinstance(image_orig, Page):
+            raise ImageError("Page.from_image() cannot be called on a Page instance.")
 
         if text_container is None:
             text_container = IMAGE_DEFAULTS.TEXT_CONTAINER
@@ -1310,7 +1316,7 @@ class Page(Image):
             If `interactive=False` will return a `np.array`.
         """
 
-        category_names_list: list[Union[str, None]] = []
+        category_names_list: list[Tuple[Union[str, None], Union[str, None]]] = []
         box_stack = []
         cells_found = False
 
@@ -1323,22 +1329,23 @@ class Page(Image):
             anns = self.get_annotation(category_names=list(debug_kwargs.keys()))
             for ann in anns:
                 box_stack.append(self._ann_viz_bbox(ann))
-                category_names_list.append(str(getattr(ann, debug_kwargs[ann.category_name])))
+                val = str(getattr(ann, debug_kwargs[ann.category_name]))
+                category_names_list.append((val, val))
 
         if show_layouts and not debug_kwargs:
             for item in self.layouts:
                 box_stack.append(self._ann_viz_bbox(item))
-                category_names_list.append(item.category_name.value)
+                category_names_list.append((item.category_name.value, item.category_name.value))
 
         if show_figures and not debug_kwargs:
             for item in self.figures:
                 box_stack.append(self._ann_viz_bbox(item))
-                category_names_list.append(item.category_name.value)
+                category_names_list.append((item.category_name.value, item.category_name.value))
 
         if show_tables and not debug_kwargs:
             for table in self.tables:
                 box_stack.append(self._ann_viz_bbox(table))
-                category_names_list.append(LayoutType.TABLE.value)
+                category_names_list.append((LayoutType.TABLE.value, LayoutType.TABLE.value))
                 if show_cells:
                     for cell in table.cells:
                         if cell.category_name in {
@@ -1347,21 +1354,21 @@ class Page(Image):
                         }:
                             cells_found = True
                             box_stack.append(self._ann_viz_bbox(cell))
-                            category_names_list.append(None)
+                            category_names_list.append((None, cell.category_name.value))
                 if show_table_structure:
                     rows = table.rows
                     cols = table.columns
                     for row in rows:
                         box_stack.append(self._ann_viz_bbox(row))
-                        category_names_list.append(None)
+                        category_names_list.append((None, row.category_name.value))
                     for col in cols:
                         box_stack.append(self._ann_viz_bbox(col))
-                        category_names_list.append(None)
+                        category_names_list.append((None, col.category_name.value))
 
         if show_cells and not cells_found and not debug_kwargs:
             for ann in self.get_annotation(category_names=[LayoutType.CELL, CellType.SPANNING]):
                 box_stack.append(self._ann_viz_bbox(ann))
-                category_names_list.append(None)
+                category_names_list.append((None, ann.category_name.value))
 
         if show_words and not debug_kwargs:
             all_words = []
@@ -1379,22 +1386,36 @@ class Page(Image):
                 for word in all_words:
                     box_stack.append(self._ann_viz_bbox(word))
                     if show_token_class:
-                        category_names_list.append(word.token_class.value if word.token_class is not None else None)
+                        category_names_list.append(
+                            (word.token_class.value, word.token_class.value)
+                            if word.token_class is not None
+                            else (None, None)
+                        )
                     else:
-                        category_names_list.append(word.token_tag.value if word.token_tag is not None else None)
+                        category_names_list.append(
+                            (word.token_tag.value, word.token_tag.value) if word.token_tag is not None else (None, None)
+                        )
             else:
                 for word in all_words:
                     if word.token_class is not None and word.token_class != TokenClasses.OTHER:
                         box_stack.append(self._ann_viz_bbox(word))
                         if show_token_class:
-                            category_names_list.append(word.token_class.value if word.token_class is not None else None)
+                            category_names_list.append(
+                                (word.token_class.value, word.token_class.value)
+                                if word.token_class is not None
+                                else (None, None)
+                            )
                         else:
-                            category_names_list.append(word.token_tag.value if word.token_tag is not None else None)
+                            category_names_list.append(
+                                (word.token_tag.value, word.token_tag.value)
+                                if word.token_tag is not None
+                                else (None, None)
+                            )
 
         if show_residual_layouts and not debug_kwargs:
             for item in self.residual_layouts:
                 box_stack.append(item.bbox)
-                category_names_list.append(item.category_name.value)
+                category_names_list.append((item.category_name.value, item.category_name.value))
 
         if self.image is not None:
             scale_fx = scaled_width / self.width

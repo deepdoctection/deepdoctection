@@ -36,7 +36,7 @@ from ..utils.logger import LoggingRecord, logger
 from ..utils.settings import ObjectTypes, SummaryType, get_type
 from ..utils.types import ImageDict, PathLikeOrStr, PixelValues
 from .annotation import Annotation, AnnotationMap, BoundingBox, CategoryAnnotation, ImageAnnotation
-from .box import crop_box_from_image, global_to_local_coords, intersection_box
+from .box import BoxCoordinate, crop_box_from_image, global_to_local_coords, intersection_box
 from .convert import as_dict, convert_b64_to_np_array, convert_np_array_to_b64, convert_pdf_bytes_to_np_array_v2
 
 
@@ -318,7 +318,7 @@ class Image:
         return _Img(self.image)
 
     @property
-    def width(self) -> float:
+    def width(self) -> BoxCoordinate:
         """
         `width`
         """
@@ -327,7 +327,7 @@ class Image:
         return self._bbox.width
 
     @property
-    def height(self) -> float:
+    def height(self) -> BoxCoordinate:
         """
         `height`
         """
@@ -335,7 +335,7 @@ class Image:
             raise ImageError("Height not available. Call set_width_height first")
         return self._bbox.height
 
-    def set_width_height(self, width: float, height: float) -> None:
+    def set_width_height(self, width: BoxCoordinate, height: BoxCoordinate) -> None:
         """
         Defines bounding box of the image if not already set. Use this, if you do not want to keep the image separated
         for memory reasons.
@@ -345,7 +345,7 @@ class Image:
             height: height of image
         """
         if self._bbox is None:
-            self._bbox = BoundingBox(ulx=0.0, uly=0.0, height=height, width=width, absolute_coords=True)
+            self._bbox = BoundingBox(ulx=0, uly=0, height=height, width=width, absolute_coords=True)
             self._self_embedding()
 
     def set_embedding(self, image_id: str, bounding_box: BoundingBox) -> None:

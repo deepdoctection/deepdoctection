@@ -70,8 +70,9 @@ class TestHFLmSequenceClassifier:
 
     @staticmethod
     @mark.pt_deps
-    @patch("deepdoctection.extern.hflm.predict_sequence_classes_from_lm",
-           MagicMock(side_effect=get_sequence_class_result))
+    @patch(
+        "deepdoctection.extern.hflm.predict_sequence_classes_from_lm", MagicMock(side_effect=get_sequence_class_result)
+    )
     def test_hf_layout_lm_predicts_sequence_class(
         layoutlm_input_for_predictor: JsonDict,
     ) -> None:

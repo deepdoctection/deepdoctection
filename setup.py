@@ -45,13 +45,12 @@ _DEPS = [
     "catalogue==2.0.10",
     "distance==0.1.3",
     "huggingface_hub>=0.26.0",
-    "importlib-metadata>=5.0.0",
     "jsonlines==3.1.0",
     "lazy-imports==0.3.1",
     "lxml>=4.9.1",
     "mock==4.0.3",
     "networkx>=2.7.1",
-    "numpy>2.0", # When using fasttext-wheel, downgrading to numpy<1.x is required
+    "numpy>2.0",  # When using fasttext-wheel, downgrading to numpy<1.x is required
     "opencv-python==4.8.0.76",  # this is not required anymore, but we keep its version as a reference
     "packaging>=20.0",
     "Pillow>=10.0.0",
@@ -90,7 +89,8 @@ _DEPS = [
     "tensorflow-addons>=0.17.1",
     "tf2onnx>=1.9.2",
     "python-doctr==0.10.0",
-    #"fasttext-wheel",
+    # fasttext-wheel is not compatible with numpy v2. Downgrading to numpy<1.x is required
+    # "fasttext-wheel==0.9.2",
     # dev dependencies
     "python-dotenv==1.0.0",
     "click",  # version will not break black
@@ -124,18 +124,15 @@ def deps_list(*pkgs: str):
 dist_deps = deps_list(
     "catalogue",
     "huggingface_hub",
-    "importlib-metadata",
     "jsonlines",
     "lazy-imports",
     "mock",
-    "networkx",
     "numpy",
     "packaging",
     "Pillow",
     "pypdf",
     "pypdfium2",
     "pyyaml",
-    "pyzmq",
     "scipy",
     "termcolor",
     "tabulate",
@@ -147,11 +144,13 @@ dist_deps = deps_list(
 additional_deps = deps_list(
     "boto3",
     "pdfplumber",
-    #"fasttext-wheel",
+    # "fasttext-wheel",
+    "pyzmq",
     "jdeskew",
     "apted",
     "distance",
     "lxml",
+    "networkx",
 )
 
 tf_deps = deps_list("tensorpack", "protobuf", "tensorflow-addons", "tf2onnx", "python-doctr", "pycocotools")

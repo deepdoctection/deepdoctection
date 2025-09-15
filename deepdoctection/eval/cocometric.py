@@ -275,6 +275,7 @@ class CocoMetric(MetricBase):
                       get the ultimate F1-score.
             f1_iou: Use with `f1_score=True` and reset the f1 iou threshold
                     per_category: Whether to calculate metrics per category
+            per_category: If set to True, f1 score will be returned by each category.
         """
         if max_detections is not None:
             assert len(max_detections) == 3, max_detections
