@@ -309,8 +309,9 @@ class OrderGenerator:
         filtered_blocks: Sequence[tuple[int, str]]
         for idx in range(max_block_number + 1):
             filtered_blocks = list(filter(lambda x: x[0] == idx, blocks))  # type: ignore # pylint: disable=W0640
-            sorted_blocks.extend(self._sort_anns_grouped_by_blocks(filtered_blocks, anns, image_width, image_height,
-                                                                   image_id))
+            sorted_blocks.extend(
+                self._sort_anns_grouped_by_blocks(filtered_blocks, anns, image_width, image_height, image_id)
+            )
         reading_blocks = [(idx + 1, block[1]) for idx, block in enumerate(sorted_blocks)]
 
         if logger.isEnabledFor(DEBUG):
@@ -351,7 +352,7 @@ class OrderGenerator:
         anns: Sequence[ImageAnnotation],
         image_width: float,
         image_height: float,
-        image_id: Optional[str] = None
+        image_id: Optional[str] = None,
     ) -> list[tuple[int, str]]:
         if not block:
             return []

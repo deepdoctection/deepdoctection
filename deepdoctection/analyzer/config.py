@@ -526,6 +526,9 @@ cfg.USE_LM_SEQUENCE_CLASS = False
 # Enables a token classification pipeline component, e.g. a LayoutLM or Bert-like model
 cfg.USE_LM_TOKEN_CLASS = False
 
+# Specifies the selection of the rotation model. There are two models available: A rotation estimator
+# based on Tesseract ('tesseract'), and a rotation estimator based on DocTr ('doctr').
+cfg.ROTATOR.MODEL = "tesseract"
 
 # Relevant when LIB = TF. Specifies the layout detection model.
 # This model should detect multiple or single objects across an entire page.

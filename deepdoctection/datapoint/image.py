@@ -36,7 +36,7 @@ from ..utils.logger import LoggingRecord, logger
 from ..utils.settings import ObjectTypes, SummaryType, get_type
 from ..utils.types import ImageDict, PathLikeOrStr, PixelValues
 from .annotation import Annotation, AnnotationMap, BoundingBox, CategoryAnnotation, ImageAnnotation
-from .box import crop_box_from_image, global_to_local_coords, intersection_box, BoxCoordinate
+from .box import BoxCoordinate, crop_box_from_image, global_to_local_coords, intersection_box
 from .convert import as_dict, convert_b64_to_np_array, convert_np_array_to_b64, convert_pdf_bytes_to_np_array_v2
 
 

@@ -411,6 +411,33 @@ class RotationTransform(BaseTransform):
         self.image_width: Optional[Union[int, float]] = None
         self.image_height: Optional[Union[int, float]] = None
 
+    def set_angle(self, angle: Literal[90, 180, 270, 360]) -> None:
+        """
+        Set angle
+
+        Args:
+            angle: One of 90, 180, 270, or 360 degrees.
+        """
+        self.angle = angle
+
+    def set_image_width(self, image_width: Union[int, float]) -> None:
+        """
+        Set image width
+
+        Args:
+            image_width: Either a positive integer or 1.
+        """
+        self.image_width = image_width
+
+    def set_image_height(self, image_height: Union[int, float]) -> None:
+        """
+        Set image height
+
+        Args:
+            image_height: Either a positive integer or 1.
+        """
+        self.image_height = image_height
+
     def apply_image(self, img: PixelValues) -> PixelValues:
         """
         Apply rotation to image.
@@ -452,8 +479,6 @@ class RotationTransform(BaseTransform):
             self.image_height = self.image_width
             coords[:, [0, 1, 2, 3]] = coords[:, [3, 0, 1, 2]]
             coords[:, [0, 2]] = self.image_height - coords[:, [0, 2]]
-
-
 
         return coords
 
