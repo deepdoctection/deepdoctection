@@ -28,10 +28,10 @@ from errno import ENOENT
 from itertools import groupby
 from os import environ, fspath
 from pathlib import Path
-from typing import Any, Mapping, Optional, Union, Sequence
+from typing import Any, Mapping, Optional, Sequence, Union
 
-from packaging.version import InvalidVersion, Version, parse
 import numpy as np
+from packaging.version import InvalidVersion, Version, parse
 
 from ..utils.context import save_tmp_file, timeout_manager
 from ..utils.error import DependencyError, TesseractError
@@ -452,6 +452,7 @@ class TesseractRotationTransformer(ImageTransformer):
         self.name = fspath(_TESS_PATH) + "-rotation"
         self.categories = ModelCategories(init_categories={1: PageType.ANGLE})
         self.model_id = self.get_model_id()
+        self.rotator = RotationTransform(360)
 
     def transform_image(self, np_img: PixelValues, specification: DetectionResult) -> PixelValues:
         """
@@ -470,15 +471,15 @@ class TesseractRotationTransformer(ImageTransformer):
     def transform_coords(self, detect_results: Sequence[DetectionResult]) -> Sequence[DetectionResult]:
         if detect_results:
             if detect_results[0].angle:
-                rotator = RotationTransform(detect_results[0].angle)  # type: ignore
-                rotator.image_width = detect_results[0].image_width
-                rotator.image_height = detect_results[0].image_height
-                transformed_coords = rotator.apply_coords(np.asarray([detect_result.box for detect_result
-                                                 in detect_results], dtype=float))
+                self.rotator.set_angle(detect_results[0].angle)  # type: ignore
+                self.rotator.set_image_width(detect_results[0].image_width) # type: ignore
+                self.rotator.set_image_height(detect_results[0].image_height) # type: ignore
+                transformed_coords = self.rotator.apply_coords(
+                    np.asarray([detect_result.box for detect_result in detect_results], dtype=float)
+                )
                 for idx, detect_result in enumerate(detect_results):
                     detect_result.box = transformed_coords[idx, :].tolist()
         return detect_results
-
 
     def predict(self, np_img: PixelValues) -> DetectionResult:
         """

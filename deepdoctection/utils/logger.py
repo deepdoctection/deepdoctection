@@ -144,7 +144,8 @@ class FileFormatter(logging.Formatter):
 
 _LOG_DIR = None
 
-def _coerce_log_level(val: Any) -> Union[int,str]:
+
+def _coerce_log_level(val: Any) -> Union[int, str]:
     """Normalize environment log level values.
 
     Accepts integer values (e.g., ``20``), numeric strings (``"20"``),
@@ -169,7 +170,7 @@ def _coerce_log_level(val: Any) -> Union[int,str]:
     name = s.upper()
     if name == "WARN":
         name = "WARNING"
-    if name in logging._nameToLevel:  #pylint: disable=W0212
+    if name in logging._nameToLevel:  # pylint: disable=W0212
         return name
     lvl = logging.getLevelName(name)
     return lvl if isinstance(lvl, int) else "INFO"

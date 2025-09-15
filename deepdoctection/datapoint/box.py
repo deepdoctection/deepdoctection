@@ -505,10 +505,10 @@ class BoundingBox:
             if self.absolute_coords:
                 transformed_box = BoundingBox(
                     absolute_coords=not self.absolute_coords,
-                    ulx=min(max(self.ulx / image_width, 0.0),1.0),
-                    uly=min(max(self.uly / image_height, 0.0),1.0),
-                    lrx=max(min(self.lrx / image_width, 1.0),0.0),
-                    lry=max(min(self.lry / image_height, 1.0),0.0),
+                    ulx=min(max(self.ulx / image_width, 0.0), 1.0),
+                    uly=min(max(self.uly / image_height, 0.0), 1.0),
+                    lrx=max(min(self.lrx / image_width, 1.0), 0.0),
+                    lry=max(min(self.lry / image_height, 1.0), 0.0),
                 )
             else:
                 transformed_box = BoundingBox(

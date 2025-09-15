@@ -24,9 +24,10 @@ from __future__ import annotations
 import os
 from abc import ABC
 from pathlib import Path
-from typing import Any, Literal, Mapping, Optional, Union
+from typing import Any, Literal, Mapping, Optional, Sequence, Union
 from zipfile import ZipFile
 
+import numpy as np
 from lazy_imports import try_import
 
 from ..utils.env_info import ENV_VARS_TRUE
@@ -39,6 +40,7 @@ from ..utils.file_utils import (
 )
 from ..utils.fs import load_json
 from ..utils.settings import LayoutType, ObjectTypes, PageType, TypeOrStr
+from ..utils.transform import RotationTransform
 from ..utils.types import PathLikeOrStr, PixelValues, Requirement
 from ..utils.viz import viz_handler
 from .base import DetectionResult, ImageTransformer, ModelCategories, ObjectDetector, TextRecognizer
@@ -558,12 +560,13 @@ class DocTrRotationTransformer(ImageTransformer):
         """
         Args:
             number_contours: the number of contours used for the orientation estimation
-            ratio_threshold_for_lines: this is the ratio w/h used to discriminates lines
+            ratio_threshold_for_lines: this is the ratio w/h used to discriminate lines
         """
         self.number_contours = number_contours
         self.ratio_threshold_for_lines = ratio_threshold_for_lines
         self.name = "doctr_rotation_transformer"
         self.model_id = self.get_model_id()
+        self.rotator = RotationTransform(360)
 
     def transform_image(self, np_img: PixelValues, specification: DetectionResult) -> PixelValues:
         """
@@ -578,6 +581,19 @@ class DocTrRotationTransformer(ImageTransformer):
             The rotated image as a `np.array`
         """
         return viz_handler.rotate_image(np_img, specification.angle)  # type: ignore
+
+    def transform_coords(self, detect_results: Sequence[DetectionResult]) -> Sequence[DetectionResult]:
+        if detect_results:
+            if detect_results[0].angle:
+                self.rotator.set_angle(detect_results[0].angle)  # type: ignore
+                self.rotator.set_image_width(detect_results[0].image_width) # type: ignore
+                self.rotator.set_image_height(detect_results[0].image_height) # type: ignore
+                transformed_coords = self.rotator.apply_coords(
+                    np.asarray([detect_result.box for detect_result in detect_results], dtype=float)
+                )
+                for idx, detect_result in enumerate(detect_results):
+                    detect_result.box = transformed_coords[idx, :].tolist()
+        return detect_results
 
     def predict(self, np_img: PixelValues) -> DetectionResult:
         angle = estimate_orientation(

@@ -22,13 +22,13 @@
 from __future__ import annotations
 
 from os import environ
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, Literal, Union
 
 from lazy_imports import try_import
 
 from ..extern.base import ImageTransformer, ObjectDetector, PdfMiner
 from ..extern.d2detect import D2FrcnnDetector, D2FrcnnTracingDetector
-from ..extern.doctrocr import DoctrTextlineDetector, DoctrTextRecognizer
+from ..extern.doctrocr import DocTrRotationTransformer, DoctrTextlineDetector, DoctrTextRecognizer
 from ..extern.hfdetr import HFDetrDerivedDetector
 from ..extern.hflayoutlm import (
     HFLayoutLmSequenceClassifier,
@@ -78,6 +78,7 @@ if TYPE_CHECKING:
     from ..extern.hflayoutlm import LayoutSequenceModels, LayoutTokenModels
     from ..extern.hflm import LmSequenceModels, LmTokenModels
 
+    RotationTransformer = Union[TesseractRotationTransformer, DocTrRotationTransformer]
 
 __all__ = [
     "ServiceFactory",
@@ -190,24 +191,32 @@ class ServiceFactory:
         return ServiceFactory._build_layout_detector(config, mode)
 
     @staticmethod
-    def _build_rotation_detector() -> TesseractRotationTransformer:
+    def _build_rotation_detector(rotator_name: Literal["tesseract", "doctr"]) -> RotationTransformer:
         """
         Building a rotation detector.
 
         Returns:
             TesseractRotationTransformer: Rotation detector instance.
         """
-        return TesseractRotationTransformer()
+
+        if rotator_name == "tesseract":
+            return TesseractRotationTransformer()
+        if rotator_name == "doctr":
+            return DocTrRotationTransformer()
+        raise ValueError(
+            f"You have chosen rotator_name: {rotator_name} which is not allowed. Only tesseract or "
+            f"doctr are allowed."
+        )
 
     @staticmethod
-    def build_rotation_detector() -> TesseractRotationTransformer:
+    def build_rotation_detector(rotator_name: Literal["tesseract", "doctr"]) -> RotationTransformer:
         """
         Building a rotation detector.
 
         Returns:
             TesseractRotationTransformer: Rotation detector instance.
         """
-        return ServiceFactory._build_rotation_detector()
+        return ServiceFactory._build_rotation_detector(rotator_name)
 
     @staticmethod
     def _build_transform_service(transform_predictor: ImageTransformer) -> SimpleTransformService:
@@ -1123,7 +1132,7 @@ class ServiceFactory:
         pipe_component_list: list[PipelineComponent] = []
 
         if config.USE_ROTATOR:
-            rotation_detector = ServiceFactory.build_rotation_detector()
+            rotation_detector = ServiceFactory.build_rotation_detector(config.ROTATOR.MODEL)
             transform_service = ServiceFactory.build_transform_service(transform_predictor=rotation_detector)
             pipe_component_list.append(transform_service)
 
