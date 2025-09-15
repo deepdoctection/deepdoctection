@@ -284,7 +284,7 @@ class BoundingBox:
             raise BoundingBoxError(
                 f"bounding box must have height and width >0. Check coords "
                 f"ulx: {self.ulx}, uly: {self.uly}, lrx: {self.lrx}, "
-                f"lry: {self.lry}."
+                f"lry: {self.lry}, absolute_coords: {self.absolute_coords}"
             )
         if not self.absolute_coords and not (
             0 <= self.ulx <= 1 and 0 <= self.uly <= 1 and 0 <= self.lrx <= 1 and 0 <= self.lry <= 1
@@ -505,10 +505,10 @@ class BoundingBox:
             if self.absolute_coords:
                 transformed_box = BoundingBox(
                     absolute_coords=not self.absolute_coords,
-                    ulx=max(self.ulx / image_width, 0.0),
-                    uly=max(self.uly / image_height, 0.0),
-                    lrx=min(self.lrx / image_width, 1.0),
-                    lry=min(self.lry / image_height, 1.0),
+                    ulx=min(max(self.ulx / image_width, 0.0), 1.0),
+                    uly=min(max(self.uly / image_height, 0.0), 1.0),
+                    lrx=max(min(self.lrx / image_width, 1.0), 0.0),
+                    lry=max(min(self.lry / image_height, 1.0), 0.0),
                 )
             else:
                 transformed_box = BoundingBox(

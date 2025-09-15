@@ -126,8 +126,10 @@ class TestHFLayoutLmTokenClassifier:
 
     @staticmethod
     @mark.pt_deps
-    @patch("deepdoctection.extern.hflayoutlm.predict_token_classes_from_layoutlm",
-           MagicMock(side_effect=get_token_class_results))
+    @patch(
+        "deepdoctection.extern.hflayoutlm.predict_token_classes_from_layoutlm",
+        MagicMock(side_effect=get_token_class_results),
+    )
     def test_hf_layout_lm_predicts_token(
         layoutlm_input_for_predictor: JsonDict,
         token_class_names: List[str],
@@ -217,8 +219,10 @@ class TestHFLayoutLmv2TokenClassifier:
 
     @staticmethod
     @mark.pt_deps
-    @patch("deepdoctection.extern.hflayoutlm.predict_token_classes_from_layoutlm",
-           MagicMock(side_effect=get_token_class_results))
+    @patch(
+        "deepdoctection.extern.hflayoutlm.predict_token_classes_from_layoutlm",
+        MagicMock(side_effect=get_token_class_results),
+    )
     def test_hf_layout_lm_predicts_token(
         layoutlm_v2_input: JsonDict,
         token_class_names: List[str],
@@ -310,8 +314,10 @@ class TestHFLayoutLmv3TokenClassifier:
 
     @staticmethod
     @mark.pt_deps
-    @patch("deepdoctection.extern.hflayoutlm.predict_token_classes_from_layoutlm",
-           MagicMock(side_effect=get_token_class_results))
+    @patch(
+        "deepdoctection.extern.hflayoutlm.predict_token_classes_from_layoutlm",
+        MagicMock(side_effect=get_token_class_results),
+    )
     def test_hf_layout_lm_predicts_token(
         layoutlm_v2_input: JsonDict,
         token_class_names: List[str],
@@ -361,7 +367,7 @@ class TestHFLayoutLmSequenceClassifier:
     @mark.pt_deps
     @patch(
         "deepdoctection.extern.hflayoutlm.predict_sequence_classes_from_layoutlm",
-        MagicMock(side_effect=get_sequence_class_result)
+        MagicMock(side_effect=get_sequence_class_result),
     )
     def test_hf_layout_lm_predicts_sequence_class(
         layoutlm_input_for_predictor: JsonDict,
@@ -407,7 +413,7 @@ class TestHFLayoutLmv2SequenceClassifier:
     @mark.pt_deps
     @patch(
         "deepdoctection.extern.hflayoutlm.predict_sequence_classes_from_layoutlm",
-        MagicMock(side_effect=get_sequence_class_result)
+        MagicMock(side_effect=get_sequence_class_result),
     )
     def test_hf_layout_lm_v2_predicts_sequence_class(
         layoutlm_v2_input: JsonDict,
@@ -454,7 +460,7 @@ class TestHFLayoutLmv3SequenceClassifier:
     @mark.pt_deps
     @patch(
         "deepdoctection.extern.hflayoutlm.predict_sequence_classes_from_layoutlm",
-        MagicMock(side_effect=get_sequence_class_result)
+        MagicMock(side_effect=get_sequence_class_result),
     )
     def test_hf_layout_lm_v3_predicts_sequence_class(
         layoutlm_v2_input: JsonDict,
@@ -543,8 +549,10 @@ class TestHFLiltTokenClassifier:
 
     @staticmethod
     @mark.pt_deps
-    @patch("deepdoctection.extern.hflayoutlm.predict_token_classes_from_layoutlm",
-           MagicMock(side_effect=get_token_class_results))
+    @patch(
+        "deepdoctection.extern.hflayoutlm.predict_token_classes_from_layoutlm",
+        MagicMock(side_effect=get_token_class_results),
+    )
     def test_lilt_predicts_token(
         layoutlm_input_for_predictor: JsonDict,
         token_class_names: List[str],

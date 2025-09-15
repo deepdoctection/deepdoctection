@@ -408,8 +408,35 @@ class RotationTransform(BaseTransform):
             angle: Angle to rotate the image. Must be one of 90, 180, 270, or 360 degrees.
         """
         self.angle = angle
-        self.image_width: Optional[int] = None
-        self.image_height: Optional[int] = None
+        self.image_width: Optional[Union[int, float]] = None
+        self.image_height: Optional[Union[int, float]] = None
+
+    def set_angle(self, angle: Literal[90, 180, 270, 360]) -> None:
+        """
+        Set angle
+
+        Args:
+            angle: One of 90, 180, 270, or 360 degrees.
+        """
+        self.angle = angle
+
+    def set_image_width(self, image_width: Union[int, float]) -> None:
+        """
+        Set image width
+
+        Args:
+            image_width: Either a positive integer or 1.
+        """
+        self.image_width = image_width
+
+    def set_image_height(self, image_height: Union[int, float]) -> None:
+        """
+        Set image height
+
+        Args:
+            image_height: Either a positive integer or 1.
+        """
+        self.image_height = image_height
 
     def apply_image(self, img: PixelValues) -> PixelValues:
         """
@@ -442,17 +469,16 @@ class RotationTransform(BaseTransform):
             raise ValueError("Initialize image_width and image_height first")
 
         if self.angle == 90:
-            coords[:, [0, 1, 2, 3]] = coords[:, [1, 0, 3, 2]]
+            self.image_width = self.image_height
+            coords[:, [0, 1, 2, 3]] = coords[:, [1, 2, 3, 0]]
             coords[:, [1, 3]] = self.image_width - coords[:, [1, 3]]
-            coords[:, [0, 1, 2, 3]] = coords[:, [0, 3, 2, 1]]
         elif self.angle == 180:
-            coords[:, [0, 2]] = self.image_width - coords[:, [0, 2]]
-            coords[:, [1, 3]] = self.image_height - coords[:, [1, 3]]
-            coords[:, [0, 1, 2, 3]] = coords[:, [2, 3, 0, 1]]
+            coords[:, [0, 2]] = self.image_width - coords[:, [2, 0]]
+            coords[:, [1, 3]] = self.image_height - coords[:, [3, 1]]
         elif self.angle == 270:
-            coords[:, [0, 1, 2, 3]] = coords[:, [1, 0, 3, 2]]
+            self.image_height = self.image_width
+            coords[:, [0, 1, 2, 3]] = coords[:, [3, 0, 1, 2]]
             coords[:, [0, 2]] = self.image_height - coords[:, [0, 2]]
-            coords[:, [0, 1, 2, 3]] = coords[:, [2, 1, 0, 3]]
 
         return coords
 
@@ -473,17 +499,16 @@ class RotationTransform(BaseTransform):
             raise ValueError("Initialize image_width and image_height first")
 
         if self.angle == 90:
-            coords[:, [0, 1, 2, 3]] = coords[:, [1, 0, 3, 2]]
-            coords[:, [0, 2]] = self.image_width - coords[:, [0, 2]]
-            coords[:, [0, 1, 2, 3]] = coords[:, [2, 1, 0, 3]]
+            self.image_height = self.image_width
+            coords[:, [0, 1, 2, 3]] = coords[:, [3, 0, 1, 2]]
+            coords[:, [0, 2]] = self.image_height - coords[:, [0, 2]]
         elif self.angle == 180:
-            coords[:, [0, 2]] = self.image_width - coords[:, [0, 2]]
-            coords[:, [1, 3]] = self.image_height - coords[:, [1, 3]]
-            coords[:, [0, 1, 2, 3]] = coords[:, [2, 3, 0, 1]]
+            coords[:, [0, 2]] = self.image_width - coords[:, [2, 0]]
+            coords[:, [1, 3]] = self.image_height - coords[:, [3, 1]]
         elif self.angle == 270:
-            coords[:, [0, 1, 2, 3]] = coords[:, [1, 0, 3, 2]]
-            coords[:, [1, 3]] = self.image_height - coords[:, [1, 3]]
-            coords[:, [0, 1, 2, 3]] = coords[:, [0, 3, 2, 1]]
+            self.image_width = self.image_height
+            coords[:, [0, 1, 2, 3]] = coords[:, [1, 2, 3, 0]]
+            coords[:, [1, 3]] = self.image_width - coords[:, [1, 3]]
         return coords
 
     def clone(self) -> RotationTransform:

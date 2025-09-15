@@ -24,14 +24,18 @@ from abc import ABC, abstractmethod
 from contextlib import contextmanager
 from typing import Any, Callable, Iterator, no_type_check
 
-import zmq
+from lazy_imports import try_import
 
 from ..utils.concurrency import StoppableThread, enable_death_signal, start_proc_mask_signal
 from ..utils.error import DataFlowTerminatedError
+from ..utils.file_utils import pyzmq_available
 from ..utils.logger import LoggingRecord, logger
 from .base import DataFlow, DataFlowReentrantGuard, ProxyDataFlow
 from .common import RepeatedData
 from .serialize import PickleSerializer
+
+with try_import() as import_guard:
+    import zmq
 
 
 @no_type_check
@@ -77,6 +81,8 @@ def _get_pipe_name(name):
 
 class _ParallelMapData(ProxyDataFlow, ABC):
     def __init__(self, df: DataFlow, buffer_size: int, strict: bool = False) -> None:
+        if not pyzmq_available():
+            raise ModuleNotFoundError("pyzmq is required for running parallel dataflows (multiprocess/multithread).")
         super().__init__(df)
         if buffer_size <= 0:
             raise ValueError(f"buffer_size must be a positive number, got {buffer_size}")

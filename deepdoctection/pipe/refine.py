@@ -27,7 +27,7 @@ from dataclasses import asdict
 from itertools import chain, product
 from typing import DefaultDict, Optional, Sequence, Union
 
-import networkx as nx  # type: ignore
+from lazy_imports import try_import
 
 from ..datapoint.annotation import ImageAnnotation
 from ..datapoint.box import merge_boxes
@@ -35,9 +35,14 @@ from ..datapoint.image import Image, MetaAnnotation
 from ..extern.base import DetectionResult
 from ..mapper.maputils import MappingContextManager
 from ..utils.error import ImageError
+from ..utils.file_utils import networkx_available
 from ..utils.settings import CellType, LayoutType, ObjectTypes, Relationships, TableType, get_type
 from .base import PipelineComponent
 from .registry import pipeline_component_registry
+
+with try_import() as import_guard:
+    import networkx as nx  # type: ignore
+
 
 __all__ = ["TableSegmentationRefinementService", "generate_html_string"]
 
@@ -441,6 +446,10 @@ class TableSegmentationRefinementService(PipelineComponent):
             table_names: Sequence of table object types.
             cell_names: Sequence of cell object types.
         """
+        if not networkx_available():
+            raise ModuleNotFoundError(
+                "TableSegmentationRefinementService requires networkx. Please install separately."
+            )
         self.table_name = table_names
         self.cell_names = cell_names
         super().__init__("table_segment_refine")
