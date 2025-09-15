@@ -353,8 +353,8 @@ class DetectionResult:
     uuid: Optional[str] = None
     relationships: Optional[dict[str, Any]] = None
     angle: Optional[float] = None
-    image_width: Optional[int] = None
-    image_height: Optional[int] = None
+    image_width: Optional[Union[int, float]] = None
+    image_height: Optional[Union[int, float]] = None
 
 
 class ObjectDetector(PredictorBase, ABC):
