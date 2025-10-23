@@ -20,7 +20,7 @@ import sys
 from typing import TYPE_CHECKING
 
 from .utils.env_info import auto_select_pdf_render_framework, collect_env_info
-from .utils.file_utils import _LazyModule, get_tf_version, pytorch_available, tf_available
+from .utils.file_utils import _LazyModule, pytorch_available
 from .utils.logger import LoggingRecord, logger
 
 # pylint: enable=wrong-import-position
@@ -75,6 +75,7 @@ _IMPORT_STRUCTURE = {
         "intersection",
         "np_iou",
         "iou",
+        "ioa",
         "BoundingBoxError",
         "BoundingBox",
         "intersection_box",
@@ -149,7 +150,6 @@ _IMPORT_STRUCTURE = {
         "CustomConfig",
         "TEDS",
         "TedsMetric",
-        "EvalCallback",
     ],
     "extern": [
         "ModelCategories",
@@ -197,14 +197,8 @@ _IMPORT_STRUCTURE = {
         "TesseractOcrDetector",
         "TesseractRotationTransformer",
         "TextractOcrDetector",
-        "TPFrcnnDetector",
     ],
     "extern.pt": ["set_torch_auto_device", "get_num_gpu", "batched_nms"],
-    "extern.tp": ["disable_tfv2", "ModelDescWithConfig", "TensorpackPredictor"],
-    "extern.tp.tpfrcnn": ["CustomResize", "anchors_and_labels", "augment"],
-    "extern.tp.tpfrcnn.utils": ["area", "pairwise_intersection", "pairwise_iou"],
-    "extern.tp.tpfrcnn.config": ["model_frcnn_config", "train_frcnn_config"],
-    "extern.tp.tpfrcnn.modeling": ["ResNetFPNModel"],
     "mapper": [
         "cat_to_sub_cat",
         "re_assign_cat_ids",
@@ -248,8 +242,6 @@ _IMPORT_STRUCTURE = {
         "image_to_prodigy",
         "pub_to_image_uncur",
         "pub_to_image",
-        "image_to_tp_frcnn_training",
-        "tf_nms_image_annotations",
         "xfund_to_image",
     ],
     "pipe": [
@@ -293,7 +285,6 @@ _IMPORT_STRUCTURE = {
         "train_d2_faster_rcnn",
         "LayoutLMTrainer",
         "train_hf_layoutlm",
-        "train_faster_rcnn",
         "DetrDerivedTrainer",
         "train_hf_detr",
     ],
@@ -304,11 +295,6 @@ _IMPORT_STRUCTURE = {
         "collect_env_info",
         "auto_select_viz_library",
         "auto_select_pdf_render_framework",
-        "get_tensorflow_requirement",
-        "tf_addons_available",
-        "get_tf_addons_requirements",
-        "tensorpack_available",
-        "get_tensorpack_requirement",
         "pytorch_available",
         "get_pytorch_requirement",
         "pyzmq_available",

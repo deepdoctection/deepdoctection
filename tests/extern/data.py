@@ -91,14 +91,3 @@ WORD_RESULTS = [
 
 ANGLE_RESULT = DetectionResult(angle=90.0, score=8.73)
 
-
-def get_detr_categories() -> Mapping[int, ObjectTypes]:
-    """detr_categories"""
-    return {
-        1: LayoutType.TABLE,
-        2: LayoutType.COLUMN,
-        3: LayoutType.ROW,
-        4: CellType.COLUMN_HEADER,
-        5: CellType.PROJECTED_ROW_HEADER,
-        6: CellType.SPANNING,
-    }

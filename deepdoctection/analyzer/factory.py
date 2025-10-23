@@ -46,7 +46,6 @@ from ..extern.model import ModelCatalog, ModelDownloadManager
 from ..extern.pdftext import PdfPlumberTextDetector
 from ..extern.tessocr import TesseractOcrDetector, TesseractRotationTransformer
 from ..extern.texocr import TextractOcrDetector
-from ..extern.tpdetect import TPFrcnnDetector
 from ..pipe.base import PipelineComponent
 from ..pipe.common import (
     AnnotationNmsService,
@@ -107,9 +106,9 @@ class ServiceFactory:
     def _build_layout_detector(
         config: AttrDict,
         mode: str,
-    ) -> Union[D2FrcnnDetector, TPFrcnnDetector, HFDetrDerivedDetector, D2FrcnnTracingDetector]:
+    ) -> Union[D2FrcnnDetector, HFDetrDerivedDetector, D2FrcnnTracingDetector]:
         """
-        Building a D2-Detector, a TP-Detector as Detr-Detector or a D2-Torch Tracing Detector according to
+        Building a D2-Detector, a Detr-Detector or a D2-Torch Tracing Detector according to
         the config.
 
         Args:
@@ -117,36 +116,17 @@ class ServiceFactory:
             mode: Either `LAYOUT`, `CELL`, or `ITEM`.
         """
         if config.LIB is None:
-            raise DependencyError("At least one of the env variables DD_USE_TF or DD_USE_TORCH must be set.")
+            raise DependencyError("At least DD_USE_TORCH must be set.")
 
-        weights = (
-            getattr(config.TF, mode).WEIGHTS
-            if config.LIB == "TF"
-            else (
-                getattr(config.PT, mode).WEIGHTS
-                if getattr(config.PT.ENFORCE_WEIGHTS, mode)
-                else getattr(config.PT, mode).WEIGHTS_TS
-            )
-        )
-        filter_categories = (
-            getattr(getattr(config.TF, mode), "FILTER")
-            if config.LIB == "TF"
-            else getattr(getattr(config.PT, mode), "FILTER")
-        )
+        weights = getattr(config, mode).WEIGHTS if getattr(config.ENFORCE_WEIGHTS, mode)\
+            else getattr(config, mode).WEIGHTS_TS
+        filter_categories = getattr(getattr(config, mode), "FILTER")
         config_path = ModelCatalog.get_full_path_configs(weights)
         weights_path = ModelDownloadManager.maybe_download_weights_and_configs(weights)
         profile = ModelCatalog.get_profile(weights)
         if config.LIB == "PT" and profile.padding is not None:
-            getattr(config.PT, mode).PADDING = profile.padding
+            getattr(config, mode).PADDING = profile.padding
         categories = profile.categories if profile.categories is not None else {}
-
-        if profile.model_wrapper in ("TPFrcnnDetector",):
-            return TPFrcnnDetector(
-                path_yaml=config_path,
-                path_weights=weights_path,
-                categories=categories,
-                filter_categories=filter_categories,
-            )
         if profile.model_wrapper in ("D2FrcnnDetector",):
             return D2FrcnnDetector(
                 path_yaml=config_path,
@@ -180,7 +160,7 @@ class ServiceFactory:
     @staticmethod
     def build_layout_detector(
         config: AttrDict, mode: str
-    ) -> Union[D2FrcnnDetector, TPFrcnnDetector, HFDetrDerivedDetector, D2FrcnnTracingDetector]:
+    ) -> Union[D2FrcnnDetector, HFDetrDerivedDetector, D2FrcnnTracingDetector]:
         """
         Building a layout detector according to the config.
 
@@ -257,10 +237,10 @@ class ServiceFactory:
             PadTransform: `PadTransform` instance.
         """
         top, right, bottom, left = (
-            getattr(config.PT, mode).PAD.TOP,
-            getattr(config.PT, mode).PAD.RIGHT,
-            getattr(config.PT, mode).PAD.BOTTOM,
-            getattr(config.PT, mode).PAD.LEFT,
+            getattr(config, mode).PAD.TOP,
+            getattr(config, mode).PAD.RIGHT,
+            getattr(config, mode).PAD.BOTTOM,
+            getattr(config, mode).PAD.LEFT,
         )
         return PadTransform(pad_top=top, pad_right=right, pad_bottom=bottom, pad_left=left)  #
 
@@ -292,7 +272,7 @@ class ServiceFactory:
             ImageLayoutService: `ImageLayoutService` instance.
         """
         padder = None
-        if getattr(config.PT, mode).PADDING:
+        if getattr(config, mode).PADDING:
             padder = ServiceFactory.build_padder(config, mode=mode)
         return ImageLayoutService(layout_detector=detector, to_image=True, crop_image=True, padder=padder)
 
@@ -412,11 +392,7 @@ class ServiceFactory:
         if config.OCR.USE_DOCTR:
             if config.LIB is None:
                 raise DependencyError("At least one of the env variables DD_USE_TF or DD_USE_TORCH must be set.")
-            weights = (
-                config.OCR.WEIGHTS.DOCTR_RECOGNITION.TF
-                if config.LIB == "TF"
-                else (config.OCR.WEIGHTS.DOCTR_RECOGNITION.PT)
-            )
+            weights = config.OCR.WEIGHTS.DOCTR_RECOGNITION
             weights_path = ModelDownloadManager.maybe_download_weights_and_configs(weights)
             profile = ModelCatalog.get_profile(weights)
             # get_full_path_configs will complete the path even if the model is not registered
@@ -465,7 +441,7 @@ class ServiceFactory:
         """
         if config.LIB is None:
             raise DependencyError("At least one of the env variables DD_USE_TF or DD_USE_TORCH must be set.")
-        weights = config.OCR.WEIGHTS.DOCTR_WORD.TF if config.LIB == "TF" else config.OCR.WEIGHTS.DOCTR_WORD.PT
+        weights = config.OCR.WEIGHTS.DOCTR_WORD
         weights_path = ModelDownloadManager.maybe_download_weights_and_configs(weights)
         profile = ModelCatalog.get_profile(weights)
         if profile.architecture is None:

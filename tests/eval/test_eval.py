@@ -28,13 +28,10 @@ from deepdoctection.datapoint import Image
 from deepdoctection.datasets import DatasetCategories
 from deepdoctection.eval import CocoMetric, Evaluator
 from deepdoctection.extern.base import DetectionResult
+from deepdoctection.extern.hfdetr import HFDetrDerivedDetector
+
 from deepdoctection.pipe.layout import ImageLayoutService
-from deepdoctection.utils import DatasetType, tensorpack_available
-
-from ..test_utils import set_num_gpu_to_one
-
-if tensorpack_available():
-    from deepdoctection.extern.tpdetect import TPFrcnnDetector
+from deepdoctection.utils import DatasetType, ObjectTypes
 
 
 class TestEvaluator:
@@ -43,10 +40,12 @@ class TestEvaluator:
     """
 
     @fixture
-    @patch("deepdoctection.extern.tp.tpcompat.get_num_gpu", MagicMock(side_effect=set_num_gpu_to_one))
+    @patch("deepdoctection.extern.hfdetr.HFDetrDerivedDetector.get_model", MagicMock(return_value=MagicMock()))
+    @patch("deepdoctection.extern.hfdetr.HFDetrDerivedDetector.get_pre_processor", MagicMock())
+    @patch("deepdoctection.extern.hfdetr.PretrainedConfig.from_pretrained", MagicMock())
     def setup_method(
         self,
-        path_to_tp_frcnn_yaml: str,
+        detr_categories: dict[int, ObjectTypes],
         image_with_anns: Image,
         categories: DatasetCategories,
         detection_results: List[DetectionResult],
@@ -62,10 +61,12 @@ class TestEvaluator:
         self._dataset.dataflow.categories = categories
         self._dataset.dataset_info.type = DatasetType.OBJECT_DETECTION
 
-        self._layout_detector = TPFrcnnDetector(
-            path_yaml=path_to_tp_frcnn_yaml,
+        self._layout_detector = HFDetrDerivedDetector(
+            path_config_json="",
             path_weights="",
-            categories=categories.get_categories(),
+            path_feature_extractor_config_json="",
+            categories=detr_categories,
+            device="cpu",
         )
         self._pipe_component = ImageLayoutService(self._layout_detector)
         self._pipe_component.predictor.predict = MagicMock(return_value=detection_results)  # type: ignore
@@ -73,7 +74,7 @@ class TestEvaluator:
 
         self.evaluator = Evaluator(self._dataset, self._pipe_component, self._metric, 1)
 
-    @mark.tf_deps
+    @mark.pt_deps
     def test_evaluator_runs_and_returns_distance(self, setup_method) -> None:  #  type: ignore  # pylint: disable=W0613
         """
         Testing evaluator runs and returns metric distance

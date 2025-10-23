@@ -89,8 +89,6 @@ _DEPS = [
     "tensorflow-addons>=0.17.1",
     "tf2onnx>=1.9.2",
     "python-doctr==0.10.0",
-    # fasttext-wheel is not compatible with numpy v2. Downgrading to numpy<1.x is required
-    # "fasttext-wheel==0.9.2",
     # dev dependencies
     "python-dotenv==1.0.0",
     "click",  # version will not break black
@@ -158,19 +156,15 @@ tf_deps = deps_list("tensorpack", "protobuf", "tensorflow-addons", "tf2onnx", "p
 # PyTorch dependencies
 pt_deps = deps_list("timm", "transformers", "accelerate", "python-doctr", "pycocotools")
 
-# Putting all together
-tf_deps = dist_deps + tf_deps + additional_deps
 pt_deps = dist_deps + pt_deps + additional_deps
 
 
 # dependencies for rtd. Only needed to create requirements.txt
-docs_deps = deps_list(
     "tensorpack",
     "boto3",
     "transformers",
     "accelerate",
     "pdfplumber",
-    "lxml",
     "lxml-stubs",
     "jdeskew",
     "jinja2",
@@ -211,7 +205,6 @@ EXTRA_DEPS = {
     "docs": docs_deps,
     "dev": dev_deps,
     "test": test_deps,
-}
 
 setup(
     name="deepdoctection",

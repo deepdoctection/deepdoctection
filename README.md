@@ -10,11 +10,10 @@
 ------------------------------------------------------------------------------------------------------------------------
 # NEW 
 
-Version `v.0.43` includes a significant redesign of the Analyzer's default configuration.  Key changes include:
+Version `v.1.0` includes a major refactor with TensorFlow support removal.  Key changes include:
 
-* More powerful models for Document Layout Analysis and OCR.
-* Expanded functionality.
-* Less dependencies.
+* PyTorch-only support for all deep learning models.
+
 
 ------------------------------------------------------------------------------------------------------------------------
 
@@ -32,8 +31,7 @@ It also provides a framework for training, evaluating and inferencing Document A
 
 - Document layout analysis and table recognition in PyTorch with 
 [**Detectron2**](https://github.com/facebookresearch/detectron2/tree/main/detectron2) and 
-[**Transformers**](https://github.com/huggingface/transformers)
-  or Tensorflow and [**Tensorpack**](https://github.com/tensorpack),
+[**Transformers**](https://github.com/huggingface/transformers),
 - OCR with support of [**Tesseract**](https://github.com/tesseract-ocr/tesseract), [**DocTr**](https://github.com/mindee/doctr) and 
   [**AWS Textract**](https://aws.amazon.com/textract/),
 - Document and token classification with the [**LayoutLM**](https://github.com/microsoft/unilm) family,
@@ -152,18 +150,17 @@ alt="text" width="40%">
 
 - Linux or macOS. Windows is not supported but there is a [Dockerfile](./docker/pytorch-cpu-jupyter/Dockerfile) available.
 - Python >= 3.9
-- 2.6 \<= PyTorch **or** 2.11 \<= Tensorflow < 2.16. (For lower Tensorflow versions the code will only run on a GPU).
-  Tensorflow support will be stopped from Python 3.11 onwards.
+- PyTorch >= 2.0
 - To fine-tune models, a GPU is recommended.
 
-| Task | PyTorch | Torchscript | Tensorflow |
-|---------------------------------------------|:-------:|----------------|:------------:|
-| Layout detection via Detectron2/Tensorpack | ✅ | ✅ (CPU only) | ✅ (GPU only) |
-| Table recognition via Detectron2/Tensorpack | ✅ | ✅ (CPU only) | ✅ (GPU only) |
-| Table transformer via Transformers | ✅ | ❌ | ❌ |
-| Deformable-Detr | ✅ | ❌ | ❌ |
-| DocTr | ✅ | ❌ | ✅ |
-| LayoutLM (v1, v2, v3, XLM) via Transformers | ✅ | ❌ | ❌ |
+| Task | PyTorch | Torchscript |
+|---------------------------------------------|:-------:|----------------|
+| Layout detection via Detectron2 | ✅ | ✅ (CPU only) |
+| Table recognition via Detectron2 | ✅ | ✅ (CPU only) |
+| Table transformer via Transformers | ✅ | ❌ |
+| Deformable-Detr | ✅ | ❌ |
+| DocTr | ✅ | ❌ |
+| LayoutLM (v1, v2, v3, XLM) via Transformers | ✅ | ❌ |
 
 ------------------------------------------------------------------------------------------
 
@@ -173,33 +170,21 @@ We recommend using a virtual environment.
 
 ## Get started installation
 
-For a simple setup which is enough to parse documents with the default setting, install the following:
-
-**PyTorch**
+For a simple setup which is enough to parse documents with the default setting, install the following
 
 ```
 pip install transformers
 pip install python-doctr==0.10.0 # If you use Python 3.10 or higher you can use the latest version.
-pip install deepdoctection
+pip install python-doctr[torch]
 ```
 
-**TensorFlow**
 
-```
-pip install tensorpack
-pip install deepdoctection
-pip install "numpy>=1.21,<2.0" --upgrade --force-reinstall  # because TF 2.11 does not support numpy 2.0 
-pip install "python-doctr==0.9.0"
-```
-
-Both setups are sufficient to run the [**introduction notebook**](https://github.com/deepdoctection/notebooks/blob/main/Get_Started.ipynb).
+This setup is sufficient to run the [**introduction notebook**](https://github.com/deepdoctection/notebooks/blob/main/Get_Started.ipynb).
 
 ### Full installation
 
 The following installation will give you ALL models available within the Deep Learning framework as well as all models
 that are independent of Tensorflow/PyTorch.
-
-**PyTorch**
 
 First install **Detectron2** separately as it is not distributed via PyPi. Check the instruction
 [here](https://detectron2.readthedocs.io/en/latest/tutorials/install.html) or try:
@@ -214,12 +199,6 @@ Then install **deep**doctection with all its dependencies:
 pip install deepdoctection[pt]
 ```
 
-**Tensorflow**
-
-```
-pip install deepdoctection[tf]
-```
-
 
 For further information, please consult the [**full installation instructions**](https://deepdoctection.readthedocs.io/en/latest/install/).
 
@@ -232,18 +211,9 @@ Download the repository or clone via
 git clone https://github.com/deepdoctection/deepdoctection.git
 ```
 
-**PyTorch**
-
 ```
 cd deepdoctection
 pip install ".[pt]" # or "pip install -e .[pt]"
-```
-
-**Tensorflow**
-
-```
-cd deepdoctection
-pip install ".[tf]" # or "pip install -e .[tf]"
 ```
 
 
@@ -251,12 +221,6 @@ pip install ".[tf]" # or "pip install -e .[tf]"
 
 Pre-existing Docker images can be downloaded from the [Docker hub](https://hub.docker.com/r/deepdoctection/deepdoctection).
 
-```
-docker pull deepdoctection/deepdoctection:<release_tag> 
-```
-
-Use the Docker compose file `./docker/pytorch-gpu/docker-compose.yaml`.
-In the `.env` file provided, specify the host directory where **deep**doctection's cache should be stored.
 Additionally, specify a working directory to mount files to be processed into the container.
 
 ```

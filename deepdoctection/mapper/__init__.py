@@ -31,7 +31,6 @@ from .misc import *
 from .pascalstruct import *
 from .prodigystruct import *
 from .pubstruct import *
-from .tpstruct import *
 from .xfundstruct import *
 
 # Mapper

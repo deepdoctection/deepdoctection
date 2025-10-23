@@ -27,10 +27,9 @@ import os
 from typing import Optional
 
 from ..extern.pt.ptutils import get_torch_device
-from ..extern.tp.tfutils import disable_tp_layer_logging, get_tf_device
 from ..pipe.doctectionpipe import DoctectionPipe
 from ..utils.env_info import ENV_VARS_TRUE
-from ..utils.file_utils import detectron2_available, tensorpack_available
+from ..utils.file_utils import detectron2_available
 from ..utils.fs import get_configs_dir_path, get_package_path, maybe_copy_config_to_cache
 from ..utils.logger import LoggingRecord, logger
 from ..utils.metacfg import set_config_by_yaml
@@ -92,10 +91,8 @@ def get_dd_analyzer(
         DoctectionPipe: A `DoctectionPipe` instance with given configs.
     """
     config_overwrite = [] if config_overwrite is None else config_overwrite
-    if os.environ.get("DD_USE_TF", "0") in ENV_VARS_TRUE:
-        lib = "TF"
-        device = get_tf_device()
-    elif os.environ.get("DD_USE_TORCH", "0") in ENV_VARS_TRUE:
+
+    if os.environ.get("DD_USE_TORCH", "0") in ENV_VARS_TRUE:
         lib = "PT"
         device = get_torch_device()
     else:
@@ -114,11 +111,11 @@ def get_dd_analyzer(
     cfg.LANGUAGE = None
     cfg.LIB = lib
     cfg.DEVICE = device
-    if not detectron2_available() or cfg.PT.LAYOUT.WEIGHTS is None:
+    if cfg.PT.LAYOUT.WEIGHTS is None:
         cfg.PT.ENFORCE_WEIGHTS.LAYOUT = False
-    if not detectron2_available() or cfg.PT.ITEM.WEIGHTS is None:
+    if cfg.PT.ITEM.WEIGHTS is None:
         cfg.PT.ENFORCE_WEIGHTS.ITEM = False
-    if not detectron2_available() or cfg.PT.CELL.WEIGHTS is None:
+    if cfg.PT.CELL.WEIGHTS is None:
         cfg.PT.ENFORCE_WEIGHTS.CELL = False
 
     if config_overwrite:
@@ -127,9 +124,5 @@ def get_dd_analyzer(
 
     config_sanity_checks()
     logger.info(LoggingRecord(f"Config: \n {str(cfg)}", cfg.to_dict()))  # type: ignore
-
-    # will silent all TP logging while building the tower
-    if tensorpack_available():
-        disable_tp_layer_logging()
 
     return ServiceFactory.build_analyzer(cfg)

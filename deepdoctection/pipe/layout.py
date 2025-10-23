@@ -79,8 +79,8 @@ class ImageLayoutService(PipelineComponent):
 
     Example:
         ```python
-        d_items = TPFrcnnDetector(item_config_path, item_weights_path, {1: 'row', 2: 'column'})
-        item_component = ImageLayoutService(d_items)
+        d_layout = D2FrcnnDetector(config_path, weights_path, categories)
+        layout_component = ImageLayoutService(d_layout)
         ```
     """
 

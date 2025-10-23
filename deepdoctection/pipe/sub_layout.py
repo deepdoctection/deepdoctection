@@ -167,7 +167,7 @@ class SubImageLayoutService(PipelineComponent):
     Example:
         ```python
         detect_result_generator = DetectResultGenerator(categories_items)
-        d_items = TPFrcnnDetector(item_config_path, item_weights_path, {1: LayoutType.row,
+        d_items = D2FrcnnDetector(item_config_path, item_weights_path, {1: LayoutType.row,
         2: LayoutType.column})
         item_component = SubImageLayoutService(d_items, LayoutType.table, detect_result_generator)
         ```
