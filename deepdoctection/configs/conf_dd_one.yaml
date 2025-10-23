@@ -66,51 +66,46 @@ OCR:
   USE_TESSERACT: false
   USE_TEXTRACT: false
   WEIGHTS:
-    DOCTR_RECOGNITION:
-      PT: doctr/crnn_vgg16_bn/pt/crnn_vgg16_bn-9762b0b0.pt
-      TF: doctr/crnn_vgg16_bn/tf/crnn_vgg16_bn-76b7f2c6.zip
-    DOCTR_WORD:
-      PT: doctr/db_resnet50/pt/db_resnet50-ac60cadc.pt
-      TF: doctr/db_resnet50/tf/db_resnet50-adcafc63.zip
+    DOCTR_RECOGNITION: doctr/crnn_vgg16_bn/pt/crnn_vgg16_bn-9762b0b0.pt
+    DOCTR_WORD: doctr/db_resnet50/pt/db_resnet50-ac60cadc.pt
 PDF_MINER:
   X_TOLERANCE: 3
   Y_TOLERANCE: 3
-PT:
-  CELL:
-    FILTER: null
-    PAD:
-      BOTTOM: 60
-      LEFT: 60
-      RIGHT: 60
-      TOP: 60
-    PADDING: false
-    WEIGHTS: cell/d2_model_1849999_cell_inf_only.pt
-    WEIGHTS_TS: cell/d2_model_1849999_cell_inf_only.ts
-  ENFORCE_WEIGHTS:
-    CELL: true
-    ITEM: true
-    LAYOUT: true
-  ITEM:
-    FILTER:
-    - table
-    PAD:
-      BOTTOM: 60
-      LEFT: 60
-      RIGHT: 60
-      TOP: 60
-    PADDING: false
-    WEIGHTS: deepdoctection/tatr_tab_struct_v2/pytorch_model.bin
-    WEIGHTS_TS: item/d2_model_1639999_item_inf_only.ts
-  LAYOUT:
-    FILTER: null
-    PAD:
-      BOTTOM: 0
-      LEFT: 0
-      RIGHT: 0
-      TOP: 0
-    PADDING: false
-    WEIGHTS: Aryn/deformable-detr-DocLayNet/model.safetensors
-    WEIGHTS_TS: layout/d2_model_0829999_layout_inf_only.ts
+CELL:
+  FILTER: null
+  PAD:
+    BOTTOM: 60
+    LEFT: 60
+    RIGHT: 60
+    TOP: 60
+  PADDING: false
+  WEIGHTS: cell/d2_model_1849999_cell_inf_only.pt
+  WEIGHTS_TS: cell/d2_model_1849999_cell_inf_only.ts
+ENFORCE_WEIGHTS:
+  CELL: true
+  ITEM: true
+  LAYOUT: true
+ITEM:
+  FILTER:
+  - table
+  PAD:
+    BOTTOM: 60
+    LEFT: 60
+    RIGHT: 60
+    TOP: 60
+  PADDING: false
+  WEIGHTS: deepdoctection/tatr_tab_struct_v2/pytorch_model.bin
+  WEIGHTS_TS: item/d2_model_1639999_item_inf_only.ts
+LAYOUT:
+  FILTER: null
+  PAD:
+    BOTTOM: 0
+    LEFT: 0
+    RIGHT: 0
+    TOP: 0
+  PADDING: false
+  WEIGHTS: Aryn/deformable-detr-DocLayNet/model.safetensors
+  WEIGHTS_TS: layout/d2_model_0829999_layout_inf_only.ts
 SEGMENTATION:
   ASSIGNMENT_RULE: ioa
   CELL_NAMES:
@@ -176,16 +171,6 @@ TEXT_ORDERING:
   - spanning
   - row_header
   - cell
-TF:
-  CELL:
-    FILTER: null
-    WEIGHTS: cell/model-1800000_inf_only.data-00000-of-00001
-  ITEM:
-    FILTER: null
-    WEIGHTS: item/model-1620000_inf_only.data-00000-of-00001
-  LAYOUT:
-    FILTER: null
-    WEIGHTS: layout/model-800000_inf_only.data-00000-of-00001
 USE_LAYOUT: true
 USE_LAYOUT_LINK: false
 USE_LAYOUT_NMS: true

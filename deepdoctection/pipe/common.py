@@ -39,8 +39,6 @@ from .registry import pipeline_component_registry
 
 if os.environ.get("DD_USE_TORCH"):
     from ..mapper.d2struct import pt_nms_image_annotations as nms_image_annotations
-elif os.environ.get("DD_USE_TF"):
-    from ..mapper.tpstruct import tf_nms_image_annotations as nms_image_annotations
 
 
 @pipeline_component_registry.register("ImageCroppingService")

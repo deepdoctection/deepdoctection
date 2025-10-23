@@ -27,59 +27,6 @@ from deepdoctection.datapoint import Page
 from ..test_utils import collect_datapoint_from_dataflow, get_integration_test_path
 
 
-@mark.deprecated
-def test_dd_tf_analyzer_builds_and_process_image_layout_correctly() -> None:
-    """
-    Analyzer integration test with setting USE_TABLE_SEGMENTATION = False and USE_OCR = False
-    """
-
-    # Arrange
-    analyzer = get_dd_analyzer(
-        config_overwrite=[
-            "USE_TABLE_SEGMENTATION=False",
-            "USE_OCR=False",
-            "PT.LAYOUT.WEIGHTS=layout/d2_model_0829999_layout_inf_only.pt",
-            "PT.ITEM.WEIGHTS=item/d2_model_1639999_item_inf_only.pt",
-            "PT.ITEM.FILTER=None",
-            "PT.LAYOUT.PAD.TOP=60",
-            "PT.LAYOUT.PAD.RIGHT=60",
-            "PT.LAYOUT.PAD.BOTTOM=60",
-            "PT.LAYOUT.PAD.LEFT=60",
-            "SEGMENTATION.REMOVE_IOU_THRESHOLD_ROWS=0.001",
-            "SEGMENTATION.REMOVE_IOU_THRESHOLD_COLS=0.001",
-            "WORD_MATCHING.THRESHOLD=0.6",
-            "WORD_MATCHING.PARENTAL_CATEGORIES=['text','title','list','figure','cell','spanning']",
-            "TEXT_ORDERING.TEXT_BLOCK_CATEGORIES=['text','title','list','figure','cell','spanning']",
-            "TEXT_ORDERING.FLOATING_TEXT_BLOCK_CATEGORIES=['text','title','list','figure']",
-            "TEXT_ORDERING.INCLUDE_RESIDUAL_TEXT_CONTAINER=False",
-            "USE_LAYOUT_LINK=False",
-            "LAYOUT_LINK.PARENTAL_CATEGORIES=[]",
-            "LAYOUT_LINK.CHILD_CATEGORIES=[]",
-            "OCR.USE_DOCTR=False",
-            "OCR.USE_TESSERACT=True",
-            "USE_LAYOUT_NMS=False",
-            "USE_TABLE_REFINEMENT=True",
-            "USE_LINE_MATCHER=False",
-            "LAYOUT_NMS_PAIRS.COMBINATIONS=None",
-            "LAYOUT_NMS_PAIRS.THRESHOLDS=None",
-            "LAYOUT_NMS_PAIRS.PRIORITY=None",
-            "OCR.WEIGHTS.DOCTR_RECOGNITION.PT=doctr/crnn_vgg16_bn/pt/crnn_vgg16_bn-9762b0b0.pt",
-        ]
-    )
-
-    # Act
-    df = analyzer.analyze(path=get_integration_test_path())
-    output = collect_datapoint_from_dataflow(df)
-
-    # Assert
-    assert len(output) == 1
-    page = output[0]
-    assert isinstance(page, Page)
-    # 9 for d2 and 10 for tp model
-    assert len(page.layouts) in {9, 10, 12, 16}
-    assert len(page.tables) == 1
-    assert page.height == 2339
-    assert page.width == 1654
 
 
 @mark.pt_deps
@@ -93,13 +40,13 @@ def test_dd_analyzer_with_tatr() -> None:
         config_overwrite=[
             "USE_TABLE_SEGMENTATION=True",
             "USE_OCR=False",
-            "PT.LAYOUT.WEIGHTS=microsoft/table-transformer-detection/pytorch_model.bin",
-            "PT.ITEM.WEIGHTS=microsoft/table-transformer-structure-recognition/pytorch_model.bin",
-            "PT.ITEM.FILTER=['table']",
-            "PT.LAYOUT.PAD.TOP=60",
-            "PT.LAYOUT.PAD.RIGHT=60",
-            "PT.LAYOUT.PAD.BOTTOM=60",
-            "PT.LAYOUT.PAD.LEFT=60",
+            "LAYOUT.WEIGHTS=microsoft/table-transformer-detection/pytorch_model.bin",
+            "ITEM.WEIGHTS=microsoft/table-transformer-structure-recognition/pytorch_model.bin",
+            "ITEM.FILTER=['table']",
+            "LAYOUT.PAD.TOP=60",
+            "LAYOUT.PAD.RIGHT=60",
+            "LAYOUT.PAD.BOTTOM=60",
+            "LAYOUT.PAD.LEFT=60",
             "SEGMENTATION.REMOVE_IOU_THRESHOLD_ROWS=0.001",
             "SEGMENTATION.REMOVE_IOU_THRESHOLD_COLS=0.001",
             "WORD_MATCHING.THRESHOLD=0.6",
@@ -118,7 +65,7 @@ def test_dd_analyzer_with_tatr() -> None:
             "LAYOUT_NMS_PAIRS.COMBINATIONS=None",
             "LAYOUT_NMS_PAIRS.THRESHOLDS=None",
             "LAYOUT_NMS_PAIRS.PRIORITY=None",
-            "OCR.WEIGHTS.DOCTR_RECOGNITION.PT=doctr/crnn_vgg16_bn/pt/crnn_vgg16_bn-9762b0b0.pt",
+            "OCR.WEIGHTS.DOCTR_RECOGNITION=doctr/crnn_vgg16_bn/pt/crnn_vgg16_bn-9762b0b0.pt",
         ]
     )
 
@@ -152,13 +99,13 @@ def test_dd_analyzer_with_doctr() -> None:
             "OCR.USE_TESSERACT=False",
             "OCR.USE_DOCTR=True",
             "TEXT_ORDERING.INCLUDE_RESIDUAL_TEXT_CONTAINER=True",
-            "PT.LAYOUT.WEIGHTS=layout/d2_model_0829999_layout_inf_only.pt",
-            "PT.ITEM.WEIGHTS=item/d2_model_1639999_item_inf_only.pt",
-            "PT.ITEM.FILTER=None",
-            "PT.LAYOUT.PAD.TOP=60",
-            "PT.LAYOUT.PAD.RIGHT=60",
-            "PT.LAYOUT.PAD.BOTTOM=60",
-            "PT.LAYOUT.PAD.LEFT=60",
+            "LAYOUT.WEIGHTS=layout/d2_model_0829999_layout_inf_only.pt",
+            "ITEM.WEIGHTS=item/d2_model_1639999_item_inf_only.pt",
+            "ITEM.FILTER=None",
+            "LAYOUT.PAD.TOP=60",
+            "LAYOUT.PAD.RIGHT=60",
+            "LAYOUT.PAD.BOTTOM=60",
+            "LAYOUT.PAD.LEFT=60",
             "SEGMENTATION.REMOVE_IOU_THRESHOLD_ROWS=0.001",
             "SEGMENTATION.REMOVE_IOU_THRESHOLD_COLS=0.001",
             "WORD_MATCHING.THRESHOLD=0.6",
@@ -174,7 +121,7 @@ def test_dd_analyzer_with_doctr() -> None:
             "LAYOUT_NMS_PAIRS.COMBINATIONS=None",
             "LAYOUT_NMS_PAIRS.THRESHOLDS=None",
             "LAYOUT_NMS_PAIRS.PRIORITY=None",
-            "OCR.WEIGHTS.DOCTR_RECOGNITION.PT=doctr/crnn_vgg16_bn/pt/crnn_vgg16_bn-9762b0b0.pt",
+            "OCR.WEIGHTS.DOCTR_RECOGNITION=doctr/crnn_vgg16_bn/pt/crnn_vgg16_bn-9762b0b0.pt",
         ]
     )
 
@@ -190,57 +137,6 @@ def test_dd_analyzer_with_doctr() -> None:
     print(page.text_no_line_break)
     assert len(page.text_no_line_break) in {5285}
 
-
-@mark.tf_deps
-def test_dd_tf_analyzer_with_doctr() -> None:
-    """
-    Analyzer integration test with setting USE_LAYOUT=False and USE_TABLE_SEGMENTATION=False and OCR.USE_DOCTR=True
-    """
-
-    # Arrange
-    analyzer = get_dd_analyzer(
-        config_overwrite=[
-            "USE_LAYOUT=False",
-            "USE_TABLE_SEGMENTATION=False",
-            "OCR.USE_TESSERACT=False",
-            "OCR.USE_DOCTR=True",
-            "TEXT_ORDERING.INCLUDE_RESIDUAL_TEXT_CONTAINER=True",
-            "PT.LAYOUT.WEIGHTS=layout/d2_model_0829999_layout_inf_only.pt",
-            "PT.ITEM.WEIGHTS=item/d2_model_1639999_item_inf_only.pt",
-            "PT.ITEM.FILTER=None",
-            "PT.LAYOUT.PAD.TOP=60",
-            "PT.LAYOUT.PAD.RIGHT=60",
-            "PT.LAYOUT.PAD.BOTTOM=60",
-            "PT.LAYOUT.PAD.LEFT=60",
-            "SEGMENTATION.REMOVE_IOU_THRESHOLD_ROWS=0.001",
-            "SEGMENTATION.REMOVE_IOU_THRESHOLD_COLS=0.001",
-            "WORD_MATCHING.THRESHOLD=0.6",
-            "WORD_MATCHING.PARENTAL_CATEGORIES=['text','title','list','figure','cell','spanning']",
-            "TEXT_ORDERING.TEXT_BLOCK_CATEGORIES=['text','title','list','figure','cell','spanning']",
-            "TEXT_ORDERING.FLOATING_TEXT_BLOCK_CATEGORIES=['text','title','list','figure']",
-            "USE_LAYOUT_LINK=False",
-            "LAYOUT_LINK.PARENTAL_CATEGORIES=[]",
-            "LAYOUT_LINK.CHILD_CATEGORIES=[]",
-            "USE_LAYOUT_NMS=False",
-            "USE_TABLE_REFINEMENT=True",
-            "USE_LINE_MATCHER=False",
-            "LAYOUT_NMS_PAIRS.COMBINATIONS=None",
-            "LAYOUT_NMS_PAIRS.THRESHOLDS=None",
-            "LAYOUT_NMS_PAIRS.PRIORITY=None",
-            "OCR.WEIGHTS.DOCTR_RECOGNITION.PT=doctr/crnn_vgg16_bn/pt/crnn_vgg16_bn-9762b0b0.pt",
-        ]
-    )
-
-    # Act
-    df = analyzer.analyze(path=get_integration_test_path())
-    output = collect_datapoint_from_dataflow(df)
-
-    # Assert
-    assert len(output) == 1
-    page = output[0]
-    assert isinstance(page, Page)
-    assert len(page.layouts) in {53, 55, 63}
-    assert page.text_no_line_break not in ("",)
 
 
 @mark.pt_deps

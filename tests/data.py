@@ -19,7 +19,7 @@
 Dataclasses for generating fixtures in conftest
 """
 from dataclasses import dataclass
-from typing import List, Tuple, Union
+from typing import List, Tuple, Union, Mapping
 
 import numpy as np
 
@@ -1847,5 +1847,15 @@ class TestType(ObjectTypes):
     report_type = "report_type"
     fund_name = "fund_name"
 
+def get_detr_categories() -> Mapping[int, ObjectTypes]:
+    """detr_categories"""
+    return {
+        1: LayoutType.TABLE,
+        2: LayoutType.COLUMN,
+        3: LayoutType.ROW,
+        4: CellType.COLUMN_HEADER,
+        5: CellType.PROJECTED_ROW_HEADER,
+        6: CellType.SPANNING,
+    }
 
 # pylint: enable=invalid-name, disallowed-name

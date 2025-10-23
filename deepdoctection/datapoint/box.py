@@ -157,6 +157,25 @@ def iou(boxes1: npt.NDArray[float32], boxes2: npt.NDArray[float32]) -> npt.NDArr
     return np_iou(boxes1, boxes2)
 
 
+def ioa(boxes1: npt.NDArray[float32], boxes2: npt.NDArray[float32]) -> npt.NDArray[float32]:
+    """
+    Computes pairwise intersection-over-area between box collections.
+
+    Intersection-over-area (ioa) between two boxes box1 and box2 is defined as
+    their intersection area over box2's area. Note that ioa is not symmetric,
+    that is, IOA(box1, box2) != IOA(box2, box1).
+
+    :param boxes1: a numpy array with shape [N, 4] holding N boxes.
+    :param boxes2: a numpy array with shape [M, 4] holding N boxes.
+
+    :return: A numpy array with shape [N, M] representing pairwise ioa scores.
+    """
+
+    intersect = intersection(boxes1, boxes2)
+    inv_areas = np.expand_dims(1.0 / area(boxes2), axis=0)
+    return intersect * inv_areas
+
+
 RELATIVE_COORD_SCALE_FACTOR = 10**8
 
 

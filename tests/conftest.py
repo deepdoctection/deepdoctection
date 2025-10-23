@@ -58,6 +58,7 @@ from .data import (
     get_layoutlm_input,
     get_sequence_class_result,
     get_token_class_result,
+    get_detr_categories
 )
 from .mapper.data import DatapointImage
 from .test_utils import get_test_path
@@ -77,13 +78,6 @@ def fixture_image_results() -> DatapointImage:
     """
     return DatapointImage()
 
-
-@fixture(name="path_to_tp_frcnn_yaml")
-def fixture_path_to_tp_frcnn_yaml() -> PathLikeOrStr:
-    """
-    path to tp frcnn yaml file
-    """
-    return get_test_path() / "configs/tp/conf_frcnn_layout.yaml"
 
 
 @fixture(name="path_to_d2_frcnn_yaml")
@@ -529,6 +523,14 @@ def fixture_get_annotation_maps() -> dict[str, list[AnnotationMap]]:
 def fixture_service_id_to_ann_id() -> dict[str, list[str]]:
     """fixture service_id_to_ann_id"""
     return Annotations().get_service_id_to_ann_id()
+
+
+@fixture(name="detr_categories")
+def fixture_detr_categories() -> Mapping[int, ObjectTypes]:
+    """
+    fixture object types
+    """
+    return get_detr_categories()
 
 
 def pytest_sessionstart() -> None:

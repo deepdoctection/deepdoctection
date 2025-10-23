@@ -313,24 +313,6 @@ ModelCatalog.load_profiles_from_file(dd_profile_path)
 ModelCatalog.load_profiles_from_file(os.environ.get("MODEL_CATALOG", None))
 
 
-def get_tp_weight_names(name: str) -> list[str]:
-    """
-    Given a path to some model weights it will return all file names according to TP naming convention
-
-    Args:
-        name: TP model name
-
-    Returns:
-        A list of TP file names
-    """
-    _, file_name = os.path.split(name)
-    prefix, _ = file_name.split(".")
-    weight_names = []
-    for suffix in ["data-00000-of-00001", "index"]:
-        weight_names.append(prefix + "." + suffix)
-
-    return weight_names
-
 
 def print_model_infos(add_description: bool = True, add_config: bool = True, add_categories: bool = True) -> None:
     """
@@ -404,18 +386,15 @@ class ModelDownloadManager:
             if not profile.hf_repo_id and not profile.urls:
                 return absolute_path_weights
             # determine the right model name
-            if profile.tp_model:
-                file_names = get_tp_weight_names(name)
+            model_name = profile.hf_model_name
+            if model_name is None:
+                # second try. Check if a url is provided
+                if profile.urls is None:
+                    raise ValueError("hf_model_name and urls cannot be both None")
+                for url in profile.urls:
+                    file_names.append(url.split("/")[-1].split("&")[0])
             else:
-                model_name = profile.hf_model_name
-                if model_name is None:
-                    # second try. Check if a url is provided
-                    if profile.urls is None:
-                        raise ValueError("hf_model_name and urls cannot be both None")
-                    for url in profile.urls:
-                        file_names.append(url.split("/")[-1].split("&")[0])
-                else:
-                    file_names.append(model_name)
+                file_names.append(model_name)
             if profile.hf_repo_id:
                 if not os.path.isfile(absolute_path_weights):
                     ModelDownloadManager.load_model_from_hf_hub(profile, absolute_path_weights, file_names)

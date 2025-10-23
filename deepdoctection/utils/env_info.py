@@ -91,7 +91,6 @@ from .file_utils import (
     fasttext_available,
     get_poppler_version,
     get_tesseract_version,
-    get_tf_version,
     jdeskew_available,
     lxml_available,
     opencv_available,
@@ -103,9 +102,7 @@ from .file_utils import (
     qpdf_available,
     scipy_available,
     sklearn_available,
-    tensorpack_available,
     tesseract_available,
-    tf_available,
     transformers_available,
     wandb_available,
 )
@@ -148,12 +145,6 @@ def collect_installed_dependencies(data: KeyValEnvInfos) -> KeyValEnvInfos:
         A list of tuples containing the name of the library and the version (if available).
     """
 
-    if tensorpack_available():
-        import tensorpack  # pylint: disable=E0401
-
-        data.append(("Tensorpack", tensorpack.__version__))
-    else:
-        data.append(("Tensorpack", "None"))
 
     if opencv_available():
         import cv2
@@ -294,67 +285,6 @@ def detect_compute_compatibility(cuda_home: Optional[PathLikeOrStr], so_file: Op
         return str(so_file)
 
 
-# Copied from https://github.com/tensorpack/tensorpack/blob/master/tensorpack/tfutils/collect_env.py
-def tf_info(data: KeyValEnvInfos) -> KeyValEnvInfos:
-    """
-    Returns a list of (key, value) pairs containing TensorFlow information.
-
-    Args:
-        data: A list of tuples to dump all collected package information such as the name and the version.
-
-    Returns:
-        A list of tuples containing all the collected information.
-    """
-    if tf_available():
-        import tensorflow as tf  # type: ignore # pylint: disable=E0401
-
-        os.environ["TENSORFLOW_AVAILABLE"] = "1"
-
-        data.append(("Tensorflow", tf.__version__))
-        if version.parse(get_tf_version()) > version.parse("2.4.1"):
-            os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
-        try:
-            import tensorflow.python.util.deprecation as deprecation  # type: ignore # pylint: disable=E0401,R0402,E0611
-
-            deprecation._PRINT_DEPRECATION_WARNINGS = False  # pylint: disable=W0212
-        except Exception:  # pylint: disable=W0703
-            try:
-                from tensorflow.python.util import deprecation  # type: ignore # pylint: disable=E0401,E0611
-
-                deprecation._PRINT_DEPRECATION_WARNINGS = False  # pylint: disable=W0212
-            except Exception:  # pylint: disable=W0703
-                pass
-    else:
-        data.append(("Tensorflow", "None"))
-        return data
-
-    from tensorflow.python.platform import build_info  # type: ignore # pylint: disable=E0401,E0611
-
-    try:
-        for key, value in list(build_info.build_info.items()):
-            if key == "is_cuda_build":
-                data.append(("TF compiled with CUDA", value))
-                if value and len(tf.config.list_physical_devices("GPU")):
-                    os.environ["USE_CUDA"] = "1"
-            elif key == "cuda_version":
-                data.append(("TF built with CUDA", value))
-            elif key == "cudnn_version":
-                data.append(("TF built with CUDNN", value))
-            elif key == "cuda_compute_capabilities":
-                data.append(("TF compute capabilities", ",".join([k.replace("compute_", "") for k in value])))
-            elif key == "is_rocm_build":
-                data.append(("TF compiled with ROCM", value))
-        return data
-    except AttributeError:
-        pass
-    try:
-        data.append(("TF built with CUDA", build_info.cuda_version_number))
-        data.append(("TF built with CUDNN", build_info.cudnn_version_number))
-    except AttributeError:
-        pass
-    return data
-
-
 # Heavily inspired by https://github.com/facebookresearch/detectron2/blob/main/detectron2/utils/collect_env.py
 def pt_info(data: KeyValEnvInfos) -> KeyValEnvInfos:
     """
@@ -484,26 +414,12 @@ def set_dl_env_vars() -> None:
         ```
     """
 
-    if os.environ.get("PYTORCH_AVAILABLE") and os.environ.get("DD_USE_TORCH") is None:
+    if os.environ.get("PYTORCH_AVAILABLE"):
         os.environ["DD_USE_TORCH"] = "1"
         os.environ["USE_TORCH"] = "1"
-    if os.environ.get("TENSORFLOW_AVAILABLE") and os.environ.get("DD_USE_TF") is None:
-        os.environ["DD_USE_TF"] = "1"
-        os.environ["USE_TF"] = "1"
 
-    if os.environ.get("DD_USE_TORCH", "0") in ENV_VARS_TRUE and os.environ.get("DD_USE_TF", "0") in ENV_VARS_TRUE:
-        logger.warning(
-            "Both DD_USE_TORCH and DD_USE_TF are set. Defaulting to PyTorch. If you want a different "
-            "behaviour, set DD_USE_TORCH to None before importing deepdoctection."
-        )
-        os.environ["DD_USE_TF"] = "0"
-        os.environ["USE_TF"] = "0"
-
-    if (
-        os.environ.get("PYTORCH_AVAILABLE") not in ENV_VARS_TRUE
-        and os.environ.get("TENSORFLOW_AVAILABLE") not in ENV_VARS_TRUE
-    ):
-        logger.warning(LoggingRecord(msg="Neither Tensorflow or Pytorch are available."))
+    if os.environ.get("PYTORCH_AVAILABLE") not in ENV_VARS_TRUE:
+        logger.warning(LoggingRecord(msg="Pytorch is not available."))
 
 
 def collect_env_info() -> str:
@@ -553,7 +469,6 @@ def collect_env_info() -> str:
         data.append(("Plattform", sys.platform + " Plattform not supported."))
 
     data = pt_info(data)
-    data = tf_info(data)
     set_dl_env_vars()
 
     data = collect_installed_dependencies(data)

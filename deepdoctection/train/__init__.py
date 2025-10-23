@@ -27,6 +27,3 @@ if detectron2_available():
 if transformers_available():
     from .hf_detr_train import train_hf_detr
     from .hf_layoutlm_train import train_hf_layoutlm
-
-if tensorpack_available():
-    from .tp_frcnn_train import train_faster_rcnn

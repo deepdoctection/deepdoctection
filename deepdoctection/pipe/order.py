@@ -30,11 +30,10 @@ from typing import Any, Optional, Sequence, Union
 import numpy as np
 
 from ..datapoint.annotation import ImageAnnotation
-from ..datapoint.box import BoundingBox, merge_boxes
+from ..datapoint.box import BoundingBox, merge_boxes, ioa as np_ioa
 from ..datapoint.image import Image, MetaAnnotation
 from ..datapoint.view import IMAGE_DEFAULTS
 from ..extern.base import DetectionResult
-from ..extern.tp.tpfrcnn.utils.np_box_ops import ioa as np_ioa
 from ..pipe.base import PipelineComponent
 from ..pipe.registry import pipeline_component_registry
 from ..utils.logger import LoggingRecord, logger

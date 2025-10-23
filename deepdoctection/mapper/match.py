@@ -26,9 +26,8 @@ from numpy.typing import NDArray
 from scipy.spatial import distance
 
 from ..datapoint.annotation import ImageAnnotation
-from ..datapoint.box import iou
+from ..datapoint.box import iou, ioa as np_ioa
 from ..datapoint.image import Image
-from ..extern.tp.tpfrcnn.utils.np_box_ops import ioa as np_ioa
 from ..utils.settings import TypeOrStr
 
 

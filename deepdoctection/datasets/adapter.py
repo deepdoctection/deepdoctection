@@ -36,8 +36,6 @@ from .registry import get_dataset
 
 with try_import() as import_guard:
     from torch.utils.data import IterableDataset
-if not import_guard.is_successful():
-    from ..utils.mocks import IterableDataset  # type: ignore
 
 
 class DatasetAdapter(IterableDataset):  # type: ignore

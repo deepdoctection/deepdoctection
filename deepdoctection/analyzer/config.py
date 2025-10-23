@@ -52,7 +52,6 @@ Attributes:
     DEVICE:
         Device configuration.
         For PyTorch: torch.device("cpu"), torch.device("mps"), or torch.device("cuda")
-        For TensorFlow: tf.device("/cpu:0") or tf.device("/gpu:0")
 
 ---
 
@@ -99,21 +98,10 @@ Attributes:
 ---
 ## Layout Detection Models
 
-### TensorFlow Layout Configuration
-
-    TF.LAYOUT.WEIGHTS:
-        Relevant when LIB = TF. Specifies the layout detection model.
-        This model should detect multiple or single objects across an entire page.
-        Currently, only one default model is supported.
-
-    TF.LAYOUT.FILTER:
-        Filters out unnecessary categories from the layout detection model output.
-        Accepts either a list of strings (e.g., ['list', 'figure']) or a list of ObjectTypes
-        (e.g., [LayoutType.LIST, LayoutType.FIGURE]).
 
 ### PyTorch Layout Configuration
 
-    PT.ENFORCE_WEIGHTS.LAYOUT:
+    ENFORCE_WEIGHTS.LAYOUT:
         Relevant when LIB = PT. Allows selection between two model formats:
         1. Standard PyTorch weights (.pt or .safetensors), or
         2. TorchScript weights (.ts), which require only the Torch runtime and not the model implementation.
@@ -121,7 +109,7 @@ Attributes:
         The get_dd_analyzer() function will set PT.ENFORCE_WEIGHTS.LAYOUT = False automatically
         if Detectron2 is not installed or PT.LAYOUT.WEIGHTS is None.
 
-    PT.LAYOUT.WEIGHTS:
+    LAYOUT.WEIGHTS:
         Specifies the PyTorch layout detection model (standard weights).
         Must detect single or multiple objects across the full page.
         Acceptable formats: .pt or .safetensors (e.g.,
@@ -129,23 +117,23 @@ Attributes:
         microsoft/table-transformer-detection/pytorch_model.bin,
         Aryn/deformable-detr-DocLayNet/model.safetensors).
 
-    PT.LAYOUT.WEIGHTS_TS:
+    LAYOUT.WEIGHTS_TS:
         Specifies the TorchScript version of the layout model.
         Must detect single or multiple objects across the full page.
         Acceptable format: .ts files (e.g., layout/d2_model_0829999_layout_inf_only.ts).
 
-    PT.LAYOUT.FILTER:
+    LAYOUT.FILTER:
         Filters out unwanted categories from the model's predictions.
         Accepts either string values (e.g., ['list', 'figure']) or ObjectTypes
         (e.g., [LayoutType.LIST, LayoutType.FIGURE]).
 
-    PT.LAYOUT.PADDING:
+    LAYOUT.PADDING:
         Adds padding to the image, which may be required for some models such as
         microsoft/table-transformer-detection/pytorch_model.bin to improve detection accuracy.
         Padding values should not be manually set; they are defined in the ModelProfile inside ServiceFactory.
         If PT.LAYOUT.PADDING is True, you must also set the values for PT.LAYOUT.PAD.TOP, .RIGHT, .BOTTOM, and .LEFT.
 
-    PT.LAYOUT.PAD.*:
+    LAYOUT.PAD.*:
         Padding values for each edge of the image (TOP, RIGHT, BOTTOM, LEFT).
 
 ---
@@ -166,44 +154,35 @@ Attributes:
 ---
 ## Table Components Configuration
 
-### TensorFlow Item (Row/Column) Detection
-
-    TF.ITEM.WEIGHTS:
-        Relevant when LIB = TF. Specifies the item detection model (for rows and columns).
-        Currently, only the default model is supported.
-
-    TF.ITEM.FILTER:
-        Filters out unnecessary categories from the item detection model.
-        Accepts either a list of strings (e.g., ['row', 'column']) or ObjectTypes.
 
 ### PyTorch Item (Row/Column) Detection
 
-    PT.ENFORCE_WEIGHTS.ITEM:
+    ENFORCE_WEIGHTS.ITEM:
         Relevant when LIB = PT. Use either TorchScript weights via PT.ITEM.WEIGHTS_TS
         or standard PyTorch weights via PT.ITEM.WEIGHTS (.pt or .safetensors).
         If PT.ENFORCE_WEIGHTS.ITEM = True, PT.ITEM.WEIGHTS will take precedence over TorchScript.
 
-    PT.ITEM.WEIGHTS:
+    ITEM.WEIGHTS:
         Specifies the PyTorch model weights for item detection.
         Use either .pt or .safetensors files.
 
-    PT.ITEM.WEIGHTS_TS:
+    ITEM.WEIGHTS_TS:
         Specifies the TorchScript model for item detection.
         Use .ts files for deployment without model implementation dependencies.
 
-    PT.ITEM.FILTER:
+    ITEM.FILTER:
         Filters out unnecessary categories from the item detection model.
         For example, the model microsoft/table-transformer-structure-recognition/pytorch_model.bin
         predicts not only rows and columns, but also tables. To prevent redundant outputs, use:
         PT.ITEM.FILTER = ['table']
 
-    PT.ITEM.PADDING:
+    ITEM.PADDING:
         Enables image padding for item detection. Required for models such as
         microsoft/table-transformer-structure-recognition/pytorch_model.bin to optimize accuracy.
         Padding values are derived from the ModelProfile within the ServiceFactory and should not be manually set.
         If PT.ITEM.PADDING = True, you must define all edge values: TOP, RIGHT, BOTTOM, and LEFT.
 
-    PT.ITEM.PAD.*:
+    ITEM.PAD.*:
         Padding values for each edge of the sub-image (TOP, RIGHT, BOTTOM, LEFT).
 
 ### Cell Detection Configuration
@@ -212,39 +191,29 @@ Configuration for the second SubImagePipelineComponent.
 This is only used in the original Deepdoctection table recognition approach,
 not with the Table Transformer method.
 
-### TensorFlow Cell Detection
-
-    TF.CELL.WEIGHTS:
-        Configuration for the second SubImagePipelineComponent.
-        This is only used in the original Deepdoctection table recognition approach,
-        not with the Table Transformer method.
-        The CELL configuration structure mirrors that of the ITEM component.
-
-    TF.CELL.FILTER:
-        Filters out unnecessary categories from the cell detection model output.
 
 ### PyTorch Cell Detection
 
-    PT.ENFORCE_WEIGHTS.CELL:
-        Determines whether PT.CELL.WEIGHTS should take priority over PT.CELL.WEIGHTS_TS.
+    ENFORCE_WEIGHTS.CELL:
+        Determines whether CELL.WEIGHTS should take priority over PT.CELL.WEIGHTS_TS.
         If set to True, standard PyTorch weights are enforced.
 
-    PT.CELL.WEIGHTS:
+    CELL.WEIGHTS:
         Specifies the PyTorch model weights for cell detection using standard formats (.pt or
         .safetensors).
 
-    PT.CELL.WEIGHTS_TS:
+    CELL.WEIGHTS_TS:
         Specifies the TorchScript model for cell detection (.ts format).
 
-    PT.CELL.FILTER:
+    CELL.FILTER:
         Filters out unwanted categories from the cell detection model.
 
-    PT.CELL.PADDING:
+    CELL.PADDING:
         Enables padding for the sub-image used in cell detection.
         Required for certain models to enhance prediction quality.
         If set to True, padding values for all four edges must be defined.
 
-    PT.CELL.PAD.*:
+    CELL.PAD.*:
         Padding values for each edge of the sub-image used in cell detection (TOP, RIGHT, BOTTOM, LEFT).
 
 ---
@@ -371,16 +340,10 @@ All other engines must be set to False.
 DocTR OCR uses a two-stage process: word detection followed by text recognition.
 The following weights configure each stage for TensorFlow and PyTorch.
 
-    OCR.WEIGHTS.DOCTR_WORD.TF:
-        TensorFlow weights for the word detection model used by DocTR.
-
-    OCR.WEIGHTS.DOCTR_WORD.PT:
+    OCR.WEIGHTS.DOCTR_WORD:
         PyTorch weights for the word detection model used by DocTR.
 
-    OCR.WEIGHTS.DOCTR_RECOGNITION.TF:
-        TensorFlow weights for the text recognition model used by DocTR.
-
-    OCR.WEIGHTS.DOCTR_RECOGNITION.PT:
+    OCR.WEIGHTS.DOCTR_RECOGNITION:
         PyTorch weights for the text recognition model used by DocTR.
 
 ---
@@ -530,23 +493,13 @@ cfg.USE_LM_TOKEN_CLASS = False
 # based on Tesseract ('tesseract'), and a rotation estimator based on DocTr ('doctr').
 cfg.ROTATOR.MODEL = "tesseract"
 
-# Relevant when LIB = TF. Specifies the layout detection model.
-# This model should detect multiple or single objects across an entire page.
-# Currently, only one default model is supported.
-cfg.TF.LAYOUT.WEIGHTS = "layout/model-800000_inf_only.data-00000-of-00001"
-
-# Filters out unnecessary categories from the layout detection model output.
-# Accepts either a list of strings (e.g., ['list', 'figure']) or a list of ObjectTypes
-# (e.g., [LayoutType.LIST, LayoutType.FIGURE]).
-cfg.TF.LAYOUT.FILTER = None
-
 # Relevant when LIB = PT. Allows selection between two model formats:
 # 1. Standard PyTorch weights (.pt or .safetensors), or
 # 2. TorchScript weights (.ts), which require only the Torch runtime and not the model implementation.
 # If PT.ENFORCE_WEIGHTS.LAYOUT is set to True, PT.LAYOUT.WEIGHTS will take precedence.
 # The get_dd_analyzer() function will set PT.ENFORCE_WEIGHTS.LAYOUT = False automatically
 # if Detectron2 is not installed or PT.LAYOUT.WEIGHTS is None.
-cfg.PT.ENFORCE_WEIGHTS.LAYOUT = True
+cfg.ENFORCE_WEIGHTS.LAYOUT = True
 
 # Specifies the PyTorch layout detection model (standard weights).
 # Must detect single or multiple objects across the full page.
@@ -554,35 +507,35 @@ cfg.PT.ENFORCE_WEIGHTS.LAYOUT = True
 # layout/d2_model_0829999_layout_inf_only.pt,
 # microsoft/table-transformer-detection/pytorch_model.bin,
 # Aryn/deformable-detr-DocLayNet/model.safetensors).
-cfg.PT.LAYOUT.WEIGHTS = "Aryn/deformable-detr-DocLayNet/model.safetensors"
+cfg.LAYOUT.WEIGHTS = "Aryn/deformable-detr-DocLayNet/model.safetensors"
 
 # Specifies the TorchScript version of the layout model.
 # Must detect single or multiple objects across the full page.
 # Acceptable format: .ts files (e.g., layout/d2_model_0829999_layout_inf_only.ts).
-cfg.PT.LAYOUT.WEIGHTS_TS = "layout/d2_model_0829999_layout_inf_only.ts"
+cfg.LAYOUT.WEIGHTS_TS = "layout/d2_model_0829999_layout_inf_only.ts"
 
 # Filters out unwanted categories from the model’s predictions.
 # Accepts either string values (e.g., ['list', 'figure']) or ObjectTypes
 # (e.g., [LayoutType.LIST, LayoutType.FIGURE]).
-cfg.PT.LAYOUT.FILTER = None
+cfg.LAYOUT.FILTER = None
 
 # Adds padding to the image, which may be required for some models such as
 # microsoft/table-transformer-detection/pytorch_model.bin to improve detection accuracy.
 # Padding values should not be manually set; they are defined in the ModelProfile inside ServiceFactory.
 # If PT.LAYOUT.PADDING is True, you must also set the values for PT.LAYOUT.PAD.TOP, .RIGHT, .BOTTOM, and .LEFT.
-cfg.PT.LAYOUT.PADDING = False
+cfg.LAYOUT.PADDING = False
 
 # Padding value for the top edge of the image. Required by some layout detection models.
-cfg.PT.LAYOUT.PAD.TOP = 0
+cfg.LAYOUT.PAD.TOP = 0
 
 # Padding value for the right edge of the image. Required by some layout detection models.
-cfg.PT.LAYOUT.PAD.RIGHT = 0
+cfg.LAYOUT.PAD.RIGHT = 0
 
 # Padding value for the bottom edge of the image. Required by some layout detection models.
-cfg.PT.LAYOUT.PAD.BOTTOM = 0
+cfg.LAYOUT.PAD.BOTTOM = 0
 
 # Padding value for the left edge of the image. Required by some layout detection models.
-cfg.PT.LAYOUT.PAD.LEFT = 0
+cfg.LAYOUT.PAD.LEFT = 0
 
 # Non-Maximum Suppression (NMS) configuration for overlapping layout elements.
 # For each element pair, define:
@@ -624,89 +577,76 @@ cfg.LAYOUT_NMS_PAIRS.PRIORITY = [
     LayoutType.FIGURE,
 ]
 
-# Relevant when LIB = TF. Specifies the item detection model (for rows and columns).
-# Currently, only the default model is supported.
-cfg.TF.ITEM.WEIGHTS = "item/model-1620000_inf_only.data-00000-of-00001"
-
-# Filters out unnecessary categories from the item detection model.
-# Accepts either a list of strings (e.g., ['row', 'column']) or ObjectTypes.
-cfg.TF.ITEM.FILTER = None
-
-# Relevant when LIB = PT. Use either TorchScript weights via PT.ITEM.WEIGHTS_TS
-# or standard PyTorch weights via PT.ITEM.WEIGHTS (.pt or .safetensors).
-# If PT.ENFORCE_WEIGHTS.ITEM = True, PT.ITEM.WEIGHTS will take precedence over TorchScript.
-cfg.PT.ENFORCE_WEIGHTS.ITEM = True
+# Relevant when LIB = PT. Use either TorchScript weights via ITEM.WEIGHTS_TS
+# or standard PyTorch weights via ITEM.WEIGHTS (.pt or .safetensors).
+# If ENFORCE_WEIGHTS.ITEM = True, ITEM.WEIGHTS will take precedence over TorchScript.
+cfg.ENFORCE_WEIGHTS.ITEM = True
 
 # Specifies the PyTorch model weights for item detection.
 # Use either .pt or .safetensors files.
-cfg.PT.ITEM.WEIGHTS = "deepdoctection/tatr_tab_struct_v2/model.safetensors"
+cfg.ITEM.WEIGHTS = "deepdoctection/tatr_tab_struct_v2/model.safetensors"
 
 # Specifies the TorchScript model for item detection.
 # Use .ts files for deployment without model implementation dependencies.
-cfg.PT.ITEM.WEIGHTS_TS = "item/d2_model_1639999_item_inf_only.ts"
+cfg.ITEM.WEIGHTS_TS = "item/d2_model_1639999_item_inf_only.ts"
 
 # Filters out unnecessary categories from the item detection model.
 # For example, the model microsoft/table-transformer-structure-recognition/pytorch_model.bin
 # predicts not only rows and columns, but also tables. To prevent redundant outputs, use:
 # PT.ITEM.FILTER = ['table']
-cfg.PT.ITEM.FILTER = ["table"]
+cfg.ITEM.FILTER = ["table"]
 
 # Enables image padding for item detection. Required for models such as
 # microsoft/table-transformer-structure-recognition/pytorch_model.bin to optimize accuracy.
 # Padding values are derived from the ModelProfile within the ServiceFactory and should not be manually set.
 # If PT.ITEM.PADDING = True, you must define all edge values: TOP, RIGHT, BOTTOM, and LEFT.
-cfg.PT.ITEM.PADDING = False
+cfg.ITEM.PADDING = False
 
 # Padding value for the top edge of the sub-image used in item detection.
-cfg.PT.ITEM.PAD.TOP = 60
+cfg.ITEM.PAD.TOP = 60
 
 # Padding value for the right edge of the sub-image used in item detection.
-cfg.PT.ITEM.PAD.RIGHT = 60
+cfg.ITEM.PAD.RIGHT = 60
 
 # Padding value for the bottom edge of the sub-image used in item detection.
-cfg.PT.ITEM.PAD.BOTTOM = 60
+cfg.ITEM.PAD.BOTTOM = 60
 
 # Padding value for the left edge of the sub-image used in item detection.
-cfg.PT.ITEM.PAD.LEFT = 60
+cfg.ITEM.PAD.LEFT = 60
 
 # Configuration for the second SubImagePipelineComponent.
 # This is only used in the original Deepdoctection table recognition approach,
 # not with the Table Transformer method.
-# The CELL configuration structure mirrors that of the ITEM component.
-cfg.TF.CELL.WEIGHTS = "cell/model-1800000_inf_only.data-00000-of-00001"
 
-# Filters out unnecessary categories from the cell detection model output.
-cfg.TF.CELL.FILTER = None
-
-# Determines whether PT.CELL.WEIGHTS should take priority over PT.CELL.WEIGHTS_TS.
+# Determines whether CELL.WEIGHTS should take priority over CELL.WEIGHTS_TS.
 # If set to True, standard PyTorch weights are enforced.
-cfg.PT.ENFORCE_WEIGHTS.CELL = True
+cfg.ENFORCE_WEIGHTS.CELL = True
 
 # Specifies the PyTorch model weights for cell detection using standard formats (.pt or .safetensors).
-cfg.PT.CELL.WEIGHTS = "cell/d2_model_1849999_cell_inf_only.pt"
+cfg.CELL.WEIGHTS = "cell/d2_model_1849999_cell_inf_only.pt"
 
 # Specifies the TorchScript model for cell detection (.ts format).
-cfg.PT.CELL.WEIGHTS_TS = "cell/d2_model_1849999_cell_inf_only.ts"
+cfg.CELL.WEIGHTS_TS = "cell/d2_model_1849999_cell_inf_only.ts"
 
 # Filters out unwanted categories from the cell detection model.
-cfg.PT.CELL.FILTER = None
+cfg.CELL.FILTER = None
 
 # Enables padding for the sub-image used in cell detection.
 # Required for certain models to enhance prediction quality.
 # If set to True, padding values for all four edges must be defined.
-cfg.PT.CELL.PADDING = False
+cfg.CELL.PADDING = False
 
 # Padding value for the top edge of the sub-image used in cell detection.
-cfg.PT.CELL.PAD.TOP = 60
+cfg.CELL.PAD.TOP = 60
 
 # Padding value for the right edge of the sub-image used in cell detection.
-cfg.PT.CELL.PAD.RIGHT = 60
+cfg.CELL.PAD.RIGHT = 60
 
 # Padding value for the bottom edge of the sub-image used in cell detection.
-cfg.PT.CELL.PAD.BOTTOM = 60
+cfg.CELL.PAD.BOTTOM = 60
 
 # Padding value for the left edge of the sub-image used in cell detection.
-cfg.PT.CELL.PAD.LEFT = 60
+cfg.CELL.PAD.LEFT = 60
 
 # Specifies the rule used to assign detected cells to rows and columns.
 # Can be either 'iou' (Intersection over Union) or 'ioa' (Intersection over Area).
@@ -829,17 +769,11 @@ cfg.OCR.USE_TEXTRACT = False
 # DocTR OCR uses a two-stage process: word detection followed by text recognition.
 # The following weights configure each stage for TensorFlow and PyTorch.
 
-# TensorFlow weights for the word detection model used by DocTR.
-cfg.OCR.WEIGHTS.DOCTR_WORD.TF = "doctr/db_resnet50/tf/db_resnet50-adcafc63.zip"
-
 # PyTorch weights for the word detection model used by DocTR.
-cfg.OCR.WEIGHTS.DOCTR_WORD.PT = "doctr/db_resnet50/pt/db_resnet50-ac60cadc.pt"
-
-# TensorFlow weights for the text recognition model used by DocTR.
-cfg.OCR.WEIGHTS.DOCTR_RECOGNITION.TF = "doctr/crnn_vgg16_bn/tf/crnn_vgg16_bn-76b7f2c6.zip"
+cfg.OCR.WEIGHTS.DOCTR_WORD = "doctr/db_resnet50/pt/db_resnet50-ac60cadc.pt"
 
 # PyTorch weights for the text recognition model used by DocTR.
-cfg.OCR.WEIGHTS.DOCTR_RECOGNITION.PT = "doctr/crnn_vgg16_bn/pt/crnn_vgg16_bn-9762b0b0.pt"
+cfg.OCR.WEIGHTS.DOCTR_RECOGNITION = "doctr/crnn_vgg16_bn/pt/crnn_vgg16_bn-9762b0b0.pt"
 
 # Specifies the annotation type used as a text container.
 # A text container is typically an ImageAnnotation generated by the OCR engine or PDF mining tool.
