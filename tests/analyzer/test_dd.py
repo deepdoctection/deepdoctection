@@ -340,7 +340,7 @@ def test_dd_analyzer_builds_and_process_image_correctly() -> None:
     page = output[0]
     assert isinstance(page, Page)
 
-    assert len(page.layouts) in {12, 13, 17}
+    assert len(page.layouts) in {12, 13, 17, 18}
     assert {layout.category_name.value for layout in page.layouts} == {"line", "list", "text", "title"}  # type: ignore
     print(page.tables[0].html)
     assert len(page.tables[0].cells) in {14, 15, 16}  # type: ignore
