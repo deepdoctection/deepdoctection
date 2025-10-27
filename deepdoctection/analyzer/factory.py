@@ -22,7 +22,7 @@
 from __future__ import annotations
 
 from os import environ
-from typing import TYPE_CHECKING, Literal, Union
+from typing import TYPE_CHECKING, Any, Literal, Mapping, Optional, Sequence, Union
 
 from lazy_imports import try_import
 
@@ -42,7 +42,7 @@ from ..extern.hflayoutlm import (
     get_tokenizer_from_model_class,
 )
 from ..extern.hflm import HFLmSequenceClassifier, HFLmTokenClassifier
-from ..extern.model import ModelCatalog, ModelDownloadManager
+from ..extern.model import ModelCatalog, ModelDownloadManager, ModelProfile
 from ..extern.pdftext import PdfPlumberTextDetector
 from ..extern.tessocr import TesseractOcrDetector, TesseractRotationTransformer
 from ..extern.texocr import TextractOcrDetector
@@ -68,7 +68,7 @@ from ..pipe.transform import SimpleTransformService
 from ..utils.error import DependencyError
 from ..utils.fs import get_configs_dir_path
 from ..utils.metacfg import AttrDict
-from ..utils.settings import CellType, LayoutType, Relationships
+from ..utils.settings import CellType, LayoutType, ObjectTypes, Relationships
 from ..utils.transform import PadTransform
 
 with try_import() as image_guard:
@@ -104,20 +104,14 @@ class ServiceFactory:
     """
 
     @staticmethod
-    def _build_layout_detector(
-        config: AttrDict,
-        mode: str,
-    ) -> Union[D2FrcnnDetector, TPFrcnnDetector, HFDetrDerivedDetector, D2FrcnnTracingDetector]:
+    def _get_layout_detector_kwargs_from_config(config: AttrDict, mode: str) -> dict[str, Any]:
         """
-        Building a D2-Detector, a TP-Detector as Detr-Detector or a D2-Torch Tracing Detector according to
-        the config.
+        Extracting layout detector kwargs from config.
 
         Args:
             config: Configuration object.
             mode: Either `LAYOUT`, `CELL`, or `ITEM`.
         """
-        if config.LIB is None:
-            raise DependencyError("At least one of the env variables DD_USE_TF or DD_USE_TORCH must be set.")
 
         weights = (
             getattr(config.TF, mode).WEIGHTS
@@ -128,16 +122,52 @@ class ServiceFactory:
                 else getattr(config.PT, mode).WEIGHTS_TS
             )
         )
+
         filter_categories = (
             getattr(getattr(config.TF, mode), "FILTER")
             if config.LIB == "TF"
             else getattr(getattr(config.PT, mode), "FILTER")
         )
-        config_path = ModelCatalog.get_full_path_configs(weights)
-        weights_path = ModelDownloadManager.maybe_download_weights_and_configs(weights)
+
         profile = ModelCatalog.get_profile(weights)
+
         if config.LIB == "PT" and profile.padding is not None:
             getattr(config.PT, mode).PADDING = profile.padding
+
+        device = config.DEVICE
+
+        return {
+            "weights": weights,
+            "filter_categories": filter_categories,
+            "profile": profile,
+            "device": device,
+            "lib": config.LIB,
+        }
+
+    @staticmethod
+    def _build_layout_detector(
+        weights: str,
+        filter_categories: list[str],
+        profile: ModelProfile,
+        device: Literal["cpu", "cuda"],
+        lib: Literal["TF", "PT", None],
+    ) -> Union[D2FrcnnDetector, TPFrcnnDetector, HFDetrDerivedDetector, D2FrcnnTracingDetector]:
+        """
+        Building a D2-Detector, a TP-Detector as Detr-Detector or a D2-Torch Tracing Detector according to
+        the config.
+
+        Args:
+            weights: Weights for the layout detector.
+            filter_categories: Categories to filter during detection.
+            profile: Model profile for the layout detector.
+            device: Device to use for computation.
+            lib: Deep learning library to use.
+        """
+        if lib is None:
+            raise DependencyError("At least one of the env variables DD_USE_TF or DD_USE_TORCH must be set.")
+
+        config_path = ModelCatalog.get_full_path_configs(weights)
+        weights_path = ModelDownloadManager.maybe_download_weights_and_configs(weights)
         categories = profile.categories if profile.categories is not None else {}
 
         if profile.model_wrapper in ("TPFrcnnDetector",):
@@ -152,7 +182,7 @@ class ServiceFactory:
                 path_yaml=config_path,
                 path_weights=weights_path,
                 categories=categories,
-                device=config.DEVICE,
+                device=device,
                 filter_categories=filter_categories,
             )
         if profile.model_wrapper in ("D2FrcnnTracingDetector",):
@@ -169,7 +199,7 @@ class ServiceFactory:
                 path_weights=weights_path,
                 path_feature_extractor_config_json=preprocessor_config,
                 categories=categories,
-                device=config.DEVICE,
+                device=device,
                 filter_categories=filter_categories,
             )
         raise TypeError(
@@ -188,7 +218,8 @@ class ServiceFactory:
             config: Configuration object.
             mode: Either `LAYOUT`, `CELL`, or `ITEM`.
         """
-        return ServiceFactory._build_layout_detector(config, mode)
+        layout_detector_kwargs = ServiceFactory._get_layout_detector_kwargs_from_config(config, mode)
+        return ServiceFactory._build_layout_detector(**layout_detector_kwargs)
 
     @staticmethod
     def _build_rotation_detector(rotator_name: Literal["tesseract", "doctr"]) -> RotationTransformer:
@@ -245,24 +276,36 @@ class ServiceFactory:
         return ServiceFactory._build_transform_service(transform_predictor)
 
     @staticmethod
-    def _build_padder(config: AttrDict, mode: str) -> PadTransform:
+    def _get_padder_kwargs_from_config(config: AttrDict, mode: str) -> dict[str, Any]:
         """
-        Building a padder according to the config.
+        Extracting padder kwargs from config.
 
         Args:
             config: Configuration object.
             mode: Either `LAYOUT`, `CELL`, or `ITEM`.
+        """
+        return {
+            "top": getattr(config.PT, mode).PAD.TOP,
+            "right": getattr(config.PT, mode).PAD.RIGHT,
+            "bottom": getattr(config.PT, mode).PAD.BOTTOM,
+            "left": getattr(config.PT, mode).PAD.LEFT,
+        }
+
+    @staticmethod
+    def _build_padder(top: int, right: int, bottom: int, left: int) -> PadTransform:
+        """
+        Building a padder according to the config.
+
+        Args:
+            top: Padding on the top side.
+            right: Padding on the right side.
+            bottom: Padding on the bottom side.
+            left: Padding on the left side.
 
         Returns:
             PadTransform: `PadTransform` instance.
         """
-        top, right, bottom, left = (
-            getattr(config.PT, mode).PAD.TOP,
-            getattr(config.PT, mode).PAD.RIGHT,
-            getattr(config.PT, mode).PAD.BOTTOM,
-            getattr(config.PT, mode).PAD.LEFT,
-        )
-        return PadTransform(pad_top=top, pad_right=right, pad_bottom=bottom, pad_left=left)  #
+        return PadTransform(pad_top=top, pad_right=right, pad_bottom=bottom, pad_left=left)
 
     @staticmethod
     def build_padder(config: AttrDict, mode: str) -> PadTransform:
@@ -276,24 +319,37 @@ class ServiceFactory:
         Returns:
             PadTransform: `PadTransform` instance.
         """
-        return ServiceFactory._build_padder(config, mode)
+        padder_kwargs = ServiceFactory._get_padder_kwargs_from_config(config, mode)
+        return ServiceFactory._build_padder(**padder_kwargs)
 
     @staticmethod
-    def _build_layout_service(config: AttrDict, detector: ObjectDetector, mode: str) -> ImageLayoutService:
+    def _get_layout_service_kwargs_from_config(config: AttrDict, mode: str) -> dict[str, Any]:
         """
-        Building a layout service with a given detector.
+        Extracting layout service kwargs from config.
 
         Args:
             config: Configuration object.
-            detector: Will be passed to the `ImageLayoutService`.
             mode: Either `LAYOUT`, `CELL`, or `ITEM`.
-
-        Returns:
-            ImageLayoutService: `ImageLayoutService` instance.
         """
         padder = None
         if getattr(config.PT, mode).PADDING:
             padder = ServiceFactory.build_padder(config, mode=mode)
+        return {
+            "padder": padder,
+        }
+
+    @staticmethod
+    def _build_layout_service(detector: ObjectDetector, padder: PadTransform) -> ImageLayoutService:
+        """
+        Building a layout service with a given detector.
+
+        Args:
+            detector: Will be passed to the `ImageLayoutService`.
+            padder: PadTransform instance.
+
+        Returns:
+            ImageLayoutService: `ImageLayoutService` instance.
+        """
         return ImageLayoutService(layout_detector=detector, to_image=True, crop_image=True, padder=padder)
 
     @staticmethod
@@ -309,27 +365,51 @@ class ServiceFactory:
         Returns:
             ImageLayoutService: `ImageLayoutService` instance.
         """
-        return ServiceFactory._build_layout_service(config, detector, mode)
+        layout_service_kwargs = ServiceFactory._get_layout_service_kwargs_from_config(config, mode)
+        return ServiceFactory._build_layout_service(detector, **layout_service_kwargs)
 
     @staticmethod
-    def _build_layout_nms_service(config: AttrDict) -> AnnotationNmsService:
+    def _get_layout_nms_service_kwargs_from_config(config: AttrDict) -> dict[str, Any]:
         """
-        Building a NMS service for layout annotations.
+        Extracting layout NMS service kwargs from config.
 
         Args:
             config: Configuration object.
-
-        Returns:
-            AnnotationNmsService: NMS service instance.
         """
+
         if not isinstance(config.LAYOUT_NMS_PAIRS.COMBINATIONS, list) and not isinstance(
             config.LAYOUT_NMS_PAIRS.COMBINATIONS[0], list
         ):
             raise ValueError("LAYOUT_NMS_PAIRS must be a list of lists")
+
+        return {
+            "nms_pairs": config.LAYOUT_NMS_PAIRS.COMBINATIONS,
+            "thresholds": config.LAYOUT_NMS_PAIRS.THRESHOLDS,
+            "priority": config.LAYOUT_NMS_PAIRS.PRIORITY,
+        }
+
+    @staticmethod
+    def _build_layout_nms_service(
+        nms_pairs: Sequence[Sequence[Union[ObjectTypes, str]]],
+        thresholds: Union[float, Sequence[float]],
+        priority: Sequence[Union[ObjectTypes, str, None]],
+    ) -> AnnotationNmsService:
+        """
+        Building a NMS service for layout annotations.
+
+        Args:
+            nms_pairs: Pairs of categories for NMS.
+            thresholds: NMS thresholds.
+            priority: Priority of categories.
+
+        Returns:
+            AnnotationNmsService: NMS service instance.
+        """
+
         return AnnotationNmsService(
-            nms_pairs=config.LAYOUT_NMS_PAIRS.COMBINATIONS,
-            thresholds=config.LAYOUT_NMS_PAIRS.THRESHOLDS,
-            priority=config.LAYOUT_NMS_PAIRS.PRIORITY,
+            nms_pairs=nms_pairs,
+            thresholds=thresholds,
+            priority=priority,
         )
 
     @staticmethod
@@ -343,29 +423,41 @@ class ServiceFactory:
         Returns:
             AnnotationNmsService: NMS service instance.
         """
-        return ServiceFactory._build_layout_nms_service(config)
+        nms_service_kwargs = ServiceFactory._get_layout_nms_service_kwargs_from_config(config)
+        return ServiceFactory._build_layout_nms_service(**nms_service_kwargs)
 
     @staticmethod
-    def _build_sub_image_service(config: AttrDict, detector: ObjectDetector, mode: str) -> SubImageLayoutService:
+    def _get_sub_image_layout_service_kwargs_from_config(detector: ObjectDetector, mode: str) -> dict[str, Any]:
         """
-        Building a sub image layout service with a given detector.
+        Extracting sub image service kwargs from config.
 
         Args:
-            config: Configuration object.
-            detector: Will be passed to the `SubImageLayoutService`.
             mode: Either `LAYOUT`, `CELL`, or `ITEM`.
-
-        Returns:
-            SubImageLayoutService: `SubImageLayoutService` instance.
         """
+
         exclude_category_names = []
-        padder = None
         if mode == "ITEM":
             if detector.__class__.__name__ in ("HFDetrDerivedDetector",):
                 exclude_category_names.extend(
                     [LayoutType.TABLE, CellType.COLUMN_HEADER, CellType.PROJECTED_ROW_HEADER, CellType.SPANNING]
                 )
-                padder = ServiceFactory.build_padder(config, mode)
+        return {"exclude_category_names": exclude_category_names}
+
+    @staticmethod
+    def _build_sub_image_service(
+        detector: ObjectDetector, padder: Optional[PadTransform], exclude_category_names: list[ObjectTypes]
+    ) -> SubImageLayoutService:
+        """
+        Building a sub image layout service with a given detector.
+
+        Args:
+            detector: Will be passed to the `SubImageLayoutService`.
+            padder: PadTransform instance.
+            exclude_category_names: Category names to exclude during detection.
+
+        Returns:
+            SubImageLayoutService: `SubImageLayoutService` instance.
+        """
         detect_result_generator = DetectResultGenerator(
             categories_name_as_key=detector.categories.get_categories(as_dict=True, name_as_key=True),
             exclude_category_names=exclude_category_names,
@@ -390,26 +482,37 @@ class ServiceFactory:
         Returns:
             SubImageLayoutService: `SubImageLayoutService` instance.
         """
-        return ServiceFactory._build_sub_image_service(config, detector, mode)
+        padder = None
+        if mode == "ITEM":
+            padder = ServiceFactory.build_padder(config, mode)
+        sub_image_layout_service_kwargs = ServiceFactory._get_sub_image_layout_service_kwargs_from_config(
+            detector, mode
+        )
+        return ServiceFactory._build_sub_image_service(detector, padder, **sub_image_layout_service_kwargs)
 
     @staticmethod
-    def _build_ocr_detector(config: AttrDict) -> Union[TesseractOcrDetector, DoctrTextRecognizer, TextractOcrDetector]:
+    def _get_ocr_detector_kwargs_from_config(config: AttrDict) -> dict[str, Any]:
         """
-        Building OCR predictor.
+        Extracting OCR detector kwargs from config.
 
         Args:
             config: Configuration object.
-
-        Returns:
-            Union[TesseractOcrDetector, DoctrTextRecognizer, TextractOcrDetector]: OCR detector instance.
         """
+        ocr_config_path = None
+        weights = None
+        languages = None
+        credentials_kwargs = None
+        use_tesseract = False
+        use_doctr = False
+        use_textract = False
+
         if config.OCR.USE_TESSERACT:
+            use_tesseract = True
             ocr_config_path = get_configs_dir_path() / config.OCR.CONFIG.TESSERACT
-            return TesseractOcrDetector(
-                ocr_config_path,
-                config_overwrite=[f"LANGUAGES={config.LANGUAGE}"] if config.LANGUAGE is not None else None,
-            )
+            languages = [f"LANGUAGES={config.LANGUAGE}"] if config.LANGUAGES is not None else None
+
         if config.OCR.USE_DOCTR:
+            use_doctr = True
             if config.LIB is None:
                 raise DependencyError("At least one of the env variables DD_USE_TF or DD_USE_TORCH must be set.")
             weights = (
@@ -417,6 +520,63 @@ class ServiceFactory:
                 if config.LIB == "TF"
                 else (config.OCR.WEIGHTS.DOCTR_RECOGNITION.PT)
             )
+        if config.OCR.USE_TEXTRACT:
+            use_textract = True
+            credentials_kwargs = {
+                "aws_access_key_id": environ.get("AWS_ACCESS_KEY", None),
+                "aws_secret_access_key": environ.get("AWS_SECRET_KEY", None),
+                "config": Config(region_name=environ.get("AWS_REGION", None)),
+            }
+
+        return {
+            "use_tesseract": use_tesseract,
+            "use_doctr": use_doctr,
+            "use_textract": use_textract,
+            "ocr_config_path": ocr_config_path,
+            "languages": languages,
+            "weights": weights,
+            "credentials_kwargs": credentials_kwargs,
+            "lib": config.LIB,
+            "device": config.DEVICE,
+        }
+
+    @staticmethod
+    def _build_ocr_detector(
+        use_tesseract: bool,
+        use_doctr: bool,
+        use_textract: bool,
+        ocr_config_path: str,
+        languages: Union[list[str], None],
+        weights: str,
+        credentials_kwargs: dict[str, Any],
+        lib: Literal["TF", "PT", None],
+        device: Literal["cuda", "cpu"],
+    ) -> Union[TesseractOcrDetector, DoctrTextRecognizer, TextractOcrDetector]:
+        """
+        Building OCR predictor.
+
+        Args:
+            use_tesseract: Whether to use Tesseract OCR.
+            use_doctr: Whether to use Doctr OCR.
+            use_textract: Whether to use Textract OCR.
+            ocr_config_path: Path to OCR config.
+            languages: Languages for OCR.
+            weights: Weights for Doctr OCR.
+            credentials_kwargs: Credentials for Textract OCR.
+            lib: Deep learning library to use.
+            device: Device to use for computation.
+
+        Returns:
+            Union[TesseractOcrDetector, DoctrTextRecognizer, TextractOcrDetector]: OCR detector instance.
+        """
+        if use_tesseract:
+            return TesseractOcrDetector(
+                ocr_config_path,
+                config_overwrite=languages,
+            )
+        if use_doctr:
+            if lib is None:
+                raise DependencyError("At least one of the env variables DD_USE_TF or DD_USE_TORCH must be set.")
             weights_path = ModelDownloadManager.maybe_download_weights_and_configs(weights)
             profile = ModelCatalog.get_profile(weights)
             # get_full_path_configs will complete the path even if the model is not registered
@@ -426,16 +586,11 @@ class ServiceFactory:
             return DoctrTextRecognizer(
                 architecture=profile.architecture,
                 path_weights=weights_path,
-                device=config.DEVICE,
-                lib=config.LIB,
+                device=device,
+                lib=lib,
                 path_config_json=config_path,
             )
-        if config.OCR.USE_TEXTRACT:
-            credentials_kwargs = {
-                "aws_access_key_id": environ.get("AWS_ACCESS_KEY", None),
-                "aws_secret_access_key": environ.get("AWS_SECRET_KEY", None),
-                "config": Config(region_name=environ.get("AWS_REGION", None)),
-            }
+        if use_textract:
             return TextractOcrDetector(**credentials_kwargs)
         raise ValueError("You have set USE_OCR=True but any of USE_TESSERACT, USE_DOCTR, USE_TEXTRACT is set to False")
 
@@ -450,7 +605,50 @@ class ServiceFactory:
         Returns:
             Union[TesseractOcrDetector, DoctrTextRecognizer, TextractOcrDetector]: OCR detector instance.
         """
-        return ServiceFactory._build_ocr_detector(config)
+        ocr_detector_kwargs = ServiceFactory._get_ocr_detector_kwargs_from_config(config)
+        return ServiceFactory._build_ocr_detector(**ocr_detector_kwargs)
+
+    @staticmethod
+    def _get_doctr_word_detector_kwargs_from_config(config: AttrDict) -> dict[str, Any]:
+        """
+        Extracting Doctr word detector kwargs from config.
+
+        Args:
+            config: Configuration object.
+        """
+        weights = config.OCR.WEIGHTS.DOCTR_WORD.TF if config.LIB == "TF" else config.OCR.WEIGHTS.DOCTR_WORD.PT
+        profile = ModelCatalog.get_profile(weights)
+        return {
+            "weights": weights,
+            "profile": profile,
+            "device": config.DEVICE,
+            "lib": config.LIB,
+        }
+
+    @staticmethod
+    def _build_doctr_word_detector(
+        weights: str, profile: ModelProfile, device: Literal["cuda", "cpu"], lib: Literal["PT", "TF"]
+    ) -> DoctrTextlineDetector:
+        """
+        Building `DoctrTextlineDetector` instance.
+
+        Args:
+            weights: Weights for Doctr word detector.
+            profile: Model profile for Doctr word detector.
+            device: Device to use for computation.
+            lib: Deep learning library to use.
+
+        Returns:
+            DoctrTextlineDetector: Textline detector instance.
+        """
+        if lib is None:
+            raise DependencyError("At least one of the env variables DD_USE_TF or DD_USE_TORCH must be set.")
+        weights_path = ModelDownloadManager.maybe_download_weights_and_configs(weights)
+        if profile.architecture is None:
+            raise ValueError("model profile.architecture must be specified")
+        if profile.categories is None:
+            raise ValueError("model profile.categories must be specified")
+        return DoctrTextlineDetector(profile.architecture, weights_path, profile.categories, device, lib=lib)
 
     @staticmethod
     def build_doctr_word_detector(config: AttrDict) -> DoctrTextlineDetector:
@@ -463,23 +661,58 @@ class ServiceFactory:
         Returns:
             DoctrTextlineDetector: Textline detector instance.
         """
-        if config.LIB is None:
-            raise DependencyError("At least one of the env variables DD_USE_TF or DD_USE_TORCH must be set.")
-        weights = config.OCR.WEIGHTS.DOCTR_WORD.TF if config.LIB == "TF" else config.OCR.WEIGHTS.DOCTR_WORD.PT
-        weights_path = ModelDownloadManager.maybe_download_weights_and_configs(weights)
-        profile = ModelCatalog.get_profile(weights)
-        if profile.architecture is None:
-            raise ValueError("model profile.architecture must be specified")
-        if profile.categories is None:
-            raise ValueError("model profile.categories must be specified")
-        return DoctrTextlineDetector(
-            profile.architecture, weights_path, profile.categories, config.DEVICE, lib=config.LIB
-        )
+        doctr_word_detector_kwargs = ServiceFactory._get_doctr_word_detector_kwargs_from_config(config)
+        return ServiceFactory._build_doctr_word_detector(**doctr_word_detector_kwargs)
+
+    @staticmethod
+    def _get_table_segmentation_service_kwargs_from_config(config: AttrDict, detector_name: str) -> dict[str, Any]:
+        """
+        Extracting table segmentation service kwargs from config.
+
+        Args:
+            config: Configuration object.
+            detector_name: An instance name of `ObjectDetector`.
+        """
+        return {
+            "segment_rule": config.SEGMENTATION.ASSIGNMENT_RULE,
+            "threshold_rows": config.SEGMENTATION.THRESHOLD_ROWS,
+            "threshold_cols": config.SEGMENTATION.THRESHOLD_COLS,
+            "tile_table_with_items": config.SEGMENTATION.FULL_TABLE_TILING,
+            "remove_iou_threshold_rows": config.SEGMENTATION.REMOVE_IOU_THRESHOLD_ROWS,
+            "remove_iou_threshold_cols": config.SEGMENTATION.REMOVE_IOU_THRESHOLD_COLS,
+            "table_name": config.SEGMENTATION.TABLE_NAME,
+            "cell_names": config.SEGMENTATION.PUBTABLES_CELL_NAMES
+            if detector_name in ("HFDetrDerivedDetector",)
+            else config.SEGMENTATION.CELL_NAMES,
+            "spanning_cell_names": config.SEGMENTATION.PUBTABLES_SPANNING_CELL_NAMES,
+            "item_names": config.SEGMENTATION.PUBTABLES_ITEM_NAMES
+            if detector_name in ("HFDetrDerivedDetector",)
+            else config.SEGMENTATION.ITEM_NAMES,
+            "sub_item_names": config.SEGMENTATION.PUBTABLES_SUB_ITEM_NAMES
+            if detector_name in ("HFDetrDerivedDetector",)
+            else config.SEGMENTATION.SUB_ITEM_NAMES,
+            "item_header_cell_names": config.SEGMENTATION.PUBTABLES_ITEM_HEADER_CELL_NAMES,
+            "item_header_thresholds": config.SEGMENTATION.PUBTABLES_ITEM_HEADER_THRESHOLDS,
+            "stretch_rule": config.SEGMENTATION.STRETCH_RULE,
+        }
 
     @staticmethod
     def _build_table_segmentation_service(
-        config: AttrDict,
         detector: ObjectDetector,
+        segment_rule: Literal["iou", "ioa"],
+        threshold_rows: float,
+        threshold_cols: float,
+        tile_table_with_items: bool,
+        remove_iou_threshold_rows: float,
+        remove_iou_threshold_cols: float,
+        table_name: Union[ObjectTypes, str],
+        cell_names: Sequence[Union[ObjectTypes, str]],
+        spanning_cell_names: Sequence[Union[ObjectTypes, str]],
+        item_names: Sequence[Union[ObjectTypes, str]],
+        sub_item_names: Sequence[Union[ObjectTypes, str]],
+        item_header_cell_names: Sequence[Union[ObjectTypes, str]],
+        item_header_thresholds: Sequence[float],
+        stretch_rule: Literal["left", "equal"],
     ) -> Union[PubtablesSegmentationService, TableSegmentationService]:
         """
         Build and return a table segmentation service based on the provided detector.
@@ -495,8 +728,21 @@ class ServiceFactory:
               configuration parameters from the `cfg` object but is tailored for different segmentation needs.
 
         Args:
-            config: Configuration object.
             detector: An instance of `ObjectDetector` used to determine the type of table segmentation service to build.
+            segment_rule: Rule for segmenting tables.
+            threshold_rows: Threshold for row segmentation.
+            threshold_cols: Threshold for column segmentation.
+            tile_table_with_items: Whether to tile the table with items.
+            remove_iou_threshold_rows: IOU threshold for removing rows.
+            remove_iou_threshold_cols: IOU threshold for removing columns.
+            table_name: Name of the table object type.
+            cell_names: Names of the cell object types.
+            spanning_cell_names: Names of the spanning cell object types.
+            item_names: Names of the item object types.
+            sub_item_names: Names of the sub-item object types.
+            item_header_cell_names: Names of the item header cell object types.
+            item_header_thresholds: Thresholds for item header segmentation.
+            stretch_rule: Rule for stretching cells.
 
         Returns:
             Table segmentation service instance.
@@ -504,35 +750,35 @@ class ServiceFactory:
         table_segmentation: Union[PubtablesSegmentationService, TableSegmentationService]
         if detector.__class__.__name__ in ("HFDetrDerivedDetector",):
             table_segmentation = PubtablesSegmentationService(
-                segment_rule=config.SEGMENTATION.ASSIGNMENT_RULE,
-                threshold_rows=config.SEGMENTATION.THRESHOLD_ROWS,
-                threshold_cols=config.SEGMENTATION.THRESHOLD_COLS,
-                tile_table_with_items=config.SEGMENTATION.FULL_TABLE_TILING,
-                remove_iou_threshold_rows=config.SEGMENTATION.REMOVE_IOU_THRESHOLD_ROWS,
-                remove_iou_threshold_cols=config.SEGMENTATION.REMOVE_IOU_THRESHOLD_COLS,
-                table_name=config.SEGMENTATION.TABLE_NAME,
-                cell_names=config.SEGMENTATION.PUBTABLES_CELL_NAMES,
-                spanning_cell_names=config.SEGMENTATION.PUBTABLES_SPANNING_CELL_NAMES,
-                item_names=config.SEGMENTATION.PUBTABLES_ITEM_NAMES,
-                sub_item_names=config.SEGMENTATION.PUBTABLES_SUB_ITEM_NAMES,
-                item_header_cell_names=config.SEGMENTATION.PUBTABLES_ITEM_HEADER_CELL_NAMES,
-                item_header_thresholds=config.SEGMENTATION.PUBTABLES_ITEM_HEADER_THRESHOLDS,
-                stretch_rule=config.SEGMENTATION.STRETCH_RULE,
+                segment_rule=segment_rule,
+                threshold_rows=threshold_rows,
+                threshold_cols=threshold_cols,
+                tile_table_with_items=tile_table_with_items,
+                remove_iou_threshold_rows=remove_iou_threshold_rows,
+                remove_iou_threshold_cols=remove_iou_threshold_cols,
+                table_name=table_name,
+                cell_names=cell_names,
+                spanning_cell_names=spanning_cell_names,
+                item_names=item_names,
+                sub_item_names=sub_item_names,
+                item_header_cell_names=item_header_cell_names,
+                item_header_thresholds=item_header_thresholds,
+                stretch_rule=stretch_rule,
             )
 
         else:
             table_segmentation = TableSegmentationService(
-                segment_rule=config.SEGMENTATION.ASSIGNMENT_RULE,
-                threshold_rows=config.SEGMENTATION.THRESHOLD_ROWS,
-                threshold_cols=config.SEGMENTATION.THRESHOLD_COLS,
-                tile_table_with_items=config.SEGMENTATION.FULL_TABLE_TILING,
-                remove_iou_threshold_rows=config.SEGMENTATION.REMOVE_IOU_THRESHOLD_ROWS,
-                remove_iou_threshold_cols=config.SEGMENTATION.REMOVE_IOU_THRESHOLD_COLS,
-                table_name=config.SEGMENTATION.TABLE_NAME,
-                cell_names=config.SEGMENTATION.CELL_NAMES,
-                item_names=config.SEGMENTATION.ITEM_NAMES,
-                sub_item_names=config.SEGMENTATION.SUB_ITEM_NAMES,
-                stretch_rule=config.SEGMENTATION.STRETCH_RULE,
+                segment_rule=segment_rule,
+                threshold_rows=threshold_rows,
+                threshold_cols=threshold_cols,
+                tile_table_with_items=tile_table_with_items,
+                remove_iou_threshold_rows=remove_iou_threshold_rows,
+                remove_iou_threshold_cols=remove_iou_threshold_cols,
+                table_name=table_name,
+                cell_names=cell_names,
+                item_names=item_names,
+                sub_item_names=sub_item_names,
+                stretch_rule=stretch_rule,
             )
         return table_segmentation
 
@@ -561,10 +807,29 @@ class ServiceFactory:
         Returns:
             Table segmentation service instance.
         """
-        return ServiceFactory._build_table_segmentation_service(config, detector)
+        table_segmentation_service_kwargs = ServiceFactory._get_table_segmentation_service_kwargs_from_config(
+            config, detector.__class__.__name__
+        )
+        return ServiceFactory._build_table_segmentation_service(detector, **table_segmentation_service_kwargs)
 
     @staticmethod
-    def _build_table_refinement_service(config: AttrDict) -> TableSegmentationRefinementService:
+    def _get_table_refinement_service_kwargs_from_config(config: AttrDict) -> dict[str, Any]:
+        """
+        Extracting table segmentation refinement service kwargs from config.
+
+        Args:
+            config: Configuration object.
+        """
+
+        return {
+            "table_names": [config.SEGMENTATION.TABLE_NAME],
+            "cell_names": config.SEGMENTATION.PUBTABLES_CELL_NAMES,
+        }
+
+    @staticmethod
+    def _build_table_refinement_service(
+        table_names: Sequence[ObjectTypes], cell_names: Sequence[ObjectTypes]
+    ) -> TableSegmentationRefinementService:
         """
         Building a table segmentation refinement service.
 
@@ -574,10 +839,7 @@ class ServiceFactory:
         Returns:
             TableSegmentationRefinementService: Refinement service instance.
         """
-        return TableSegmentationRefinementService(
-            [config.SEGMENTATION.TABLE_NAME],
-            config.SEGMENTATION.PUBTABLES_CELL_NAMES,
-        )
+        return TableSegmentationRefinementService(table_names=table_names, cell_names=cell_names)
 
     @staticmethod
     def build_table_refinement_service(config: AttrDict) -> TableSegmentationRefinementService:
@@ -590,22 +852,35 @@ class ServiceFactory:
         Returns:
             TableSegmentationRefinementService: Refinement service instance.
         """
-        return ServiceFactory._build_table_refinement_service(config)
+        table_refinement_service_kwargs = ServiceFactory._get_table_refinement_service_kwargs_from_config(config)
+        return ServiceFactory._build_table_refinement_service(**table_refinement_service_kwargs)
 
     @staticmethod
-    def _build_pdf_text_detector(config: AttrDict) -> PdfPlumberTextDetector:
+    def _get_pdf_text_detector_kwargs_from_config(config: AttrDict) -> dict[str, Any]:
+        """
+        Extracting PDF text detector kwargs from config.
+
+        Args:
+            config: Configuration object.
+        """
+        return {
+            "x_tolerance": config.PDF_MINER.X_TOLERANCE,
+            "y_tolerance": config.PDF_MINER.Y_TOLERANCE,
+        }
+
+    @staticmethod
+    def _build_pdf_text_detector(x_tolerance: int, y_tolerance: int) -> PdfPlumberTextDetector:
         """
         Building a PDF text detector.
 
         Args:
-            config: Configuration object.
+            x_tolerance: X tolerance for text extraction.
+            y_tolerance: Y tolerance for text extraction.
 
         Returns:
             PdfPlumberTextDetector: PDF text detector instance.
         """
-        return PdfPlumberTextDetector(
-            x_tolerance=config.PDF_MINER.X_TOLERANCE, y_tolerance=config.PDF_MINER.Y_TOLERANCE
-        )
+        return PdfPlumberTextDetector(x_tolerance=x_tolerance, y_tolerance=y_tolerance)
 
     @staticmethod
     def build_pdf_text_detector(config: AttrDict) -> PdfPlumberTextDetector:
@@ -618,7 +893,8 @@ class ServiceFactory:
         Returns:
             PdfPlumberTextDetector: PDF text detector instance.
         """
-        return ServiceFactory._build_pdf_text_detector(config)
+        pdf_text_detector_kwargs = ServiceFactory._get_pdf_text_detector_kwargs_from_config(config)
+        return ServiceFactory._build_pdf_text_detector(**pdf_text_detector_kwargs)
 
     @staticmethod
     def _build_pdf_miner_text_service(detector: PdfMiner) -> TextExtractionService:
@@ -673,23 +949,33 @@ class ServiceFactory:
         return ServiceFactory._build_doctr_word_detector_service(detector)
 
     @staticmethod
+    def _get_text_extraction_service_kwargs_from_config(config: AttrDict) -> dict[str, Any]:
+        """
+        Extracting text extraction service kwargs from config.
+
+        Args:
+            config: Configuration object.
+        """
+        return {
+            "extract_from_roi": config.TEXT_CONTAINER if config.OCR.USE_DOCTR else None,
+        }
+
+    @staticmethod
     def _build_text_extraction_service(
-        config: AttrDict, detector: Union[TesseractOcrDetector, DoctrTextRecognizer, TextractOcrDetector]
+        detector: Union[TesseractOcrDetector, DoctrTextRecognizer, TextractOcrDetector],
+        extract_from_roi: Union[Sequence[ObjectTypes], ObjectTypes, None] = None,
     ) -> TextExtractionService:
         """
         Building a text extraction service.
 
         Args:
-            config: Configuration object.
             detector: OCR detector instance.
+            extract_from_roi: ROI categories to extract text from.
 
         Returns:
             TextExtractionService: Text extraction service instance.
         """
-        return TextExtractionService(
-            detector,
-            extract_from_roi=config.TEXT_CONTAINER if config.OCR.USE_DOCTR else None,
-        )
+        return TextExtractionService(detector, extract_from_roi=extract_from_roi)
 
     @staticmethod
     def build_text_extraction_service(
@@ -705,28 +991,55 @@ class ServiceFactory:
         Returns:
             TextExtractionService: Text extraction service instance.
         """
-        return ServiceFactory._build_text_extraction_service(config, detector)
+        text_extraction_service_kwargs = ServiceFactory._get_text_extraction_service_kwargs_from_config(config)
+        return ServiceFactory._build_text_extraction_service(detector, **text_extraction_service_kwargs)
 
     @staticmethod
-    def _build_word_matching_service(config: AttrDict) -> MatchingService:
+    def _get_word_matching_service_kwargs_from_config(config: AttrDict) -> dict[str, Any]:
+        """
+        Extracting word matching service kwargs from config.
+
+        Args:
+            config: Configuration object.
+        """
+        return {
+            "matching_rule": config.WORD_MATCHING.RULE,
+            "threshold": config.WORD_MATCHING.THRESHOLD,
+            "max_parent_only": config.WORD_MATCHING.MAX_PARENT_ONLY,
+            "parental_categories": config.WORD_MATCHING.PARENTAL_CATEGORIES,
+            "text_container": config.TEXT_CONTAINER,
+        }
+
+    @staticmethod
+    def _build_word_matching_service(
+        matching_rule: Literal["iou", "ioa"],
+        threshold: float,
+        max_parent_only: bool,
+        parental_categories: Union[Sequence[ObjectTypes], ObjectTypes, None],
+        text_container: Union[Sequence[ObjectTypes], ObjectTypes, None],
+    ) -> MatchingService:
         """
         Building a word matching service.
 
         Args:
-            config: Configuration object.
+            matching_rule: Matching rule for intersection matcher.
+            threshold: Threshold for intersection matcher.
+            max_parent_only: Whether to use max parent only.
+            parental_categories: Parent categories for matching.
+            text_container: Text container categories.
 
         Returns:
             MatchingService: Word matching service instance.
         """
         matcher = IntersectionMatcher(
-            matching_rule=config.WORD_MATCHING.RULE,
-            threshold=config.WORD_MATCHING.THRESHOLD,
-            max_parent_only=config.WORD_MATCHING.MAX_PARENT_ONLY,
+            matching_rule=matching_rule,
+            threshold=threshold,
+            max_parent_only=max_parent_only,
         )
         family_compounds = [
             FamilyCompound(
-                parent_categories=config.WORD_MATCHING.PARENTAL_CATEGORIES,
-                child_categories=config.TEXT_CONTAINER,
+                parent_categories=parental_categories,
+                child_categories=text_container,
                 relationship_key=Relationships.CHILD,
             ),
             FamilyCompound(
@@ -753,15 +1066,33 @@ class ServiceFactory:
         Returns:
             MatchingService: Word matching service instance.
         """
-        return ServiceFactory._build_word_matching_service(config)
+        word_matching_service_kwargs = ServiceFactory._get_word_matching_service_kwargs_from_config(config)
+        return ServiceFactory._build_word_matching_service(**word_matching_service_kwargs)
 
     @staticmethod
-    def _build_layout_link_matching_service(config: AttrDict) -> MatchingService:
+    def _get_layout_link_matching_service_kwargs_from_config(config: AttrDict) -> dict[str, Any]:
+        """
+        Extracting layout link matching service kwargs from config.
+
+        Args:
+            config: Configuration object.
+        """
+        return {
+            "parental_categories": config.LAYOUT_LINK.PARENTAL_CATEGORIES,
+            "child_categories": config.LAYOUT_LINK.CHILD_CATEGORIES,
+        }
+
+    @staticmethod
+    def _build_layout_link_matching_service(
+        parental_categories: Union[Sequence[ObjectTypes], ObjectTypes, None],
+        child_categories: Union[Sequence[ObjectTypes], ObjectTypes, None],
+    ) -> MatchingService:
         """
         Building a layout link matching service.
 
         Args:
-            config: Configuration object.
+            parental_categories: Parent categories for layout linking.
+            child_categories: Child categories for layout linking.
 
         Returns:
             MatchingService: Layout link matching service instance.
@@ -769,8 +1100,8 @@ class ServiceFactory:
         neighbor_matcher = NeighbourMatcher()
         family_compounds = [
             FamilyCompound(
-                parent_categories=config.LAYOUT_LINK.PARENTAL_CATEGORIES,
-                child_categories=config.LAYOUT_LINK.CHILD_CATEGORIES,
+                parent_categories=parental_categories,
+                child_categories=child_categories,
                 relationship_key=Relationships.LAYOUT_LINK,
             )
         ]
@@ -790,23 +1121,44 @@ class ServiceFactory:
         Returns:
             MatchingService: Layout link matching service instance.
         """
-        return ServiceFactory._build_layout_link_matching_service(config)
+        layout_link_matching_service_kwargs = ServiceFactory._get_layout_link_matching_service_kwargs_from_config(
+            config
+        )
+        return ServiceFactory._build_layout_link_matching_service(**layout_link_matching_service_kwargs)
 
     @staticmethod
-    def _build_line_matching_service(config: AttrDict) -> MatchingService:
+    def _get_line_matching_service_kwargs_from_config(config: AttrDict) -> dict[str, Any]:
+        """
+        Extracting line matching service kwargs from config.
+
+        Args:
+            config: Configuration object.
+        """
+        return {
+            "matching_rule": config.WORD_MATCHING.RULE,
+            "threshold": config.WORD_MATCHING.THRESHOLD,
+            "max_parent_only": config.WORD_MATCHING.MAX_PARENT_ONLY,
+        }
+
+    @staticmethod
+    def _build_line_matching_service(
+        matching_rule: Literal["iou", "ioa"], threshold: float, max_parent_only: bool
+    ) -> MatchingService:
         """
         Building a line matching service.
 
         Args:
-            config: Configuration object.
+            matching_rule: Matching rule for intersection matcher.
+            threshold: Threshold for intersection matcher.
+            max_parent_only: Whether to use max parent only.
 
         Returns:
             MatchingService: Line matching service instance.
         """
         matcher = IntersectionMatcher(
-            matching_rule=config.WORD_MATCHING.RULE,
-            threshold=config.WORD_MATCHING.THRESHOLD,
-            max_parent_only=config.WORD_MATCHING.MAX_PARENT_ONLY,
+            matching_rule=matching_rule,
+            threshold=threshold,
+            max_parent_only=max_parent_only,
         )
         family_compounds = [
             FamilyCompound(
@@ -831,28 +1183,64 @@ class ServiceFactory:
         Returns:
             MatchingService: Line matching service instance.
         """
-        return ServiceFactory._build_line_matching_service(config)
+        line_matching_service_kwargs = ServiceFactory._get_line_matching_service_kwargs_from_config(config)
+        return ServiceFactory._build_line_matching_service(**line_matching_service_kwargs)
 
     @staticmethod
-    def _build_text_order_service(config: AttrDict) -> TextOrderService:
+    def _get_text_order_service_kwargs_from_config(config: AttrDict) -> dict[str, Any]:
+        """
+        Extracting text order service kwargs from config.
+
+        Args:
+            config: Configuration object.
+        """
+        return {
+            "text_container": config.TEXT_CONTAINER,
+            "text_block_categories": config.TEXT_ORDERING.TEXT_BLOCK_CATEGORIES,
+            "floating_text_block_categories": config.TEXT_ORDERING.FLOATING_TEXT_BLOCK_CATEGORIES,
+            "include_residual_text_container": config.TEXT_ORDERING.INCLUDE_RESIDUAL_TEXT_CONTAINER,
+            "starting_point_tolerance": config.TEXT_ORDERING.STARTING_POINT_TOLERANCE,
+            "broken_line_tolerance": config.TEXT_ORDERING.BROKEN_LINE_TOLERANCE,
+            "height_tolerance": config.TEXT_ORDERING.HEIGHT_TOLERANCE,
+            "paragraph_break": config.TEXT_ORDERING.PARAGRAPH_BREAK,
+        }
+
+    @staticmethod
+    def _build_text_order_service(
+        text_container: str,
+        text_block_categories: Sequence[str],
+        floating_text_block_categories: Sequence[str],
+        include_residual_text_container: bool,
+        starting_point_tolerance: float,
+        broken_line_tolerance: float,
+        height_tolerance: float,
+        paragraph_break: float,
+    ) -> TextOrderService:
         """
         Building a text order service.
 
         Args:
-            config: Configuration object.
+            text_container: Text container categories.
+            text_block_categories: Text block categories for ordering.
+            floating_text_block_categories: Floating text block categories.
+            include_residual_text_container: Whether to include residual text container.
+            starting_point_tolerance: Starting point tolerance for text ordering.
+            broken_line_tolerance: Broken line tolerance for text ordering.
+            height_tolerance: Height tolerance for text ordering.
+            paragraph_break: Paragraph break threshold.
 
         Returns:
             TextOrderService: Text order service instance.
         """
         return TextOrderService(
-            text_container=config.TEXT_CONTAINER,
-            text_block_categories=config.TEXT_ORDERING.TEXT_BLOCK_CATEGORIES,
-            floating_text_block_categories=config.TEXT_ORDERING.FLOATING_TEXT_BLOCK_CATEGORIES,
-            include_residual_text_container=config.TEXT_ORDERING.INCLUDE_RESIDUAL_TEXT_CONTAINER,
-            starting_point_tolerance=config.TEXT_ORDERING.STARTING_POINT_TOLERANCE,
-            broken_line_tolerance=config.TEXT_ORDERING.BROKEN_LINE_TOLERANCE,
-            height_tolerance=config.TEXT_ORDERING.HEIGHT_TOLERANCE,
-            paragraph_break=config.TEXT_ORDERING.PARAGRAPH_BREAK,
+            text_container=text_container,
+            text_block_categories=text_block_categories,
+            floating_text_block_categories=floating_text_block_categories,
+            include_residual_text_container=include_residual_text_container,
+            starting_point_tolerance=starting_point_tolerance,
+            broken_line_tolerance=broken_line_tolerance,
+            height_tolerance=height_tolerance,
+            paragraph_break=paragraph_break,
         )
 
     @staticmethod
@@ -866,18 +1254,16 @@ class ServiceFactory:
         Returns:
             TextOrderService: Text order service instance.
         """
-        return ServiceFactory._build_text_order_service(config)
+        text_order_service_kwargs = ServiceFactory._get_text_order_service_kwargs_from_config(config)
+        return ServiceFactory._build_text_order_service(**text_order_service_kwargs)
 
     @staticmethod
-    def _build_sequence_classifier(config: AttrDict) -> Union[LayoutSequenceModels, LmSequenceModels]:
+    def _get_sequence_classifier_kwargs_from_config(config: AttrDict) -> dict[str, Any]:
         """
-        Builds and returns a sequence classifier instance.
+        Extracting sequence classifier kwargs from config.
 
         Args:
-            config: Configuration object that determines the type of sequence classifier to construct.
-
-        Returns:
-            A sequence classifier instance constructed according to the specified configuration.
+            config: Configuration object.
         """
         config_path = ModelCatalog.get_full_path_configs(config.LM_SEQUENCE_CLASS.WEIGHTS)
         weights_path = ModelDownloadManager.maybe_download_weights_and_configs(config.LM_SEQUENCE_CLASS.WEIGHTS)
@@ -885,47 +1271,79 @@ class ServiceFactory:
         categories = profile.categories if profile.categories is not None else {}
         use_xlm_tokenizer = "xlm_tokenizer" == profile.architecture
 
-        if profile.model_wrapper in ("HFLayoutLmSequenceClassifier",):
+        return {
+            "config_path": config_path,
+            "weights_path": weights_path,
+            "categories": categories,
+            "device": config.DEVICE,
+            "use_xlm_tokenizer": use_xlm_tokenizer,
+            "model_wrapper": profile.model_wrapper,
+        }
+
+    @staticmethod
+    def _build_sequence_classifier(
+        config_path: str,
+        weights_path: str,
+        categories: Mapping[int, Union[ObjectTypes, str]],
+        device: Literal["cuda", "cpu"],
+        use_xlm_tokenizer: bool,
+        model_wrapper: str,
+    ) -> Union[LayoutSequenceModels, LmSequenceModels]:
+        """
+        Builds and returns a sequence classifier instance.
+
+        Args:
+            config_path: Path to model configuration.
+            weights_path: Path to model weights.
+            categories: Model categories mapping.
+            device: Device to run model on.
+            use_xlm_tokenizer: Whether to use XLM tokenizer.
+            model_wrapper: Model wrapper class name.
+
+        Returns:
+            A sequence classifier instance constructed according to the specified configuration.
+        """
+        if model_wrapper in ("HFLayoutLmSequenceClassifier",):
             return HFLayoutLmSequenceClassifier(
                 path_config_json=config_path,
                 path_weights=weights_path,
                 categories=categories,
-                device=config.DEVICE,
+                device=device,
                 use_xlm_tokenizer=use_xlm_tokenizer,
             )
-        if profile.model_wrapper in ("HFLayoutLmv2SequenceClassifier",):
+        if model_wrapper in ("HFLayoutLmv2SequenceClassifier",):
             return HFLayoutLmv2SequenceClassifier(
                 path_config_json=config_path,
                 path_weights=weights_path,
                 categories=categories,
-                device=config.DEVICE,
+                device=device,
                 use_xlm_tokenizer=use_xlm_tokenizer,
             )
-        if profile.model_wrapper in ("HFLayoutLmv3SequenceClassifier",):
+        if model_wrapper in ("HFLayoutLmv3SequenceClassifier",):
             return HFLayoutLmv3SequenceClassifier(
                 path_config_json=config_path,
                 path_weights=weights_path,
                 categories=categories,
-                device=config.DEVICE,
+                device=device,
                 use_xlm_tokenizer=use_xlm_tokenizer,
             )
-        if profile.model_wrapper in ("HFLiltSequenceClassifier",):
+        if model_wrapper in ("HFLiltSequenceClassifier",):
             return HFLiltSequenceClassifier(
                 path_config_json=config_path,
                 path_weights=weights_path,
                 categories=categories,
-                device=config.DEVICE,
+                device=device,
                 use_xlm_tokenizer=use_xlm_tokenizer,
             )
-        if profile.model_wrapper in ("HFLmSequenceClassifier",):
+        if model_wrapper in ("HFLmSequenceClassifier",):
             return HFLmSequenceClassifier(
                 path_config_json=config_path,
                 path_weights=weights_path,
                 categories=categories,
-                device=config.DEVICE,
+                device=device,
                 use_xlm_tokenizer=use_xlm_tokenizer,
             )
-        raise ValueError(f"Unsupported model wrapper: {profile.model_wrapper}")
+        raise ValueError(f"Unsupported model wrapper: {model_wrapper}")
 
     @staticmethod
     def build_sequence_classifier(config: AttrDict) -> Union[LayoutSequenceModels, LmSequenceModels]:
@@ -938,18 +1356,31 @@ class ServiceFactory:
         Returns:
             A sequence classifier instance constructed according to the specified configuration.
         """
-        return ServiceFactory._build_sequence_classifier(config)
+        sequence_classifier_kwargs = ServiceFactory._get_sequence_classifier_kwargs_from_config(config)
+        return ServiceFactory._build_sequence_classifier(**sequence_classifier_kwargs)
+
+    @staticmethod
+    def _get_sequence_classifier_service_kwargs_from_config(config: AttrDict) -> dict[str, Any]:
+        """
+        Extracting sequence classifier service kwargs from config.
+
+        Args:
+            config: Configuration object.
+        """
+        return {
+            "use_other_as_default_category": config.LM_SEQUENCE_CLASS.USE_OTHER_AS_DEFAULT_CATEGORY,
+        }
 
     @staticmethod
     def _build_sequence_classifier_service(
-        config: AttrDict, sequence_classifier: Union[LayoutSequenceModels, LmSequenceModels]
+        sequence_classifier: Union[LayoutSequenceModels, LmSequenceModels], use_other_as_default_category: bool
     ) -> LMSequenceClassifierService:
         """
         Building a sequence classifier service.
 
         Args:
-            config: Configuration object.
             sequence_classifier: Sequence classifier instance.
+            use_other_as_default_category: Whether to use other as default category.
 
         Returns:
             LMSequenceClassifierService: Text order service instance.
@@ -961,7 +1392,7 @@ class ServiceFactory:
         return LMSequenceClassifierService(
             tokenizer=tokenizer_fast,
             language_model=sequence_classifier,
-            use_other_as_default_category=config.LM_SEQUENCE_CLASS.USE_OTHER_AS_DEFAULT_CATEGORY,
+            use_other_as_default_category=use_other_as_default_category,
         )
 
     @staticmethod
@@ -978,60 +1409,93 @@ class ServiceFactory:
         Returns:
             LMSequenceClassifierService: Text order service instance.
         """
-        return ServiceFactory._build_sequence_classifier_service(config, sequence_classifier)
+        sequence_classifier_service_kwargs = ServiceFactory._get_sequence_classifier_service_kwargs_from_config(config)
+        return ServiceFactory._build_sequence_classifier_service(
+            sequence_classifier, **sequence_classifier_service_kwargs
+        )
 
     @staticmethod
-    def _build_token_classifier(config: AttrDict) -> Union[LayoutTokenModels, LmTokenModels]:
+    def _get_token_classifier_kwargs_from_config(config: AttrDict) -> dict[str, Any]:
         """
-        Builds and returns a token classifier model.
+        Extracting token classifier kwargs from config.
 
         Args:
             config: Configuration object.
-
-        Returns:
-            The instantiated token classifier model.
         """
         config_path = ModelCatalog.get_full_path_configs(config.LM_TOKEN_CLASS.WEIGHTS)
         weights_path = ModelDownloadManager.maybe_download_weights_and_configs(config.LM_TOKEN_CLASS.WEIGHTS)
         profile = ModelCatalog.get_profile(config.LM_TOKEN_CLASS.WEIGHTS)
         categories = profile.categories if profile.categories is not None else {}
         use_xlm_tokenizer = "xlm_tokenizer" == profile.architecture
-        if profile.model_wrapper in ("HFLayoutLmTokenClassifier",):
+
+        return {
+            "config_path": config_path,
+            "weights_path": weights_path,
+            "categories": categories,
+            "device": config.DEVICE,
+            "use_xlm_tokenizer": use_xlm_tokenizer,
+            "model_wrapper": profile.model_wrapper,
+        }
+
+    @staticmethod
+    def _build_token_classifier(
+        config_path: str,
+        weights_path: str,
+        categories: Mapping[int, Union[ObjectTypes, str]],
+        device: Literal["cpu", "cuda"],
+        use_xlm_tokenizer: bool,
+        model_wrapper: str,
+    ) -> Union[LayoutTokenModels, LmTokenModels]:
+        """
+        Builds and returns a token classifier model.
+
+        Args:
+            config_path: Path to model configuration.
+            weights_path: Path to model weights.
+            categories: Model categories mapping.
+            device: Device to run model on.
+            use_xlm_tokenizer: Whether to use XLM tokenizer.
+            model_wrapper: Model wrapper class name.
+
+        Returns:
+            The instantiated token classifier model.
+        """
+        if model_wrapper in ("HFLayoutLmTokenClassifier",):
             return HFLayoutLmTokenClassifier(
                 path_config_json=config_path,
                 path_weights=weights_path,
                 categories=categories,
-                device=config.DEVICE,
+                device=device,
                 use_xlm_tokenizer=use_xlm_tokenizer,
             )
-        if profile.model_wrapper in ("HFLayoutLmv2TokenClassifier",):
+        if model_wrapper in ("HFLayoutLmv2TokenClassifier",):
             return HFLayoutLmv2TokenClassifier(
                 path_config_json=config_path,
                 path_weights=weights_path,
                 categories=categories,
-                device=config.DEVICE,
+                device=device,
             )
-        if profile.model_wrapper in ("HFLayoutLmv3TokenClassifier",):
+        if model_wrapper in ("HFLayoutLmv3TokenClassifier",):
             return HFLayoutLmv3TokenClassifier(
                 path_config_json=config_path,
                 path_weights=weights_path,
                 categories=categories,
-                device=config.DEVICE,
+                device=device,
             )
-        if profile.model_wrapper in ("HFLiltTokenClassifier",):
+        if model_wrapper in ("HFLiltTokenClassifier",):
             return HFLiltTokenClassifier(
                 path_config_json=config_path,
                 path_weights=weights_path,
                 categories=categories,
-                device=config.DEVICE,
+                device=device,
             )
-        if profile.model_wrapper in ("HFLmTokenClassifier",):
+        if model_wrapper in ("HFLmTokenClassifier",):
             return HFLmTokenClassifier(
                 path_config_json=config_path,
                 path_weights=weights_path,
                 categories=categories,
             )
-        raise ValueError(f"Unsupported model wrapper: {profile.model_wrapper}")
+        raise ValueError(f"Unsupported model wrapper: {model_wrapper}")
 
     @staticmethod
     def build_token_classifier(config: AttrDict) -> Union[LayoutTokenModels, LmTokenModels]:
@@ -1044,18 +1508,38 @@ class ServiceFactory:
         Returns:
             The instantiated token classifier model.
         """
-        return ServiceFactory._build_token_classifier(config)
+        token_classifier_kwargs = ServiceFactory._get_token_classifier_kwargs_from_config(config)
+        return ServiceFactory._build_token_classifier(**token_classifier_kwargs)
+
+    @staticmethod
+    def _get_token_classifier_service_kwargs_from_config(config: AttrDict) -> dict[str, Any]:
+        """
+        Extracting token classifier service kwargs from config.
+
+        Args:
+            config: Configuration object.
+        """
+        return {
+            "use_other_as_default_category": config.LM_TOKEN_CLASS.USE_OTHER_AS_DEFAULT_CATEGORY,
+            "segment_positions": config.LM_TOKEN_CLASS.SEGMENT_POSITIONS,
+            "sliding_window_stride": config.LM_TOKEN_CLASS.SLIDING_WINDOW_STRIDE,
+        }
 
     @staticmethod
     def _build_token_classifier_service(
-        config: AttrDict, token_classifier: Union[LayoutTokenModels, LmTokenModels]
+        token_classifier: Union[LayoutTokenModels, LmTokenModels],
+        use_other_as_default_category: bool,
+        segment_positions: Union[LayoutType, Sequence[LayoutType], None],
+        sliding_window_stride: int,
     ) -> LMTokenClassifierService:
         """
         Building a token classifier service.
 
         Args:
-            config: Configuration object.
             token_classifier: Token classifier instance.
+            use_other_as_default_category: Whether to use other as default category.
+            segment_positions: Segment positions configuration.
+            sliding_window_stride: Sliding window stride.
 
         Returns:
              A LMTokenClassifierService instance.
@@ -1067,9 +1551,9 @@ class ServiceFactory:
         return LMTokenClassifierService(
             tokenizer=tokenizer_fast,
             language_model=token_classifier,
-            use_other_as_default_category=config.LM_TOKEN_CLASS.USE_OTHER_AS_DEFAULT_CATEGORY,
-            segment_positions=config.LM_TOKEN_CLASS.SEGMENT_POSITIONS,
-            sliding_window_stride=config.LM_TOKEN_CLASS.SLIDING_WINDOW_STRIDE,
+            use_other_as_default_category=use_other_as_default_category,
+            segment_positions=segment_positions,
+            sliding_window_stride=sliding_window_stride,
         )
 
     @staticmethod
@@ -1086,23 +1570,44 @@ class ServiceFactory:
         Returns:
              A LMTokenClassifierService instance.
         """
-        return ServiceFactory._build_token_classifier_service(config, token_classifier)
+        token_classifier_service_kwargs = ServiceFactory._get_token_classifier_service_kwargs_from_config(config)
+        return ServiceFactory._build_token_classifier_service(token_classifier, **token_classifier_service_kwargs)
 
     @staticmethod
-    def _build_page_parsing_service(config: AttrDict) -> PageParsingService:
+    def _get_page_parsing_service_kwargs_from_config(config: AttrDict) -> dict[str, Any]:
+        """
+        Extracting page parsing service kwargs from config.
+
+        Args:
+            config: Configuration object.
+        """
+        return {
+            "text_container": config.TEXT_CONTAINER,
+            "floating_text_block_categories": config.TEXT_ORDERING.FLOATING_TEXT_BLOCK_CATEGORIES,
+            "include_residual_text_container": config.TEXT_ORDERING.INCLUDE_RESIDUAL_TEXT_CONTAINER,
+        }
+
+    @staticmethod
+    def _build_page_parsing_service(
+        text_container: Union[ObjectTypes, str],
+        floating_text_block_categories: Sequence[str],
+        include_residual_text_container: bool,
+    ) -> PageParsingService:
         """
         Building a page parsing service.
 
         Args:
-            config: Configuration object.
+            text_container: Text container categories.
+            floating_text_block_categories: Floating text block categories.
+            include_residual_text_container: Whether to include residual text container.
 
         Returns:
             PageParsingService: Page parsing service instance.
         """
         return PageParsingService(
-            text_container=config.TEXT_CONTAINER,
-            floating_text_block_categories=config.TEXT_ORDERING.FLOATING_TEXT_BLOCK_CATEGORIES,
-            include_residual_text_container=config.TEXT_ORDERING.INCLUDE_RESIDUAL_TEXT_CONTAINER,
+            text_container=text_container,
+            floating_text_block_categories=floating_text_block_categories,
+            include_residual_text_container=include_residual_text_container,
         )
 
     @staticmethod
@@ -1116,7 +1621,8 @@ class ServiceFactory:
         Returns:
             PageParsingService: Page parsing service instance.
         """
-        return ServiceFactory._build_page_parsing_service(config)
+        page_parsing_service_kwargs = ServiceFactory._get_page_parsing_service_kwargs_from_config(config)
+        return ServiceFactory._build_page_parsing_service(**page_parsing_service_kwargs)
 
     @staticmethod
     def build_analyzer(config: AttrDict) -> DoctectionPipe:
