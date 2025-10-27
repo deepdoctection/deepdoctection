@@ -509,7 +509,7 @@ class ServiceFactory:
         if config.OCR.USE_TESSERACT:
             use_tesseract = True
             ocr_config_path = get_configs_dir_path() / config.OCR.CONFIG.TESSERACT
-            languages = [f"LANGUAGES={config.LANGUAGE}"] if config.LANGUAGES is not None else None
+            languages = [f"LANGUAGES={config.LANGUAGE}"] if config.LANGUAGE is not None else None
 
         if config.OCR.USE_DOCTR:
             use_doctr = True
