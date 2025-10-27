@@ -28,12 +28,11 @@ from typing import Optional
 
 from ..extern.pt.ptutils import get_torch_device
 from ..pipe.doctectionpipe import DoctectionPipe
-from ..utils.env_info import ENV_VARS_TRUE
-from ..utils.file_utils import detectron2_available
 from ..utils.fs import get_configs_dir_path, get_package_path, maybe_copy_config_to_cache
 from ..utils.logger import LoggingRecord, logger
 from ..utils.metacfg import set_config_by_yaml
 from ..utils.types import PathLikeOrStr
+from ..utils.env_info import ENV_VARS_TRUE
 from .config import cfg
 from .factory import ServiceFactory
 

@@ -52,6 +52,7 @@ Attributes:
     DEVICE:
         Device configuration.
         For PyTorch: torch.device("cpu"), torch.device("mps"), or torch.device("cuda")
+        For TensorFlow: tf.device("/cpu:0") or tf.device("/gpu:0")
 
 ---
 
