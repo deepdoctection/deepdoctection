@@ -604,31 +604,6 @@ def get_doctr_requirement() -> Requirement:
     return "doctr", doctr_available(), _DOCTR_ERR_MSG
 
 
-# Fasttext related dependencies
-_FASTTEXT_AVAILABLE = importlib.util.find_spec("fasttext") is not None
-_FASTTEXT_ERR_MSG = f"fasttext must be installed. {_GENERIC_ERR_MSG}"
-
-
-def fasttext_available() -> bool:
-    """
-    Returns whether `fasttext` is installed.
-
-    Returns:
-        bool: `True` if `fasttext` is installed, False otherwise.
-    """
-    return bool(_FASTTEXT_AVAILABLE)
-
-
-def get_fasttext_requirement() -> Requirement:
-    """
-    Returns the `fasttext` requirement.
-
-    Returns:
-        tuple: A tuple containing the package name, whether the requirement is satisfied, and an error message.
-    """
-    return "fasttext", fasttext_available(), _FASTTEXT_ERR_MSG
-
-
 # Wandb related dependencies
 _WANDB_AVAILABLE = importlib.util.find_spec("wandb") is not None
 _WANDB_ERR_MSG = f"WandB must be installed. {_GENERIC_ERR_MSG}"
