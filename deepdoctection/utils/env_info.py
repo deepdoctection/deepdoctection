@@ -27,7 +27,6 @@ For env variables with boolean character, use one of the following values:
 ```
 
 ```python
-USE_TENSORFLOW
 USE_PYTORCH
 USE_CUDA
 USE_MPS
@@ -77,7 +76,7 @@ from collections import defaultdict
 from typing import Optional
 
 import numpy as np
-from packaging import version
+
 from pypdf.errors import DependencyError
 from tabulate import tabulate
 
@@ -88,7 +87,6 @@ from .file_utils import (
     cocotools_available,
     distance_available,
     doctr_available,
-    fasttext_available,
     get_poppler_version,
     get_tesseract_version,
     jdeskew_available,
@@ -241,11 +239,6 @@ def collect_installed_dependencies(data: KeyValEnvInfos) -> KeyValEnvInfos:
         data.append(("Doctr", doctr.__version__))
     else:
         data.append(("Doctr", "None"))
-
-    if fasttext_available():
-        data.append(("Fasttext", "available"))
-    else:
-        data.append(("Fasttext", "None"))
 
     if wandb_available():
         import wandb
@@ -409,8 +402,6 @@ def set_dl_env_vars() -> None:
         ```python
         os.environ["DD_USE_TORCH"] = "1"
         os.environ["USE_TORCH"] = "1"      # necessary if you make use of DocTr's OCR engine
-        os.environ["DD_USE_TF"] = "0"
-        os.environ["USE_TF"] = "0"      # it's better to explicitly disable TensorFlow
         ```
     """
 
