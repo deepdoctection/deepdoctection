@@ -53,7 +53,6 @@ class ModelProfile:
     description: str
 
     size: list[int]
-    tp_model: bool = field(default=False)
     config: Optional[str] = field(default=None)
     preprocessor_config: Optional[str] = field(default=None)
     hf_repo_id: Optional[str] = field(default=None)

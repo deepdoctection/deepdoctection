@@ -88,7 +88,6 @@ nav:
         - Eval: ./modules/deepdoctection.eval.md
         - Extern: ./modules/deepdoctection.extern.md
         - Extern PT: ./modules/deepdoctection.extern.pt.md
-        - Extern TP: ./modules/deepdoctection.extern.tp.md
         - Mapper: ./modules/deepdoctection.mapper.md
         - Pipe: ./modules/deepdoctection.pipe.md
         - Train: ./modules/deepdoctection.train.md

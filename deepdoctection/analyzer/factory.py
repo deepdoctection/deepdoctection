@@ -567,7 +567,6 @@ class ServiceFactory:
                 architecture=profile.architecture,
                 path_weights=weights_path,
                 device=device,
-                lib=lib,
                 path_config_json=config_path,
             )
         if use_textract:

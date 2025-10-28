@@ -91,7 +91,7 @@ def prodigy_to_image(
             path_reference_location = os.path.join(path_reference_ds, file_name)
         location = dp.get("path", path_reference_location)
         if not os.path.isfile(location):
-            location = None
+            location = ""
 
         image = Image(file_name=file_name, location=location, external_id=external_id)
 

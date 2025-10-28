@@ -43,7 +43,6 @@ class TestModelCatalog:
             description="Test model profile",
             config="test_path/dd/conf_frcnn_cell.yaml",
             size=[],
-            tp_model=False,
             hf_repo_id="",
             hf_model_name="",
             hf_config_file=["conf_config.yaml"],
