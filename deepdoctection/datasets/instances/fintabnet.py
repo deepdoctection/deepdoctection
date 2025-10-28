@@ -35,7 +35,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Mapping, Sequence, Union
 
-from ...dataflow import DataFlow, MapData, MultiProcessMapData
+from ...dataflow import DataFlow, MapData
 from ...dataflow.common import FlattenData
 from ...dataflow.custom_serialize import SerializerJsonlines
 from ...datapoint.image import Image
@@ -43,11 +43,9 @@ from ...mapper.cats import cat_to_sub_cat, filter_cat
 from ...mapper.maputils import curry
 from ...mapper.misc import image_ann_to_image, maybe_ann_to_sub_image
 from ...mapper.pubstruct import pub_to_image
-from ...utils.file_utils import set_mp_spawn
 from ...utils.logger import LoggingRecord, logger
 from ...utils.settings import CellType, DatasetType, LayoutType, ObjectTypes, TableType
 from ...utils.types import PubtabnetDict
-from ...utils.utils import to_bool
 from ..base import _BuiltInDataset
 from ..dataflow_builder import DataFlowBaseBuilder
 from ..info import DatasetCategories, DatasetInfo
@@ -179,8 +177,6 @@ class FintabnetBuilder(DataFlowBaseBuilder):
         max_datapoints = kwargs.get("max_datapoints")
         rows_and_cols = kwargs.get("rows_and_cols", True)
         load_image = kwargs.get("load_image", False)
-        use_multi_proc = to_bool(kwargs.get("use_multi_proc", True))
-        use_multi_proc_strict = to_bool(kwargs.get("use_multi_proc_strict", False))
         fake_score = kwargs.get("fake_score", False)
         build_mode = kwargs.get("build_mode")
         pubtables_like = kwargs.get("pubtables_like", False)
@@ -188,9 +184,6 @@ class FintabnetBuilder(DataFlowBaseBuilder):
         if build_mode and not load_image:
             logger.info(LoggingRecord("When 'build_mode' is set to True will reset 'load_image' to True"))
             load_image = True
-
-        if use_multi_proc or use_multi_proc_strict:
-            set_mp_spawn()
 
         if max_datapoints is not None:
             max_datapoints = int(max_datapoints)
@@ -210,8 +203,6 @@ class FintabnetBuilder(DataFlowBaseBuilder):
 
         df = MapData(df, _map_filename(self.get_workdir()))
 
-        buffer_size = 200 if max_datapoints is None else min(max_datapoints, 200) - 1
-
         pub_mapper = pub_to_image(
             categories_name_as_key=self.categories.get_categories(name_as_key=True, init=True),
             load_image=load_image,
@@ -221,16 +212,7 @@ class FintabnetBuilder(DataFlowBaseBuilder):
             is_fintabnet=True,
             pubtables_like=pubtables_like,
         )
-        if use_multi_proc:
-            df = MultiProcessMapData(
-                df,
-                num_proc=1 if buffer_size < 3 else 4,
-                map_func=pub_mapper,
-                strict=use_multi_proc_strict,
-                buffer_size=buffer_size,
-            )
-        else:
-            df = MapData(df, pub_mapper)
+        df = MapData(df, pub_mapper)
 
         if build_mode == "table":
 

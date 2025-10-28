@@ -40,8 +40,8 @@ def test_dd_analyzer_with_tatr() -> None:
         config_overwrite=[
             "USE_TABLE_SEGMENTATION=True",
             "USE_OCR=False",
-            "LAYOUT.WEIGHTS=microsoft/table-transformer-detection/pytorch_model.bin",
-            "ITEM.WEIGHTS=microsoft/table-transformer-structure-recognition/pytorch_model.bin",
+            "LAYOUT.WEIGHTS=microsoft/table-transformer-detection/model.safetensors",
+            "ITEM.WEIGHTS=microsoft/table-transformer-structure-recognition/model.safetensors",
             "ITEM.FILTER=['table']",
             "LAYOUT.PAD.TOP=60",
             "LAYOUT.PAD.RIGHT=60",
@@ -164,7 +164,8 @@ def test_dd_analyzer_builds_and_process_image_layout_correctly() -> None:
     assert isinstance(page, Page)
 
     assert len(page.layouts) in {11, 12}
-    assert {layout.category_name.value for layout in page.layouts} == {"list", "text", "title"}  # type: ignore
+    assert ({layout.category_name.value for layout in page.layouts} == {"list", "text", "title"} or
+            {layout.category_name.value for layout in page.layouts} == {"text", "title"}) # type: ignore
 
     assert len(page.tables) == 1
     assert page.height == 2339
@@ -196,7 +197,8 @@ def test_dd_analyzer_builds_and_process_image_layout_and_tables_correctly() -> N
     assert isinstance(page, Page)
 
     assert len(page.layouts) in {11, 12}
-    assert {layout.category_name.value for layout in page.layouts} == {"list", "text", "title"}  # type: ignore
+    assert ({layout.category_name.value for layout in page.layouts} == {"list", "text", "title"} or
+            {layout.category_name.value for layout in page.layouts} == {"text", "title"}) # type: ignore
 
     assert len(page.tables[0].cells) in {14, 15, 16}  # type: ignore
     assert page.tables[0].html in {

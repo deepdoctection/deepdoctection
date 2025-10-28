@@ -32,7 +32,7 @@ from deepdoctection.utils.types import PixelValues
 from tests.data import Annotations
 
 
-def get_mock_word_results(np_img: PixelValues, predictor, device, lib) -> List[DetectionResult]:  # type: ignore  # pylint: disable=W0613
+def get_mock_word_results(np_img: PixelValues, predictor, device) -> List[DetectionResult]:  # type: ignore  # pylint: disable=W0613
     """
     Returns WordResults attr: word_results_list
     """
@@ -40,7 +40,7 @@ def get_mock_word_results(np_img: PixelValues, predictor, device, lib) -> List[D
 
 
 def get_mock_text_line_results(  # type: ignore
-    inputs: List[Tuple[str, PixelValues]], predictor, device, lib  # pylint: disable=W0613
+    inputs: List[Tuple[str, PixelValues]], predictor, device  # pylint: disable=W0613
 ) -> List[DetectionResult]:
     """
     Returns two DetectionResult

@@ -735,25 +735,6 @@ def get_spacy_requirement() -> Requirement:
     return "spacy", spacy_available(), _SPACY_ERR_MSG
 
 
-def set_mp_spawn() -> None:
-    """
-    Sets the multiprocessing method to "spawn".
-
-    Note:
-        "spawn/forkserver" is safer than the default "fork" method and produces more deterministic behavior and memory
-        saving. However, its limitation is that you cannot pass a lambda function to subprocesses.
-    """
-
-    if not _S.mp_context_set:
-        _S.freeze(False)
-        mp.set_start_method("spawn")
-        _S.mp_context_set = True
-        _S.freeze()
-
-
-# Copy and paste from https://github.com/Layout-Parser/layout-parser/blob/main/src/layoutparser/file_utils.py
-
-
 class _LazyModule(ModuleType):
     """
     Module class that surfaces all objects but only performs associated imports when the objects are requested.

@@ -42,6 +42,3 @@
 
 ::: deepdoctection.extern.texocr
 
-
-::: deepdoctection.extern.tpdetect
-

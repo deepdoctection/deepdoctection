@@ -6,7 +6,6 @@ Init file for utils package
 """
 from typing import Optional, Tuple, Union, no_type_check
 
-from .concurrency import *
 from .context import *
 from .env_info import *
 from .error import *

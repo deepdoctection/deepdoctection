@@ -46,7 +46,6 @@ __all__ = [
     "download",
     "mkdir_p",
     "load_json",
-    "sub_path",
     "get_package_path",
     "get_cache_dir_path",
     "get_configs_dir_path",
@@ -416,26 +415,3 @@ def maybe_copy_config_to_cache(
     if not os.path.isfile(absolute_path) or force_copy:
         copyfile(absolute_path_source, absolute_path)
     return absolute_path
-
-
-@deprecated("Use pathlib operations instead", "2022-06-08")
-def sub_path(anchor_dir: PathLikeOrStr, *paths: PathLikeOrStr) -> PathLikeOrStr:
-    """
-    Generates a path from the anchor directory and additional path arguments.
-
-    Example:
-        ```python
-        sub_path('/path/to', 'dir1', 'dir2')
-        ```
-
-    Args:
-        anchor_dir: The anchor directory.
-        *paths: Additional directories to add to the path.
-
-    Returns:
-        The generated sub-path.
-
-    Note:
-        Deprecated. Use pathlib operations instead.
-    """
-    return os.path.join(os.path.dirname(os.path.abspath(anchor_dir)), *paths)

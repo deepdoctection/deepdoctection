@@ -34,7 +34,6 @@ if pytorch_available() and detectron2_available():
 
 
 @mark.pt_deps  # pt_deps because we need Detectron2 here
-@patch("deepdoctection.mapper.tpstruct.os.path.isfile", MagicMock(return_value=True))
 def test_adapter_with_cached_dataset() -> None:
     """
     test DatasetAdapter wraps a dd dataset into a torch dataset and yields datapoints correctly when the whole dataset
@@ -56,7 +55,6 @@ def test_adapter_with_cached_dataset() -> None:
 
 
 @mark.pt_deps  # pt_deps because we need Detectron2 here
-@patch("deepdoctection.mapper.tpstruct.os.path.isfile", MagicMock(return_value=True))
 def test_adapter_with_uncached_dataset() -> None:
     """
     test DatasetAdapter wraps a dd dataset into a torch dataset and yields datapoints correctly when the dataset
