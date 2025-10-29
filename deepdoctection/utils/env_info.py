@@ -66,6 +66,7 @@ MODEL_CATALOG
 can store an (absolute) path to a `.jsonl` file.
 
 """
+from __future__ import annotations
 
 import importlib
 import os
@@ -74,10 +75,14 @@ import subprocess
 import sys
 from collections import defaultdict
 from typing import Optional
+from pathlib import Path
+
+from pydantic import Field, model_validator
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
 
 import numpy as np
 
-from pypdf.errors import DependencyError
 from tabulate import tabulate
 
 from .file_utils import (
@@ -103,16 +108,227 @@ from .file_utils import (
     tesseract_available,
     transformers_available,
     wandb_available,
+    mkdir_p,
+    copy_file_to_target
 )
-from .logger import LoggingRecord, logger
+
 from .types import KeyValEnvInfos, PathLikeOrStr
-
-__all__ = ["collect_env_info", "auto_select_viz_library", "auto_select_pdf_render_framework", "ENV_VARS_TRUE"]
-
-# pylint: disable=import-outside-toplevel
 
 ENV_VARS_TRUE: set[str] = {"1", "True", "TRUE", "true", "yes"}
 
+__all__ = ["collect_env_info",
+           "EnvSettings",
+           "SETTINGS",
+           "ENV_VARS_TRUE"]
+
+# pylint: disable=import-outside-toplevel
+
+
+
+class EnvSettings(BaseSettings):
+    """
+    Central settings manager for deepdoctection.
+
+    Responsibilities:
+    - Load `.env` and process OS environment.
+    - Apply rule-based overrides (viz backend, pdf rendering, DL framework).
+    - Prepare cache dirs and copy default config files.
+    - Export effective values back into `os.environ` for legacy modules.
+    """
+
+    # Logging
+    LOG_LEVEL: str = "INFO"
+    LOG_PROPAGATE: bool = False
+    FILTER_THIRD_PARTY_LIB: bool = False
+    STD_OUT_VERBOSE: bool = False
+
+    # HF / Model catalog
+    HF_CREDENTIALS: Optional[str] = None
+    MODEL_CATALOG: Optional[str] = None
+
+    # DL framework toggles
+    DD_USE_TORCH: bool = False
+    USE_TORCH: bool = False
+    PYTORCH_AVAILABLE: bool = False
+    USE_CUDA: bool = False
+    USE_MPS: bool = False
+
+    # Rendering and viz
+    USE_DD_PILLOW: bool = False
+    USE_DD_OPENCV: bool = False
+    USE_DD_PDFIUM: bool = False
+    USE_DD_POPPLER: bool = False
+
+    # Optional dependency
+    QPDF_AVAILABLE: bool = False
+
+    # Paths (defaults inside user cache)
+    DEEPDOCTECTION_CACHE: Path = Field(default_factory=lambda: Path.home() / ".cache" / "deepdoctection")
+    MODEL_DIR: Path = Field(default_factory=lambda: Path.home() / ".cache" / "deepdoctection" / "weights")
+    CONFIGS_DIR: Path = Field(default_factory=lambda: Path.home() / ".cache" / "deepdoctection" / "configs")
+    DATASET_DIR: Path = Field(default_factory=lambda: Path.home() / ".cache" / "deepdoctection" / "datasets")
+
+    # Package root (read-only)
+    PACKAGE_PATH: Path = Field(default_factory=lambda: Path(__file__).resolve().parents[1], frozen=True)
+
+    # Default bundled config sources (inside the package)
+    PROFILES_SRC: Path = Field(default_factory=lambda: Path(__file__).resolve().parents[1] / "configs" / "profiles.jsonl")
+    CONF_DD_ONE_SRC: Path = Field(default_factory=lambda: Path(__file__).resolve().parents[1] / "configs" / "conf_dd_one.yaml")
+    CONF_TESSERACT_SRC: Path = Field(default_factory=lambda: Path(__file__).resolve().parents[1] / "configs" / "conf_tesseract.yaml")
+
+    # Target filenames in CONFIGS_DIR
+    PROFILES_TARGET_NAME: str = "profiles.jsonl"
+    CONF_DD_ONE_TARGET_NAME: str = "conf_dd_one.yaml"
+    CONF_TESSERACT_TARGET_NAME: str = "conf_tesseract.yaml"
+
+
+    # Pydantic Settings config
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        env_prefix="",
+        case_sensitive=False,
+        extra="ignore",
+    )
+
+    # ---- Post-load reconciliation and rule application ----
+    @model_validator(mode="after")
+    def _apply_runtime_rules(self) -> EnvSettings:
+        """
+        Apply availability and rule-based overrides, but only when user did not explicitly set the variable.
+        """
+        fields_set = getattr(self, "__fields_set__", set())
+
+        # 0) Derive dirs from DEEPDOCTECTION_CACHE unless explicitly set by user/.env
+        if "MODEL_DIR" not in fields_set:
+            self.MODEL_DIR = self.DEEPDOCTECTION_CACHE / "weights"
+        if "CONFIGS_DIR" not in fields_set:
+            self.CONFIGS_DIR = self.DEEPDOCTECTION_CACHE / "configs"
+        if "DATASET_DIR" not in fields_set:
+            self.DATASET_DIR = self.DEEPDOCTECTION_CACHE / "datasets"
+
+
+        # 1) DL framework (PyTorch, CUDA, MPS)
+        if "PYTORCH_AVAILABLE" not in fields_set:
+            if pytorch_available():
+                self.PYTORCH_AVAILABLE = True
+            else:
+                self.PYTORCH_AVAILABLE = False
+
+        if self.PYTORCH_AVAILABLE:
+            # Prefer user choices if set; otherwise enable torch by default
+            if "DD_USE_TORCH" not in fields_set:
+                self.DD_USE_TORCH = True
+            if "USE_TORCH" not in fields_set:
+                self.USE_TORCH = True
+
+            import torch  # noqa
+            if "USE_CUDA" not in fields_set:
+                self.USE_CUDA = bool(torch.cuda.is_available())
+            if "USE_MPS" not in fields_set:
+                self.USE_MPS = bool(getattr(torch.backends, "mps", None) and torch.backends.mps.is_available())
+
+        # 2) Viz backend auto-selection (PIL vs OpenCV)
+        if ("USE_DD_PILLOW" not in fields_set) and ("USE_DD_OPENCV" not in fields_set):
+            if opencv_available():
+                self.USE_DD_OPENCV = True
+                self.USE_DD_PILLOW = False
+            else:
+                self.USE_DD_OPENCV = False
+                self.USE_DD_PILLOW = True
+
+        # 3) PDF rendering framework (pdfium vs poppler)
+        if ("USE_DD_PDFIUM" not in fields_set) and ("USE_DD_POPPLER" not in fields_set):
+            if pypdfium2_available():
+                self.USE_DD_PDFIUM = True
+                self.USE_DD_POPPLER = False
+            elif pdf_to_cairo_available() or pdf_to_ppm_available():
+                self.USE_DD_PDFIUM = False
+                self.USE_DD_POPPLER = True
+            else:
+                # Defer raising to runtime usage sites; here just leave both False
+                self.USE_DD_PDFIUM = False
+                self.USE_DD_POPPLER = False
+
+        # 4) Optional: Track qpdf presence as a convenience flag
+        if "QPDF_AVAILABLE" not in fields_set:
+            self.QPDF_AVAILABLE = bool(qpdf_available())
+
+
+        return self
+
+    def export_to_environ(self) -> None:
+        """
+        Export effective settings into `os.environ`, so legacy modules keep working without refactors.
+        """
+        def _set(k: str, v) -> None:
+            if isinstance(v, bool):
+                os.environ[k] = "True" if v else "False"
+            elif v is None:
+                # do not export None
+                return
+            else:
+                os.environ[k] = str(v)
+
+        export_vars = {
+            # logging
+            "LOG_LEVEL": self.LOG_LEVEL,
+            "LOG_PROPAGATE": self.LOG_PROPAGATE,
+            "FILTER_THIRD_PARTY_LIB": self.FILTER_THIRD_PARTY_LIB,
+            "STD_OUT_VERBOSE": self.STD_OUT_VERBOSE,
+            # hf / catalog
+            "HF_CREDENTIALS": self.HF_CREDENTIALS,
+            "MODEL_CATALOG": self.MODEL_CATALOG,
+            # dl flags
+            "DD_USE_TORCH": self.DD_USE_TORCH,
+            "USE_TORCH": self.USE_TORCH,
+            "PYTORCH_AVAILABLE": self.PYTORCH_AVAILABLE,
+            "USE_CUDA": self.USE_CUDA,
+            "USE_MPS": self.USE_MPS,
+            # viz/pdf
+            "USE_DD_PILLOW": self.USE_DD_PILLOW,
+            "USE_DD_OPENCV": self.USE_DD_OPENCV,
+            "USE_DD_PDFIUM": self.USE_DD_PDFIUM,
+            "USE_DD_POPPLER": self.USE_DD_POPPLER,
+            "MODEL_CATALOG_BASE": self.CONFIGS_DIR / self.PROFILES_TARGET_NAME,
+            "DD_ONE_CONFIG": self.CONFIGS_DIR / "dd" / self.CONF_DD_ONE_TARGET_NAME,
+        }
+        for k, v in export_vars.items():
+            _set(k, v)
+
+        # Export paths
+        os.environ["DEEPDOCTECTION_CACHE"] = str(self.DEEPDOCTECTION_CACHE)
+        os.environ["MODEL_DIR"] = str(self.MODEL_DIR)
+        os.environ["CONFIGS_DIR"] = str(self.CONFIGS_DIR)
+        os.environ["DATASET_DIR"] = str(self.DATASET_DIR)
+        os.environ["PATH_DD_PACKAGE"] = str(self.PACKAGE_PATH)
+
+    def ensure_cache_layout_and_copy_defaults(self, force_copy: bool = False) -> None:
+        """
+        Ensure cache dirs exist and copy default config files to CONFIGS_DIR.
+        """
+
+
+        mkdir_p(self.DEEPDOCTECTION_CACHE)
+        mkdir_p(self.MODEL_DIR)
+        mkdir_p(self.CONFIGS_DIR)
+        mkdir_p(self.DATASET_DIR)
+        mkdir_p(self.CONFIGS_DIR / "dd")
+
+        # Compute targets
+        profiles_target = self.CONFIGS_DIR / self.PROFILES_TARGET_NAME
+        conf_dd_one_target = self.CONFIGS_DIR / "dd" / self.CONF_DD_ONE_TARGET_NAME
+        conf_tesseract_target = self.CONFIGS_DIR / "dd" / self.CONF_TESSERACT_TARGET_NAME
+
+        # Copy (idempotent unless force_copy)
+        copy_file_to_target(self.PROFILES_SRC, profiles_target, force_copy=force_copy)
+        copy_file_to_target(self.CONF_DD_ONE_SRC, conf_dd_one_target, force_copy=force_copy)
+        copy_file_to_target(self.CONF_TESSERACT_SRC, conf_tesseract_target, force_copy=force_copy)
+
+# Load .env and OS env, apply rules, then export to environ for legacy modules
+SETTINGS = EnvSettings()
+SETTINGS.export_to_environ()
+SETTINGS.ensure_cache_layout_and_copy_defaults()
 
 def collect_torch_env() -> str:
     """
@@ -290,14 +506,11 @@ def pt_info(data: KeyValEnvInfos) -> KeyValEnvInfos:
         A list of tuples containing all the collected information.
     """
 
-    if pytorch_available():
-        import torch
-
-        os.environ["PYTORCH_AVAILABLE"] = "1"
-
-    else:
+    if not SETTINGS.PYTORCH_AVAILABLE:
         data.append(("PyTorch", "None"))
         return []
+    else:
+        import torch
 
     has_gpu = torch.cuda.is_available()  # true for both CUDA & ROCM
     has_mps = torch.backends.mps.is_available()
@@ -325,7 +538,6 @@ def pt_info(data: KeyValEnvInfos) -> KeyValEnvInfos:
     data.append(("PyTorch debug build", str(torch.version.debug)))
 
     if has_gpu:
-        os.environ["USE_CUDA"] = "1"
         has_gpu_text = "Yes"
         devices = defaultdict(list)
         for k in range(torch.cuda.device_count()):
@@ -363,8 +575,6 @@ def pt_info(data: KeyValEnvInfos) -> KeyValEnvInfos:
     else:
         has_mps_text = "Yes"
         mps_build = str(torch.backends.mps.is_built())
-        if mps_build == "True":
-            os.environ["USE_MPS"] = "1"
 
     data.append(("MPS available", has_mps_text))
     data.append(("MPS built", mps_build))
@@ -389,28 +599,6 @@ def pt_info(data: KeyValEnvInfos) -> KeyValEnvInfos:
         data.append(("torchvision", "unknown"))
 
     return data
-
-
-def set_dl_env_vars() -> None:
-    """
-    Set the environment variables that steer the selection of the DL framework.
-
-    If both PyTorch and TensorFlow are available, PyTorch will be selected by default. For testing purposes, e.g. on
-    Colab, you may find yourself with a pre-installed TensorFlow version. If you want to enforce PyTorch, you must set:
-
-    Example:
-        ```python
-        os.environ["DD_USE_TORCH"] = "1"
-        os.environ["USE_TORCH"] = "1"      # necessary if you make use of DocTr's OCR engine
-        ```
-    """
-
-    if os.environ.get("PYTORCH_AVAILABLE"):
-        os.environ["DD_USE_TORCH"] = "1"
-        os.environ["USE_TORCH"] = "1"
-
-    if os.environ.get("PYTORCH_AVAILABLE") not in ENV_VARS_TRUE:
-        logger.warning(LoggingRecord(msg="Pytorch is not available."))
 
 
 def collect_env_info() -> str:
@@ -460,7 +648,6 @@ def collect_env_info() -> str:
         data.append(("Plattform", sys.platform + " Plattform not supported."))
 
     data = pt_info(data)
-    set_dl_env_vars()
 
     data = collect_installed_dependencies(data)
 
@@ -470,50 +657,6 @@ def collect_env_info() -> str:
         env_str += collect_torch_env()
 
     return env_str
-
-
-def auto_select_viz_library() -> None:
-    """
-    Sets PIL as the default image library if OpenCV is not installed.
-
-    Note:
-        If environment variables are already set, this function will not change them.
-    """
-
-    # if env variables are already set, don't change them
-    if os.environ.get("USE_DD_PILLOW") or os.environ.get("USE_DD_OPENCV"):
-        return
-    if opencv_available():
-        os.environ["USE_DD_PILLOW"] = "False"
-        os.environ["USE_DD_OPENCV"] = "True"
-    else:
-        os.environ["USE_DD_PILLOW"] = "True"
-        os.environ["USE_DD_OPENCV"] = "False"
-
-
-def auto_select_pdf_render_framework() -> None:
-    """
-    Sets `pdf2image` as the default PDF rendering library if pdfium is not installed.
-
-    Note:
-        If environment variables are already set, this function will not change them.
-
-    Raises:
-        DependencyError: If no PDF rendering library is found. Please install Poppler or pdfium.
-    """
-
-    # if env variables are already set, don't change them
-    if os.environ.get("USE_DD_POPPLER") or os.environ.get("USE_DD_PDFIUM"):
-        return
-    if pypdfium2_available():
-        os.environ["USE_DD_POPPLER"] = "False"
-        os.environ["USE_DD_PDFIUM"] = "True"
-        return
-    if pdf_to_cairo_available() or pdf_to_ppm_available():
-        os.environ["USE_DD_POPPLER"] = "True"
-        os.environ["USE_DD_PDFIUM"] = "False"
-        return
-    raise DependencyError("No pdf rendering library found. Please install Poppler or pdfium.")
 
 
 # pylint: enable=import-outside-toplevel

@@ -439,27 +439,3 @@ def get_type(obj_type: Union[str, ObjectTypes]) -> ObjectTypes:
         raise KeyError(f"String {obj_type} does not correspond to a registered ObjectType")
     return return_value
 
-
-# Some path settings
-
-# package path
-file_path = Path(os.path.split(__file__)[0])
-PATH = file_path.parent.parent
-
-# model cache directory
-if os.environ.get("DEEPDOCTECTION_CACHE"):
-    dd_cache_home = Path(os.environ["DEEPDOCTECTION_CACHE"])
-else:
-    dd_cache_home = Path(os.getenv("XDG_CACHE_HOME", Path.home() / ".cache")) / "deepdoctection"
-
-CACHE_DIR = dd_cache_home
-MODEL_DIR = dd_cache_home / "weights"
-
-# configs cache directory
-CONFIGS = dd_cache_home / "configs"
-
-# dataset cache directory
-DATASET_DIR = dd_cache_home / "datasets"
-
-FILE_PATH = os.path.split(__file__)[0]
-TPATH = os.path.dirname(os.path.dirname(FILE_PATH))

@@ -65,7 +65,7 @@ from ..pipe.sub_layout import DetectResultGenerator, SubImageLayoutService
 from ..pipe.text import TextExtractionService
 from ..pipe.transform import SimpleTransformService
 from ..utils.error import DependencyError
-from ..utils.fs import get_configs_dir_path
+from ..utils.env_info import SETTINGS
 from ..utils.metacfg import AttrDict
 from ..utils.settings import CellType, LayoutType, ObjectTypes, Relationships
 from ..utils.transform import PadTransform
@@ -492,7 +492,7 @@ class ServiceFactory:
 
         if config.OCR.USE_TESSERACT:
             use_tesseract = True
-            ocr_config_path = get_configs_dir_path() / config.OCR.CONFIG.TESSERACT
+            ocr_config_path = SETTINGS.CONFIGS_DIR / config.OCR.CONFIG.TESSERACT
             languages = [f"LANGUAGES={config.LANGUAGE}"] if config.LANGUAGE is not None else None
 
         if config.OCR.USE_DOCTR:

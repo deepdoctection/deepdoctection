@@ -24,7 +24,7 @@ from pathlib import Path
 from typing import Mapping, Optional, Sequence, Union
 
 from ..dataflow import DataFlow
-from ..utils.fs import get_dataset_dir_path
+from ..utils.env_info import SETTINGS
 from ..utils.types import PathLikeOrStr
 from .info import DatasetCategories
 
@@ -103,7 +103,7 @@ class DataFlowBaseBuilder(ABC):
         Returns:
             local workdir
         """
-        return Path(get_dataset_dir_path()) / self.location
+        return SETTINGS.DATASET_DIR / self.location
 
     @abstractmethod
     def build(self, **kwargs: Union[str, int]) -> DataFlow:

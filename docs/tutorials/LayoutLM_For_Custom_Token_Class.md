@@ -38,7 +38,7 @@ Download the dataset and save it to
 
 
 ```python
-dd.get_dataset_dir_path() / "FRFPE"
+dd.SETTINGS.DATASET_DIR / "FRFPE"
 ```
 
 
@@ -46,7 +46,7 @@ dd.get_dataset_dir_path() / "FRFPE"
 
 
 ```python
-path = dd.get_dataset_dir_path() / "FRFPE" / "40952248ba13ae8bfdd39f56af22f7d9_0.json"
+path = dd.SETTINGS.DATASET_DIR / "FRFPE" / "40952248ba13ae8bfdd39f56af22f7d9_0.json"
 
 page = dd.Page.from_file(path)
 page.image =  dd.load_image_from_file(path.parents[0]  / 

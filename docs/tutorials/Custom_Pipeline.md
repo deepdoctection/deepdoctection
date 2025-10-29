@@ -5,7 +5,7 @@
 </p>
 
 
-# Project: Building a custom pipeline
+# Project: Building a custom pipeline - MUST BE RE-WRITTEN !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 
 
 The **deep**doctection analyzer is an example of a Document Layout Analysis pipeline. In this tutorial we'll build
 a custom pipeline by adding successively components that are needed to fulfill a given task.  

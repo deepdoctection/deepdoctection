@@ -36,7 +36,7 @@ from deepdoctection.datapoint import (
 )
 from deepdoctection.datasets import DatasetCategories
 from deepdoctection.extern.base import DetectionResult, SequenceClassResult, TokenClassResult
-from deepdoctection.utils.fs import get_package_path
+from deepdoctection.utils.env_info import SETTINGS
 from deepdoctection.utils.settings import (
     CellType,
     Languages,
@@ -142,7 +142,7 @@ def fixture_path_to_tesseract_yaml() -> PathLikeOrStr:
     """
     path to tesseract yaml file
     """
-    return Path(get_package_path()) / "deepdoctection/configs/conf_tesseract.yaml"
+    return SETTINGS.PACKAGE_PATH / "deepdoctection/configs/conf_tesseract.yaml"
 
 
 @fixture(name="dp_image")

@@ -6,6 +6,7 @@ Init file for utils package
 """
 from typing import Optional, Tuple, Union, no_type_check
 
+from .concurrency import *
 from .context import *
 from .env_info import *
 from .error import *
@@ -47,14 +48,14 @@ def _global_import(
                     __all__.append(k)
 
 
-_global_import("file_utils", suffix=("_available", "_requirement"))
+_global_import("file_utils", suffix=("_available", "_requirement", "mkdir_p", "copy_file_to_target"))
 _global_import("metacfg", prefix=("set_config_by_yaml", "save_config_to_yaml", "config_to_cli_str"))
 _global_import("utils", prefix=("delete_keys_from_dict", "split_string", "string_to_dict"))
 _global_import(
     "settings", suffix=("Type", "TokenClasses", "BioTag", "TokenClassWithTag", "Relationships", "Languages", "get_type")
 )
 _global_import(
-    "env_info", prefix=("collect_env_info", "get_device", "auto_select_lib_and_device", "auto_select_viz_library")
+    "env_info", prefix=("collect_env_info", "SETTINGS")
 )
 
 

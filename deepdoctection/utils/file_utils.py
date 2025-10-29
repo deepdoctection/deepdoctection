@@ -10,13 +10,15 @@ Utilities for maintaining dependencies and dealing with external library package
 """
 import importlib.metadata
 import importlib.util
-import multiprocessing as mp
+
+import errno
 import string
 import subprocess
-from os import environ, path
-from shutil import which
+from os import environ, path, makedirs
+from shutil import which, copyfile
 from types import ModuleType
-from typing import Any, Union, no_type_check
+from typing import Any, Union, no_type_check, Optional
+from pathlib import Path
 
 import numpy as np
 from packaging import version
@@ -802,3 +804,102 @@ class _LazyModule(ModuleType):
     @no_type_check
     def __reduce__(self):
         return self.__class__, (self._name, self.__file__, self._import_structure)
+
+
+# Copyright (c) Tensorpack Contributors
+# Licensed under the Apache License, Version 2.0 (the "License")
+def mkdir_p(dir_name: PathLikeOrStr) -> None:
+    """
+    Creates a directory recursively, similar to `mkdir -p`. Does nothing if the directory already exists.
+
+    Example:
+        ```python
+        mkdir_p('/tmp/mydir')
+        ```
+
+    Args:
+        dir_name: The name of the directory to create.
+
+    Returns:
+        None
+    """
+    assert dir_name is not None
+    if dir_name == "" or path.isdir(dir_name):
+        return None
+    try:
+        makedirs(dir_name)
+    except OSError as err:
+        if err.errno != errno.EEXIST:
+            raise err
+
+
+def copy_file_to_target(
+    path_to_source_dir_or_file: PathLikeOrStr,
+    path_to_target_dir_or_file: PathLikeOrStr,
+    file_name: Optional[str] = None,
+    force_copy: bool = True,
+) -> str:
+    """
+    Copy a file from a source file or directory into a target location.
+
+    - If `path_to_source_dir_or_file` is a file, that file is copied. The destination name defaults to the source
+      basename and can be overridden with `file_name`.
+    - If `path_to_source_dir_or_file` is a directory, the source file is resolved as:
+      * `file_name` if provided, or
+      * `dst.name` when `path_to_target_dir_or_file` points to a file path.
+      Otherwise, a `ValueError` is raised.
+    - If the target is an existing or implied directory (no suffix), the file is copied inside it. If the target
+      is a file path, the file is written there; `file_name` overrides the basename.
+    - Parent directories are created as needed. If `force_copy` is False and the destination exists, the copy is skipped.
+
+    Args:
+        path_to_source_dir_or_file: Path to a source file or a directory containing the source file.
+        path_to_target_dir_or_file: Destination directory or destination file path.
+        file_name: Optional source file name (when the source is a directory) or destination file name override.
+        force_copy: If True, always copy (overwriting the destination). If False, skip when the destination exists.
+
+    Returns:
+        str: Path to the destination file.
+
+    Raises:
+        ValueError: When the source is a directory and neither `file_name` nor a file-like target name is provided.
+        FileNotFoundError: When the resolved source file does not exist.
+    """
+
+    src = Path(path_to_source_dir_or_file)
+    dst = Path(path_to_target_dir_or_file)
+
+    # Resolve source file
+    if src.is_file():
+        resolved_src = src
+        resolved_name = file_name or src.name
+    else:
+        # source is a directory; we need a file name
+        if file_name:
+            resolved_src = src / file_name
+            resolved_name = file_name
+        else:
+            # If target is a file path with a name, use that file name to pick source
+            if dst.suffix:
+                resolved_src = src / dst.name
+                resolved_name = dst.name
+            else:
+                raise ValueError("file_name must be provided when source is a directory and target is a directory.")
+
+    if not resolved_src.exists() or not resolved_src.is_file():
+        raise FileNotFoundError(f"Source file does not exist: {resolved_src}")
+
+    # Resolve destination file
+    if dst.is_dir() or (not dst.exists() and not dst.suffix):
+        mkdir_p(dst)
+        resolved_dst = dst / resolved_name
+    else:
+        # dst is a file path
+        mkdir_p(dst.parent)
+        resolved_dst = dst if not file_name else dst.with_name(file_name)
+
+    # Copy if needed
+    if force_copy or (not resolved_dst.exists()):
+        copyfile(str(resolved_src), str(resolved_dst))
+
+    return str(resolved_dst)
