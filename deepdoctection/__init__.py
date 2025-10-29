@@ -5,23 +5,17 @@
 Init file for deepdoctection package. This file is used to import all submodules and to set some environment variables
 """
 
-import importlib.util
+
 import os
-
-# Before doing anything else, check if the .env file exists and load it
-if importlib.util.find_spec("dotenv") is not None:
-    from dotenv import load_dotenv
-
-    load_dotenv()
-
 
 # pylint: disable=wrong-import-position
 import sys
 from typing import TYPE_CHECKING
 
-from .utils.env_info import auto_select_pdf_render_framework, collect_env_info
-from .utils.file_utils import _LazyModule, pytorch_available
+
+from .utils.env_info import collect_env_info
 from .utils.logger import LoggingRecord, logger
+from .utils.file_utils import _LazyModule, pytorch_available
 
 # pylint: enable=wrong-import-position
 
@@ -292,8 +286,6 @@ _IMPORT_STRUCTURE = {
         "save_tmp_file",
         "timed_operation",
         "collect_env_info",
-        "auto_select_viz_library",
-        "auto_select_pdf_render_framework",
         "pytorch_available",
         "get_pytorch_requirement",
         "pyzmq_available",
@@ -354,7 +346,6 @@ _IMPORT_STRUCTURE = {
         "get_configs_dir_path",
         "get_weights_dir_path",
         "get_dataset_dir_path",
-        "maybe_copy_config_to_cache",
         "is_uuid_like",
         "get_uuid_from_str",
         "get_uuid",
@@ -420,7 +411,7 @@ _IMPORT_STRUCTURE = {
 # Setting some environment variables so that standard functions can be invoked with available hardware
 env_info = collect_env_info()
 logger.debug(LoggingRecord(msg=env_info))
-auto_select_pdf_render_framework()
+
 os.environ["DPI"] = "300"
 os.environ["IMAGE_WIDTH"] = ""
 os.environ["IMAGE_HEIGHT"] = ""

@@ -28,13 +28,9 @@ from huggingface_hub import hf_hub_download
 from tabulate import tabulate
 from termcolor import colored
 
+from ..utils.env_info import SETTINGS
 from ..utils.fs import (
     download,
-    get_cache_dir_path,
-    get_configs_dir_path,
-    get_package_path,
-    get_weights_dir_path,
-    maybe_copy_config_to_cache,
 )
 from ..utils.logger import LoggingRecord, log_once, logger
 from ..utils.settings import ObjectTypes, get_type
@@ -142,14 +138,14 @@ class ModelCatalog:
             )
             profile = ModelProfile(name="", description="", size=[])
         if profile.name:
-            return os.path.join(get_weights_dir_path(), profile.name)
+            return SETTINGS.MODEL_DIR / profile.name
         log_once(
             f"Model {name} is not registered. Please make sure the weights are available in the weights "
             f"cache directory or the full path you provide is correct"
         )
         if os.path.isfile(name):
             return name
-        return os.path.join(get_weights_dir_path(), name)
+        return SETTINGS.MODEL_DIR / name
 
     @staticmethod
     def get_full_path_configs(name: PathLikeOrStr) -> PathLikeOrStr:
@@ -178,8 +174,8 @@ class ModelCatalog:
             )
             profile = ModelProfile(name="", description="", size=[])
         if profile.config is not None:
-            return os.path.join(get_configs_dir_path(), profile.config)
-        return os.path.join(get_configs_dir_path(), name)
+            return SETTINGS.CONFIGS_DIR / profile.config
+        return SETTINGS.CONFIGS_DIR / name
 
     @staticmethod
     def get_full_path_preprocessor_configs(name: Union[str]) -> PathLikeOrStr:
@@ -205,8 +201,8 @@ class ModelCatalog:
                 )
             )
         if profile.preprocessor_config is not None:
-            return os.path.join(get_configs_dir_path(), profile.preprocessor_config)
-        return os.path.join(get_configs_dir_path(), name)
+            return SETTINGS.CONFIGS_DIR / profile.preprocessor_config
+        return SETTINGS.CONFIGS_DIR / name
 
     @staticmethod
     def get_model_list() -> list[PathLikeOrStr]:
@@ -214,7 +210,7 @@ class ModelCatalog:
         Returns:
             A list of absolute paths of registered models.
         """
-        return [os.path.join(get_weights_dir_path(), profile.name) for profile in ModelCatalog.CATALOG.values()]
+        return [SETTINGS.MODEL_DIR / profile.name for profile in ModelCatalog.CATALOG.values()]
 
     @staticmethod
     def get_profile_list() -> list[str]:
@@ -304,12 +300,10 @@ class ModelCatalog:
 
 
 # Loading default profiles
-dd_profile_path = maybe_copy_config_to_cache(
-    get_package_path(), get_cache_dir_path(), "deepdoctection/configs/profiles.jsonl", True
-)
-ModelCatalog.load_profiles_from_file(dd_profile_path)
+ModelCatalog.load_profiles_from_file(os.environ["MODEL_CATALOG_BASE"])
+
 # Additional profiles can be added
-ModelCatalog.load_profiles_from_file(os.environ.get("MODEL_CATALOG", None))
+ModelCatalog.load_profiles_from_file(os.environ.get("MODEL_CATALOG"))
 
 
 

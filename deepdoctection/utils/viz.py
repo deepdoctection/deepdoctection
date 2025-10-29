@@ -31,7 +31,7 @@ import numpy.typing as npt
 from lazy_imports import try_import
 from numpy import float32, uint8
 
-from .env_info import ENV_VARS_TRUE, auto_select_viz_library
+from .env_info import ENV_VARS_TRUE
 from .error import DependencyError
 from .file_utils import get_opencv_requirement, get_pillow_requirement
 from .types import BGR, B64Str, PathLikeOrStr, PixelValues
@@ -729,6 +729,4 @@ class VizPackageHandler:
         pil_image_rotated = pil_image.rotate(angle, expand=True)
         return np.array(pil_image_rotated)[:, :, ::-1]
 
-
-auto_select_viz_library()
 viz_handler = VizPackageHandler()

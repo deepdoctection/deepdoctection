@@ -28,7 +28,6 @@ from typing import Optional
 
 from ..extern.pt.ptutils import get_torch_device
 from ..pipe.doctectionpipe import DoctectionPipe
-from ..utils.fs import get_configs_dir_path, get_package_path, maybe_copy_config_to_cache
 from ..utils.logger import LoggingRecord, logger
 from ..utils.metacfg import set_config_by_yaml
 from ..utils.types import PathLikeOrStr
@@ -91,21 +90,17 @@ def get_dd_analyzer(
     """
     config_overwrite = [] if config_overwrite is None else config_overwrite
 
-    if os.environ.get("DD_USE_TORCH", "0") in ENV_VARS_TRUE:
+    if os.environ["DD_USE_TORCH"] in ENV_VARS_TRUE:
         lib = "PT"
         device = get_torch_device()
     else:
         lib = None
         device = None
-    dd_one_config_path = maybe_copy_config_to_cache(
-        get_package_path(), get_configs_dir_path() / "dd", _DD_ONE, reset_config_file
-    )
-    maybe_copy_config_to_cache(get_package_path(), get_configs_dir_path() / "dd", _TESSERACT)
 
     cfg.freeze(freezed=False)
     if load_default_config_file:
         # Set up of the configuration and logging
-        file_cfg = set_config_by_yaml(dd_one_config_path if not path_config_file else path_config_file)
+        file_cfg = set_config_by_yaml(os.environ["DD_ONE_CONFIG"] if not path_config_file else path_config_file)
         cfg.overwrite_config(file_cfg)
     cfg.LANGUAGE = None
     cfg.LIB = lib

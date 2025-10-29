@@ -41,10 +41,9 @@ from typing import Any, Optional, Union, no_type_check
 from termcolor import colored
 
 from .types import PathLikeOrStr
+from .env_info import ENV_VARS_TRUE
 
 __all__ = ["logger", "set_logger_dir", "auto_set_dir", "get_logger_dir"]
-
-ENV_VARS_TRUE: set[str] = {"1", "True", "TRUE", "true", "yes"}
 
 
 @dataclass
@@ -77,10 +76,8 @@ class LoggingRecord:
 class CustomFilter(logging.Filter):
     """A custom filter"""
 
-    filter_third_party_lib = os.environ.get("FILTER_THIRD_PARTY_LIB", "False") in ENV_VARS_TRUE
-
     def filter(self, record: logging.LogRecord) -> bool:
-        if self.filter_third_party_lib:
+        if os.environ["FILTER_THIRD_PARTY_LIB"] in ENV_VARS_TRUE:
             if not isinstance(record.msg, LoggingRecord):
                 return False
 
@@ -90,14 +87,12 @@ class CustomFilter(logging.Filter):
 class StreamFormatter(logging.Formatter):
     """A custom formatter to produce unified LogRecords"""
 
-    std_out_verbose = os.environ.get("STD_OUT_VERBOSE", "False") in ENV_VARS_TRUE
-
     @no_type_check
     def format(self, record: logging.LogRecord) -> str:
         date = colored("[%(asctime)s @%(filename)s:%(lineno)d]", "green")
         msg = colored("%(message)s", "white")
 
-        if self.std_out_verbose:
+        if os.environ["STD_OUT_VERBOSE"] in ENV_VARS_TRUE:
             if isinstance(record.msg, LoggingRecord):
                 verbose_info = f" Additional verbose infos: {repr(record.msg.log_dict)}"
                 msg += verbose_info
@@ -120,7 +115,6 @@ class StreamFormatter(logging.Formatter):
 class FileFormatter(logging.Formatter):
     """A custom formatter to produce a loggings in json format"""
 
-    filter_third_party_lib = os.environ.get("FILTER_THIRD_PARTY_LIB", "False") in ENV_VARS_TRUE
 
     @no_type_check
     def format(self, record: logging.LogRecord) -> str:
@@ -137,7 +131,7 @@ class FileFormatter(logging.Formatter):
             if record.msg.log_dict:
                 log_dict.update(record.msg.log_dict)
                 log_dict.pop("msg")
-        elif not self.filter_third_party_lib:
+        elif not os.environ["FILTER_THIRD_PARTY_LIB"] in ENV_VARS_TRUE:
             log_dict = {"message": record.msg}
         return json.dumps(log_dict)
 
@@ -176,30 +170,30 @@ def _coerce_log_level(val: Any) -> Union[int, str]:
     return lvl if isinstance(lvl, int) else "INFO"
 
 
-# resolve level from LOG_LEVEL only
-_ENV_LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO")
-_RESOLVED_LOG_LEVEL = _coerce_log_level(_ENV_LOG_LEVEL)
-
-_CONFIG_DICT: dict[str, Any] = {
-    "version": 1,
-    "disable_existing_loggers": False,
-    "filters": {"customfilter": {"()": lambda: CustomFilter()}},  # pylint: disable=W0108
-    "formatters": {
-        "streamformatter": {"()": lambda: StreamFormatter(datefmt="%m%d %H:%M.%S")},
-    },
-    "handlers": {
-        "streamhandler": {"filters": ["customfilter"], "formatter": "streamformatter", "class": "logging.StreamHandler"}
-    },
-    "root": {
-        "handlers": ["streamhandler"],
-        "level": _RESOLVED_LOG_LEVEL,
-        "propagate": os.environ.get("LOG_PROPAGATE", "False") in ENV_VARS_TRUE,
-    },
-}
-
-
 def _get_logger() -> logging.Logger:
-    logging.config.dictConfig(_CONFIG_DICT)
+
+    # resolve level from LOG_LEVEL only
+    resolved_log_level = _coerce_log_level(os.environ["LOG_LEVEL"])
+
+    config_dict: dict[str, Any] = {
+        "version": 1,
+        "disable_existing_loggers": False,
+        "filters": {"customfilter": {"()": lambda: CustomFilter()}},  # pylint: disable=W0108
+        "formatters": {
+            "streamformatter": {"()": lambda: StreamFormatter(datefmt="%m%d %H:%M.%S")},
+        },
+        "handlers": {
+            "streamhandler": {"filters": ["customfilter"], "formatter": "streamformatter",
+                              "class": "logging.StreamHandler"}
+        },
+        "root": {
+            "handlers": ["streamhandler"],
+            "level": resolved_log_level,
+            "propagate": os.environ["LOG_PROPAGATE"] in ENV_VARS_TRUE,
+        },
+    }
+
+    logging.config.dictConfig(config_dict)
     _logger = logging.getLogger(__name__)
     return _logger
 

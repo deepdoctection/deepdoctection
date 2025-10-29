@@ -47,8 +47,8 @@ from ...datasets.info import DatasetInfo
 from ...mapper.maputils import curry
 from ...mapper.misc import xml_to_dict
 from ...mapper.pascalstruct import pascal_voc_dict_to_image
+from ...utils.env_info import SETTINGS
 from ...utils.file_utils import lxml_available
-from ...utils.fs import get_package_path
 from ...utils.settings import DatasetType, LayoutType
 from ...utils.types import JsonDict
 from ..base import _BuiltInDataset
@@ -161,7 +161,7 @@ class IIITar13KBuilder(DataFlowBaseBuilder):
         df = MapData(df, load_xml(utf8_parser))  # pylint: disable=E1120
 
         with open(
-            os.path.join(get_package_path(), "deepdoctection/datasets/instances/xsl/pascal_voc.xsl"),
+            os.path.join(SETTINGS.PACKAGE_PATH, "deepdoctection/datasets/instances/xsl/pascal_voc.xsl"),
             "r",
             encoding="utf-8",
         ) as xsl_file:

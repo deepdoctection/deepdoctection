@@ -33,12 +33,12 @@ from lazy_imports import try_import
 from numpy import uint8
 from pypdf import PdfReader, PdfWriter, errors
 
-from .context import save_tmp_file, timeout_manager
 from .env_info import ENV_VARS_TRUE
+from .context import save_tmp_file, timeout_manager
 from .error import DependencyError, FileExtensionError
 from .file_utils import pdf_to_cairo_available, pdf_to_ppm_available, qpdf_available
 from .logger import LoggingRecord, logger
-from .types import PathLikeOrStr, PixelValues
+from .types import PathLikeOrStr, PixelValues, B64
 from .utils import is_file_extension
 from .viz import viz_handler
 
@@ -53,6 +53,7 @@ __all__ = [
     "PDFStreamer",
     "pdf_to_np_array",
     "split_pdf",
+    "load_bytes_from_pdf_file"
 ]
 
 
@@ -357,7 +358,9 @@ def pdf_to_np_array_pdfmium(pdf_bytes: bytes, dpi: Optional[int] = None) -> Pixe
     return page.render(scale=dpi * 1 / 72).to_numpy().astype(uint8)
 
 
-def pdf_to_np_array(pdf_bytes: bytes, size: Optional[tuple[int, int]] = None, dpi: Optional[int] = None) -> PixelValues:
+def pdf_to_np_array(pdf_bytes: bytes,
+                    size: Optional[tuple[int, int]] = None,
+                    dpi: Optional[int] = None) -> PixelValues:
     """
     Convert a single PDF page from its byte representation to a `np.array`.
 
@@ -375,7 +378,7 @@ def pdf_to_np_array(pdf_bytes: bytes, size: Optional[tuple[int, int]] = None, dp
         If `USE_DD_PDFIUM` is set, `pdf_to_np_array_pdfmium` does not support the `size` parameter and will use
         `dpi` instead.
     """
-    if os.environ.get("USE_DD_PDFIUM", "False") in ENV_VARS_TRUE:
+    if os.environ["USE_DD_PDFIUM"] in ENV_VARS_TRUE:
         if size is not None:
             logger.warning(
                 LoggingRecord(
@@ -426,3 +429,32 @@ def split_pdf(
                     np_image = pdf_to_np_array(buffer.getvalue(), dpi=dpi)
                     viz_handler.write_image(file_dir / f"{filename}_{i}.png", np_image)
                     writer.close()
+
+def load_bytes_from_pdf_file(path: PathLikeOrStr, page_number: int = 0) -> B64:
+    """
+    Loads a PDF file with a single page and returns a bytes representation of this file. Can be converted into a numpy
+    array or passed directly to the `image` attribute of `Image`.
+
+    Example:
+        ```python
+        load_bytes_from_pdf_file('document.pdf', page_number=0)
+        ```
+
+    Args:
+        path: The path to a PDF file. If more pages are available, it will take the first page.
+        page_number: The page number to load. Raises `IndexError` if the document has fewer pages.
+
+    Returns:
+        A bytes representation of the file.
+
+    """
+
+
+    assert is_file_extension(path, [".pdf"]), f"type not allowed: {path}"
+
+    file_reader = get_pdf_file_reader(path)
+    buffer = BytesIO()
+    writer = get_pdf_file_writer()
+    writer.add_page(file_reader.pages[page_number])
+    writer.write(buffer)
+    return buffer.getvalue()

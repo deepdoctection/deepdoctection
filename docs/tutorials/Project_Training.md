@@ -64,7 +64,7 @@ df.reset_state()
 
 for idx, dp in enumerate(df):
     print(f"processing: {idx}")
-    path = dd.get_dataset_dir_path() / "DocLayNet_core/PNG_resized" / dp.file_name
+    path = dd.SETTINGS.DATASET_DIR / "DocLayNet_core/PNG_resized" / dp.file_name
 	dd.viz_handler.write_image(path, dp.image)
 ```
 

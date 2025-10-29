@@ -23,35 +23,26 @@ import errno
 import json
 import os
 from base64 import b64encode
-from io import BytesIO
+
 from pathlib import Path
-from shutil import copyfile
 from typing import Callable, Literal, Optional, Protocol, Union, overload
 from urllib.request import urlretrieve
 
-from .develop import deprecated
-from .logger import LoggingRecord, logger
-from .pdf_utils import get_pdf_file_reader, get_pdf_file_writer
-from .settings import CACHE_DIR, CONFIGS, DATASET_DIR, MODEL_DIR, PATH
 from .tqdm import get_tqdm
 from .types import B64, B64Str, JsonDict, PathLikeOrStr, PixelValues
 from .utils import is_file_extension
+from .pdf_utils import load_bytes_from_pdf_file
+from .logger import LoggingRecord, logger
 from .viz import viz_handler
+from .file_utils import mkdir_p
 
 __all__ = [
     "load_image_from_file",
-    "load_bytes_from_pdf_file",
     "get_load_image_func",
     "maybe_path_or_pdf",
     "download",
-    "mkdir_p",
     "load_json",
-    "get_package_path",
-    "get_cache_dir_path",
-    "get_configs_dir_path",
-    "get_weights_dir_path",
-    "get_dataset_dir_path",
-    "maybe_copy_config_to_cache",
+
 ]
 
 
@@ -80,33 +71,6 @@ def sizeof_fmt(num: float, suffix: str = "B") -> str:
 
 # Copyright (c) Tensorpack Contributors
 # Licensed under the Apache License, Version 2.0 (the "License")
-def mkdir_p(dir_name: PathLikeOrStr) -> None:
-    """
-    Creates a directory recursively, similar to `mkdir -p`. Does nothing if the directory already exists.
-
-    Example:
-        ```python
-        mkdir_p('/tmp/mydir')
-        ```
-
-    Args:
-        dir_name: The name of the directory to create.
-
-    Returns:
-        None
-    """
-    assert dir_name is not None
-    if dir_name == "" or os.path.isdir(dir_name):
-        return None
-    try:
-        os.makedirs(dir_name)
-    except OSError as err:
-        if err.errno != errno.EEXIST:
-            raise err
-
-
-# Copyright (c) Tensorpack Contributors
-# Licensed under the Apache License, Version 2.0 (the "License")
 def download(
     url: str, directory: PathLikeOrStr, file_name: Optional[str] = None, expect_size: Optional[int] = None
 ) -> str:
@@ -127,6 +91,8 @@ def download(
     Returns:
         The path to the downloaded file.
     """
+
+
     mkdir_p(directory)
     if file_name is None:
         file_name = url.split("/")[-1]
@@ -200,6 +166,8 @@ def load_image_from_file(
     Returns:
         The image in the desired representation or `None`.
     """
+
+
     image: Optional[Union[str, PixelValues]] = None
     path = path.as_posix() if isinstance(path, Path) else path
 
@@ -216,35 +184,6 @@ def load_image_from_file(
         logger.info(LoggingRecord(f"file not found or value error: {path}"))
 
     return image
-
-
-def load_bytes_from_pdf_file(path: PathLikeOrStr, page_number: int = 0) -> B64:
-    """
-    Loads a PDF file with a single page and returns a bytes representation of this file. Can be converted into a numpy
-    array or passed directly to the `image` attribute of `Image`.
-
-    Example:
-        ```python
-        load_bytes_from_pdf_file('document.pdf', page_number=0)
-        ```
-
-    Args:
-        path: The path to a PDF file. If more pages are available, it will take the first page.
-        page_number: The page number to load. Raises `IndexError` if the document has fewer pages.
-
-    Returns:
-        A bytes representation of the file.
-
-    """
-
-    assert is_file_extension(path, [".pdf"]), f"type not allowed: {path}"
-
-    file_reader = get_pdf_file_reader(path)
-    buffer = BytesIO()
-    writer = get_pdf_file_writer()
-    writer.add_page(file_reader.pages[page_number])
-    writer.write(buffer)
-    return buffer.getvalue()
 
 
 class LoadImageFunc(Protocol):
@@ -279,6 +218,7 @@ def get_load_image_func(
     Raises:
         NotImplementedError: If the file extension is not supported.
     """
+
 
     assert is_file_extension(path, [".png", ".jpeg", ".jpg", ".pdf", ".tif"]), f"image type not allowed: " f"{path}"
 
@@ -338,80 +278,7 @@ def load_json(path_ann: PathLikeOrStr) -> JsonDict:
     return json_dict
 
 
-def get_package_path() -> Path:
-    """
-    Returns the full base path of this package.
-
-    Returns:
-        The base path of the package.
-    """
-    return PATH
 
 
-def get_cache_dir_path() -> Path:
-    """
-    Returns the full base path to the cache directory.
-
-    Returns:
-        The base path to the cache directory.
-    """
-    return CACHE_DIR
 
 
-def get_weights_dir_path() -> Path:
-    """
-    Returns the full base path to the model directory.
-
-    Returns:
-        The base path to the model directory.
-    """
-    return MODEL_DIR
-
-
-def get_configs_dir_path() -> Path:
-    """
-    Returns the full base path to the configs directory.
-
-    Returns:
-        The base path to the configs directory.
-    """
-    return CONFIGS
-
-
-def get_dataset_dir_path() -> Path:
-    """
-    Returns the full base path to the dataset directory.
-
-    Returns:
-        The base path to the dataset directory.
-    """
-    return DATASET_DIR
-
-
-def maybe_copy_config_to_cache(
-    package_path: PathLikeOrStr, configs_dir_path: PathLikeOrStr, file_name: str, force_copy: bool = True
-) -> str:
-    """
-    Copies a file from the source directory to the target directory.
-
-    Example:
-        ```python
-        maybe_copy_config_to_cache('/src', '/dst', 'config.yaml')
-        ```
-
-    Args:
-        package_path: The base path to the source directory of the file.
-        configs_dir_path: The base path to the target directory.
-        file_name: The name of the file to copy.
-        force_copy: If `True`, will re-copy the file even if it already exists in the target directory.
-
-    Returns:
-        The path to the copied file.
-    """
-
-    absolute_path_source = os.path.join(package_path, file_name)
-    absolute_path = os.path.join(configs_dir_path, os.path.join(os.path.split(file_name)[1]))
-    mkdir_p(os.path.split(absolute_path)[0])
-    if not os.path.isfile(absolute_path) or force_copy:
-        copyfile(absolute_path_source, absolute_path)
-    return absolute_path

@@ -27,7 +27,7 @@ from typing import Optional
 from ..dataflow import DataFlow, MapData, SerializerJsonlines
 from ..datapoint.convert import convert_b64_to_np_array
 from ..datapoint.image import Image
-from ..utils.fs import mkdir_p
+from ..utils.file_utils import mkdir_p
 from ..utils.types import ImageDict, PathLikeOrStr
 from ..utils.viz import viz_handler
 
