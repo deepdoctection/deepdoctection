@@ -355,7 +355,7 @@ class EnvSettings(BaseSettings):
         os.environ["DATASET_DIR"] = str(self.DATASET_DIR)
         os.environ["PATH_DD_PACKAGE"] = str(self.PACKAGE_PATH)
 
-    def ensure_cache_layout_and_copy_defaults(self, force_copy: bool = False) -> None:
+    def ensure_cache_layout_and_copy_defaults(self, force_copy: bool = True) -> None:
         """
         Ensure cache dirs exist and copy default config files to CONFIGS_DIR.
         """
