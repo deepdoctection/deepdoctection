@@ -36,7 +36,7 @@ from ...dataflow import DataFlow, MapData, MapDataComponent
 from ...dataflow.custom_serialize import SerializerCoco
 from ...mapper.cats import add_summary, filter_cat
 from ...mapper.cocostruct import coco_to_image
-from ...utils.settings import DatasetType, LayoutType
+from ...utils.object_types import DatasetType, LayoutType
 from ..base import _BuiltInDataset
 from ..dataflow_builder import DataFlowBaseBuilder
 from ..info import DatasetCategories, DatasetInfo

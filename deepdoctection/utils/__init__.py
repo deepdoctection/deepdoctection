@@ -16,7 +16,7 @@ from .identifier import *
 from .logger import *
 from .metacfg import *
 from .pdf_utils import *
-from .settings import *
+from .object_types import *
 from .tqdm import *
 from .transform import *
 from .utils import *
@@ -52,7 +52,7 @@ _global_import("file_utils", suffix=("_available", "_requirement", "mkdir_p", "c
 _global_import("metacfg", prefix=("set_config_by_yaml", "save_config_to_yaml", "config_to_cli_str"))
 _global_import("utils", prefix=("delete_keys_from_dict", "split_string", "string_to_dict"))
 _global_import(
-    "settings", suffix=("Type", "TokenClasses", "BioTag", "TokenClassWithTag", "Relationships", "Languages", "get_type")
+    "object_types", suffix=("Type", "TokenClasses", "BioTag", "TokenClassWithTag", "Relationships", "Languages", "get_type")
 )
 _global_import(
     "env_info", prefix=("collect_env_info", "SETTINGS")

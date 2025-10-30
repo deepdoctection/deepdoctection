@@ -31,7 +31,7 @@ import numpy as np
 import numpy.typing as npt
 from numpy import float32
 
-from .settings import ObjectTypes, PageType
+from .object_types import ObjectTypes, PageType
 from .types import PixelValues
 from .viz import viz_handler
 

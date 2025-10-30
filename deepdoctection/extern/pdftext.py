@@ -25,7 +25,7 @@ from lazy_imports import try_import
 
 from ..utils.context import save_tmp_file
 from ..utils.file_utils import get_pdfplumber_requirement, get_pypdfium2_requirement
-from ..utils.settings import LayoutType, ObjectTypes
+from ..utils.object_types import LayoutType, ObjectTypes
 from ..utils.types import Requirement
 from .base import DetectionResult, ModelCategories, PdfMiner
 

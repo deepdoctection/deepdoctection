@@ -64,6 +64,11 @@ class DataFlowResetStateNotCalledError(BaseException):
         super().__init__("Iterating a dataflow requires .reset_state() to be called first")
 
 
+class DuplicateObjectTypeError(ValueError):
+    """Raised when two different enum members share the same string value."""
+    pass
+
+
 class MalformedData(BaseException):
     """
     Exception class for malformed data.

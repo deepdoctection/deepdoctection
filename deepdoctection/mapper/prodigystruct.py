@@ -23,7 +23,7 @@ import os
 from typing import Mapping, Optional, Sequence
 
 from ..datapoint import BoundingBox, Image, ImageAnnotation
-from ..utils.settings import ObjectTypes, get_type
+from ..utils.object_types import ObjectTypes, get_type
 from ..utils.types import JsonDict, PathLikeOrStr
 from .maputils import MappingContextManager, curry, maybe_get_fake_score
 

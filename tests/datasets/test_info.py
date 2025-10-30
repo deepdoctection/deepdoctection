@@ -25,7 +25,7 @@ import pytest
 
 from deepdoctection.datasets import DatasetCategories
 from deepdoctection.datasets.info import get_merged_categories
-from deepdoctection.utils.settings import get_type
+from deepdoctection.utils.object_types import get_type
 
 from ..data import TestType
 

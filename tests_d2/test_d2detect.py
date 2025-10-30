@@ -28,7 +28,7 @@ from deepdoctection.utils.file_utils import pytorch_available, detectron2_availa
 
 from deepdoctection.extern.d2detect import D2FrcnnDetector
 from deepdoctection.utils.types import PixelValues
-from deepdoctection.utils.settings import ObjectTypes
+from deepdoctection.utils.object_types import ObjectTypes
 
 
 

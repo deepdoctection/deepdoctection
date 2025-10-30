@@ -32,7 +32,7 @@ from termcolor import colored
 
 from ..utils.error import AnnotationError, BoundingBoxError, ImageError, UUIDError
 from ..utils.logger import LoggingRecord, logger
-from ..utils.settings import ObjectTypes
+from ..utils.object_types import ObjectTypes
 from ..utils.types import DP, BaseExceptionType, S, T
 
 __all__ = ["MappingContextManager", "DefaultMapper", "maybe_get_fake_score", "LabelSummarizer", "curry"]

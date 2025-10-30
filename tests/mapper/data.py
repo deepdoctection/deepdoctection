@@ -29,7 +29,7 @@ import numpy as np
 from deepdoctection.datapoint import BoundingBox, CategoryAnnotation, Image, ImageAnnotation, convert_np_array_to_b64
 from deepdoctection.datasets.info import DatasetCategories
 from deepdoctection.extern.base import SequenceClassResult, TokenClassResult
-from deepdoctection.utils.settings import (
+from deepdoctection.utils.object_types import (
     BioTag,
     CellType,
     DatasetType,

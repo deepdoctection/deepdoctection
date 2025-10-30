@@ -27,7 +27,7 @@ from pytest import mark
 
 from deepdoctection.extern.hfdetr import HFDetrDerivedDetector
 from deepdoctection.utils.file_utils import pytorch_available, transformers_available
-from deepdoctection.utils.settings import ObjectTypes
+from deepdoctection.utils.object_types import ObjectTypes
 from deepdoctection.utils.types import PixelValues
 
 if pytorch_available():

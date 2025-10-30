@@ -29,7 +29,7 @@ from ..datapoint.image import Image, MetaAnnotation
 from ..extern.base import ObjectDetector, PdfMiner, TextRecognizer
 from ..extern.tessocr import TesseractOcrDetector
 from ..utils.error import ImageError
-from ..utils.settings import ObjectTypes, PageType, TypeOrStr, WordType, get_type
+from ..utils.object_types import ObjectTypes, PageType, TypeOrStr, WordType, get_type
 from ..utils.types import PixelValues
 from .base import PipelineComponent
 from .registry import pipeline_component_registry

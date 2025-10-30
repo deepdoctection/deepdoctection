@@ -24,7 +24,7 @@ from pytest import mark
 
 from deepdoctection.datapoint import BoundingBox, CategoryAnnotation, Image, ImageAnnotation
 from deepdoctection.utils import get_uuid
-from deepdoctection.utils.settings import get_type
+from deepdoctection.utils.object_types import get_type
 
 from .conftest import CatAnn, WhiteImage
 

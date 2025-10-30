@@ -23,7 +23,7 @@ from pytest import mark
 
 from deepdoctection.datapoint import BoundingBox, ContainerAnnotation, Image, ImageAnnotation
 from deepdoctection.pipe.order import TextOrderService
-from deepdoctection.utils.settings import LayoutType, Relationships, WordType
+from deepdoctection.utils.object_types import LayoutType, Relationships, WordType
 
 
 class TestTextOrderService:

@@ -28,7 +28,7 @@ from ..datapoint.box import BoundingBox, local_to_global_coords, rescale_coords
 from ..datapoint.image import Image
 from ..extern.base import DetectionResult
 from ..mapper.maputils import MappingContextManager
-from ..utils.settings import ObjectTypes, Relationships
+from ..utils.object_types import ObjectTypes, Relationships
 
 
 class DatapointManager:

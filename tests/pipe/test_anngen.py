@@ -27,7 +27,7 @@ from deepdoctection.datapoint import Image, ImageAnnotation
 from deepdoctection.extern.base import DetectionResult
 from deepdoctection.pipe.anngen import DatapointManager
 from deepdoctection.utils.identifier import get_uuid_from_str
-from deepdoctection.utils.settings import get_type
+from deepdoctection.utils.object_types import get_type
 
 
 class TestDatapointManager:

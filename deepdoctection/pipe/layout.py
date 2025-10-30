@@ -28,7 +28,7 @@ from ..datapoint.image import Image, MetaAnnotation
 from ..extern.base import ObjectDetector, PdfMiner
 from ..mapper.misc import curry
 from ..utils.error import ImageError
-from ..utils.settings import ObjectTypes
+from ..utils.object_types import ObjectTypes
 from ..utils.transform import PadTransform
 from .base import PipelineComponent
 from .registry import pipeline_component_registry

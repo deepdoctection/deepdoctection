@@ -24,7 +24,7 @@ from __future__ import annotations
 from lazy_imports import try_import
 
 from ..utils.file_utils import get_jdeskew_requirement
-from ..utils.settings import ObjectTypes, PageType
+from ..utils.object_types import ObjectTypes, PageType
 from ..utils.types import PixelValues, Requirement
 from ..utils.viz import viz_handler
 from .base import DetectionResult, ImageTransformer

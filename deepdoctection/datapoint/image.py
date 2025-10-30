@@ -33,7 +33,7 @@ from numpy import uint8
 from ..utils.error import AnnotationError, BoundingBoxError, ImageError, UUIDError
 from ..utils.identifier import get_uuid, is_uuid_like
 from ..utils.logger import LoggingRecord, logger
-from ..utils.settings import ObjectTypes, SummaryType, get_type
+from ..utils.object_types import ObjectTypes, SummaryType, get_type
 from ..utils.types import ImageDict, PathLikeOrStr, PixelValues
 from .annotation import Annotation, AnnotationMap, BoundingBox, CategoryAnnotation, ImageAnnotation
 from .box import BoxCoordinate, crop_box_from_image, global_to_local_coords, intersection_box

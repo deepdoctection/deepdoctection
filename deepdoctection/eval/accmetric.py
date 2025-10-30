@@ -34,7 +34,7 @@ from ..datasets.info import DatasetCategories
 from ..mapper.cats import image_to_cat_id
 from ..utils.file_utils import Requirement
 from ..utils.logger import LoggingRecord, logger
-from ..utils.settings import ObjectTypes, TypeOrStr, get_type
+from ..utils.object_types import ObjectTypes, TypeOrStr, get_type
 from ..utils.types import MetricResults
 from .base import MetricBase
 from .registry import metric_registry

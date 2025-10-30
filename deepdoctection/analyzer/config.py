@@ -423,7 +423,7 @@ The distance is calculated using the center points of the layout elements.
 
 from ..datapoint.view import IMAGE_DEFAULTS
 from ..utils.metacfg import AttrDict
-from ..utils.settings import CellType, LayoutType
+from ..utils.object_types import CellType, LayoutType
 
 cfg = AttrDict()
 

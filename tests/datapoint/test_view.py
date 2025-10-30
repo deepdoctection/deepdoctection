@@ -26,7 +26,7 @@ from deepdoctection.datapoint.annotation import CategoryAnnotation, ImageAnnotat
 from deepdoctection.datapoint.box import BoundingBox
 from deepdoctection.datapoint.image import Image
 from deepdoctection.datapoint.view import Page
-from deepdoctection.utils.settings import LayoutType, Relationships
+from deepdoctection.utils.object_types import LayoutType, Relationships
 
 from ..test_utils import get_test_path
 from .conftest import WhiteImage

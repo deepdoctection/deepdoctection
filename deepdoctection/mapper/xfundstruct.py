@@ -26,7 +26,7 @@ from typing import Mapping, Optional
 
 from ..datapoint import BoundingBox, CategoryAnnotation, ContainerAnnotation, Image, ImageAnnotation
 from ..utils.fs import load_image_from_file
-from ..utils.settings import (
+from ..utils.object_types import (
     BioTag,
     LayoutType,
     ObjectTypes,

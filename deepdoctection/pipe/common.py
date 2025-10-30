@@ -33,7 +33,7 @@ from ..datapoint.view import IMAGE_DEFAULTS, Page
 from ..extern.base import DetectionResult
 from ..mapper.match import match_anns_by_distance, match_anns_by_intersection
 from ..mapper.misc import to_image
-from ..utils.settings import LayoutType, ObjectTypes, Relationships, TypeOrStr, get_type
+from ..utils.object_types import LayoutType, ObjectTypes, Relationships, TypeOrStr, get_type
 from .base import PipelineComponent
 from .registry import pipeline_component_registry
 

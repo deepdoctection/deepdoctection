@@ -37,7 +37,7 @@ from ..utils.context import save_tmp_file, timeout_manager
 from ..utils.error import DependencyError, TesseractError
 from ..utils.file_utils import _TESS_PATH, get_tesseract_requirement
 from ..utils.metacfg import config_to_cli_str, set_config_by_yaml
-from ..utils.settings import LayoutType, ObjectTypes, PageType
+from ..utils.object_types import LayoutType, ObjectTypes, PageType
 from ..utils.transform import RotationTransform
 from ..utils.types import PathLikeOrStr, PixelValues, Requirement
 from ..utils.viz import viz_handler

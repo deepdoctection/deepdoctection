@@ -34,7 +34,7 @@ from deepdoctection.extern.hflayoutlm import (
     HFLiltTokenClassifier,
 )
 from deepdoctection.utils.file_utils import pytorch_available
-from deepdoctection.utils.settings import BioTag, TokenClasses, get_type
+from deepdoctection.utils.object_types import BioTag, TokenClasses, get_type
 from deepdoctection.utils.types import JsonDict
 
 from ..mapper.data import DatapointXfund

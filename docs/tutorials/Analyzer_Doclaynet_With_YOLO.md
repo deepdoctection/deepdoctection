@@ -30,16 +30,16 @@ import deepdoctection as dd
 
 ## Adding the model wrapper for YOLO
 
-
 ```python
-from __future__ import annotations 
+from __future__ import annotations
 
 from typing import Mapping
 from deepdoctection.utils.types import PixelValues, PathLikeOrStr
-from deepdoctection.utils.settings import TypeOrStr
+from deepdoctection.utils.object_types import TypeOrStr
 from deepdoctection.utils.file_utils import Requirement
 
 from ultralytics import YOLO
+
 
 def _yolo_to_detectresult(results, categories) -> list[dd.DetectionResult]:
     """
@@ -54,19 +54,18 @@ def _yolo_to_detectresult(results, categories) -> list[dd.DetectionResult]:
 
     categories_name = categories.get_categories(as_dict=True)
 
-            
     # Use inference speed as the confidence score (e.g., using 'inference' time as a proxy)
     confidence = results.speed.get('inference', 0) / 100  # Normalize by 100 if you want a scale between 0-1
-    
+
     # Loop through each detected box
     for i, box in enumerate(results.boxes):
         # Extract and normalize bounding box coordinates
         x1, y1, x2, y2 = box.xyxy.tolist()[0]
-        
+
         # Assign class_id based on detection order or results.boxes.cls if available
-        class_id = int(box.cls)+1  # Get class ID based on available keys
-        class_name = categories_name.get(class_id, "Unknown") # Directly retrieve the class name from categories
-        
+        class_id = int(box.cls) + 1  # Get class ID based on available keys
+        class_name = categories_name.get(class_id, "Unknown")  # Directly retrieve the class name from categories
+
         # Create a DetectionResult object with inferred confidence
         detection = dd.DetectionResult(
             box=[x1, y1, x2, y2],
@@ -74,16 +73,17 @@ def _yolo_to_detectresult(results, categories) -> list[dd.DetectionResult]:
             class_id=class_id,
             class_name=class_name
         )
-        
+
         # Append the DetectionResult to the list
         all_results.append(detection)
 
     return all_results
 
-def predict_yolo(np_img: PixelValues, 
-                 model, 
-                 conf_threshold: float, 
-                 iou_threshold: float, 
+
+def predict_yolo(np_img: PixelValues,
+                 model,
+                 conf_threshold: float,
+                 iou_threshold: float,
                  categories: dd.ModelCategories) -> list[dd.DetectionResult]:
     """
     Run inference using the YOLO model.
@@ -97,12 +97,13 @@ def predict_yolo(np_img: PixelValues,
     """
     # Run the model
     results = model(source=np_img, conf=conf_threshold, iou=iou_threshold)[0]
-    
+
     # Convert results to DetectionResult format
     all_results = _yolo_to_detectresult(results, categories)
-    
+
     return all_results
-    
+
+
 class YoloDetector(dd.ObjectDetector):
     """
     Document detector using YOLO engine for layout analysis.
@@ -111,10 +112,11 @@ class YoloDetector(dd.ObjectDetector):
     
     The detector predicts different categories of document elements such as text, tables, figures, headers, etc.
     """
-    def __init__(self, 
-                 conf_threshold: float, 
-                 iou_threshold: float, 
-                 model_weights: PathLikeOrStr, 
+
+    def __init__(self,
+                 conf_threshold: float,
+                 iou_threshold: float,
+                 model_weights: PathLikeOrStr,
                  categories: Mapping[int, TypeOrStr]) -> None:
         """
         :param conf_threshold: Confidence threshold for YOLO detections.
@@ -132,8 +134,8 @@ class YoloDetector(dd.ObjectDetector):
 
         if categories is None:
             raise ValueError("A dictionary of category mappings must be provided.")
-        self.categories =dd.ModelCategories(init_categories=categories)
-        
+        self.categories = dd.ModelCategories(init_categories=categories)
+
     def predict(self, np_img: PixelValues) -> list[dd.DetectionResult]:
         """
         Perform inference on a document image using YOLOv10 and return detection results.
@@ -153,10 +155,10 @@ class YoloDetector(dd.ObjectDetector):
         """
         Clone the current detector instance.
         """
-        return self.__class__(conf_threshold=self.conf_threshold, 
-                              iou_threshold=self.iou_threshold, 
+        return self.__class__(conf_threshold=self.conf_threshold,
+                              iou_threshold=self.iou_threshold,
                               model_weights=self.model.model_path,
-                              categories = self.categories)
+                              categories=self.categories)
 
     def get_category_names(self) -> tuple[ObjectTypes, ...]:
         """

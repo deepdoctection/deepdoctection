@@ -24,7 +24,7 @@ from typing import Any, Literal, Mapping, Optional, Sequence, Union
 
 from ..datapoint.annotation import DEFAULT_CATEGORY_ID, CategoryAnnotation, ContainerAnnotation
 from ..datapoint.image import Image
-from ..utils.settings import ObjectTypes, SummaryType, TypeOrStr, get_type
+from ..utils.object_types import ObjectTypes, SummaryType, TypeOrStr, get_type
 from .maputils import LabelSummarizer, curry
 
 

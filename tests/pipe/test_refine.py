@@ -33,7 +33,7 @@ from deepdoctection.pipe.refine import (
 )
 
 # from deepdoctection.utils.settings import names
-from deepdoctection.utils.settings import CellType, LayoutType, TableType
+from deepdoctection.utils.object_types import CellType, LayoutType, TableType
 
 
 @mark.additional

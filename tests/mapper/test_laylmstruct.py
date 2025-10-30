@@ -30,7 +30,7 @@ from deepdoctection.datapoint import Image
 from deepdoctection.mapper.laylmstruct import image_to_raw_layoutlm_features, raw_features_to_layoutlm_features
 from deepdoctection.mapper.xfundstruct import xfund_to_image
 from deepdoctection.utils.file_utils import transformers_available
-from deepdoctection.utils.settings import DatasetType, ObjectTypes, WordType
+from deepdoctection.utils.object_types import DatasetType, ObjectTypes, WordType
 from deepdoctection.utils.types import JsonDict
 
 if transformers_available():

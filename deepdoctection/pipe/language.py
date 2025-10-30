@@ -24,7 +24,7 @@ from ..datapoint.image import Image, MetaAnnotation
 from ..datapoint.view import IMAGE_DEFAULTS, Page
 from ..extern.base import LanguageDetector, ObjectDetector
 from ..utils.error import ImageError
-from ..utils.settings import PageType, TypeOrStr, get_type
+from ..utils.object_types import PageType, TypeOrStr, get_type
 from .base import PipelineComponent
 from .registry import pipeline_component_registry
 

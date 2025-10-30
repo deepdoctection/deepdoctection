@@ -41,7 +41,7 @@ from ...datapoint.image import Image
 from ...mapper.cats import filter_summary
 from ...mapper.maputils import curry
 from ...utils.fs import load_image_from_file
-from ...utils.settings import DatasetType, DocumentType, PageType, SummaryType, TypeOrStr
+from ...utils.object_types import DatasetType, DocumentType, PageType, SummaryType, TypeOrStr, WordType
 from ..base import _BuiltInDataset
 from ..dataflow_builder import DataFlowBaseBuilder
 from ..info import DatasetCategories, DatasetInfo
@@ -73,7 +73,7 @@ _INIT_CATEGORIES = [
     DocumentType.LETTER,
     DocumentType.FORM,
     DocumentType.EMAIL,
-    DocumentType.HANDWRITTEN,
+    WordType.HANDWRITTEN,
     DocumentType.ADVERTISEMENT,
     DocumentType.SCIENTIFIC_REPORT,
     DocumentType.SCIENTIFIC_PUBLICATION,

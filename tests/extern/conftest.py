@@ -23,7 +23,7 @@ from typing import Mapping, Sequence
 from pytest import fixture
 
 from deepdoctection.extern.base import DetectionResult
-from deepdoctection.utils.settings import ObjectTypes
+from deepdoctection.utils.object_types import ObjectTypes
 from deepdoctection.utils.types import JsonDict
 
 from ..data import get_textract_response

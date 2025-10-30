@@ -32,7 +32,7 @@ from lazy_imports import try_import
 
 from ..utils.identifier import get_uuid_from_str
 from ..utils.logger import logger
-from ..utils.settings import (
+from ..utils.object_types import (
     DefaultType,
     ObjectTypes,
     TypeOrStr,

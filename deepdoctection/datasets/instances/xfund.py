@@ -37,7 +37,7 @@ from ...dataflow import CustomDataFromList, DataFlow, MapData
 from ...datasets.info import DatasetInfo
 from ...mapper.cats import cat_to_sub_cat, filter_cat
 from ...mapper.xfundstruct import xfund_to_image
-from ...utils.settings import BioTag, DatasetType, LayoutType, ObjectTypes, TokenClasses, TokenClassWithTag, WordType
+from ...utils.object_types import BioTag, DatasetType, LayoutType, ObjectTypes, TokenClasses, TokenClassWithTag, WordType
 from ...utils.types import FunsdDict
 from ..base import _BuiltInDataset
 from ..dataflow_builder import DataFlowBaseBuilder

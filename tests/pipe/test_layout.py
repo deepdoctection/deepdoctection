@@ -26,7 +26,7 @@ from pytest import mark
 from deepdoctection.datapoint import CategoryAnnotation, Image, ImageAnnotation
 from deepdoctection.extern.base import DetectionResult, ObjectDetector
 from deepdoctection.pipe.layout import ImageLayoutService
-from deepdoctection.utils.settings import DocumentType, PageType
+from deepdoctection.utils.object_types import DocumentType, PageType
 
 
 class TestImageLayoutService:

@@ -29,7 +29,7 @@ from deepdoctection.datapoint.image import Image
 from deepdoctection.extern.base import DetectionResult, ImageTransformer
 from deepdoctection.pipe.transform import SimpleTransformService
 from deepdoctection.utils.identifier import get_uuid_from_str
-from deepdoctection.utils.settings import PageType
+from deepdoctection.utils.object_types import PageType
 
 
 class TestSimpleTransformService:

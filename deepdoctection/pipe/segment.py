@@ -34,7 +34,7 @@ from ..extern.base import DetectionResult
 from ..mapper.maputils import MappingContextManager
 from ..mapper.match import match_anns_by_intersection
 from ..utils.error import ImageError
-from ..utils.settings import CellType, LayoutType, ObjectTypes, Relationships, TableType, TypeOrStr, get_type
+from ..utils.object_types import CellType, LayoutType, ObjectTypes, Relationships, TableType, TypeOrStr, get_type
 from .base import PipelineComponent
 from .refine import generate_html_string
 from .registry import pipeline_component_registry
