@@ -414,9 +414,6 @@ _IMPORT_STRUCTURE = {
 env_info = collect_env_info()
 logger.debug(LoggingRecord(msg=env_info))
 
-os.environ["DPI"] = "300"
-os.environ["IMAGE_WIDTH"] = ""
-os.environ["IMAGE_HEIGHT"] = ""
 
 # Direct imports for type-checking
 if TYPE_CHECKING:

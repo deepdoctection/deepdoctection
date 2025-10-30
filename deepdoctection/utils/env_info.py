@@ -194,6 +194,9 @@ class EnvSettings(BaseSettings):
     USE_DD_OPENCV: bool = False
     USE_DD_PDFIUM: bool = False
     USE_DD_POPPLER: bool = False
+    DPI : int = 300
+    IMAGE_WIDTH: int = 0
+    IMAGE_HEIGHT: int = 0
 
     # Optional dependency
     QPDF_AVAILABLE: bool = False
@@ -342,6 +345,9 @@ class EnvSettings(BaseSettings):
             "USE_DD_OPENCV": self.USE_DD_OPENCV,
             "USE_DD_PDFIUM": self.USE_DD_PDFIUM,
             "USE_DD_POPPLER": self.USE_DD_POPPLER,
+            "DPI": self.DPI,
+            "IMAGE_WIDTH": self.IMAGE_WIDTH,
+            "IMAGE_HEIGHT": self.IMAGE_HEIGHT,
             "MODEL_CATALOG_BASE": self.CONFIGS_DIR / self.PROFILES_TARGET_NAME,
             "DD_ONE_CONFIG": self.CONFIGS_DIR / "dd" / self.CONF_DD_ONE_TARGET_NAME,
         }
