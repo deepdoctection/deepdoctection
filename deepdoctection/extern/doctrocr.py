@@ -75,14 +75,13 @@ def _load_model(
 
 
 def doctr_predict_text_lines(
-    np_img: PixelValues, predictor: DetectionPredictor, device: torch.device) -> list[DetectionResult]:
+    np_img: PixelValues, predictor: DetectionPredictor) -> list[DetectionResult]:
     """
     Generating text line `DetectionResult` based on DocTr `DetectionPredictor`.
 
     Args:
         np_img: Image in `np.array`
         predictor: `doctr.models.detection.predictor.DetectionPredictor`
-        device: Will only be used in Tensorflow settings. Either `/gpu:0` or `/cpu:0`
 
     Returns:
         A list of text line `DetectionResult` (without text)
@@ -102,7 +101,6 @@ def doctr_predict_text_lines(
 def doctr_predict_text(
     inputs: list[tuple[str, PixelValues]],
     predictor: RecognitionPredictor,
-    device: torch.device,
 ) -> list[DetectionResult]:
     """
     Calls DocTr text recognition model on a batch of `np.array`s (text lines predicted from a text line detector) and
@@ -112,7 +110,6 @@ def doctr_predict_text(
         inputs: list of tuples containing the `annotation_id` of the input image and the `np.array` of the cropped
                 text line
         predictor: `doctr.models.detection.predictor.RecognitionPredictor`
-        device: Torch device
 
     Returns:
         A list of `DetectionResult` containing recognized text
@@ -208,7 +205,6 @@ class DoctrTextlineDetector(DoctrTextlineDetectorMixin):
         self.name = self.get_name(self.path_weights, self.architecture)
         self.model_id = self.get_model_id()
         self.device = get_torch_device(device)
-
         self.doctr_predictor = self.get_wrapped_model(self.architecture, self.path_weights, self.device)
 
     def predict(self, np_img: PixelValues) -> list[DetectionResult]:
@@ -221,7 +217,7 @@ class DoctrTextlineDetector(DoctrTextlineDetectorMixin):
         Returns:
             A list of `DetectionResult`
         """
-        return doctr_predict_text_lines(np_img, self.doctr_predictor, self.device)
+        return doctr_predict_text_lines(np_img, self.doctr_predictor)
 
     @classmethod
     def get_requirements(cls) -> list[Requirement]:
@@ -330,8 +326,6 @@ class DoctrTextRecognizer(TextRecognizer):
         self.device = get_torch_device(device)
 
         self.path_config_json = path_config_json
-        self.doctr_predictor = self.build_model(self.architecture, self.path_config_json)
-        self.load_model(self.path_weights, self.doctr_predictor, self.device)
         self.doctr_predictor = self.get_wrapped_model(
             self.architecture, self.path_weights, self.device, self.path_config_json
         )
@@ -347,7 +341,7 @@ class DoctrTextRecognizer(TextRecognizer):
             A list of `DetectionResult`
         """
         if images:
-            return doctr_predict_text(images, self.doctr_predictor, self.device)
+            return doctr_predict_text(images, self.doctr_predictor)
         return []
 
     @classmethod
