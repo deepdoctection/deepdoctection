@@ -238,19 +238,20 @@ class DoctectionPipe(Pipeline):
 
         df = MapData(df, _proto_process(path, doc_path))
         if dataset_dataflow is None:
-            if dpi := os.environ["DPI"]:
-                df = MapData(df, _to_image(dpi=int(dpi)))  # pylint: disable=E1120
+            dpi = int(os.environ["DPI"])
+            if dpi:
+                df = MapData(df, _to_image(dpi=dpi))  # pylint: disable=E1120
             else:
-                width, height = kwargs.get("width", ""), kwargs.get("height", "")
+                width, height = int(kwargs.get("width", 0)), int(kwargs.get("height", 0))
                 if not width or not height:
-                    width = os.environ["IMAGE_WIDTH"]
-                    height = os.environ["IMAGE_HEIGHT"]
+                    width = int(os.environ["IMAGE_WIDTH"])
+                    height = int(os.environ["IMAGE_HEIGHT"])
                     if not width or not height:
                         raise ValueError(
-                            "DPI, IMAGE_WIDTH and IMAGE_HEIGHT are all None, but "
+                            "DPI, IMAGE_WIDTH and IMAGE_HEIGHT are all None or 0, but "
                             "either DPI or IMAGE_WIDTH and IMAGE_HEIGHT must be set"
                         )
-                df = MapData(df, _to_image(width=int(width), height=int(height)))  # pylint: disable=E1120
+                df = MapData(df, _to_image(width=width, height=height))  # pylint: disable=E1120
         return df
 
     @staticmethod
