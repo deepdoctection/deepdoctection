@@ -29,7 +29,7 @@ from ..datapoint.image import Image
 from ..datasets.base import DatasetBase
 from ..mapper.maputils import LabelSummarizer
 from ..utils.logger import LoggingRecord, log_once, logger
-from ..utils.settings import DatasetType, LayoutType, ObjectTypes, PageType, WordType
+from ..utils.object_types import DatasetType, LayoutType, ObjectTypes, PageType, WordType
 from ..utils.tqdm import get_tqdm
 from ..utils.types import DP, JsonDict
 from .registry import get_dataset
@@ -55,7 +55,7 @@ class DatasetAdapter(IterableDataset):  # type: ignore
         image_to_framework_func: Optional[Callable[[DP], Optional[JsonDict]]] = None,
         use_token_tag: bool = True,
         number_repetitions: int = -1,
-        **build_kwargs: str,
+        **build_kwargs: Union[str, bool],
     ) -> None:
         """
         Args:

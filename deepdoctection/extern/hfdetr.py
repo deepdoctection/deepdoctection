@@ -29,7 +29,7 @@ from typing import TYPE_CHECKING, Literal, Mapping, Optional, Sequence, Union
 from lazy_imports import try_import
 
 from ..utils.file_utils import get_pytorch_requirement, get_transformers_requirement
-from ..utils.settings import DefaultType, ObjectTypes, TypeOrStr, get_type
+from ..utils.object_types import DefaultType, ObjectTypes, TypeOrStr, get_type
 from ..utils.types import PathLikeOrStr, PixelValues, Requirement
 from .base import DetectionResult, ModelCategories, ObjectDetector
 from .pt.ptutils import get_torch_device

@@ -28,7 +28,7 @@ from deepdoctection.datapoint import Image
 from deepdoctection.extern.base import SequenceClassResult, TokenClassResult
 from deepdoctection.pipe import LMSequenceClassifierService, LMTokenClassifierService
 from deepdoctection.utils.file_utils import transformers_available
-from deepdoctection.utils.settings import BioTag, PageType, TokenClasses, WordType
+from deepdoctection.utils.object_types import BioTag, PageType, TokenClasses, WordType
 
 if transformers_available():
     from transformers import LayoutLMForSequenceClassification, LayoutLMForTokenClassification, LayoutLMTokenizerFast

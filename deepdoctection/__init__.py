@@ -286,6 +286,8 @@ _IMPORT_STRUCTURE = {
         "save_tmp_file",
         "timed_operation",
         "collect_env_info",
+        "EnvSettings",
+        "SETTINGS",
         "pytorch_available",
         "get_pytorch_requirement",
         "pyzmq_available",

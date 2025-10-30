@@ -24,7 +24,7 @@ from unittest.mock import MagicMock, patch
 from pytest import mark
 
 from deepdoctection.datasets import Funsd
-from deepdoctection.utils.settings import LayoutType, WordType
+from deepdoctection.utils.object_types import LayoutType, WordType
 
 from ...test_utils import collect_datapoint_from_dataflow, get_test_path
 from .conftest import get_white_image

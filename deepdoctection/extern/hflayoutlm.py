@@ -31,7 +31,7 @@ from lazy_imports import try_import
 from typing_extensions import TypeAlias
 
 from ..utils.file_utils import get_pytorch_requirement, get_transformers_requirement
-from ..utils.settings import TypeOrStr
+from ..utils.object_types import TypeOrStr
 from ..utils.types import JsonDict, PathLikeOrStr, Requirement
 from .base import (
     LMSequenceClassifier,

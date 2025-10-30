@@ -25,7 +25,7 @@ import pytest
 from pytest import mark
 
 from deepdoctection.mapper import DefaultMapper, LabelSummarizer
-from deepdoctection.utils.settings import ObjectTypes
+from deepdoctection.utils.object_types import ObjectTypes
 
 
 class TestDefaultMapper:

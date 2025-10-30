@@ -30,7 +30,7 @@ from ..datapoint.view import Page
 from ..datasets.base import DatasetCategories
 from ..utils.file_utils import Requirement, get_apted_requirement, get_distance_requirement, get_lxml_requirement
 from ..utils.logger import LoggingRecord, logger
-from ..utils.settings import LayoutType
+from ..utils.object_types import LayoutType
 from ..utils.types import MetricResults
 from .base import MetricBase
 from .registry import metric_registry

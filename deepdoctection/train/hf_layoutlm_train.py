@@ -55,7 +55,7 @@ from ..pipe.registry import pipeline_component_registry
 from ..utils.error import DependencyError
 from ..utils.file_utils import wandb_available
 from ..utils.logger import LoggingRecord, logger
-from ..utils.settings import DatasetType, LayoutType, WordType
+from ..utils.object_types import DatasetType, LayoutType, WordType
 from ..utils.types import PathLikeOrStr
 from ..utils.utils import string_to_dict
 

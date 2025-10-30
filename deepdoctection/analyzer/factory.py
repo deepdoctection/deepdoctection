@@ -67,7 +67,7 @@ from ..pipe.transform import SimpleTransformService
 from ..utils.error import DependencyError
 from ..utils.env_info import SETTINGS
 from ..utils.metacfg import AttrDict
-from ..utils.settings import CellType, LayoutType, ObjectTypes, Relationships
+from ..utils.object_types import CellType, LayoutType, ObjectTypes, Relationships
 from ..utils.transform import PadTransform
 
 with try_import() as image_guard:

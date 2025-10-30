@@ -31,7 +31,7 @@ from ..datapoint.image import Image, MetaAnnotation
 from ..mapper.misc import curry
 from ..utils.context import timed_operation
 from ..utils.identifier import get_uuid_from_str
-from ..utils.settings import ObjectTypes
+from ..utils.object_types import ObjectTypes
 from ..utils.types import DP
 from .anngen import DatapointManager
 

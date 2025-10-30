@@ -35,7 +35,7 @@ import numpy as np
 from ..dataflow import CacheData, ConcatData, CustomDataFromList, DataFlow
 from ..datapoint.image import Image, MetaAnnotation
 from ..utils.logger import LoggingRecord, logger
-from ..utils.settings import DatasetType, ObjectTypes, TypeOrStr, get_type
+from ..utils.object_types import DatasetType, ObjectTypes, TypeOrStr, get_type
 from ..utils.types import PathLikeOrStr
 from .dataflow_builder import DataFlowBaseBuilder
 from .info import DatasetCategories, DatasetInfo, get_merged_categories

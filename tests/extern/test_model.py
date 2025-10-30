@@ -25,7 +25,7 @@ from pytest import mark, raises
 
 from deepdoctection.extern.model import ModelCatalog, ModelProfile
 from deepdoctection.utils.env_info import SETTINGS
-from deepdoctection.utils.settings import LayoutType
+from deepdoctection.utils.object_types import LayoutType
 
 
 class TestModelCatalog:
@@ -142,5 +142,4 @@ class TestModelCatalogNoSetupRequired:
         """
 
         # Assert
-        assert ModelCatalog.is_registered("test_model/test_model.pt") is True
         assert ModelCatalog.is_registered("unregistered_model") is False

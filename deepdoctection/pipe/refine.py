@@ -36,7 +36,7 @@ from ..extern.base import DetectionResult
 from ..mapper.maputils import MappingContextManager
 from ..utils.error import ImageError
 from ..utils.file_utils import networkx_available
-from ..utils.settings import CellType, LayoutType, ObjectTypes, Relationships, TableType, get_type
+from ..utils.object_types import CellType, LayoutType, ObjectTypes, Relationships, TableType, get_type
 from .base import PipelineComponent
 from .registry import pipeline_component_registry
 

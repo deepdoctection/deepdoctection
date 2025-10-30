@@ -29,7 +29,7 @@ from typing import Optional, Union, no_type_check
 from ..utils.error import AnnotationError, UUIDError
 from ..utils.identifier import get_uuid, is_uuid_like
 from ..utils.logger import LoggingRecord, logger
-from ..utils.settings import DefaultType, ObjectTypes, TypeOrStr, get_type
+from ..utils.object_types import DefaultType, ObjectTypes, TypeOrStr, get_type
 from ..utils.types import AnnotationDict
 from .box import BoundingBox
 from .convert import as_dict

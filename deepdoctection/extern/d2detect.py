@@ -33,7 +33,7 @@ from lazy_imports import try_import
 
 from ..utils.file_utils import get_detectron2_requirement, get_pytorch_requirement
 from ..utils.metacfg import AttrDict, set_config_by_yaml
-from ..utils.settings import DefaultType, ObjectTypes, TypeOrStr, get_type
+from ..utils.object_types import DefaultType, ObjectTypes, TypeOrStr, get_type
 from ..utils.transform import InferenceResize, ResizeTransform
 from ..utils.types import PathLikeOrStr, PixelValues, Requirement
 from .base import DetectionResult, ModelCategories, ObjectDetector

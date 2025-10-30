@@ -33,7 +33,7 @@ from deepdoctection.pipe.segment import (
     stretch_items,
     tile_tables_with_items_per_table,
 )
-from deepdoctection.utils.settings import CellType, LayoutType
+from deepdoctection.utils.object_types import CellType, LayoutType
 
 
 @mark.basic

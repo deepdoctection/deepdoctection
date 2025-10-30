@@ -32,7 +32,7 @@ from ..datapoint.annotation import DEFAULT_CATEGORY_ID, ImageAnnotation
 from ..datapoint.image import Image
 from ..extern.pt.nms import batched_nms
 from ..mapper.maputils import curry
-from ..utils.settings import DefaultType, ObjectTypes, TypeOrStr, get_type
+from ..utils.object_types import DefaultType, ObjectTypes, TypeOrStr, get_type
 from ..utils.types import Detectron2Dict
 
 with try_import() as pt_import_guard:

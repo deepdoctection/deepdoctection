@@ -28,7 +28,7 @@ from pytest import fixture
 from deepdoctection.datapoint import BoundingBox, Image, ImageAnnotation
 from deepdoctection.datasets import DatasetCategories
 from deepdoctection.extern.base import DetectionResult
-from deepdoctection.utils.settings import get_type
+from deepdoctection.utils.object_types import get_type
 
 
 @fixture(name="datapoint_image")

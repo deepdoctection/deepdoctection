@@ -123,6 +123,39 @@ __all__ = ["collect_env_info",
 
 # pylint: disable=import-outside-toplevel
 
+def _import_custom_object_types_module(mod: str) -> None:
+    """
+    Import a custom ObjectTypes module from an absolute ``*.py`` file path.
+
+    This loader does not accept dotted module names. It requires an absolute
+    filesystem path to a Python file and imports it under a temporary module
+    name ``dd_custom_<stem>`` so its top-level code executes (e.g., enum
+    registration decorators).
+
+    Args:
+        mod: Absolute path to a ``*.py`` file to import. Empty or relative values
+             are not supported.
+
+    Raises:
+        ImportError: If ``mod`` is empty, not an absolute path, does not point to
+            an existing file, an import spec cannot be created, or the module
+            cannot be executed.
+    """
+    if not mod:
+        return
+
+    # Filesystem path to a Python file
+    path = Path(mod).expanduser()
+    if not path.is_file():
+        raise ImportError(f"Custom ObjectTypes module path not found: {path}")
+
+    spec = importlib.util.spec_from_file_location(f"dd_custom_{path.stem}", path)
+    if spec is None or spec.loader is None:
+        raise ImportError(f"Cannot create import spec for: {path}")
+
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)  # type: ignore[union-attr]
 
 
 class EnvSettings(BaseSettings):
@@ -145,6 +178,9 @@ class EnvSettings(BaseSettings):
     # HF / Model catalog
     HF_CREDENTIALS: Optional[str] = None
     MODEL_CATALOG: Optional[str] = None
+
+    # Custom object types autoload (comma‑separated string or JSON list in env is accepted)
+    CUSTOM_OBJECT_TYPES_MODULES: list[str] = Field(default_factory=list)
 
     # DL framework toggles
     DD_USE_TORCH: bool = False
@@ -253,6 +289,22 @@ class EnvSettings(BaseSettings):
         # 4) Optional: Track qpdf presence as a convenience flag
         if "QPDF_AVAILABLE" not in fields_set:
             self.QPDF_AVAILABLE = bool(qpdf_available())
+
+        # 5) Autoload custom ObjectTypes modules so their @register decorators run
+        if self.CUSTOM_OBJECT_TYPES_MODULES:
+            # Ensure `settings` is imported so the wrapped register is active
+            try:
+                from . import object_types as _dd_object_types  # noqa: F401,WPS433
+            except ImportError:
+                pass
+
+            for mod in self.CUSTOM_OBJECT_TYPES_MODULES:
+                if not mod:
+                    continue
+                try:
+                    _import_custom_object_types_module(mod)
+                except ImportError:
+                    pass
 
 
         return self

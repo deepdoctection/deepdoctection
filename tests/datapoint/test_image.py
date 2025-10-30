@@ -30,7 +30,7 @@ from deepdoctection.dataflow import DataFlow, MapData, SerializerJsonlines
 from deepdoctection.datapoint import AnnotationMap, BoundingBox, CategoryAnnotation, Image, ImageAnnotation
 from deepdoctection.utils import get_uuid
 from deepdoctection.utils.error import ImageError
-from deepdoctection.utils.settings import get_type
+from deepdoctection.utils.object_types import get_type
 
 from ..test_utils import anns_to_ids, collect_datapoint_from_dataflow, get_test_path
 from .conftest import TestPdfPage, WhiteImage

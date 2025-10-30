@@ -37,7 +37,7 @@ from ...datasets.info import DatasetInfo
 from ...mapper.cats import cat_to_sub_cat, filter_cat
 from ...mapper.pubstruct import pub_to_image
 from ...utils.logger import LoggingRecord, logger
-from ...utils.settings import CellType, DatasetType, LayoutType, ObjectTypes, TableType, WordType
+from ...utils.object_types import CellType, DatasetType, LayoutType, ObjectTypes, TableType, WordType
 from ...utils.types import PubtabnetDict
 from ..base import _BuiltInDataset
 from ..dataflow_builder import DataFlowBaseBuilder
@@ -80,14 +80,14 @@ _SUB_CATEGORIES: dict[ObjectTypes, dict[ObjectTypes, list[ObjectTypes]]]
 _SUB_CATEGORIES = {
     TableType.ITEM: {TableType.ITEM: [LayoutType.ROW, LayoutType.COLUMN]},
     LayoutType.CELL: {
-        CellType.HEADER: [CellType.HEADER, CellType.BODY],
+        CellType.COLUMN_HEADER: [CellType.COLUMN_HEADER, CellType.BODY],
         CellType.ROW_NUMBER: [],
         CellType.COLUMN_NUMBER: [],
         CellType.ROW_SPAN: [],
         CellType.COLUMN_SPAN: [],
         CellType.SPANNING: [CellType.SPANNING],
     },
-    CellType.HEADER: {
+    CellType.COLUMN_HEADER: {
         CellType.ROW_NUMBER: [],
         CellType.COLUMN_NUMBER: [],
         CellType.ROW_SPAN: [],

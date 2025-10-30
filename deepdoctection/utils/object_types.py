@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# File: settings.py
+# File: object_types.py
 
 # Copyright 2021 Dr. Janis Meyer. All rights reserved.
 #
@@ -20,12 +20,12 @@ Module for funcs and constants that maintain general settings
 """
 from __future__ import annotations
 
-import os
 from enum import Enum
-from pathlib import Path
-from typing import Optional, Union
+import threading
+from typing import Optional, Union, Iterable, Type
 
 import catalogue  # type: ignore
+from . error import DuplicateObjectTypeError
 
 
 class ObjectTypes(str, Enum):
@@ -50,7 +50,52 @@ class ObjectTypes(str, Enum):
 TypeOrStr = Union[ObjectTypes, str]  # pylint: disable=C0103
 
 object_types_registry = catalogue.create("deepdoctection", "settings", entry_points=True)
+_orig_register = object_types_registry.register
 
+def _iter_registered_enums() -> Iterable[Type[ObjectTypes]]:
+    """
+    Iterate over all enum classes registered in the catalogue registry.
+    """
+    return object_types_registry.get_all().values()
+
+
+def _index_enum(enum_cls: Type[ObjectTypes]) -> None:
+    """
+    Merge a newly-registered enum class into the global index, enforcing unique string values.
+    """
+    with _TYPES_INDEX_LOCK:
+        for member in enum_cls:
+            val = str(member.value)
+            existing = _ALL_TYPES_DICT.get(val)
+            if existing is not None and existing is not member:
+                raise DuplicateObjectTypeError(
+                    f"Object type value '{val}' already taken by {existing!r}; cannot register {member!r}"
+                )
+            _ALL_TYPES_DICT[val] = member
+
+
+def _rebuild_types_index() -> None:
+    """
+    Full rebuild from the registry. Useful at process start or in tests.
+    """
+    with _TYPES_INDEX_LOCK:
+        _ALL_TYPES_DICT.clear()
+        for enum_cls in _iter_registered_enums():
+            _index_enum(enum_cls)
+
+
+def _wrapped_register(name: str):
+    def _decorator(cls: Type[ObjectTypes]) -> Type[ObjectTypes]:
+        registered_cls = _orig_register(name)(cls)
+        _index_enum(registered_cls)
+        return registered_cls
+    return _decorator
+
+# Monkey-patch the registry to enforce duplicate detection for all modules.
+object_types_registry.register = _wrapped_register
+
+_TYPES_INDEX_LOCK = threading.RLock()
+_ALL_TYPES_DICT: dict[str, ObjectTypes] = {}
 
 # pylint: disable=invalid-name
 @object_types_registry.register("DefaultType")
@@ -90,7 +135,6 @@ class DocumentType(ObjectTypes):
     LETTER = "letter"
     FORM = "form"
     EMAIL = "email"
-    HANDWRITTEN = "handwritten"
     ADVERTISEMENT = "advertisement"
     SCIENTIFIC_REPORT = "scientific_report"
     SCIENTIFIC_PUBLICATION = "scientific_publication"
@@ -158,7 +202,6 @@ class TableType(ObjectTypes):
 class CellType(ObjectTypes):
     """Types for cell properties"""
 
-    HEADER = "header"
     BODY = "body"
     ROW_NUMBER = "row_number"
     ROW_SPAN = "row_span"
@@ -369,18 +412,14 @@ def token_class_with_tag_to_token_class_and_tag(
     return {val: key for key, val in _TOKEN_AND_TAG_TO_TOKEN_CLASS_WITH_TAG.items()}.get(token_class_with_tag)
 
 
-_ALL_TYPES_DICT = {}
-_ALL_TYPES = set(object_types_registry.get_all().values())
-for ob in _ALL_TYPES:
-    _ALL_TYPES_DICT.update({e.value: e for e in ob})
 
 
 def update_all_types_dict() -> None:
-    """Updates subsequently registered object types. Useful for defining additional ObjectTypes in tests"""
-    maybe_new_types = set(object_types_registry.get_all().values())
-    difference = maybe_new_types - _ALL_TYPES
-    for obj in difference:
-        _ALL_TYPES_DICT.update({e.value: e for e in obj})
+    """
+    Compatibility helper retained for older code/tests that call it explicitly.
+    Rebuilds the global index from the registry.
+    """
+    _rebuild_types_index()
 
 
 _OLD_TO_NEW_OBJ_TYPE: dict[str, str] = {
@@ -429,13 +468,21 @@ def get_type(obj_type: Union[str, ObjectTypes]) -> ObjectTypes:
     """
     if isinstance(obj_type, ObjectTypes):
         return obj_type
+    if not isinstance(obj_type, str):
+        raise TypeError(f"get_type expects str or ObjectTypes, got {type(obj_type)}")
+
     obj_type = _get_new_obj_type_str(obj_type)
     if obj_type.startswith(("B-", "E-", "I-", "S-")):
         obj_type = obj_type[:2] + obj_type[2:].lower()
     elif obj_type not in _get_black_list():
         obj_type = obj_type.lower()
-    return_value = _ALL_TYPES_DICT.get(obj_type)
-    if return_value is None:
-        raise KeyError(f"String {obj_type} does not correspond to a registered ObjectType")
-    return return_value
 
+    with _TYPES_INDEX_LOCK:
+        member = _ALL_TYPES_DICT.get(obj_type)
+
+    if member is None:
+        raise KeyError(f"String {obj_type} does not correspond to a registered ObjectType")
+
+    return member
+
+_rebuild_types_index()

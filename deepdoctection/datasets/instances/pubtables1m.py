@@ -52,7 +52,7 @@ from ...mapper.misc import xml_to_dict
 from ...mapper.pascalstruct import pascal_voc_dict_to_image
 from ...utils.env_info import SETTINGS
 from ...utils.file_utils import lxml_available
-from ...utils.settings import CellType, DatasetType, LayoutType
+from ...utils.object_types import CellType, DatasetType, LayoutType
 from ...utils.types import JsonDict
 from ..base import _BuiltInDataset
 from ..dataflow_builder import DataFlowBaseBuilder
@@ -164,7 +164,7 @@ class Pubtables1MBuilder(DataFlowBaseBuilder):
         df = MapData(df, load_xml(utf8_parser))  # pylint: disable=E1120
 
         with open(
-            os.path.join(SETTINGS.PACKAGE_PATH, "deepdoctection/datasets/instances/xsl/pascal_voc.xsl"),
+            os.path.join(SETTINGS.PACKAGE_PATH, "datasets/instances/xsl/pascal_voc.xsl"),
             "r",
             encoding="utf-8",
         ) as xsl_file:
@@ -283,7 +283,7 @@ class Pubtables1MBuilderStruct(DataFlowBaseBuilder):
         df = MapData(df, load_xml(utf8_parser))  # pylint: disable=E1120
 
         with open(
-            os.path.join(SETTINGS.PACKAGE_PATH, "deepdoctection/datasets/instances/xsl/pascal_voc.xsl"),
+            os.path.join(SETTINGS.PACKAGE_PATH, "datasets/instances/xsl/pascal_voc.xsl"),
             "r",
             encoding="utf-8",
         ) as xsl_file:

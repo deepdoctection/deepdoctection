@@ -31,7 +31,7 @@ from deepdoctection.datapoint import (
     ImageAnnotation,
 )
 from deepdoctection.extern.base import DetectionResult, SequenceClassResult, TokenClassResult
-from deepdoctection.utils.settings import (
+from deepdoctection.utils.object_types import (
     BioTag,
     CellType,
     LayoutType,

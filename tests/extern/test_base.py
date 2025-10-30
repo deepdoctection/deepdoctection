@@ -32,7 +32,7 @@ from deepdoctection.extern.base import (
     ModelCategories,
     NerModelCategories,
 )
-from deepdoctection.utils.settings import get_type
+from deepdoctection.utils.object_types import get_type
 from deepdoctection.utils.transform import BaseTransform
 
 

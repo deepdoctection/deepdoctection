@@ -33,7 +33,7 @@ from ..utils.fs import (
     download,
 )
 from ..utils.logger import LoggingRecord, log_once, logger
-from ..utils.settings import ObjectTypes, get_type
+from ..utils.object_types import ObjectTypes, get_type
 from ..utils.types import PathLikeOrStr
 
 __all__ = ["ModelCatalog", "ModelDownloadManager", "print_model_infos", "ModelProfile"]
@@ -138,14 +138,14 @@ class ModelCatalog:
             )
             profile = ModelProfile(name="", description="", size=[])
         if profile.name:
-            return SETTINGS.MODEL_DIR / profile.name
+            return (SETTINGS.MODEL_DIR / profile.name).as_posix()
         log_once(
             f"Model {name} is not registered. Please make sure the weights are available in the weights "
             f"cache directory or the full path you provide is correct"
         )
         if os.path.isfile(name):
             return name
-        return SETTINGS.MODEL_DIR / name
+        return (SETTINGS.MODEL_DIR / name).as_posix()
 
     @staticmethod
     def get_full_path_configs(name: PathLikeOrStr) -> PathLikeOrStr:
@@ -174,8 +174,8 @@ class ModelCatalog:
             )
             profile = ModelProfile(name="", description="", size=[])
         if profile.config is not None:
-            return SETTINGS.CONFIGS_DIR / profile.config
-        return SETTINGS.CONFIGS_DIR / name
+            return (SETTINGS.CONFIGS_DIR / profile.config).as_posix()
+        return (SETTINGS.CONFIGS_DIR / name).as_posix()
 
     @staticmethod
     def get_full_path_preprocessor_configs(name: Union[str]) -> PathLikeOrStr:
@@ -201,8 +201,8 @@ class ModelCatalog:
                 )
             )
         if profile.preprocessor_config is not None:
-            return SETTINGS.CONFIGS_DIR / profile.preprocessor_config
-        return SETTINGS.CONFIGS_DIR / name
+            return (SETTINGS.CONFIGS_DIR / profile.preprocessor_config).as_posix()
+        return (SETTINGS.CONFIGS_DIR / name).as_posix()
 
     @staticmethod
     def get_model_list() -> list[PathLikeOrStr]:
@@ -210,7 +210,7 @@ class ModelCatalog:
         Returns:
             A list of absolute paths of registered models.
         """
-        return [SETTINGS.MODEL_DIR / profile.name for profile in ModelCatalog.CATALOG.values()]
+        return [(SETTINGS.MODEL_DIR / profile.name).as_posix() for profile in ModelCatalog.CATALOG.values()]
 
     @staticmethod
     def get_profile_list() -> list[str]:

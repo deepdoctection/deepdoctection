@@ -29,7 +29,7 @@ import numpy as np
 
 from ..utils.error import AnnotationError, ImageError
 from ..utils.logger import LoggingRecord, log_once, logger
-from ..utils.settings import (
+from ..utils.object_types import (
     CellType,
     LayoutType,
     ObjectTypes,

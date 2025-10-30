@@ -28,7 +28,7 @@ from deepdoctection import ObjectTypes
 from deepdoctection.datapoint import BoundingBox, Image
 from deepdoctection.extern.base import DetectionResult, ObjectDetector
 from deepdoctection.pipe.sub_layout import DetectResultGenerator, SubImageLayoutService
-from deepdoctection.utils.settings import LayoutType
+from deepdoctection.utils.object_types import LayoutType
 
 
 @mark.basic

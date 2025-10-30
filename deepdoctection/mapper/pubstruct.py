@@ -29,7 +29,7 @@ from ..datapoint.convert import convert_pdf_bytes_to_np_array_v2
 from ..datapoint.image import Image
 from ..utils.pdf_utils import load_bytes_from_pdf_file
 from ..utils.fs import load_image_from_file
-from ..utils.settings import CellType, LayoutType, ObjectTypes, Relationships, SummaryType, TableType, WordType
+from ..utils.object_types import CellType, LayoutType, ObjectTypes, Relationships, SummaryType, TableType, WordType
 from ..utils.types import JsonDict, PubtabnetDict
 from ..utils.utils import is_file_extension
 from .maputils import MappingContextManager, curry, maybe_get_fake_score
@@ -301,7 +301,7 @@ def embedding_in_image(dp: Image, html: list[str], categories_name_as_key: dict[
     # node.
     html.insert(0, "<table>")
     html.append("</table>")
-    if CellType.HEADER not in categories_name_as_key:
+    if CellType.COLUMN_HEADER not in categories_name_as_key:
         html.remove("<thead>")
         html.remove("</thead>")
         if "<tbody>" in html and "</tbody>" in html:
@@ -471,7 +471,7 @@ def pub_to_image_uncur(  # pylint: disable=R0914
                 max_cs = max(max_cs, col_span)  # type: ignore
 
                 if _has_header:
-                    category_name = CellType.HEADER if cell_id <= end_of_header else CellType.BODY
+                    category_name = CellType.COLUMN_HEADER if cell_id <= end_of_header else CellType.BODY
                     cell_ann.dump_sub_category(
                         CellType.HEADER, CategoryAnnotation(category_name=category_name), image.image_id
                     )

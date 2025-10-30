@@ -36,7 +36,7 @@ from deepdoctection.eval.accmetric import (
 )
 
 # from deepdoctection.utils.settings import names
-from deepdoctection.utils.settings import CellType
+from deepdoctection.utils.object_types import CellType
 
 
 class TestAccuracyMetric:

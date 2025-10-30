@@ -29,7 +29,7 @@ from deepdoctection.extern.base import SequenceClassResult, TokenClassResult
 from deepdoctection.extern.hflm import HFLmLanguageDetector, HFLmSequenceClassifier, HFLmTokenClassifier
 from deepdoctection.extern.model import ModelCatalog, ModelDownloadManager
 from deepdoctection.utils.file_utils import pytorch_available
-from deepdoctection.utils.settings import BioTag, Languages, TokenClasses, get_type
+from deepdoctection.utils.object_types import BioTag, Languages, TokenClasses, get_type
 from deepdoctection.utils.types import JsonDict
 
 from ..mapper.data import DatapointXfund

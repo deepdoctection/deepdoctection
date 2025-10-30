@@ -28,7 +28,7 @@ from scipy.spatial import distance
 from ..datapoint.annotation import ImageAnnotation
 from ..datapoint.box import iou, ioa as np_ioa
 from ..datapoint.image import Image
-from ..utils.settings import TypeOrStr
+from ..utils.object_types import TypeOrStr
 
 
 def match_anns_by_intersection(

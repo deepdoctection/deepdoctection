@@ -35,7 +35,7 @@ from ..utils.file_utils import (
     get_pytorch_requirement,
 )
 from ..utils.fs import load_json
-from ..utils.settings import LayoutType, ObjectTypes, PageType, TypeOrStr
+from ..utils.object_types import LayoutType, ObjectTypes, PageType, TypeOrStr
 from ..utils.transform import RotationTransform
 from ..utils.types import PathLikeOrStr, PixelValues, Requirement
 from ..utils.viz import viz_handler

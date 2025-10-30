@@ -22,7 +22,7 @@ from pytest import mark
 
 from deepdoctection.datapoint import Image
 from deepdoctection.pipe import AnnotationNmsService, FamilyCompound, IntersectionMatcher, MatchingService
-from deepdoctection.utils.settings import LayoutType, Relationships
+from deepdoctection.utils.object_types import LayoutType, Relationships
 
 
 class TestMatchingService:

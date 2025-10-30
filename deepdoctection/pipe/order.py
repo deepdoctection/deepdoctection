@@ -37,7 +37,7 @@ from ..extern.base import DetectionResult
 from ..pipe.base import PipelineComponent
 from ..pipe.registry import pipeline_component_registry
 from ..utils.logger import LoggingRecord, logger
-from ..utils.settings import LayoutType, ObjectTypes, Relationships, TypeOrStr, get_type
+from ..utils.object_types import LayoutType, ObjectTypes, Relationships, TypeOrStr, get_type
 
 
 class OrderGenerator:
