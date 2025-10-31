@@ -498,15 +498,16 @@ class ServiceFactory:
         if config.OCR.USE_DOCTR:
             use_doctr = True
             if config.LIB is None:
-                raise DependencyError("At least one of the env variables DD_USE_TF or DD_USE_TORCH must be set.")
+                raise DependencyError("At least DD_USE_TORCH must be set.")
             weights = config.OCR.WEIGHTS.DOCTR_RECOGNITION
         if config.OCR.USE_TEXTRACT:
             use_textract = True
-            credentials_kwargs = {
-                "aws_access_key_id": environ.get("AWS_ACCESS_KEY", None),
-                "aws_secret_access_key": environ.get("AWS_SECRET_KEY", None),
-                "config": Config(region_name=environ.get("AWS_REGION", None)),
-            }
+            if SETTINGS.AWS_REGION and SETTINGS.AWS_ACCESS_KEY_ID and SETTINGS.AWS_SECRET_ACCESS_KEY:
+                credentials_kwargs = {
+                    "aws_access_key_id": SETTINGS.AWS_ACCESS_KEY,
+                    "aws_secret_access_key": SETTINGS.AWS_SECRET_KEY,
+                    "config": Config(region_name=SETTINGS.AWS_REGION),
+                }
 
         return {
             "use_tesseract": use_tesseract,
