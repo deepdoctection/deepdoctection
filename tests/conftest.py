@@ -19,7 +19,6 @@
 Module for globally accessible fixtures
 """
 from copy import deepcopy
-from pathlib import Path
 from typing import Dict, List, Mapping, Sequence, Tuple
 
 import numpy as np

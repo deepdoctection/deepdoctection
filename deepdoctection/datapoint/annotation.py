@@ -234,6 +234,11 @@ class Annotation(ABC):
         """
         raise NotImplementedError()
 
+    @staticmethod
+    def replace_keys() -> dict[str, str]:
+        """Replacing keys when converting the dataclass object to a dict. Useful for backward compatibility"""
+        return {"_annotation_id": "annotation_id"}
+
     @property
     def state_id(self) -> str:
         """

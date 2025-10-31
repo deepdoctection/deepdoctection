@@ -22,7 +22,7 @@ from __future__ import annotations
 
 from enum import Enum
 import threading
-from typing import Optional, Union, Iterable, Type
+from typing import Optional, Union, Iterable, Type, Any
 
 import catalogue  # type: ignore
 from . error import DuplicateObjectTypeError
@@ -84,9 +84,9 @@ def _rebuild_types_index() -> None:
             _index_enum(enum_cls)
 
 
-def _wrapped_register(name: str):
+def _wrapped_register(name: str, func: Optional[Any] = None):
     def _decorator(cls: Type[ObjectTypes]) -> Type[ObjectTypes]:
-        registered_cls = _orig_register(name)(cls)
+        registered_cls = _orig_register(name, func=func)(cls)
         _index_enum(registered_cls)
         return registered_cls
     return _decorator

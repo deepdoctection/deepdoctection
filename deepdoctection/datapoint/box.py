@@ -207,8 +207,6 @@ class BoundingBox:
         _uly: Upper-left y-coordinate, stored as an integer.
         _lrx: Lower-right x-coordinate, stored as an integer.
         _lry: Lower-right y-coordinate, stored as an integer.
-        _height: Height of the bounding box, stored as an integer.
-        _width: Width of the bounding box, stored as an integer.
 
     """
 
@@ -217,8 +215,6 @@ class BoundingBox:
     _uly: int = 0
     _lrx: int = 0
     _lry: int = 0
-    _height: int = 0
-    _width: int = 0
 
     def __init__(
         self,
@@ -229,6 +225,7 @@ class BoundingBox:
         lry: BoxCoordinate = 0,
         width: BoxCoordinate = 0,
         height: BoxCoordinate = 0,
+        validate: bool = True,
     ):
         """
         Initialize a BoundingBox instance with specified coordinates.
@@ -252,63 +249,53 @@ class BoundingBox:
             height: Height of the bounding box (`float` or `int`), default 0
         """
         self.absolute_coords = absolute_coords
-        if absolute_coords:
+        if self.absolute_coords:
             self._ulx = round(ulx)
             self._uly = round(uly)
             if lrx and lry:
                 self._lrx = round(lrx)
                 self._lry = round(lry)
-            if width and height:
-                self._width = round(width)
-                self._height = round(height)
         else:
             self._ulx = round(ulx * RELATIVE_COORD_SCALE_FACTOR)
             self._uly = round(uly * RELATIVE_COORD_SCALE_FACTOR)
             if lrx and lry:
                 self._lrx = round(lrx * RELATIVE_COORD_SCALE_FACTOR)
                 self._lry = round(lry * RELATIVE_COORD_SCALE_FACTOR)
-            if width and height:
-                self._width = round(width * RELATIVE_COORD_SCALE_FACTOR)
-                self._height = round(height * RELATIVE_COORD_SCALE_FACTOR)
-        if not self._width and not self._height:
-            self._width = self._lrx - self._ulx
-            self._height = self._lry - self._uly
         if not self._lrx and not self._lry:
-            self._lrx = self._ulx + self._width
-            self._lry = self._uly + self._height
-        self.__post_init__()
+            self._lrx = self._ulx + width
+            self._lry = self._uly + height
 
-    def __post_init__(self) -> None:
-        if self._width == 0:
-            if self._lrx is None:
-                raise BoundingBoxError("Bounding box not fully initialized")
-            self._width = self._lrx - self._ulx
-        if self._height == 0:
-            if self._lry is None:
-                raise BoundingBoxError("Bounding box not fully initialized")
-            self._height = self._lry - self._uly
+        if validate:
+            self._validate()
 
-        if self._lrx == 0:
-            if self._width is None:
-                raise BoundingBoxError("Bounding box not fully initialized")
-            self._lrx = self._ulx + self._width
-        if self._lry == 0:
-            if self._height is None:
-                raise BoundingBoxError("Bounding box not fully initialized")
-            self._lry = self._uly + self._height
+    def _validate(self) -> None:
+        """Validate bounding box coordinates"""
+        if self._lrx == self._ulx or self._lry == self._uly:
+            raise BoundingBoxError("Bounding box not fully initialized")
 
         if not (self._ulx >= 0 and self._uly >= 0):
             raise BoundingBoxError("Bounding box ul must be >= (0,0)")
-        if not (self._height > 0 and self._width > 0):
-            raise BoundingBoxError(
-                f"bounding box must have height and width >0. Check coords "
-                f"ulx: {self.ulx}, uly: {self.uly}, lrx: {self.lrx}, "
-                f"lry: {self.lry}, absolute_coords: {self.absolute_coords}"
-            )
+
+        self._validate_width(self._lrx, self._ulx)
+        self._validate_height(self._lry, self._uly)
+
         if not self.absolute_coords and not (
-            0 <= self.ulx <= 1 and 0 <= self.uly <= 1 and 0 <= self.lrx <= 1 and 0 <= self.lry <= 1
+                0 <= self.ulx <= 1 and 0 <= self.uly <= 1 and 0 <= self.lrx <= 1 and 0 <= self.lry <= 1
         ):
             raise BoundingBoxError("coordinates must be between 0 and 1")
+
+
+    @staticmethod
+    def _validate_width(lrx, ulx):
+        """validate width"""
+        if lrx - ulx <= 0:
+            raise BoundingBoxError(f"width must be >0. Check coords: lrx: {lrx}, ulx: {ulx}")
+
+    @staticmethod
+    def _validate_height(lry, uly):
+        """validate height"""
+        if lry - uly <= 0:
+            raise BoundingBoxError(f"width must be >0. Check coords: lrx: {lry}, ulx: {uly}")
 
     @property
     def ulx(self) -> BoxCoordinate:
@@ -319,7 +306,8 @@ class BoundingBox:
     def ulx(self, value: BoxCoordinate) -> None:
         """ulx setter"""
         self._ulx = round(value * RELATIVE_COORD_SCALE_FACTOR) if not self.absolute_coords else round(value)
-        self._width = self._lrx - self._ulx
+        self._validate_width(self._lrx, self._ulx)
+
 
     @property
     def uly(self) -> BoxCoordinate:
@@ -330,7 +318,7 @@ class BoundingBox:
     def uly(self, value: BoxCoordinate) -> None:
         """uly setter"""
         self._uly = round(value * RELATIVE_COORD_SCALE_FACTOR) if not self.absolute_coords else round(value)
-        self._height = self._lry - self._uly
+        self._validate_height(self._lry, self._uly)
 
     @property
     def lrx(self) -> BoxCoordinate:
@@ -341,7 +329,8 @@ class BoundingBox:
     def lrx(self, value: BoxCoordinate) -> None:
         """lrx setter"""
         self._lrx = round(value * RELATIVE_COORD_SCALE_FACTOR) if not self.absolute_coords else round(value)
-        self._width = self._lrx - self._ulx
+        self._validate_width(self._lrx, self._ulx)
+
 
     @property
     def lry(self) -> BoxCoordinate:
@@ -352,29 +341,32 @@ class BoundingBox:
     def lry(self, value: BoxCoordinate) -> None:
         """lry setter"""
         self._lry = round(value * RELATIVE_COORD_SCALE_FACTOR) if not self.absolute_coords else round(value)
-        self._height = self._lry - self._uly
+        self._validate_height(self._lry, self._uly)
 
     @property
     def width(self) -> BoxCoordinate:
         """width property"""
-        return self._width / RELATIVE_COORD_SCALE_FACTOR if not self.absolute_coords else self._width
+
+        return (self._lrx - self._ulx) / RELATIVE_COORD_SCALE_FACTOR if\
+            not self.absolute_coords else self._lrx - self._ulx
 
     @width.setter
     def width(self, value: BoxCoordinate) -> None:
         """width setter"""
-        self._width = round(value * RELATIVE_COORD_SCALE_FACTOR) if not self.absolute_coords else round(value)
-        self._lrx = self._ulx + self._width
+        self._lrx = self._ulx + round(value * RELATIVE_COORD_SCALE_FACTOR) if not self.absolute_coords else round(value)
+        self._validate_width(self._lrx, self._ulx)
 
     @property
     def height(self) -> BoxCoordinate:
         """height property"""
-        return self._height / RELATIVE_COORD_SCALE_FACTOR if not self.absolute_coords else self._height
+        return (self._lry - self._uly) / RELATIVE_COORD_SCALE_FACTOR if\
+            not self.absolute_coords else self._lry - self._uly
 
     @height.setter
     def height(self, value: BoxCoordinate) -> None:
         """height setter"""
-        self._height = round(value * RELATIVE_COORD_SCALE_FACTOR) if not self.absolute_coords else round(value)
-        self._lry = self._uly + self._height
+        self._lry = self._uly + round(value * RELATIVE_COORD_SCALE_FACTOR) if not self.absolute_coords else round(value)
+        self._validate_height(self._lry, self._uly)
 
     @property
     def cx(self) -> BoxCoordinate:
@@ -556,10 +548,6 @@ class BoundingBox:
         """Legacy string representation of the bounding box. Do not use"""
         return f"Bounding Box ulx: {self.ulx}, uly: {self.uly}, lrx: {self.lrx}, lry: {self.lry}"
 
-    @staticmethod
-    def remove_keys() -> list[str]:
-        """Removing keys when converting the dataclass object to a dict"""
-        return ["_height", "_width"]
 
     @staticmethod
     def replace_keys() -> dict[str, str]:
@@ -571,6 +559,12 @@ class BoundingBox:
     def from_dict(cls, **kwargs) -> BoundingBox:
         """from dict"""
         return cls(**kwargs)
+
+    @classmethod
+    @no_type_check
+    def from_dict_no_validation(cls, **kwargs) -> BoundingBox:
+        """Create BoundingBox from dict without validation"""
+        return cls(**kwargs, validate=False)
 
 
 def intersection_box(

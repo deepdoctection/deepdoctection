@@ -127,7 +127,7 @@ class Annotations:
 
     cell_detect_results = [
         [
-            DetectionResult(box=[20.0, 20.0, 25.0, 30.0], score=0.8, class_id=1, class_name=CellType.HEADER),
+            DetectionResult(box=[20.0, 20.0, 25.0, 30.0], score=0.8, class_id=1, class_name=CellType.COLUMN_HEADER),
             DetectionResult(box=[40.0, 40.0, 50.0, 50.0], score=0.53, class_id=2, class_name=CellType.BODY),
         ],
         [DetectionResult(box=[15.0, 20.0, 20.0, 30.0], score=0.4, class_id=1, class_name=CellType.BODY)],
@@ -138,7 +138,7 @@ class Annotations:
             ImageAnnotation(
                 bounding_box=BoundingBox(ulx=20.0, uly=20.0, lrx=25.0, lry=30.0, absolute_coords=True),
                 category_id=1,
-                category_name=CellType.HEADER,
+                category_name=CellType.COLUMN_HEADER,
                 score=0.8,
                 model_id="test_model",
                 service_id="test_service",

@@ -93,7 +93,7 @@ _INIT_CATEGORIES = [LayoutType.TABLE, LayoutType.CELL, TableType.ITEM]
 _SUB_CATEGORIES: Mapping[ObjectTypes, Mapping[ObjectTypes, Sequence[ObjectTypes]]]
 _SUB_CATEGORIES = {
     LayoutType.CELL: {
-        CellType.HEADER: [CellType.HEADER, CellType.BODY],
+        CellType.COLUMN_HEADER: [CellType.COLUMN_HEADER, CellType.BODY],
         CellType.ROW_NUMBER: [],
         CellType.COLUMN_NUMBER: [],
         CellType.ROW_SPAN: [],
@@ -101,7 +101,7 @@ _SUB_CATEGORIES = {
         CellType.SPANNING: [CellType.SPANNING, LayoutType.CELL],
     },
     TableType.ITEM: {TableType.ITEM: [LayoutType.ROW, LayoutType.COLUMN]},
-    CellType.HEADER: {
+    CellType.COLUMN_HEADER: {
         CellType.ROW_NUMBER: [],
         CellType.COLUMN_NUMBER: [],
         CellType.ROW_SPAN: [],
