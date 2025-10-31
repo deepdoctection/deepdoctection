@@ -51,7 +51,7 @@ _DEPS = [
     "lazy-imports==0.3.1",
     "lxml>=4.9.1",
     "networkx>=2.7.1",
-    "numpy>2.0",  # When using fasttext-wheel, downgrading to numpy<1.x is required
+    "numpy>2.0",
     "opencv-python==4.8.0.76",  # this is not required anymore, but we keep its version as a reference
     "packaging>=20.0",
     "Pillow>=10.0.0",
@@ -119,10 +119,11 @@ dist_deps = deps_list(
     "huggingface_hub",
     "jsonlines",
     "lazy-imports",
-    "mock",
     "numpy",
     "packaging",
     "Pillow",
+    "pydantic",
+    "pydantic-settings",
     "pypdf",
     "pypdfium2",
     "pyyaml",

@@ -57,7 +57,6 @@ def config_sanity_checks() -> None:
 
 
 def get_dd_analyzer(
-    reset_config_file: bool = True,
     load_default_config_file: bool = False,
     config_overwrite: Optional[list[str]] = None,
     path_config_file: Optional[PathLikeOrStr] = None,
@@ -76,8 +75,6 @@ def get_dd_analyzer(
         - Layout linking
 
     Args:
-        reset_config_file: This will copy the `.yaml` file with default variables to the `.cache` and therefore
-            resetting all configurations if set to `True`.
         load_default_config_file: This will load the default config file from the `.cache` directory if set to `True`.
             If set to `False`, the config file will be ignored.
         config_overwrite: Passing a list of string arguments and values to overwrite the `.yaml`
@@ -105,12 +102,12 @@ def get_dd_analyzer(
     cfg.LANGUAGE = None
     cfg.LIB = lib
     cfg.DEVICE = device
-    if cfg.PT.LAYOUT.WEIGHTS is None:
-        cfg.PT.ENFORCE_WEIGHTS.LAYOUT = False
-    if cfg.PT.ITEM.WEIGHTS is None:
-        cfg.PT.ENFORCE_WEIGHTS.ITEM = False
-    if cfg.PT.CELL.WEIGHTS is None:
-        cfg.PT.ENFORCE_WEIGHTS.CELL = False
+    if cfg.LAYOUT.WEIGHTS is None:
+        cfg.ENFORCE_WEIGHTS.LAYOUT = False
+    if cfg.ITEM.WEIGHTS is None:
+        cfg.ENFORCE_WEIGHTS.ITEM = False
+    if cfg.CELL.WEIGHTS is None:
+        cfg.ENFORCE_WEIGHTS.CELL = False
 
     if config_overwrite:
         cfg.update_args(config_overwrite)

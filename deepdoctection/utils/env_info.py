@@ -74,10 +74,10 @@ import re
 import subprocess
 import sys
 from collections import defaultdict
-from typing import Optional
+from typing import Optional, Any
 from pathlib import Path
 
-from pydantic import Field, model_validator
+from pydantic import Field, model_validator, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -176,7 +176,7 @@ class EnvSettings(BaseSettings):
     STD_OUT_VERBOSE: bool = False
 
     # HF / Model catalog
-    HF_CREDENTIALS: Optional[str] = None
+    HF_CREDENTIALS: Optional[SecretStr] = None
     MODEL_CATALOG: Optional[str] = None
 
     # Custom object types autoload (comma‑separated string or JSON list in env is accepted)
@@ -219,6 +219,11 @@ class EnvSettings(BaseSettings):
     PROFILES_TARGET_NAME: str = "profiles.jsonl"
     CONF_DD_ONE_TARGET_NAME: str = "conf_dd_one.yaml"
     CONF_TESSERACT_TARGET_NAME: str = "conf_tesseract.yaml"
+
+    # AWS settings
+    AWS_ACCESS_KEY: Optional[SecretStr] = None
+    AWS_SECRET_KEY: Optional[SecretStr] = None
+    AWS_REGION: Optional[str] = None
 
 
     # Pydantic Settings config
@@ -387,6 +392,40 @@ class EnvSettings(BaseSettings):
 SETTINGS = EnvSettings()
 SETTINGS.export_to_environ()
 SETTINGS.ensure_cache_layout_and_copy_defaults()
+
+
+def append_settings_to_env_data(data: KeyValEnvInfos) -> KeyValEnvInfos:
+    """
+    Append all EnvSettings attributes to the env info list as (key, value) tuples.
+    - SecretStr values are fully redacted.
+    - Known secret keys are redacted even if not typed as SecretStr.
+    """
+    def _stringify(v: Any) -> str:
+        if isinstance(v, SecretStr):
+            return "***"
+        if v is None:
+            return "None"
+        if isinstance(v, (str, int, float, bool)):
+            return str(v)
+        if isinstance(v, Path):
+            return str(v)
+        if isinstance(v, (list, tuple, set)):
+            return ", ".join(_stringify(x) for x in v)
+        if isinstance(v, dict):
+            return ", ".join(f"{_stringify(k)}={_stringify(v2)}" for k, v2 in v.items())
+        return repr(v)
+
+    items: list[tuple[str, Any]] = []
+    for name in SETTINGS.model_fields.keys():
+        items.append((name, getattr(SETTINGS, name)))
+
+    for key, val in sorted(items, key=lambda kv: kv[0]):
+        data.append((f"{key}", _stringify(val)))
+    return data
+
+# In 'collect_env_info()' add before pt_info/third-party info:
+# data = _append_settings_to_env_data(data)
+
 
 def collect_torch_env() -> str:
     """
@@ -708,6 +747,8 @@ def collect_env_info() -> str:
     data = pt_info(data)
 
     data = collect_installed_dependencies(data)
+    data = append_settings_to_env_data(data)
+
 
     env_str = tabulate(data) + "\n"
 
