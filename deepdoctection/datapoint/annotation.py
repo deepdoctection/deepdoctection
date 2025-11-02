@@ -54,7 +54,9 @@ def ann_from_dict(cls, **kwargs: AnnotationDict):
     )
     ann = cls(**_init_kwargs)
     ann.active = kwargs.get("active")
-    ann._annotation_id = kwargs.get("_annotation_id")  # pylint: disable=W0212
+
+    if ann._annotation_id is None:
+        ann._annotation_id = kwargs.get("_annotation_id")  # pylint: disable=W0212
     if isinstance(kwargs.get("sub_categories"), dict):
         for key, value in kwargs["sub_categories"].items():
             if "value" in value:
@@ -479,6 +481,7 @@ class ImageAnnotation(CategoryAnnotation):
 
     bounding_box: Optional[BoundingBox] = field(default=None)
     image: Optional[Image] = field(default=None, init=False, repr=False)  # type: ignore  # pylint: disable=E0602
+
 
     def get_defining_attributes(self) -> list[str]:
         return ["category_name", "bounding_box"]
