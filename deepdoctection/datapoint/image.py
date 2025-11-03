@@ -25,16 +25,19 @@ from collections import defaultdict
 from dataclasses import dataclass, field
 from os import environ, fspath
 from pathlib import Path
-from typing import Any, Optional, Sequence, TypedDict, Union, no_type_check
+from typing import Any, Optional, Sequence, TypedDict, Union
+
+from pydantic import BaseModel, Field, PrivateAttr, field_validator, model_validator, model_serializer
 
 import numpy as np
 from numpy import uint8
 
-from ..utils.error import AnnotationError, BoundingBoxError, ImageError, UUIDError
+from ..utils.error import AnnotationError, BoundingBoxError, ImageError
 from ..utils.identifier import get_uuid, is_uuid_like
 from ..utils.logger import LoggingRecord, logger
 from ..utils.object_types import ObjectTypes, SummaryType, get_type
 from ..utils.types import ImageDict, PathLikeOrStr, PixelValues
+
 from .annotation import Annotation, AnnotationMap, BoundingBox, CategoryAnnotation, ImageAnnotation
 from .box import BoxCoordinate, crop_box_from_image, global_to_local_coords, intersection_box
 from .convert import as_dict, convert_b64_to_np_array, convert_np_array_to_b64, convert_pdf_bytes_to_np_array_v2
@@ -89,8 +92,7 @@ class MetaAnnotation:
         }
 
 
-@dataclass
-class Image:
+class Image(BaseModel):
     """
     The image object is the enclosing data class that is used in the core data model to manage, retrieve or store
     all information during processing. It contains metadata belonging to the image, but also the image itself
@@ -135,52 +137,91 @@ class Image:
 
     """
 
-    file_name: str
-    location: str = field(default="")
-    document_id: str = field(default="", init=False, repr=True)
-    page_number: int = field(default=0, init=False, repr=False)
-    external_id: Optional[Union[str, int]] = field(default=None, repr=False)
-    _image_id: Optional[str] = field(default=None, init=False, repr=True)
-    _image: Optional[PixelValues] = field(default=None, init=False, repr=False)
-    _bbox: Optional[BoundingBox] = field(default=None, init=False, repr=False)
-    embeddings: dict[str, BoundingBox] = field(default_factory=dict, init=False, repr=True)
-    annotations: list[ImageAnnotation] = field(default_factory=list, init=False, repr=True)
-    _annotation_ids: list[str] = field(default_factory=list, init=False, repr=False)
-    _summary: Optional[CategoryAnnotation] = field(default=None, init=False, repr=False)
+    model_config = {
+        "arbitrary_types_allowed": True,
+        "validate_assignment": True,
+        "protected_namespaces": (),  # allow names like _image_id in properties if needed
+    }
 
-    def __post_init__(self) -> None:
-        if self.external_id is not None:
-            external_id = str(self.external_id)
-            if is_uuid_like(external_id):
-                self.image_id = external_id
+    # public fields
+    file_name: str
+    location: str = ""
+    external_id: Optional[Union[str, int]] = None
+    document_id: str = ""
+    page_number: int = 0
+
+    embeddings: dict[str, BoundingBox] = Field(default_factory=dict)
+    annotations: list[ImageAnnotation] = Field(default_factory=list)
+
+    # private attrs (all underscored attributes)
+    _image: Optional[PixelValues] = PrivateAttr(default=None)
+    _bbox: Optional[BoundingBox] = PrivateAttr(default=None)
+    _annotation_ids: list[str] = PrivateAttr(default_factory=list)
+    _summary: Optional[CategoryAnnotation] = PrivateAttr(default=None)
+    _image_id: Optional[str] = PrivateAttr(default=None)
+    _pdf_bytes: Optional[bytes] = PrivateAttr(default=None)
+
+
+    @field_validator("embeddings", mode="before")
+    @classmethod
+    def _coerce_embeddings(cls, v: Any) -> dict[str, BoundingBox]:
+        if v is None:
+            return {}
+        if not isinstance(v, dict):
+            raise TypeError("embeddings must be a dict[str, BoundingBox|dict]")
+        new: dict[str, BoundingBox] = {}
+        for k, val in v.items():
+            key = str(k)
+            if isinstance(val, BoundingBox):
+                new[key] = val
+            elif isinstance(val, dict):
+                new[key] = BoundingBox(**val)
             else:
-                self.image_id = get_uuid(external_id)
-        else:
-            self.image_id = get_uuid(str(self.location), self.file_name)
-        self.document_id = self.image_id
+                raise TypeError("embeddings values must be BoundingBox or dict")
+        return new
+
+    @field_validator("annotations", mode="before")
+    @classmethod
+    def _coerce_annotations(cls, v: Any) -> list[ImageAnnotation]:
+        if v is None:
+            return []
+        if not isinstance(v, list):
+            raise TypeError("annotations must be a list")
+        out: list[ImageAnnotation] = []
+        for item in v:
+            if isinstance(item, ImageAnnotation):
+                out.append(item)
+            elif isinstance(item, dict):
+                out.append(ImageAnnotation(**item))
+            else:
+                raise TypeError("annotations list items must be ImageAnnotation or dict")
+        return out
+
+    @model_validator(mode="after")
+    def _setup_ids(self) -> "Image":
+        if self._image_id is None:
+            if self.external_id is not None:
+                ext = str(self.external_id)
+                if is_uuid_like(ext):
+                    object.__setattr__(self, "_image_id", ext)
+                else:
+                    object.__setattr__(self, "_image_id", get_uuid(ext))
+            else:
+                object.__setattr__(self, "_image_id", get_uuid(str(self.location), self.file_name))
+
+        if not self.document_id:
+            self.document_id = self._image_id  # bind document_id if not provided
+        return self
+
 
     @property
     def image_id(self) -> str:
         """
-        `image_id`
+        `image_id` setter
         """
         if self._image_id is not None:
             return self._image_id
         raise ImageError("image_id not set")
-
-    @image_id.setter
-    def image_id(self, input_id: str) -> None:
-        """
-        `image_id` setter
-        """
-        if self._image_id is not None:
-            raise ImageError("image_id already defined and cannot be reset")
-        if is_uuid_like(input_id):
-            self._image_id = input_id
-        elif isinstance(input_id, property):
-            pass
-        else:
-            raise UUIDError("image_id must be uuid3 string")
 
     @property
     def image(self) -> Optional[PixelValues]:
@@ -202,23 +243,28 @@ class Image:
             image: Accepts `np.array`s, `base64` encodings or `bytes` generated from pdf documents.
                    Everything else will be rejected.
         """
-
-        if isinstance(image, property):
-            pass
-        elif isinstance(image, str):
+        if isinstance(image, str):
             self._image = convert_b64_to_np_array(image)
-            self.set_width_height(self._image.shape[1], self._image.shape[0])
+            self.set_width_height(self._image.shape[1], self._image.shape[0])  # type: ignore
             self._self_embedding()
-        elif isinstance(image, bytes):
+            return
+
+        if isinstance(image, bytes):
             self._image = convert_pdf_bytes_to_np_array_v2(image, dpi=int(environ["DPI"]))
-            self.set_width_height(self._image.shape[1], self._image.shape[0])
+            self.set_width_height(self._image.shape[1], self._image.shape[0])  # type: ignore
             self._self_embedding()
-        else:
-            if not isinstance(image, np.ndarray):
-                raise ImageError(f"Cannot load image is of type: {type(image)}")
-            self._image = image.astype(uint8)
-            self.set_width_height(self._image.shape[1], self._image.shape[0])
-            self._self_embedding()
+            return
+
+        if image is None:
+            self._image = None
+            return
+
+        if not isinstance(image, np.ndarray):
+            raise ImageError(f"Cannot load image. Unsupported type: {type(image)}")
+
+        self._image = image.astype(uint8)
+        self.set_width_height(self._image.shape[1], self._image.shape[0])
+        self._self_embedding()
 
     @property
     def summary(self) -> CategoryAnnotation:
@@ -243,79 +289,16 @@ class Image:
         """
         `pdf_bytes`. This attribute will be set dynamically and is not part of the core Image data model
         """
-        if hasattr(self, "_pdf_bytes"):
-            return getattr(self, "_pdf_bytes")
-        return None
+        return self._pdf_bytes
 
     @pdf_bytes.setter
     def pdf_bytes(self, pdf_bytes: bytes) -> None:
         """
         `pdf_bytes` setter
         """
-        assert isinstance(pdf_bytes, bytes)
-        if not hasattr(self, "_pdf_bytes"):
-            setattr(self, "_pdf_bytes", pdf_bytes)
-
-    def clear_image(self, clear_bbox: bool = False) -> None:
-        """
-        Removes the `Image.image`. Useful, if the image must be a lightweight object.
-
-        Args:
-            clear_bbox: If set to `True` it will remove the image width and height. This is necessary,
-                        if the image is going to be replaced with a transform. It will also remove the self
-                        embedding entry
-        """
-        self._image = None
-        if clear_bbox:
-            self._bbox = None
-            self.embeddings.pop(self.image_id)
-
-    def get_image(self) -> _Img:  # type: ignore # pylint: disable=E0602
-        """
-        Get the image either in base64 string representation or as `np.array`.
-
-        Example:
-            ```python
-            image.get_image().to_np_array()
-            ```
-
-            or
-
-            ```python
-            image.get_image().to_b64()
-            ```
-
-        Returns:
-            Desired image encoding representation
-        """
-
-        class _Img:
-            """
-            Helper class. Do not use it.
-            """
-
-            def __init__(self, img: Optional[PixelValues]):
-                self.img = img
-
-            def to_np_array(self) -> Optional[PixelValues]:
-                """
-                Returns image as numpy array
-
-                :return: array
-                """
-                return self.img
-
-            def to_b64(self) -> Optional[str]:
-                """
-                Returns image as b64 encoded string
-
-                :return: b64 encoded string
-                """
-                if self.img is not None:
-                    return convert_np_array_to_b64(self.img)
-                return self.img
-
-        return _Img(self.image)
+        if self._pdf_bytes is None:
+            assert isinstance(pdf_bytes, bytes)
+            self._pdf_bytes = pdf_bytes
 
     @property
     def width(self) -> BoxCoordinate:
@@ -334,6 +317,7 @@ class Image:
         if self._bbox is None:
             raise ImageError("Height not available. Call set_width_height first")
         return self._bbox.height
+
 
     def set_width_height(self, width: BoxCoordinate, height: BoxCoordinate) -> None:
         """
@@ -358,7 +342,7 @@ class Image:
             bounding_box: bounding box of this image in terms of the embedding image.
         """
         if not isinstance(bounding_box, BoundingBox):
-            raise BoundingBoxError(f"Bounding box must be of type BoundingBox, is of type {type(bounding_box)}")
+            raise BoundingBoxError(f"Bounding box must be BoundingBox, got {type(bounding_box)}")
         self.embeddings[image_id] = bounding_box
 
     def get_embedding(self, image_id: str) -> BoundingBox:
@@ -371,7 +355,6 @@ class Image:
         Returns:
             The bounding box of this instance in terms of the embedding image
         """
-
         return self.embeddings[image_id]
 
     def remove_embedding(self, image_id: str) -> None:
@@ -388,6 +371,7 @@ class Image:
         if self._bbox is not None:
             self.set_embedding(self.image_id, self._bbox)
 
+
     def dump(self, annotation: ImageAnnotation) -> None:
         """
         Dump an annotation to the Image dataclass. This is the central method for associating an annotation with
@@ -398,14 +382,11 @@ class Image:
             annotation: image annotation to store
         """
         if not isinstance(annotation, ImageAnnotation):
-            raise AnnotationError(
-                f"Annotation must be of type ImageAnnotation: "
-                f"{annotation.annotation_id} but is of type {str(type(annotation))}"
-            )
+            raise AnnotationError("Annotation must be ImageAnnotation1")
         if annotation._annotation_id is None:  # pylint: disable=W0212
             annotation.annotation_id = self.define_annotation_id(annotation)
         if annotation.annotation_id in self._annotation_ids:
-            raise ImageError(f"Cannot dump annotation with already taken " f"id {annotation.annotation_id}")
+            raise ImageError(f"Cannot dump annotation with existing id {annotation.annotation_id}")
         self._annotation_ids.append(annotation.annotation_id)
         self.annotations.append(annotation)
 
@@ -449,61 +430,18 @@ class Image:
         model_id = [model_id] if isinstance(model_id, str) else model_id
         session_id = [session_ids] if isinstance(session_ids, str) else session_ids
 
-        if ignore_inactive:
-            anns: Union[list[ImageAnnotation], filter[ImageAnnotation]] = filter(lambda x: x.active, self.annotations)
-        else:
-            anns = self.annotations
-
+        anns = filter(lambda x: x.active, self.annotations) if ignore_inactive else self.annotations
         if category_names is not None:
             anns = filter(lambda x: x.category_name in category_names, anns)
-
         if ann_ids is not None:
             anns = filter(lambda x: x.annotation_id in ann_ids, anns)
-
         if service_ids is not None:
             anns = filter(lambda x: x.service_id in service_ids, anns)
-
         if model_id is not None:
             anns = filter(lambda x: x.model_id in model_id, anns)
-
         if session_id is not None:
             anns = filter(lambda x: x.session_id in session_id, anns)
-
         return list(anns)
-
-    def as_dict(self) -> dict[str, Any]:
-        """
-        Returns the full image dataclass as dict. Uses the custom `convert.as_dict` to disregard attributes
-        defined by `remove_keys`.
-
-        Returns:
-            A custom `dict`.
-        """
-
-        img_dict = as_dict(self, dict_factory=dict)
-        if self.image is not None:
-            img_dict["_image"] = convert_np_array_to_b64(self.image)
-        else:
-            img_dict["_image"] = None
-        return img_dict
-
-    def as_json(self) -> str:
-        """
-        Returns the full image dataclass as json string.
-
-        Returns:
-            A `JSON` object.
-        """
-
-        return json.dumps(self.as_dict(), indent=4)
-
-    @staticmethod
-    def remove_keys() -> list[str]:
-        """
-        A list of attributes to suspend from `as_dict` creation.
-        """
-
-        return ["_annotation_ids", "_category_name"]
 
     def define_annotation_id(self, annotation: Annotation) -> str:
         """
@@ -526,89 +464,130 @@ class Image:
         ]
         return get_uuid(*attributes_values, str(self.image_id))
 
-    def remove(
-        self,
-        annotation_ids: Optional[Union[str, Sequence[str]]] = None,
-        service_ids: Optional[Union[str, Sequence[str]]] = None,
-    ) -> None:
+    @staticmethod
+    def get_state_attributes() -> list[str]:
         """
-        Instead of removing consider deactivating annotations.
+        Returns the list of attributes that define the `state_id` of an image.
 
-        Calls `List.remove`.
+        Returns:
+            list of attributes
+        """
+        return ["annotations", "embeddings", "_image", "_summary"]
+
+    @property
+    def state_id(self) -> str:
+        """
+        Different to `image_id` this id does depend on every state attributes and might therefore change
+        over time.
+
+        Returns:
+            Annotation state instance
+        """
+        container_ids: list[str] = []
+        attributes = self.get_state_attributes()
+
+        for attribute in attributes:
+            attr = getattr(self, attribute)
+            if isinstance(attr, dict):
+                for key, value in attr.items():
+                    if isinstance(value, Annotation):
+                        container_ids.extend([str(key), value.state_id])
+                    elif isinstance(value, list):
+                        container_ids.extend([str(element) for element in value])
+                    else:
+                        container_ids.append(str(value))
+            elif isinstance(attr, list):
+                for element in attr:
+                    if isinstance(element, Annotation):
+                        container_ids.append(element.state_id)
+                    elif isinstance(element, str):
+                        container_ids.append(element)
+                    else:
+                        container_ids.append(str(element))
+            elif isinstance(attr, np.ndarray):
+                container_ids.append(convert_np_array_to_b64(attr))
+            else:
+                container_ids.append(str(attr))
+        return get_uuid(self.image_id, *container_ids)
+
+
+    @model_serializer(mode="wrap")
+    def _serialize(self, handler):
+        """
+        Use Pydantic core serializer as base, then inject legacy/private-derived keys.
+        Ensures fast JSON via model_dump_json while keeping original export shape.
+        """
+        data = handler(self)
+
+        def bbox_to_dict(bb: Optional[BoundingBox]) -> Optional[dict]:
+            if bb is None:
+                return None
+            if hasattr(bb, "as_dict"):
+                return bb.as_dict()
+            # Fallback when no helper exists
+            return {
+                "ulx": bb.ulx,
+                "uly": bb.uly,
+                "width": bb.width,
+                "height": bb.height,
+                "absolute_coords": getattr(bb, "absolute_coords", True),
+            }
+
+        # Normalize nested types that Pydantic core might not know
+        data["embeddings"] = {k: bbox_to_dict(v) for k, v in self.embeddings.items()}
+        data["_bbox"] = bbox_to_dict(self._bbox)
+        data["_image"] = convert_np_array_to_b64(self._image) if self._image is not None else None
+        data["_summary"] = self._summary.as_dict() if self._summary is not None else None
+
+        # Keep legacy path string
+        if "location" in data:
+            data["location"] = fspath(data["location"])
+
+        # Remove legacy keys that should not be exported
+        for k in self.remove_keys():
+            data.pop(k, None)
+
+        return data
+
+    def as_dict(self) -> dict[str, Any]:
+        """
+        Returns the full image dataclass as dict. Uses the custom `convert.as_dict` to disregard attributes
+        defined by `remove_keys`.
+
+        Returns:
+            A custom `dict`.
+        """
+        # Uses Pydantic core serializer path
+        return self.model_dump(by_alias=True, exclude_none=False)
+
+    def as_json(self) -> str:
+        """
+        Returns the full image dataclass as json string.
+
+        Returns:
+            A `JSON` object.
+        """
+
+        # Uses fast Rust-based Pydantic core JSON
+        return self.model_dump_json(by_alias=True, exclude_none=False, indent=4)
+
+
+
+    @classmethod
+    def from_file(cls, file_path: str) -> "Image":
+        """
+        Create `Image` instance from `.json` file.
 
         Args:
-            annotation_ids: The annotation to remove
-            service_ids: The service id to remove
+            file_path: file_path
 
-        Raises:
-            ValueError: If the annotation or service id is not found in the image.
+        Returns:
+            Initialized image
         """
-        ann_id_to_annotation_maps = self.get_annotation_id_to_annotation_maps()
+        with open(file_path, "r", encoding="UTF-8") as f:
+            return cls.from_dict(**json.load(f))
 
-        if annotation_ids is not None:
-            annotation_ids = [annotation_ids] if isinstance(annotation_ids, str) else annotation_ids
-
-            for ann_id in annotation_ids:
-                if ann_id not in ann_id_to_annotation_maps:
-                    raise ImageError(f"Annotation with id {ann_id} not found")
-                annotation_maps = ann_id_to_annotation_maps[ann_id]
-
-                for annotation_map in annotation_maps:
-                    self._remove_by_annotation_id(ann_id, annotation_map)
-
-        if service_ids is not None:
-            service_ids = [service_ids] if isinstance(service_ids, str) else service_ids
-            service_id_to_annotation_id = self.get_service_id_to_annotation_id()
-
-            for service_id in service_ids:
-                if service_id not in service_id_to_annotation_id:
-                    logger.info(
-                        LoggingRecord(
-                            f"Service_id {service_id} for image_id: {self.image_id} not found. Skipping removal."
-                        )
-                    )
-
-                annotation_ids = service_id_to_annotation_id.get(service_id, [])
-
-                for ann_id in annotation_ids:
-                    if ann_id not in ann_id_to_annotation_maps:
-                        raise ImageError(f"Annotation with id {ann_id} not found")
-                    annotation_maps = ann_id_to_annotation_maps[ann_id]
-
-                    for annotation_map in annotation_maps:
-                        self._remove_by_annotation_id(ann_id, annotation_map)
-
-    def _remove_by_annotation_id(self, annotation_id: str, location_dict: AnnotationMap) -> None:
-        image_annotation_id = location_dict.image_annotation_id
-        annotations = self.get_annotation(annotation_ids=image_annotation_id)
-        if not annotations:
-            return
-        # There can only be one annotation with a given id
-        annotation = annotations[0]
-
-        if (
-            location_dict.sub_category_key is None
-            and location_dict.relationship_key is None
-            and location_dict.summary_key is None
-        ):
-            self.annotations.remove(annotation)
-            self._annotation_ids.remove(annotation.annotation_id)
-
-        sub_category_key = location_dict.sub_category_key
-
-        if sub_category_key is not None:
-            annotation.remove_sub_category(sub_category_key)
-
-        relationship_key = location_dict.relationship_key
-
-        if relationship_key is not None:
-            annotation.remove_relationship(relationship_key, annotation_id)
-
-        summary_key = location_dict.summary_key
-        if summary_key is not None:
-            if annotation.image is not None:
-                annotation.image.summary.remove_sub_category(summary_key)
-
+    # ---------------- hierarchy ops & misc (unchanged) ----------------
     def image_ann_to_image(self, annotation_id: str, crop_image: bool = False) -> None:
         """
         This method is an operation that changes the state of an underlying dumped image annotation and that
@@ -620,9 +599,7 @@ class Image:
             annotation_id: An annotation id of the image annotations.
             crop_image: Whether to store the cropped image as `np.array`.
         """
-
         ann = self.get_annotation(annotation_ids=annotation_id)[0]
-
         new_image = Image(file_name=self.file_name, location=self.location, external_id=annotation_id)
 
         if self._bbox is None or ann.bounding_box is None:
@@ -657,7 +634,6 @@ class Image:
                            annotation must have a not None `image`.
             category_names: Filter the proposals of all image categories of this image by some given category names.
         """
-
         ann = self.get_annotation(annotation_ids=annotation_id)[0]
         if ann.image is None:
             raise ImageError("When adding sub images to ImageAnnotation then ImageAnnotation.image must not be None")
@@ -677,9 +653,7 @@ class Image:
             ann_box = ann_box.transform(self.width, self.height, absolute_coords=True)
         for sub_image in sub_images:
             if sub_image.image is None:
-                raise ImageError(
-                    "When setting an embedding to ImageAnnotation then ImageAnnotation.image must not be None"
-                )
+                raise ImageError("When setting an embedding to ImageAnnotation then ImageAnnotation.image must not be None")
             sub_image_box = sub_image.get_bounding_box(self.image_id)
             if not sub_image_box.absolute_coords:
                 sub_image_box = sub_image_box.transform(self.width, self.height, absolute_coords=True)
@@ -700,103 +674,153 @@ class Image:
                 ann.bounding_box = absolute_bounding_box
                 ann.image = None
 
-    @classmethod
-    @no_type_check
-    def from_dict(cls, **kwargs) -> Image:
+    def clear_image(self, clear_bbox: bool = False) -> None:
         """
-        Create `Image` instance from dict.
+        Removes the `Image.image`. Useful, if the image must be a lightweight object.
 
         Args:
-            kwargs: dict with  `Image` attributes and nested dicts for initializing annotations,
-
-        Returns:
-            Initialized image
+            clear_bbox: If set to `True` it will remove the image width and height. This is necessary,
+                        if the image is going to be replaced with a transform. It will also remove the self
+                        embedding entry
         """
-        image = cls(kwargs.get("file_name"), kwargs.get("location"), kwargs.get("external_id"))
-        image._image_id = kwargs.get("_image_id")
-        _image = kwargs.get("_image")
-        image.page_number = int(kwargs.get("page_number", 0))
-        image.document_id = kwargs.get("document_id", image._image_id)
-        if _image is not None:
-            image.image = _image
-        if box_kwargs := kwargs.get("_bbox"):
-            image._bbox = BoundingBox.from_dict(**box_kwargs)
-        for image_id, box_dict in kwargs.get("embeddings").items():
-            image.set_embedding(image_id, BoundingBox.from_dict(**box_dict))
-        for ann_dict in kwargs.get("annotations"):
-            image_ann = ImageAnnotation.from_dict(**ann_dict)
-            if "image" in ann_dict:
-                image_dict = ann_dict["image"]
-                if image_dict:
-                    image_ann.image = cls.from_dict(**image_dict)
-            image.dump(image_ann)
-        if summary_dict := kwargs.get("_summary", kwargs.get("summary")):
-            image.summary = CategoryAnnotation.from_dict(**summary_dict)
-            image.summary.category_name = SummaryType.SUMMARY
+        self._image = None
+        if clear_bbox:
+            self._bbox = None
+            self.embeddings.pop(self.image_id, None)
 
-        return image
+    def get_categories_from_current_state(self) -> set[str]:
+        return {ann.category_name for ann in self.get_annotation()}
 
-    @classmethod
-    @no_type_check
-    def from_file(cls, file_path: str) -> Image:
+    def get_service_id_to_annotation_id(self) -> defaultdict[str, list[str]]:
+        service_id_dict: defaultdict[str, list[str]] = defaultdict(list)
+        for ann in self.get_annotation():
+            if ann.service_id:
+                service_id_dict[ann.service_id].append(ann.annotation_id)
+            for sub_cat_key in ann.sub_categories:
+                sub_cat = ann.get_sub_category(sub_cat_key)
+                if sub_cat.service_id:
+                    service_id_dict[sub_cat.service_id].append(sub_cat.annotation_id)
+            if ann.image is not None:
+                for summary_cat_key in ann.image.summary.sub_categories:
+                    summary_cat = ann.get_summary(summary_cat_key)
+                    if summary_cat.service_id:
+                        service_id_dict[summary_cat.service_id].append(summary_cat.annotation_id)
+        return service_id_dict
+
+    def get_annotation_id_to_annotation_maps(self) -> defaultdict[str, list[AnnotationMap]]:
+        all_ann_id_dict: defaultdict[str, list[AnnotationMap]] = defaultdict(list)
+        for ann in self.get_annotation():
+            ann_id_dict = ann.get_annotation_map()
+            for key, val in ann_id_dict.items():
+                all_ann_id_dict[key].extend(val)
+        return all_ann_id_dict
+
+    def remove(
+        self,
+        annotation_ids: Optional[Union[str, Sequence[str]]] = None,
+        service_ids: Optional[Union[str, Sequence[str]]] = None,
+    ) -> None:
         """
-        Create `Image` instance from `.json` file.
+        Instead of removing consider deactivating annotations.
+
+        Calls `List.remove`.
 
         Args:
-            file_path: file_path
+            annotation_ids: The annotation to remove
+            service_ids: The service id to remove
+
+        Raises:
+            ValueError: If the annotation or service id is not found in the image.
+        """
+        ann_id_to_annotation_maps = self.get_annotation_id_to_annotation_maps()
+
+        if annotation_ids is not None:
+            annotation_ids = [annotation_ids] if isinstance(annotation_ids, str) else annotation_ids
+            for ann_id in annotation_ids:
+                if ann_id not in ann_id_to_annotation_maps:
+                    raise ImageError(f"Annotation with id {ann_id} not found")
+                annotation_maps = ann_id_to_annotation_maps[ann_id]
+                for annotation_map in annotation_maps:
+                    self._remove_by_annotation_id(ann_id, annotation_map)
+
+        if service_ids is not None:
+            service_ids = [service_ids] if isinstance(service_ids, str) else service_ids
+            service_id_to_annotation_id = self.get_service_id_to_annotation_id()
+            for service_id in service_ids:
+                if service_id not in service_id_to_annotation_id:
+                    logger.info(
+                        LoggingRecord(
+                            f"Service_id {service_id} for image_id: {self.image_id} not found. Skipping removal."
+                        )
+                    )
+                ann_ids = service_id_to_annotation_id.get(service_id, [])
+                for ann_id in ann_ids:
+                    if ann_id not in ann_id_to_annotation_maps:
+                        raise ImageError(f"Annotation with id {ann_id} not found")
+                    annotation_maps = ann_id_to_annotation_maps[ann_id]
+                    for annotation_map in annotation_maps:
+                        self._remove_by_annotation_id(ann_id, annotation_map)
+
+    def _remove_by_annotation_id(self, annotation_id: str, location_dict: AnnotationMap) -> None:
+        image_annotation_id = location_dict.image_annotation_id
+        annotations = self.get_annotation(annotation_ids=image_annotation_id)
+        if not annotations:
+            return
+        annotation = annotations[0]
+
+        if (
+            location_dict.sub_category_key is None
+            and location_dict.relationship_key is None
+            and location_dict.summary_key is None
+        ):
+            self.annotations.remove(annotation)
+            if annotation.annotation_id in self._annotation_ids:
+                self._annotation_ids.remove(annotation.annotation_id)
+
+        sub_category_key = location_dict.sub_category_key
+        if sub_category_key is not None:
+            annotation.remove_sub_category(sub_category_key)
+
+        relationship_key = location_dict.relationship_key
+        if relationship_key is not None:
+            annotation.remove_relationship(relationship_key, annotation_id)
+
+        summary_key = location_dict.summary_key
+        if summary_key is not None:
+            if annotation.image is not None:
+                annotation.image.summary.remove_sub_category(summary_key)
+
+    def get_image(self) -> Img: # type: ignore # pylint: disable=E0602
+        """
+        Get the image either in base64 string representation or as `np.array`.
+
+        Example:
+            ```python
+            image.get_image().to_np_array()
+            ```
+
+            or
+
+            ```python
+            image.get_image().to_b64()
+            ```
 
         Returns:
-            Initialized image
+            Desired image encoding representation
         """
-        with open(file_path, "r", encoding="UTF-8") as file:
-            image = Image.from_dict(**json.load(file))
-        return image
+        class Img:
+            def __init__(self, img: Optional[PixelValues]):
+                self.img = img
 
-    @staticmethod
-    def get_state_attributes() -> list[str]:
-        """
-        Returns the list of attributes that define the `state_id` of an image.
+            def to_np_array(self) -> Optional[PixelValues]:
+                return self.img
 
-        Returns:
-            list of attributes
-        """
-        return ["annotations", "embeddings", "_image", "_summary"]
+            def to_b64(self) -> Optional[str]:
+                if self.img is not None:
+                    return convert_np_array_to_b64(self.img)
+                return self.img
 
-    @property
-    def state_id(self) -> str:
-        """
-        Different to `image_id` this id does depend on every state attributes and might therefore change
-        over time.
-
-        Returns:
-            Annotation state instance
-        """
-        container_ids = []
-        attributes = self.get_state_attributes()
-
-        for attribute in attributes:
-            attr = getattr(self, attribute)
-            if isinstance(attr, dict):
-                for key, value in attr.items():
-                    if isinstance(value, Annotation):
-                        container_ids.extend([key, value.state_id])
-                    elif isinstance(value, list):
-                        container_ids.extend([str(element) for element in value])
-                    else:
-                        container_ids.append(str(value))
-            elif isinstance(attr, list):
-                for element in attr:
-                    if isinstance(element, Annotation):
-                        container_ids.append(element.state_id)
-                    elif isinstance(element, str):
-                        container_ids.append(element)
-                    else:
-                        container_ids.append(str(element))
-            elif isinstance(attr, np.ndarray):
-                container_ids.append(convert_np_array_to_b64(attr))
-            else:
-                container_ids.append(str(attr))
-        return get_uuid(self.image_id, *container_ids)
+        return Img(self.image)
 
     def save(
         self,
@@ -853,48 +877,3 @@ class Image:
         with open(path_json, "w", encoding="UTF-8") as file:
             json.dump(export_dict, file, indent=2)
         return path_json
-
-    def get_categories_from_current_state(self) -> set[str]:
-        """
-        Returns:
-            All active dumped categories
-        """
-        return {ann.category_name for ann in self.get_annotation()}
-
-    def get_service_id_to_annotation_id(self) -> defaultdict[str, list[str]]:
-        """
-        Returns:
-            A dictionary with `service_id`s as keys and lists of annotation ids that have been generated by the
-            service
-        """
-        service_id_dict = defaultdict(list)
-        for ann in self.get_annotation():
-            if ann.service_id:
-                service_id_dict[ann.service_id].append(ann.annotation_id)
-            for sub_cat_key in ann.sub_categories:
-                sub_cat = ann.get_sub_category(sub_cat_key)
-                if sub_cat.service_id:
-                    service_id_dict[sub_cat.service_id].append(sub_cat.annotation_id)
-            if ann.image is not None:
-                for summary_cat_key in ann.image.summary.sub_categories:
-                    summary_cat = ann.get_summary(summary_cat_key)
-                    if summary_cat.service_id:
-                        service_id_dict[summary_cat.service_id].append(summary_cat.annotation_id)
-
-        return service_id_dict
-
-    def get_annotation_id_to_annotation_maps(self) -> defaultdict[str, list[AnnotationMap]]:
-        """
-        Returns a dictionary with annotation ids as keys and lists of `AnnotationMap` as values. The range of ids
-        is the union of all `ImageAnnotation`, `CategoryAnnotation` and `ContainerAnnotation` of the image.
-
-        Returns:
-            `defaultdict` with `annotation_id`s as keys and lists of `AnnotationMap` as values
-        """
-        all_ann_id_dict = defaultdict(list)
-        for ann in self.get_annotation():
-            ann_id_dict = ann.get_annotation_map()
-            for key, val in ann_id_dict.items():
-                all_ann_id_dict[key].extend(val)
-
-        return all_ann_id_dict

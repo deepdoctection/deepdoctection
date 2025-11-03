@@ -74,11 +74,11 @@ Layout sections and all other visual lower level objects are instances of the [`
 
 ```python
 
-bounding_box = dd.BoundingBox(absolute_coords=True,ulx=100,uly=120,lrx=200,lry=250)
-table = dd.ImageAnnotation(bounding_box = bounding_box,
-						category_name = LayoutType.TABLE,
-						category_id=1)  # (1)
-image.dump(table)    # (2)
+bounding_box = dd.BoundingBox1(absolute_coords=True, ulx=100, uly=120, lrx=200, lry=250)
+table = dd.ImageAnnotation(bounding_box=bounding_box,
+                           category_name=LayoutType.TABLE,
+                           category_id=1)  # (1)
+image.dump(table)  # (2)
 ``` 
 
 1. The `category_id` is used for training models.
