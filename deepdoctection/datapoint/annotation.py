@@ -23,8 +23,9 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from collections import defaultdict
-from dataclasses import dataclass, field
-from typing import Optional, Union, no_type_check
+from dataclasses import dataclass
+from typing import Optional, Union, TypeVar, Any, Literal
+from pydantic import BaseModel, Field, field_validator, model_validator, PrivateAttr
 
 from ..utils.error import AnnotationError, UUIDError
 from ..utils.identifier import get_uuid, is_uuid_like
@@ -34,40 +35,6 @@ from ..utils.types import AnnotationDict
 from .box import BoundingBox
 from .convert import as_dict
 
-
-@no_type_check
-def ann_from_dict(cls, **kwargs: AnnotationDict):
-    """
-    A factory function to create subclasses of annotations from a given dict
-    """
-    _init_kwargs = {
-        "external_id": kwargs.get("external_id"),
-        "category_name": kwargs.get("category_name"),
-        "category_id": kwargs.get("category_id", DEFAULT_CATEGORY_ID),
-        "score": kwargs.get("score"),
-        "service_id": kwargs.get("service_id"),
-        "model_id": kwargs.get("model_id"),
-        "session_id": kwargs.get("session_id"),
-    }
-    _init_kwargs["category_id"] = (
-        int(_init_kwargs["category_id"]) if (_init_kwargs)["category_id"] not in ("None", "") else DEFAULT_CATEGORY_ID
-    )
-    ann = cls(**_init_kwargs)
-    ann.active = kwargs.get("active")
-
-    if ann._annotation_id is None:
-        ann._annotation_id = kwargs.get("_annotation_id")  # pylint: disable=W0212
-    if isinstance(kwargs.get("sub_categories"), dict):
-        for key, value in kwargs["sub_categories"].items():
-            if "value" in value:
-                ann.dump_sub_category(key, ContainerAnnotation.from_dict(**value))
-            else:
-                ann.dump_sub_category(key, CategoryAnnotation.from_dict(**value))
-    if isinstance(kwargs.get("relationships"), dict):
-        for key, values in kwargs["relationships"].items():
-            for value in values:
-                ann.dump_relationship(key, value)
-    return ann
 
 
 @dataclass(frozen=True)
@@ -80,8 +47,12 @@ class AnnotationMap:
     summary_key: Optional[ObjectTypes] = None
 
 
-@dataclass
-class Annotation(ABC):
+DEFAULT_CATEGORY_ID = -1
+
+T = TypeVar('T', str, list[str], None)
+
+
+class Annotation(BaseModel, ABC):
     """
     Abstract base class for all types of annotations. This abstract base class only implements general methods for
     correctly assigning annotation_ids. It also has an active flag which is set to True. Only active annotations will be
@@ -110,47 +81,43 @@ class Annotation(ABC):
                     created.
     """
 
-    active: bool = field(default=True, init=False, repr=True)
-    external_id: Optional[Union[str, int]] = field(default=None, init=True, repr=False)
-    _annotation_id: Optional[str] = field(default=None, init=False, repr=True)
-    service_id: Optional[str] = field(default=None)
-    model_id: Optional[str] = field(default=None)
-    session_id: Optional[str] = field(default=None)
+    model_config = {
+        "arbitrary_types_allowed": True,
+        "validate_assignment": True,
+    }
 
-    def __post_init__(self) -> None:
-        """
-        Will check, if the external id provided is an uuid. If not will use the external id as seed for defining an
-        `uuid`.
-        """
+    active: bool = Field(default=True)
+    external_id: Optional[Union[str, int]] = Field(default=None)
+    _annotation_id: Optional[str] = PrivateAttr(default=None)
+    service_id: Optional[str] = Field(default=None)
+    model_id: Optional[str] = Field(default=None)
+    session_id: Optional[str] = Field(default=None)
 
-        if self.external_id is not None:
+    @model_validator(mode='after')
+    def _setup_annotation_id(self) -> Annotation:
+        """Set up annotation_id from external_id if provided."""
+        if self.external_id is not None and self._annotation_id is None:
             external_id = str(self.external_id)
             if is_uuid_like(external_id):
-                self.annotation_id = external_id
+                object.__setattr__(self, '_annotation_id', external_id)
             else:
-                self.annotation_id = get_uuid(external_id)
-        self._assert_attributes_have_str()
+                object.__setattr__(self, '_annotation_id', get_uuid(external_id))
+        return self
 
     @property
     def annotation_id(self) -> str:
-        """
-        `annotation_id`
-        """
+        """Get annotation_id."""
         if self._annotation_id:
             return self._annotation_id
         raise AnnotationError("Dump annotation first or pass external_id to create an annotation id")
 
     @annotation_id.setter
     def annotation_id(self, input_id: str) -> None:
-        """
-        `annotation_id` setter
-        """
+        """Set annotation_id."""
         if self._annotation_id is not None:
             raise AnnotationError("Annotation_id already defined and cannot be reset")
         if is_uuid_like(input_id):
             self._annotation_id = input_id
-        elif isinstance(input_id, property):
-            pass
         else:
             raise AnnotationError("Annotation_id must be uuid3 string")
 
@@ -165,12 +132,6 @@ class Annotation(ABC):
             A list of attributes.
         """
         raise NotImplementedError()
-
-    def _assert_attributes_have_str(self, state_id: bool = False) -> None:
-        defining_attributes = self.get_state_attributes() if state_id else self.get_defining_attributes()
-        for attr in defining_attributes:
-            if not hasattr(eval("self." + attr), "__str__"):  # pylint: disable=W0123
-                raise AnnotationError(f"Attribute {attr} must have __str__ method")
 
     @staticmethod
     def set_annotation_id(annotation: CategoryAnnotation, *container_id_context: Optional[str]) -> str:
@@ -188,22 +149,14 @@ class Annotation(ABC):
         for container_id in container_id_context:
             if container_id is not None:
                 assert is_uuid_like(container_id), f"{container_id} is not a uuid"
+
         attributes = annotation.get_defining_attributes()
         attributes_values = [str(getattr(annotation, attribute)) for attribute in attributes]
-        return get_uuid(*attributes_values, *container_id_context)  # type: ignore
+        return get_uuid(*attributes_values, *container_id_context)
 
     def as_dict(self) -> AnnotationDict:
-        """
-        Returning the full dataclass as dict. Uses the custom `convert.as_dict` to disregard attributes defined by
-        `remove_keys`.
-
-        Returns:
-            A custom dict.
-        """
-
-        img_dict = as_dict(self, dict_factory=dict)
-
-        return img_dict
+        """Return the model as dict."""
+        return self.model_dump(by_alias=True, exclude_none=False)
 
     def deactivate(self) -> None:
         """
@@ -212,7 +165,6 @@ class Annotation(ABC):
         self.active = False
 
     @classmethod
-    @abstractmethod
     def from_dict(cls, **kwargs: AnnotationDict) -> Annotation:
         """
         Method to initialize a derived class from dict.
@@ -223,7 +175,7 @@ class Annotation(ABC):
         Returns:
             Annotation instance
         """
-        raise NotImplementedError()
+        return cls(**kwargs)
 
     @staticmethod
     @abstractmethod
@@ -236,28 +188,18 @@ class Annotation(ABC):
         """
         raise NotImplementedError()
 
-    @staticmethod
-    def replace_keys() -> dict[str, str]:
-        """Replacing keys when converting the dataclass object to a dict. Useful for backward compatibility"""
-        return {"_annotation_id": "annotation_id"}
-
     @property
     def state_id(self) -> str:
-        """
-        Different to `annotation_id` this id does depend on every defined state attributes and might therefore change
-        over time.
-
-        Returns:
-            Annotation state instance
-        """
+        """Generate state_id from state attributes."""
         container_ids = []
         attributes = self.get_state_attributes()
+
         for attribute in attributes:
             attr = getattr(self, attribute)
             if isinstance(attr, dict):
                 for key, value in attr.items():
                     if isinstance(value, Annotation):
-                        container_ids.extend([key, value.state_id])
+                        container_ids.extend([str(key), value.state_id])
                     elif isinstance(value, list):
                         container_ids.extend([str(element) for element in value])
                     else:
@@ -266,7 +208,7 @@ class Annotation(ABC):
                 for element in attr:
                     if isinstance(element, Annotation):
                         container_ids.append(element.state_id)
-                    if isinstance(element, str):
+                    elif isinstance(element, str):
                         container_ids.append(element)
                     else:
                         container_ids.append(str(element))
@@ -274,13 +216,28 @@ class Annotation(ABC):
                 container_ids.append(attr.state_id)
             else:
                 container_ids.append(str(attr))
+
         return get_uuid(self.annotation_id, *container_ids)
 
+    #def __str__(self) -> str:
+    #    return repr(self)
 
-DEFAULT_CATEGORY_ID = -1
+    #def _repr_data(self) -> dict:
+    #    """Return the dict used to build the repr string."""
+    #    data = self.model_dump(by_alias=True, exclude_none=False)
+    #    data["annotation_id"] = self._annotation_id
+    #    return data
+
+    #def _repr_from_data(self, data: dict) -> str:
+    #    """Build the repr string from a data dict (keeps formatting logic in one place)."""
+    #    pairs = ", ".join(f"{k}={v!r}" for k, v in data.items())
+    #    return f"{self.__class__.__name__}({pairs})"
+
+    #def __repr__(self) -> str:
+    #    return self._repr_from_data(self._repr_data())
 
 
-@dataclass
+
 class CategoryAnnotation(Annotation):
     """
     A general class for storing categories (labels/classes) as well as sub categories (sub-labels/subclasses),
@@ -304,30 +261,83 @@ class CategoryAnnotation(Annotation):
                        `dump_relationship` instead.
     """
 
-    category_name: TypeOrStr = field(default=DefaultType.DEFAULT_TYPE)
-    _category_name: ObjectTypes = field(default=DefaultType.DEFAULT_TYPE, init=False)
-    category_id: int = field(default=DEFAULT_CATEGORY_ID)
-    score: Optional[float] = field(default=None)
-    sub_categories: dict[ObjectTypes, CategoryAnnotation] = field(default_factory=dict, init=False, repr=True)
-    relationships: dict[ObjectTypes, list[str]] = field(default_factory=dict, init=False, repr=True)
+    category_name: TypeOrStr = Field(default=DefaultType.DEFAULT_TYPE)
+    category_id: int = Field(default=DEFAULT_CATEGORY_ID)
+    score: Optional[float] = Field(default=None)
+    sub_categories: dict[ObjectTypes, CategoryAnnotation] = Field(default_factory=dict)
+    relationships: dict[ObjectTypes, list[str]] = Field(default_factory=dict)
 
-    @property  # type: ignore
-    def category_name(self) -> ObjectTypes:
-        """`category_name`"""
-        return self._category_name
+    @field_validator('category_name', mode='before')
+    @classmethod
+    def _validate_category_name(cls, v: TypeOrStr) -> ObjectTypes:
+        """Convert string to ObjectTypes if needed."""
+        if isinstance(v, str):
+            return get_type(v)
+        return v
 
-    @category_name.setter
-    def category_name(self, category_name: TypeOrStr) -> None:
-        """category name setter"""
-        if not isinstance(category_name, property):
-            self._category_name = get_type(category_name)
+    @field_validator('category_id', mode='before')
+    @classmethod
+    def _validate_category_id(cls, v: Any) -> int:
+        """Convert category_id to int, handling special cases."""
+        if v in ("None", "", None):
+            return DEFAULT_CATEGORY_ID
+        return int(v)
 
-    def __post_init__(self) -> None:
-        self._assert_attributes_have_str(state_id=True)
-        super().__post_init__()
+    @field_validator("sub_categories", mode="before")
+    @classmethod
+    def _coerce_sub_categories(cls, v: Any) -> dict[ObjectTypes, CategoryAnnotation]:
+        """
+        Accept dicts with string or ObjectTypes keys and values that are either:
+          - CategoryAnnotation1/ContainerAnnotation1 instances, or
+          - dict payloads for those types.
+        Rule: if 'value' in payload -> ContainerAnnotation1, else CategoryAnnotation1.
+        """
+        if v is None:
+            return {}
+        if not isinstance(v, dict):
+            raise TypeError("sub_categories must be a dict")
+
+        out: dict[ObjectTypes, CategoryAnnotation] = {}
+        for key, val in v.items():
+            key_type: ObjectTypes = get_type(key) if isinstance(key, str) else key  # keep enum keys as-is
+
+            if isinstance(val, CategoryAnnotation):
+                # also covers ContainerAnnotation1 since it inherits CategoryAnnotation1
+                out[key_type] = val
+            elif isinstance(val, dict):
+                # decide target type without ann_from_dict
+                if "value" in val:
+                    out[key_type] = ContainerAnnotation(**val)
+                else:
+                    out[key_type] = CategoryAnnotation(**val)
+            else:
+                raise TypeError("sub_categories values must be dict or CategoryAnnotation1/ContainerAnnotation1")
+        return out
+
+    # python
+    @field_validator("relationships", mode="before")
+    @classmethod
+    def _coerce_relationships(cls, v: Any) -> dict:
+        if v is None:
+            return {}
+        if not isinstance(v, dict):
+            raise TypeError("relationships must be a dict")
+        new: dict = {}
+        for key, val in v.items():
+            key_type = get_type(key) if isinstance(key, str) else key
+            if not isinstance(val, list):
+                raise TypeError("relationships values must be a list of ids")
+            # remove duplicates (via set) and convert back to list
+            deduped = list({str(x) for x in val})
+            # validate UUIDs
+            for sid in deduped:
+                if not is_uuid_like(sid):
+                    raise UUIDError(f"Relationship id must be uuid: {sid}")
+            new[key_type] = deduped
+        return new
 
     def dump_sub_category(
-        self, sub_category_name: TypeOrStr, annotation: CategoryAnnotation, *container_id_context: Optional[str]
+            self, sub_category_name: TypeOrStr, annotation: CategoryAnnotation, *container_id_context: Optional[str]
     ) -> None:
         """
         Storage of sub categories. As sub categories usually only depend on very few attributes and the parent
@@ -339,8 +349,9 @@ class CategoryAnnotation(Annotation):
             annotation: Annotation instance to dump
             container_id_context: Tuple/list of context ids.
         """
+        key = get_type(sub_category_name)
 
-        if sub_category_name in self.sub_categories:
+        if key in self.sub_categories:
             raise AnnotationError(
                 f"sub category {sub_category_name} already defined: "
                 f"annotation_id: {self.annotation_id}, "
@@ -349,15 +360,16 @@ class CategoryAnnotation(Annotation):
             )
 
         if self._annotation_id is not None:
-            if annotation._annotation_id is None:  # pylint: disable=W0212
-                annotation.annotation_id = self.set_annotation_id(annotation, self.annotation_id, *container_id_context)
+            if annotation._annotation_id is None:
+                annotation.annotation_id = self.set_annotation_id(annotation,  self.annotation_id, *container_id_context)
         else:
             tmp_annotation_id = self.set_annotation_id(self)
-            if annotation._annotation_id is None:  # pylint: disable=W0212
+            if annotation._annotation_id is None:
                 annotation.annotation_id = annotation.set_annotation_id(
-                    annotation, tmp_annotation_id, *container_id_context
+                    annotation,  tmp_annotation_id, *container_id_context
                 )
-        self.sub_categories[get_type(sub_category_name)] = annotation
+
+        self.sub_categories[key] = annotation
 
     def get_sub_category(self, sub_category_name: ObjectTypes) -> CategoryAnnotation:
         """
@@ -379,7 +391,6 @@ class CategoryAnnotation(Annotation):
         Args:
             key: A key to a sub category.
         """
-
         if key in self.sub_categories:
             self.sub_categories.pop(key)
 
@@ -398,7 +409,7 @@ class CategoryAnnotation(Annotation):
             raise UUIDError("Annotation_id must be uuid")
 
         key_type = get_type(key)
-        if key not in self.relationships:
+        if key_type not in self.relationships:
             self.relationships[key_type] = []
         if annotation_id not in self.relationships[key_type]:
             self.relationships[key_type].append(annotation_id)
@@ -413,9 +424,7 @@ class CategoryAnnotation(Annotation):
         Returns:
             A (possibly) empty list of `annotation_id`s.
         """
-        if key in self.relationships:
-            return self.relationships[key]
-        return []
+        return self.relationships.get(key, [])
 
     def remove_relationship(self, key: ObjectTypes, annotation_ids: Optional[Union[list[str], str]] = None) -> None:
         """
@@ -427,7 +436,6 @@ class CategoryAnnotation(Annotation):
             annotation_ids: A single annotation_id or a list. Will remove only the relation with given
                             `annotation_ids`, provided not None is passed as argument.
         """
-
         if annotation_ids is not None:
             if isinstance(annotation_ids, str):
                 annotation_ids = [annotation_ids]
@@ -443,27 +451,12 @@ class CategoryAnnotation(Annotation):
     def get_defining_attributes(self) -> list[str]:
         return ["category_name", "category_id"]
 
-    @staticmethod
-    def remove_keys() -> list[str]:
-        """
-        A list of attributes to suspend from as_dict creation.
-
-        Returns:
-            list of attributes.
-        """
-        return ["_category_name"]
-
-    @classmethod
-    def from_dict(cls, **kwargs: AnnotationDict) -> CategoryAnnotation:
-        category_ann = ann_from_dict(cls, **kwargs)
-        return category_ann
 
     @staticmethod
     def get_state_attributes() -> list[str]:
         return ["active", "sub_categories", "relationships"]
 
 
-@dataclass
 class ImageAnnotation(CategoryAnnotation):
     """
     A general class for storing annotations related to object detection tasks. In addition to the inherited attributes,
@@ -478,34 +471,44 @@ class ImageAnnotation(CategoryAnnotation):
         image: Image, defined by the bounding box and cropped from its parent image. Populate this attribute with
                `Image.image_ann_to_image`.
     """
+    model_config = {
+        "arbitrary_types_allowed": False,
+        "validate_assignment": True,
+    }
 
-    bounding_box: Optional[BoundingBox] = field(default=None)
-    image: Optional[Image] = field(default=None, init=False, repr=False)  # type: ignore  # pylint: disable=E0602
+    bounding_box: Optional[BoundingBox] = Field(default=None)
+    image: Optional[Any] = Field(default=None, exclude=True)  # Avoid circular import
+
+
+    @field_validator("bounding_box", mode="before")
+    @classmethod
+    def _coerce_bounding_box(cls, v: Any) -> Optional[BoundingBox]:
+        if v is None or isinstance(v, BoundingBox):
+            return v
+        if isinstance(v, dict):
+            # ensure proper init from dict payload
+            return BoundingBox(**v)
+        raise TypeError("bounding_box must be a BoundingBox or a dict")
 
 
     def get_defining_attributes(self) -> list[str]:
         return ["category_name", "bounding_box"]
-
-    @classmethod
-    def from_dict(cls, **kwargs: AnnotationDict) -> ImageAnnotation:
-        image_ann = ann_from_dict(cls, **kwargs)
-        if box_kwargs := kwargs.get("bounding_box"):
-            image_ann.bounding_box = BoundingBox.from_dict(**box_kwargs)
-        return image_ann
 
     @staticmethod
     def get_state_attributes() -> list[str]:
         return ["active", "sub_categories", "relationships", "image"]
 
     def get_bounding_box(self, image_id: Optional[str] = None) -> BoundingBox:
-        """Get bounding from image embeddings or, if not available or if `image_id` is not provided,
+        """
+        Get bounding from image embeddings or, if not available or if `image_id` is not provided,
         from `bounding_box`.
 
         Returns:
             BoundingBox: A bounding box of the annotation.
 
         Raises:
-            ValueError: If no bounding box is available."""
+            ValueError: If no bounding box is available.
+        """
         if self.image and image_id:
             box = self.image.get_embedding(image_id)
         else:
@@ -515,14 +518,15 @@ class ImageAnnotation(CategoryAnnotation):
         raise AnnotationError(f"bounding_box has not been initialized for {self.annotation_id}")
 
     def get_summary(self, key: ObjectTypes) -> CategoryAnnotation:
-        """Get summary sub categories from `image`.
+        """
+        Get summary sub categories from `image`.
 
         Returns:
             CategoryAnnotation: A summary sub category of the image.
 
         Raises:
-            ValueError: If `key` is not available"""
-
+            ValueError: If `key` is not available
+        """
         if self.image:
             return self.image.summary.get_sub_category(key)
         raise AnnotationError(f"Summary does not exist for {self.annotation_id} and key: {key}")
@@ -535,43 +539,101 @@ class ImageAnnotation(CategoryAnnotation):
         """
         annotation_id_dict = defaultdict(list)
         annotation_id_dict[self.annotation_id].append(AnnotationMap(image_annotation_id=self.annotation_id))
+
         for sub_cat_key in self.sub_categories:
             sub_cat = self.get_sub_category(sub_cat_key)
             annotation_id_dict[sub_cat.annotation_id].append(
                 AnnotationMap(image_annotation_id=self.annotation_id, sub_category_key=sub_cat_key)
             )
+
         if self.image is not None:
             for summary_cat_key in self.image.summary.sub_categories:
                 summary_cat = self.get_summary(summary_cat_key)
                 annotation_id_dict[summary_cat.annotation_id].append(
                     AnnotationMap(image_annotation_id=self.annotation_id, summary_key=summary_cat_key)
                 )
+
         for rel_key in self.relationships:
             for rel_ann_ids in self.get_relationship(rel_key):
                 annotation_id_dict[rel_ann_ids].append(
                     AnnotationMap(image_annotation_id=self.annotation_id, relationship_key=rel_key)
                 )
+
         return annotation_id_dict
 
+    def __repr__(self) -> str:
+        data = super()._repr_data()
+        bb = getattr(self, "bounding_box", None)
+        if bb is not None:
+            data["bounding_box"] = bb
+        return super()._repr_from_data(data)
 
-@dataclass
+
+
 class ContainerAnnotation(CategoryAnnotation):
     """
-    A dataclass for transporting values along with categorical attributes. Use these types of annotations as special
-    types of sub categories.
+    Container annotation with typed value.
 
-    Attributes:
-        value: Attribute to store the value. Use strings.
+    Use `set_type()` to set an expected type for `value`.
+    Calling `set_type()` with no argument (or `None`) disables validation.
     """
+    value: Optional[Union[list[str], str]] = Field(default=None)
+    _value_type: Optional[Literal["str", "int", "float", "list[str]"]] = PrivateAttr(default=None)
 
-    value: Optional[Union[list[str], str]] = field(default=None)
+    @field_validator('value', mode='before')
+    @classmethod
+    def _validate_value(cls, v: Any) -> Optional[Union[list[str], str]]:
+        """Basic coercion/normalization kept for backward compatibility."""
+        if v is None:
+            return None
+        if isinstance(v, (int, float)):
+            return str(v)
+        if isinstance(v, str):
+            return v
+        if isinstance(v, list):
+            return [str(item) for item in v]
+        return v
+
+    def set_type(self, type: Optional[Literal["str", "int", "float", "list[str]"]] = None) -> None:
+        """
+        Set expected type for `value`.
+        If `type` is None, disable validation (backward compatible).
+        If `value` is already set and `type` is provided, validate immediately.
+        """
+        if type is None:
+            self._value_type = None
+            return
+
+        allowed = {"str", "int", "float", "list[str]"}
+        if type not in allowed:
+            raise ValueError(f"type must be one of {sorted(allowed)}")
+
+        self._value_type = type
+
+        # validate existing value if present
+        if getattr(self, "value", None) is not None:
+            self._check_value_type(self.value)
+
+    def _check_value_type(self, value: Any) -> None:
+        """Raise TypeError if value does not match the configured _value_type."""
+        vt = self._value_type
+        if vt is None:
+            return  # no validation configured
+
+        if vt == "str":
+            if not isinstance(value, str):
+                raise TypeError(f"value must be str when type='str', got {type(value).__name__}")
+        elif vt == "int":
+            if not isinstance(value, int):
+                raise TypeError(f"value must be int when type='int', got {type(value).__name__}")
+        elif vt == "float":
+            if not isinstance(value, float):
+                raise TypeError(f"value must be float when type='float', got {type(value).__name__}")
+        elif vt == "list[str]":
+            if not isinstance(value, list) or not all(isinstance(el, str) for el in value):
+                raise TypeError("value must be list[str] when type='list[str]'")
+        else:
+            raise ValueError(f"Unsupported value type configured: {vt}")
 
     def get_defining_attributes(self) -> list[str]:
         return ["category_name", "value"]
-
-    @classmethod
-    def from_dict(cls, **kwargs: AnnotationDict) -> ContainerAnnotation:
-        container_ann = ann_from_dict(cls, **kwargs)
-        value = kwargs.get("value", "")
-        container_ann.value = value if isinstance(value, (int, float, str)) else list(value)
-        return container_ann

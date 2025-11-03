@@ -276,13 +276,11 @@ new_ann  # (1)
     relationships={}, 
     bounding_box=None)
 
-
-
 ```python
-bbox = dd.BoundingBox(absolute_coords=False, ulx=0.5,uly=0.7,lrx=0.6,lry=0.9) # setting up a bounding box
+bbox = dd.BoundingBox1(absolute_coords=False, ulx=0.5, uly=0.7, lrx=0.6, lry=0.9)  # setting up a bounding box
 new_ann.bounding_box = bbox
-image.dump(new_ann) # (1)
-new_ann.annotation_id # (2)
+image.dump(new_ann)  # (1)
+new_ann.annotation_id  # (2)
 ```
 
 1. Dump the annotation to the image
