@@ -40,7 +40,7 @@ from ..utils.types import ImageDict, PathLikeOrStr, PixelValues
 
 from .annotation import Annotation, AnnotationMap, BoundingBox, CategoryAnnotation, ImageAnnotation
 from .box import BoxCoordinate, crop_box_from_image, global_to_local_coords, intersection_box
-from .convert import as_dict, convert_b64_to_np_array, convert_np_array_to_b64, convert_pdf_bytes_to_np_array_v2
+from .convert import convert_b64_to_np_array, convert_np_array_to_b64, convert_pdf_bytes_to_np_array_v2
 
 
 class MetaAnnotationDict(TypedDict):
@@ -143,7 +143,6 @@ class Image(BaseModel):
         "protected_namespaces": (),  # allow names like _image_id in properties if needed
     }
 
-    # public fields
     file_name: str
     location: str = ""
     external_id: Optional[Union[str, int]] = None
@@ -153,13 +152,28 @@ class Image(BaseModel):
     embeddings: dict[str, BoundingBox] = Field(default_factory=dict)
     annotations: list[ImageAnnotation] = Field(default_factory=list)
 
-    # private attrs (all underscored attributes)
     _image: Optional[PixelValues] = PrivateAttr(default=None)
     _bbox: Optional[BoundingBox] = PrivateAttr(default=None)
     _annotation_ids: list[str] = PrivateAttr(default_factory=list)
     _summary: Optional[CategoryAnnotation] = PrivateAttr(default=None)
     _image_id: Optional[str] = PrivateAttr(default=None)
     _pdf_bytes: Optional[bytes] = PrivateAttr(default=None)
+
+    def __init__(self, **data: Any) -> None:
+        """
+        Accept private attrs in kwargs (e.g. `_image_id`, `_summary`, `_bbox`, `_annotation_ids`, `_image`, `_pdf_bytes`)
+        Remove them before BaseModel initialization and set the PrivateAttr values afterwards so that
+        `Image(**inputs)` works when legacy code passes private keys.
+        """
+        private_keys = ["_image", "_bbox", "_annotation_ids", "_summary", "_image_id", "_pdf_bytes"]
+        priv: dict[str, Any] = {}
+        for key in private_keys:
+            if key in data:
+                priv[key] = data.pop(key)
+        super().__init__(**data)
+        for key, val in priv.items():
+            # assign even if value is None to preserve explicit input
+            object.__setattr__(self, key, val)
 
 
     @field_validator("embeddings", mode="before")
@@ -587,7 +601,7 @@ class Image(BaseModel):
         with open(file_path, "r", encoding="UTF-8") as f:
             return cls.from_dict(**json.load(f))
 
-    # ---------------- hierarchy ops & misc (unchanged) ----------------
+
     def image_ann_to_image(self, annotation_id: str, crop_image: bool = False) -> None:
         """
         This method is an operation that changes the state of an underlying dumped image annotation and that
@@ -621,6 +635,7 @@ class Image(BaseModel):
             raise ImageError("crop_image = True requires self.image to be not None")
 
         ann.image = new_image
+
 
     def maybe_ann_to_sub_image(self, annotation_id: str, category_names: Union[str, list[str]]) -> None:
         """

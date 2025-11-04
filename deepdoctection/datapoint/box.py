@@ -455,6 +455,10 @@ class BoundingBox(BaseModel):
             f"lrx={self.lrx}, lry={self.lry}, width={self.width}, height={self.height})"
         )
 
+    def get_legacy_string(self) -> str:
+        """Legacy string representation of the bounding box. Do not use"""
+        return f"Bounding Box ulx: {self.ulx}, uly: {self.uly}, lrx: {self.lrx}, lry: {self.lry}"
+
 
 def intersection_box(
     box_1: BoundingBox, box_2: BoundingBox, width: Optional[float] = None, height: Optional[float] = None

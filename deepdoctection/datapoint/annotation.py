@@ -124,6 +124,16 @@ class Annotation(BaseModel, ABC):
     model_id: Optional[str] = Field(default=None)
     session_id: Optional[str] = Field(default=None)
 
+    def __init__(self, **data: Any) -> None:
+        """
+        Accept `_annotation_id` in kwargs (e.g. CategoryAnnotation(**item)),
+        remove it before BaseModel initialization and set the PrivateAttr after.
+        """
+        _annotation_id = data.pop("_annotation_id", None)
+        super().__init__(**data)
+        if _annotation_id is not None:
+            object.__setattr__(self, "_annotation_id", _annotation_id)
+
     @model_validator(mode='after')
     def _setup_annotation_id(self) -> Annotation:
         """Set up annotation_id from external_id if provided."""
@@ -500,6 +510,27 @@ class ImageAnnotation(CategoryAnnotation):
 
     bounding_box: Optional[BoundingBox] = Field(default=None)
     image: Optional[Any] = Field(default=None, exclude=True)  # Avoid circular import
+
+    @field_validator("image", mode="before")
+    @classmethod
+    def _coerce_image(cls, v: Any) -> Optional[Any]:
+        """
+        Coerce dict payloads into an Image instance. Import `Image` locally to avoid
+        circular import between `image.py` and `annotation.py`.
+        """
+        if v is None:
+            return None
+        # already an Image instance -> keep
+        try:
+            from .image import Image  # local import to avoid circular import
+        except (ImportError, ModuleNotFoundError):
+            # Import failed (e.g. circular import / module not available) — let other validators handle it
+            return v
+        if isinstance(v, Image):
+            return v
+        if isinstance(v, dict):
+            return Image(**v)
+        raise TypeError("image must be Image or dict")
 
 
     @field_validator("bounding_box", mode="before")
