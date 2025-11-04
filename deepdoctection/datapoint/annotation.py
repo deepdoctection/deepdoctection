@@ -24,7 +24,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from dataclasses import dataclass
-from typing import Optional, Union, TypeVar, Any, Literal
+from typing import Optional, Union, TypeVar, Any, Literal, no_type_check
 from pydantic import BaseModel, Field, field_validator, model_validator, PrivateAttr
 
 from ..utils.error import AnnotationError, UUIDError
@@ -36,6 +36,37 @@ from .box import BoundingBox
 from .convert import as_dict
 
 
+@no_type_check
+def ann_from_dict(cls, **kwargs: AnnotationDict):
+    """
+    A factory function to create subclasses of annotations from a given dict
+    """
+    _init_kwargs = {
+        "external_id": kwargs.get("external_id"),
+        "category_name": kwargs.get("category_name"),
+        "category_id": kwargs.get("category_id", DEFAULT_CATEGORY_ID),
+        "score": kwargs.get("score"),
+        "service_id": kwargs.get("service_id"),
+        "model_id": kwargs.get("model_id"),
+        "session_id": kwargs.get("session_id"),
+    }
+    _init_kwargs["category_id"] = (
+        int(_init_kwargs["category_id"]) if (_init_kwargs)["category_id"] not in ("None", "") else DEFAULT_CATEGORY_ID
+    )
+    ann = cls(**_init_kwargs)
+    ann.active = kwargs.get("active")
+    ann._annotation_id = kwargs.get("_annotation_id")  # pylint: disable=W0212
+    if isinstance(kwargs.get("sub_categories"), dict):
+        for key, value in kwargs["sub_categories"].items():
+            if "value" in value:
+                ann.dump_sub_category(key, ContainerAnnotation.from_dict(**value))
+            else:
+                ann.dump_sub_category(key, CategoryAnnotation.from_dict(**value))
+    if isinstance(kwargs.get("relationships"), dict):
+        for key, values in kwargs["relationships"].items():
+            for value in values:
+                ann.dump_relationship(key, value)
+    return ann
 
 @dataclass(frozen=True)
 class AnnotationMap:
@@ -218,24 +249,6 @@ class Annotation(BaseModel, ABC):
                 container_ids.append(str(attr))
 
         return get_uuid(self.annotation_id, *container_ids)
-
-    #def __str__(self) -> str:
-    #    return repr(self)
-
-    #def _repr_data(self) -> dict:
-    #    """Return the dict used to build the repr string."""
-    #    data = self.model_dump(by_alias=True, exclude_none=False)
-    #    data["annotation_id"] = self._annotation_id
-    #    return data
-
-    #def _repr_from_data(self, data: dict) -> str:
-    #    """Build the repr string from a data dict (keeps formatting logic in one place)."""
-    #    pairs = ", ".join(f"{k}={v!r}" for k, v in data.items())
-    #    return f"{self.__class__.__name__}({pairs})"
-
-    #def __repr__(self) -> str:
-    #    return self._repr_from_data(self._repr_data())
-
 
 
 class CategoryAnnotation(Annotation):
@@ -456,6 +469,15 @@ class CategoryAnnotation(Annotation):
     def get_state_attributes() -> list[str]:
         return ["active", "sub_categories", "relationships"]
 
+    def __repr__(self) -> str:
+        return (f"CategoryAnnotation(annotation_id: {self._annotation_id}, category_name={self.category_name},"
+                f"category_id={self.category_id}, score={self.score}, sub_categories={self.sub_categories},"
+                f" relationships={self.relationships})")
+
+    def __str__(self) -> str:
+        return repr(self)
+
+
 
 class ImageAnnotation(CategoryAnnotation):
     """
@@ -561,12 +583,14 @@ class ImageAnnotation(CategoryAnnotation):
 
         return annotation_id_dict
 
-    def __repr__(self) -> str:
-        data = super()._repr_data()
-        bb = getattr(self, "bounding_box", None)
-        if bb is not None:
-            data["bounding_box"] = bb
-        return super()._repr_from_data(data)
+
+    def __repr__(self)  -> str:
+        return (f"ImageAnnotation(annotation_id: {self._annotation_id}, category_name={self.category_name},"
+                f"category_id={self.category_id}, score={self.score}, bounding_box: {self.bounding_box}, "
+                f"sub_categories={self.sub_categories}, relationships={self.relationships})")
+
+    def __str__(self) -> str:
+        return repr(self)
 
 
 
@@ -637,3 +661,8 @@ class ContainerAnnotation(CategoryAnnotation):
 
     def get_defining_attributes(self) -> list[str]:
         return ["category_name", "value"]
+
+    def __repr__(self) -> str:
+        return (f"ContainerAnnotation(annotation_id: {self.annotation_id}, category_name={self.category_name},"
+                f"category_id={self.category_id}, score={self.score}, sub_categories={self.sub_categories},"
+                f" relationships={self.relationships})")
