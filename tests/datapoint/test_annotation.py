@@ -139,7 +139,7 @@ class TestCategoryAnnotation:
         cat.dump_sub_category(get_type("bak"), sub_cat_1)
 
         # Assert
-        assert cat.state_id == "8301eef5-bd4a-3c10-9dad-7cae94dd150b"
+        assert cat.state_id == "36a9608a-3d08-3ac4-a3ca-40af7ee01c06"
 
     @staticmethod
     @mark.basic

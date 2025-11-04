@@ -88,7 +88,7 @@ class TestTableSegmentationService:
         self._remove_iou_threshold_cols = 0.001
         self._tile_table_with_items = False
         self.table_name = LayoutType.TABLE
-        self.cell_names = [CellType.HEADER, CellType.BODY, LayoutType.CELL]
+        self.cell_names = [CellType.COLUMN_HEADER, CellType.BODY, LayoutType.CELL]
         self.item_names = [LayoutType.ROW, LayoutType.COLUMN]
         self.sub_item_names = [CellType.ROW_NUMBER, CellType.COLUMN_NUMBER]
 
@@ -220,7 +220,7 @@ class TestTableSegmentationServiceWhenTableFullyTiled:
         self._remove_iou_threshold_cols = 0.001
         self._tile_table_with_items = True
         self.table_name = LayoutType.TABLE
-        self.cell_names = [CellType.HEADER, CellType.BODY, LayoutType.CELL]
+        self.cell_names = [CellType.COLUMN_HEADER, CellType.BODY, LayoutType.CELL]
         self.item_names = [LayoutType.ROW, LayoutType.COLUMN]
         self.sub_item_names = [CellType.ROW_NUMBER, CellType.COLUMN_NUMBER]
 

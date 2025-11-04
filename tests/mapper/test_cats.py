@@ -45,11 +45,11 @@ def test_cat_to_sub_cat(datapoint_pubtabnet: JsonDict, pubtabnet_results: Datapo
 
     categories = MagicMock()
     categories._cat_to_sub_cat = {  # pylint: disable=W0212
-        LayoutType.CELL: CellType.HEADER,
+        LayoutType.CELL: CellType.COLUMN_HEADER,
         TableType.ITEM: TableType.ITEM,
     }
     categories.get_categories = Mock(
-        return_value={CellType.HEADER: 1, CellType.BODY: 2, LayoutType.ROW: 3, LayoutType.COLUMN: 4}
+        return_value={CellType.COLUMN_HEADER: 1, CellType.BODY: 2, LayoutType.ROW: 3, LayoutType.COLUMN: 4}
     )
 
     datapoint = pubtabnet_results
@@ -62,7 +62,7 @@ def test_cat_to_sub_cat(datapoint_pubtabnet: JsonDict, pubtabnet_results: Datapo
         dp = cat_to_sub_cat_mapper(dp)
 
     if dp is not None:
-        heads = dp.get_annotation(category_names=CellType.HEADER)
+        heads = dp.get_annotation(category_names=CellType.COLUMN_HEADER)
         bodies = dp.get_annotation(category_names=CellType.BODY)
         rows = dp.get_annotation(category_names=LayoutType.ROW)
         cols = dp.get_annotation(category_names=LayoutType.COLUMN)

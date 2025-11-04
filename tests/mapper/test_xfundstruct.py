@@ -58,7 +58,7 @@ def test_xfund_to_image(
     assert words == ["Akademisches", "Auslandsamt", "Bewerbungsformular"]
 
     sub_cats_category_names = [ann.get_sub_category(WordType.TOKEN_CLASS).category_name for ann in word_anns]
-    assert sub_cats_category_names == [TokenClasses.OTHER, TokenClasses.OTHER, CellType.HEADER]
+    assert sub_cats_category_names == [TokenClasses.OTHER, TokenClasses.OTHER, CellType.COLUMN_HEADER]
 
     sub_cats_ner_tags = [ann.get_sub_category(WordType.TAG).category_name for ann in word_anns]
     assert sub_cats_ner_tags == ["O", "O", "B"]

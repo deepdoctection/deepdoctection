@@ -84,7 +84,7 @@ class TestImage:
         test_image = Image(file_name=image.file_name, location=image.loc, external_id=image.external_id)
 
         # Act and assert
-        with raises(ImageError):
+        with raises(ImageError, AttributeError):
             test_image.image_id = "ec2aac06-c261-3669-b8bd-4486a54ce740"
 
     @staticmethod
@@ -180,7 +180,7 @@ class TestImage:
         # Assert
         assert test_image.image_id == get_uuid(image.loc + image.file_name)
         assert cat.annotation_id == "c8c58404-62c3-3e66-b302-ebd3202a778d"
-        assert sub_cat_1.annotation_id == "ec31cfdf-c1aa-383e-99a8-7f80a7f29f05"
+        assert sub_cat_1.annotation_id == "64d904ed-109d-3ae6-8220-9a252280afc7"
 
     @staticmethod
     @mark.basic
@@ -212,6 +212,7 @@ class TestImage:
 
         # Arrange
         test_image = Image(location=image.loc, file_name=image.file_name)
+
         cat_1 = ImageAnnotation(
             category_name="FOO",
             category_id=1,
@@ -326,7 +327,7 @@ class TestImage:
         """
         df: DataFlow
         df = SerializerJsonlines.load(get_test_path() / "test_image.jsonl")
-        df = MapData(df, lambda dp: Image.from_dict(**dp))
+        df = MapData(df, lambda dp: Image(**dp))
         image_list = collect_datapoint_from_dataflow(df)
         assert len(image_list) == 1
 

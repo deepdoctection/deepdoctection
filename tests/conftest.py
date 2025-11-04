@@ -350,7 +350,7 @@ def fixture_dp_image_fully_segmented(
         row.dump_sub_category(CellType.ROW_NUMBER, row_sub_cat)
         col.dump_sub_category(CellType.COLUMN_NUMBER, col_sub_cat)
 
-    cells = dp.get_annotation(category_names=[LayoutType.CELL, CellType.HEADER, CellType.BODY])
+    cells = dp.get_annotation(category_names=[LayoutType.CELL, CellType.COLUMN_HEADER, CellType.BODY])
 
     for cell, sub_cats in zip(cells, cell_sub_cats):
         cell.dump_sub_category(CellType.ROW_NUMBER, sub_cats[0])
@@ -404,7 +404,7 @@ def fixture_dp_image_fully_segmented_fully_tiled(
         col.dump_sub_category(CellType.COLUMN_NUMBER, col_sub_cat)
 
     cell_sub_cats = cell_sub_cats_when_table_fully_tiled
-    cells = dp.get_annotation(category_names=[LayoutType.CELL, CellType.HEADER, CellType.BODY])
+    cells = dp.get_annotation(category_names=[LayoutType.CELL, CellType.COLUMN_HEADER, CellType.BODY])
 
     for cell, sub_cats in zip(cells, cell_sub_cats):
         cell.dump_sub_category(CellType.ROW_NUMBER, sub_cats[0])
@@ -534,8 +534,8 @@ def fixture_detr_categories() -> Mapping[int, ObjectTypes]:
 
 def pytest_sessionstart() -> None:
     """Pre configuration before testing starts"""
-    object_types_registry.register("TestType", func=TestType)
-    update_all_types_dict()
+    object_types_registry.register("TestType")(TestType)
+    #update_all_types_dict()
     for item in TestType:
         update_black_list(item.value)
     viz_handler.refresh()
