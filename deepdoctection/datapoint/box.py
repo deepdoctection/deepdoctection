@@ -23,7 +23,7 @@ from __future__ import annotations
 
 from pydantic import BaseModel, PrivateAttr, model_serializer
 from math import ceil, floor
-from typing import Optional, Sequence, Union, no_type_check
+from typing import Optional, Sequence, Union, no_type_check, TypedDict, cast
 
 import numpy as np
 import numpy.typing as npt
@@ -177,6 +177,14 @@ def ioa(boxes1: npt.NDArray[float32], boxes2: npt.NDArray[float32]) -> npt.NDArr
 
 
 RELATIVE_COORD_SCALE_FACTOR = 10**8
+
+
+class BoxDict(TypedDict):
+    absolute_coords: bool
+    ulx: BoxCoordinate
+    uly: BoxCoordinate
+    lrx: BoxCoordinate
+    lry: BoxCoordinate
 
 
 class BoundingBox(BaseModel):
@@ -458,6 +466,9 @@ class BoundingBox(BaseModel):
     def get_legacy_string(self) -> str:
         """Legacy string representation of the bounding box. Do not use"""
         return f"Bounding Box ulx: {self.ulx}, uly: {self.uly}, lrx: {self.lrx}, lry: {self.lry}"
+
+    def as_dict(self) -> BoxDict:
+        return cast(BoxDict, self.model_dump(by_alias=True, exclude_none=False))
 
 
 def intersection_box(
