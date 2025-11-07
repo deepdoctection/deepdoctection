@@ -1032,13 +1032,12 @@ class Page(Image):
 
     @classmethod
     def from_image(
-        cls,
-        image_orig: Image,
-        text_container: Optional[ObjectTypes] = None,
-        floating_text_block_categories: Optional[Sequence[ObjectTypes]] = None,
-        residual_text_block_categories: Optional[Sequence[ObjectTypes]] = None,
-        include_residual_text_container: bool = True,
-        base_page: Optional[Page] = None,
+            cls,
+            image_orig: Image,
+            text_container: Optional[ObjectTypes] = None,
+            floating_text_block_categories: Optional[Sequence[ObjectTypes]] = None,
+            residual_text_block_categories: Optional[Sequence[ObjectTypes]] = None,
+            include_residual_text_container: bool = True,
     ) -> Page:
         """
         Factory function for generating a `Page` instance from `image_orig` .
@@ -1061,60 +1060,40 @@ class Page(Image):
         if isinstance(image_orig, Page):
             raise ImageError("Page.from_image() cannot be called on a Page instance.")
 
+        # Defaults
         if text_container is None:
             text_container = IMAGE_DEFAULTS.TEXT_CONTAINER
-
         if not floating_text_block_categories:
             floating_text_block_categories = IMAGE_DEFAULTS.FLOATING_TEXT_BLOCK_CATEGORIES
-
         if not residual_text_block_categories:
             residual_text_block_categories = IMAGE_DEFAULTS.RESIDUAL_TEXT_BLOCK_CATEGORIES
-
         if include_residual_text_container and LayoutType.LINE not in floating_text_block_categories:
             floating_text_block_categories = tuple(floating_text_block_categories) + (LayoutType.LINE,)
 
-        img_kwargs = image_orig.as_dict()
+        # Transform annotations to view objects
+        view_annotations: list[ImageAnnotationBaseView] = [
+            ann_obj_view_factory(ann, text_container) for ann in image_orig.annotations
+        ]
+
+        # Base image payload (includes private fields serialized; Image.__init__ handles them)
+        base_payload = image_orig.as_dict()
+
+        base_payload["annotations"] = view_annotations
+
+        # Build Page (all kwargs!)
         page = cls(
-            img_kwargs.get("file_name"), img_kwargs.get("location"), img_kwargs.get("external_id")  # type: ignore
+            **base_payload,
+            text_container=text_container,
+            floating_text_block_categories=list(floating_text_block_categories),
+            residual_text_block_categories=list(residual_text_block_categories),
+            image_orig=image_orig,
+            include_residual_text_container=include_residual_text_container,
         )
-        page.image_orig = image_orig
-        page.page_number = image_orig.page_number
-        page.document_id = image_orig.document_id
-        if image_orig.image is not None:
-            page.image = image_orig.image  # pass image explicitly so
-        page._image_id = img_kwargs.get("_image_id")
-        if page.image is None:
-            if b64_image := img_kwargs.get("_image"):
-                page.image = b64_image
-        if box_kwargs := img_kwargs.get("_bbox"):
-            page._bbox = BoundingBox.from_dict(**box_kwargs)
-        if embeddings := img_kwargs.get("embeddings"):
-            for image_id, box_dict in embeddings.items():
-                page.set_embedding(image_id, BoundingBox.from_dict(**box_dict))
-        for ann_dict in img_kwargs.get("annotations", []):
-            image_ann = ImageAnnotation.from_dict(**ann_dict)
-            layout_ann = ann_obj_view_factory(image_ann, text_container)
-            if "image" in ann_dict:
-                image_dict = ann_dict["image"]
-                if image_dict:
-                    image = Image.from_dict(**image_dict)
-                    layout_ann.image = cls.from_image(
-                        image_orig=image,
-                        text_container=text_container,
-                        floating_text_block_categories=floating_text_block_categories,
-                        residual_text_block_categories=residual_text_block_categories,
-                        include_residual_text_container=include_residual_text_container,
-                        base_page=page,
-                    )
-            layout_ann.base_page = base_page if base_page is not None else page
-            page.dump(layout_ann)
-        if summary_dict := img_kwargs.get("_summary"):
-            page.summary = CategoryAnnotation.from_dict(**summary_dict)
-            page.summary.category_name = SummaryType.SUMMARY
-        page.floating_text_block_categories = floating_text_block_categories  # type: ignore
-        page.residual_text_block_categories = residual_text_block_categories  # type: ignore
-        page.text_container = text_container
-        page.include_residual_text_container = include_residual_text_container
+
+        # Back‑reference for each annotation view
+        for ann in page.annotations:
+            ann.base_page = page  # type: ignore[attr-defined]
+
         return page
 
     def _order(self, block: str) -> list[ImageAnnotationBaseView]:

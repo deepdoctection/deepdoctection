@@ -172,8 +172,14 @@ class Image(BaseModel):
                 priv[key] = data.pop(key)
         super().__init__(**data)
         for key, val in priv.items():
-            # assign even if value is None to preserve explicit input
-            object.__setattr__(self, key, val)
+            # coerce dict representations back to their classes
+            if key == "_bbox" and isinstance(val, dict):
+                object.__setattr__(self, key, BoundingBox(**val))
+            elif key == "_summary" and isinstance(val, dict):
+                object.__setattr__(self, key, CategoryAnnotation(**val))
+            else:
+                # assign even if value is None to preserve explicit input
+                object.__setattr__(self, key, val)
 
 
     @field_validator("embeddings", mode="before")
@@ -236,6 +242,21 @@ class Image(BaseModel):
         if self._image_id is not None:
             return self._image_id
         raise ImageError("image_id not set")
+
+
+    @image_id.setter
+    def image_id(self, value: str) -> None:
+        """
+        Prevent reassignment of image_id once set. Allow initial assignment if unset.
+        """
+        if self._image_id is not None:
+            raise ImageError("image_id cannot be reassigned")
+        if not isinstance(value, str):
+            raise ImageError("image_id must be a string")
+        if not is_uuid_like(value):
+            raise ImageError("image_id must be uuid-like")
+        object.__setattr__(self, "_image_id", value)
+
 
     @property
     def image(self) -> Optional[PixelValues]:
@@ -384,6 +405,7 @@ class Image(BaseModel):
     def _self_embedding(self) -> None:
         if self._bbox is not None:
             self.set_embedding(self.image_id, self._bbox)
+
 
 
     def dump(self, annotation: ImageAnnotation) -> None:
@@ -538,28 +560,16 @@ class Image(BaseModel):
                 return None
             if hasattr(bb, "as_dict"):
                 return bb.as_dict()
-            # Fallback when no helper exists
-            return {
-                "ulx": bb.ulx,
-                "uly": bb.uly,
-                "width": bb.width,
-                "height": bb.height,
-                "absolute_coords": getattr(bb, "absolute_coords", True),
-            }
 
-        # Normalize nested types that Pydantic core might not know
-        data["embeddings"] = {k: bbox_to_dict(v) for k, v in self.embeddings.items()}
-        data["_bbox"] = bbox_to_dict(self._bbox)
+        data["embeddings"] = {k: v.as_dict() for k, v in self.embeddings.items()}
+        data["_bbox"] = self._bbox.as_dict()
         data["_image"] = convert_np_array_to_b64(self._image) if self._image is not None else None
         data["_summary"] = self._summary.as_dict() if self._summary is not None else None
 
-        # Keep legacy path string
         if "location" in data:
             data["location"] = fspath(data["location"])
 
-        # Remove legacy keys that should not be exported
-        for k in self.remove_keys():
-            data.pop(k, None)
+        data.pop("_annotation_ids", None)
 
         return data
 
@@ -583,12 +593,14 @@ class Image(BaseModel):
         """
 
         # Uses fast Rust-based Pydantic core JSON
-        return self.model_dump_json(by_alias=True, exclude_none=False, indent=4)
+        return self.model_dump_json(by_alias=True,
+                                    exclude_none=False,
+                                    indent=4)
 
 
 
     @classmethod
-    def from_file(cls, file_path: str) -> "Image":
+    def from_file(cls, file_path: str) -> Image:
         """
         Create `Image` instance from `.json` file.
 
@@ -599,7 +611,7 @@ class Image(BaseModel):
             Initialized image
         """
         with open(file_path, "r", encoding="UTF-8") as f:
-            return cls.from_dict(**json.load(f))
+            return cls(**json.load(f))
 
 
     def image_ann_to_image(self, annotation_id: str, crop_image: bool = False) -> None:
