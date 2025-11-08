@@ -37,6 +37,8 @@ def test_page_from_image(dp_image_with_layout_and_word_annotations: Image) -> No
     """
     test page gets converted from an image correctly
     """
+
+    from deepdoctection.datapoint._view import Page
     # Arrange
     dp_image = dp_image_with_layout_and_word_annotations
     title_ann = dp_image.get_annotation(category_names=["title"])[0]
@@ -64,8 +66,13 @@ def test_page_from_image(dp_image_with_layout_and_word_annotations: Image) -> No
     )
 
     # Act
+    #page = Page.from_image(
+    #    image_orig=dp_image,
+    #    text_container=LayoutType.WORD,
+    #    floating_text_block_categories=[LayoutType.TEXT, LayoutType.TITLE, LayoutType.LIST],
+    #)
     page = Page.from_image(
-        image_orig=dp_image,
+        image=dp_image,
         text_container=LayoutType.WORD,
         floating_text_block_categories=[LayoutType.TEXT, LayoutType.TITLE, LayoutType.LIST],
     )

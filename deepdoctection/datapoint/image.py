@@ -555,12 +555,6 @@ class Image(BaseModel):
         """
         data = handler(self)
 
-        def bbox_to_dict(bb: Optional[BoundingBox]) -> Optional[dict]:
-            if bb is None:
-                return None
-            if hasattr(bb, "as_dict"):
-                return bb.as_dict()
-
         data["embeddings"] = {k: v.as_dict() for k, v in self.embeddings.items()}
         data["_bbox"] = self._bbox.as_dict()
         data["_image"] = convert_np_array_to_b64(self._image) if self._image is not None else None
