@@ -848,6 +848,24 @@ class Page:
             `LayoutType.page_header`
     """
 
+    _attribute_names: set[str] = {
+        "text",
+        "chunks",
+        "tables",
+        "layouts",
+        "words",
+        "file_name",
+        "location",
+        "document_id",
+        "page_number",
+        "angle",
+        "figures",
+        "residual_layouts",
+        "document_summary",
+        "document_mapping",
+        "b64_image",
+    }
+
     def __init__(
         self,
         base_image: Image,
@@ -871,23 +889,6 @@ class Page:
         self.ann_base_view: list[ImageAnnotationBaseView] = [
             ann_obj_view_factory(ann, self.text_container, self) for ann in anns
         ]
-        self._attribute_names: set[str] = {
-            "text",
-            "chunks",
-            "tables",
-            "layouts",
-            "words",
-            "file_name",
-            "location",
-            "document_id",
-            "page_number",
-            "angle",
-            "figures",
-            "residual_layouts",
-            "document_summary",
-            "document_mapping",
-            "b64_image",
-        }
 
     # Proxies to wrapped Image (read-only)
     @property
@@ -1477,7 +1478,7 @@ class Page:
         Returns:
             optional dict
         """
-        return self.image_orig.save(image_to_json, highest_hierarchy_only, path, dry)
+        return self._base_image.save(image_to_json, highest_hierarchy_only, path, dry)
 
     @classmethod
     @no_type_check
@@ -1546,7 +1547,7 @@ class Page:
 
     def __copy__(self) -> Page:
         return self.__class__.from_image(
-            self.image_orig,
+            self._base_image,
             self.text_container,
             self.floating_text_block_categories,
             self.residual_text_block_categories,

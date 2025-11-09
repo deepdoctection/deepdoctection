@@ -32,6 +32,7 @@ Module for Fintabnet dataset. Place the dataset as follows
 """
 from __future__ import annotations
 
+import os
 from pathlib import Path
 from typing import Mapping, Sequence, Union
 
@@ -198,7 +199,7 @@ class FintabnetBuilder(DataFlowBaseBuilder):
         # Map
         @curry
         def _map_filename(dp: PubtabnetDict, workdir: Path) -> PubtabnetDict:
-            dp["filename"] = workdir / "pdf" / dp["filename"]
+            dp["filename"] = os.fspath(workdir / "pdf" / dp["filename"])
             return dp
 
         df = MapData(df, _map_filename(self.get_workdir()))

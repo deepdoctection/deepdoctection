@@ -29,6 +29,8 @@ Module for Pubtabnet dataset. Place the dataset as follows
 """
 from __future__ import annotations
 
+import os
+
 from typing import Mapping, Union
 
 from ...dataflow import DataFlow, MapData
@@ -178,7 +180,7 @@ class PubtabnetBuilder(DataFlowBaseBuilder):
 
         # Map
         def replace_filename(dp: PubtabnetDict) -> PubtabnetDict:
-            dp["filename"] = self.get_workdir() / dp["split"] / dp["filename"]
+            dp["filename"] = os.fspath(self.get_workdir() / dp["split"] / dp["filename"])
             return dp
 
         df = MapData(df, replace_filename)

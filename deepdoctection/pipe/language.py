@@ -96,7 +96,7 @@ class LanguageDetectionService(PipelineComponent):
         """
         if self.text_detector is None:
             page = Page.from_image(
-                image_orig=dp,
+                image=dp,
                 text_container=self.text_container,
                 floating_text_block_categories=self.floating_text_block_categories,
             )

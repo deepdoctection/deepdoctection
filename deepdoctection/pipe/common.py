@@ -419,7 +419,7 @@ class PageParsingService(PipelineComponent):
             `Page`.
         """
         return Page.from_image(
-            dp,
+            image=dp,
             text_container=self.text_container,
             floating_text_block_categories=self.floating_text_block_categories,
             residual_text_block_categories=self.residual_text_block_categories,

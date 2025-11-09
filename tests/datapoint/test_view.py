@@ -92,7 +92,7 @@ def test_image_with_anns_can_be_saved(image: WhiteImage) -> None:
 
     # Act
     page = Page.from_image(
-        image_orig=test_image, text_container=LayoutType.TEXT, floating_text_block_categories=[LayoutType.TABLE]
+        image=test_image, text_container=LayoutType.TEXT, floating_text_block_categories=[LayoutType.TABLE]
     )
 
     try:
