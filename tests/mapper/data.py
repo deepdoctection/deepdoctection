@@ -794,7 +794,7 @@ class DatapointPubtabnet:
         """
         category_name of sub category
         """
-        return CellType.HEADER
+        return CellType.COLUMN_HEADER
 
     @staticmethod
     def get_last_ann_sub_category_row_number_id() -> int:

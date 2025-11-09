@@ -25,7 +25,7 @@ import pytest
 
 from deepdoctection.datasets import DatasetCategories
 from deepdoctection.datasets.info import get_merged_categories
-from deepdoctection.utils.object_types import get_type
+from deepdoctection.utils.object_types import get_type, Languages
 
 from ..data import TestType
 
@@ -84,7 +84,7 @@ class TestDatasetCategories:
         cats = TestDatasetCategories.setup()
 
         # Act
-        cats.set_cat_to_sub_cat({TestType.BAK: TestType.sub, TestType.FOO: TestType.cat})
+        cats.set_cat_to_sub_cat({TestType.BAK: TestType.sub, TestType.FOO: Languages.CATALAN})
 
         # Assert
         assert cats.get_categories(name_as_key=True) == {
@@ -132,7 +132,8 @@ class TestDatasetCategories:
         cats = TestDatasetCategories.setup()
 
         # Assert
-        assert cats.get_sub_categories() == {TestType.BAK: [TestType.sub, TestType.sub_2], TestType.FOO: [TestType.cat]}
+        assert cats.get_sub_categories() == {TestType.BAK: [TestType.sub, TestType.sub_2],
+                                             TestType.FOO: [Languages.CATALAN]}
 
     @staticmethod
     @pytest.mark.basic

@@ -473,7 +473,7 @@ def pub_to_image_uncur(  # pylint: disable=R0914
                 if _has_header:
                     category_name = CellType.COLUMN_HEADER if cell_id <= end_of_header else CellType.BODY
                     cell_ann.dump_sub_category(
-                        CellType.HEADER, CategoryAnnotation(category_name=category_name), image.image_id
+                        CellType.COLUMN_HEADER, CategoryAnnotation(category_name=category_name), image.image_id
                     )
                 image.dump(cell_ann)
                 if table_ann is not None:

@@ -309,7 +309,8 @@ class BoundingBox(BaseModel):
 
     @ulx.setter
     def ulx(self, value: BoxCoordinate) -> None:
-        self._ulx = round(value * RELATIVE_COORD_SCALE_FACTOR) if not self.absolute_coords else round(value)
+        new_val = round(value * RELATIVE_COORD_SCALE_FACTOR) if not self.absolute_coords else round(value)
+        object.__setattr__(self, "_ulx", new_val)
         self._validate_width(self._lrx, self._ulx)
 
     @property
@@ -318,7 +319,8 @@ class BoundingBox(BaseModel):
 
     @uly.setter
     def uly(self, value: BoxCoordinate) -> None:
-        self._uly = round(value * RELATIVE_COORD_SCALE_FACTOR) if not self.absolute_coords else round(value)
+        new_val = round(value * RELATIVE_COORD_SCALE_FACTOR) if not self.absolute_coords else round(value)
+        object.__setattr__(self, "_uly", new_val)
         self._validate_height(self._lry, self._uly)
 
     @property
@@ -327,7 +329,8 @@ class BoundingBox(BaseModel):
 
     @lrx.setter
     def lrx(self, value: BoxCoordinate) -> None:
-        self._lrx = round(value * RELATIVE_COORD_SCALE_FACTOR) if not self.absolute_coords else round(value)
+        new_val = round(value * RELATIVE_COORD_SCALE_FACTOR) if not self.absolute_coords else round(value)
+        object.__setattr__(self, "_lrx", new_val)
         self._validate_width(self._lrx, self._ulx)
 
     @property
@@ -336,7 +339,8 @@ class BoundingBox(BaseModel):
 
     @lry.setter
     def lry(self, value: BoxCoordinate) -> None:
-        self._lry = round(value * RELATIVE_COORD_SCALE_FACTOR) if not self.absolute_coords else round(value)
+        new_val = round(value * RELATIVE_COORD_SCALE_FACTOR) if not self.absolute_coords else round(value)
+        object.__setattr__(self, "_lry", new_val)
         self._validate_height(self._lry, self._uly)
 
     @property
@@ -346,9 +350,10 @@ class BoundingBox(BaseModel):
     @width.setter
     def width(self, value: BoxCoordinate) -> None:
         if not self.absolute_coords:
-            self._lrx = self._ulx + round(value * RELATIVE_COORD_SCALE_FACTOR)
+            new_lrx = self._ulx + round(value * RELATIVE_COORD_SCALE_FACTOR)
         else:
-            self._lrx = round(value)
+            new_lrx = round(value)
+        object.__setattr__(self, "_lrx", new_lrx)
         self._validate_width(self._lrx, self._ulx)
 
     @property
@@ -359,9 +364,10 @@ class BoundingBox(BaseModel):
     @height.setter
     def height(self, value: BoxCoordinate) -> None:
         if not self.absolute_coords:
-            self._lry = self._uly + round(value * RELATIVE_COORD_SCALE_FACTOR)
+            new_lry = self._uly + round(value * RELATIVE_COORD_SCALE_FACTOR)
         else:
-            self._lry = round(value)
+            new_lry = round(value)
+        object.__setattr__(self, "_lry", new_lry)
         self._validate_height(self._lry, self._uly)
 
     @property

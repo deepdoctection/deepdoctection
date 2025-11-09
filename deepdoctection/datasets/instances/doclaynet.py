@@ -162,7 +162,7 @@ class DocLayNetBuilder(DataFlowBaseBuilder):
         else:
             png_folder = "PNG"
 
-        df = MapDataComponent(df, lambda dp: self.get_workdir() / png_folder / dp, "file_name")
+        df = MapDataComponent(df, lambda dp: os.fspath(self.get_workdir() / png_folder / dp), "file_name")
         df = MapData(
             df,
             coco_to_image(

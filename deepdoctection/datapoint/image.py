@@ -305,7 +305,7 @@ class Image(BaseModel):
     def summary(self) -> CategoryAnnotation:
         """summary"""
         if self._summary is None:
-            self._summary = CategoryAnnotation(category_name=SummaryType.SUMMARY)
+            object.__setattr__(self, "_summary", CategoryAnnotation(category_name=SummaryType.SUMMARY))
             if self._summary._annotation_id is None:  # pylint: disable=W0212
                 self._summary.annotation_id = self.define_annotation_id(self._summary)
         return self._summary
@@ -317,7 +317,7 @@ class Image(BaseModel):
             raise ImageError("Image.summary already defined and cannot be reset")
         if summary_annotation._annotation_id is None:  # pylint: disable=W0212
             summary_annotation.annotation_id = self.define_annotation_id(summary_annotation)
-        self._summary = summary_annotation
+        object.__setattr__(self, "_summary", summary_annotation)
 
     @property
     def pdf_bytes(self) -> Optional[bytes]:
