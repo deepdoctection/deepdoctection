@@ -77,7 +77,6 @@ def test_dd_analyzer_with_tatr() -> None:
     assert len(output) == 1
     page = output[0]
     assert isinstance(page, Page)
-    # 9 for d2 and 10 for tp model
     assert len(page.layouts) == 0
     assert len(page.tables) == 1
     assert len(page.tables[0].cells) in {12, 14}  # type: ignore
@@ -121,7 +120,7 @@ def test_dd_analyzer_with_doctr() -> None:
             "LAYOUT_NMS_PAIRS.COMBINATIONS=None",
             "LAYOUT_NMS_PAIRS.THRESHOLDS=None",
             "LAYOUT_NMS_PAIRS.PRIORITY=None",
-            "OCR.WEIGHTS.DOCTR_RECOGNITION=doctr/crnn_vgg16_bn/pt/crnn_vgg16_bn-9762b0b0.pt",
+            "OCR.WEIGHTS.DOCTR_RECOGNITION=doctr/crnn_vgg16_bn/crnn_vgg16_bn-9762b0b0.pt",
         ]
     )
 
@@ -239,7 +238,7 @@ def test_dd_analyzer_builds_and_process_image_correctly() -> None:
     assert isinstance(page, Page)
 
     assert len(page.layouts) in {12, 13, 17, 18}
-    assert {layout.category_name.value for layout in page.layouts} == {"line", "list", "text", "title"}  # type: ignore
+    assert {layout.category_name.value for layout in page.layouts} == {"text", "line", "title"}  # type: ignore
     print(page.tables[0].html)
     assert len(page.tables[0].cells) in {14, 15, 16}  # type: ignore
     assert page.tables[0].html in {

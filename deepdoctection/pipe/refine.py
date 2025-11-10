@@ -47,7 +47,7 @@ with try_import() as import_guard:
 __all__ = ["TableSegmentationRefinementService", "generate_html_string"]
 
 
-def tiles_to_cells(dp: Image, table: ImageAnnotation) -> list[tuple[tuple[int, int], str]]:
+def tiles_to_cells(dp: Image, table: ImageAnnotation, cell_names: list[ObjectTypes]) -> list[tuple[tuple[int, int], str]]:
     """
     Creates a table parquet by dividing a table into a tile parquet with the number of rows x number of columns tiles.
     Each tile is assigned a list of cell ids that are occupied by the cell. No cells but one or more cells can be
@@ -56,6 +56,7 @@ def tiles_to_cells(dp: Image, table: ImageAnnotation) -> list[tuple[tuple[int, i
     Args:
         dp: `Image`
         table: `ImageAnnotation`
+        cell_names: List of cell names that are used for the table tiling
 
     Returns:
         A list of tuples with tile positions and cell annotation ids.
@@ -63,19 +64,23 @@ def tiles_to_cells(dp: Image, table: ImageAnnotation) -> list[tuple[tuple[int, i
 
     cell_ann_ids = table.get_relationship(Relationships.CHILD)
     cells = dp.get_annotation(
-        category_names=[LayoutType.CELL, CellType.HEADER, CellType.BODY], annotation_ids=cell_ann_ids
+        category_names=cell_names, annotation_ids=cell_ann_ids
     )
     tile_to_cells = []
 
     for cell in cells:
-        row_number = cell.get_sub_category(CellType.ROW_NUMBER).category_id
-        col_number = cell.get_sub_category(CellType.COLUMN_NUMBER).category_id
-        rs = cell.get_sub_category(CellType.ROW_SPAN).category_id
-        cs = cell.get_sub_category(CellType.COLUMN_SPAN).category_id
-        for k in range(rs):
-            for l in range(cs):
-                assert cell.annotation_id is not None, cell.annotation_id
-                tile_to_cells.append(((row_number + k, col_number + l), cell.annotation_id))
+        if (CellType.ROW_NUMBER in cell.sub_categories and
+                CellType.COLUMN_NUMBER in cell.sub_categories and
+                CellType.ROW_SPAN in cell.sub_categories and
+                CellType.COLUMN_SPAN in cell.sub_categories):
+            row_number = cell.get_sub_category(CellType.ROW_NUMBER).category_id
+            col_number = cell.get_sub_category(CellType.COLUMN_NUMBER).category_id
+            rs = cell.get_sub_category(CellType.ROW_SPAN).category_id
+            cs = cell.get_sub_category(CellType.COLUMN_SPAN).category_id
+            for k in range(rs):
+                for l in range(cs):
+                    assert cell.annotation_id is not None, cell.annotation_id
+                    tile_to_cells.append(((row_number + k, col_number + l), cell.annotation_id))
 
     return tile_to_cells
 
@@ -459,7 +464,7 @@ class TableSegmentationRefinementService(PipelineComponent):
         for table in tables:
             if table.image is None:
                 raise ImageError("table.image cannot be None")
-            tiles_to_cells_list = tiles_to_cells(dp, table)
+            tiles_to_cells_list = tiles_to_cells(dp, table, self.cell_names)
             connected_components, tile_to_cell_dict = connected_component_tiles(tiles_to_cells_list)
             rectangle_tiling = generate_rectangle_tiling(connected_components)
             rectangle_cells_list = rectangle_cells(rectangle_tiling, tile_to_cell_dict)

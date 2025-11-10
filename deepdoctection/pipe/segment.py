@@ -1229,17 +1229,17 @@ class PubtablesSegmentationService(PipelineComponent):
                 number_of_cols = max(
                     cell.get_sub_category(CellType.COLUMN_NUMBER).category_id
                     for cell in cells
-                    if CellType.ROW_NUMBER in cell.sub_categories
+                    if CellType.COLUMN_NUMBER in cell.sub_categories
                 )
                 max_row_span = max(
                     cell.get_sub_category(CellType.ROW_SPAN).category_id
                     for cell in cells
-                    if CellType.ROW_NUMBER in cell.sub_categories
+                    if CellType.ROW_SPAN in cell.sub_categories
                 )
                 max_col_span = max(
                     cell.get_sub_category(CellType.COLUMN_SPAN).category_id
                     for cell in cells
-                    if CellType.ROW_NUMBER in cell.sub_categories
+                    if CellType.COLUMN_SPAN in cell.sub_categories
                 )
             else:
                 number_of_rows = 0
@@ -1267,7 +1267,7 @@ class PubtablesSegmentationService(PipelineComponent):
                                     cell_ann = dp.get_annotation(annotation_ids=value)[0]
                                     if CellType.BODY not in cell_ann.sub_categories:
                                         self.dp_manager.set_category_annotation(
-                                            item_header_cell_name, None, CellType.BODY, cell_ann.annotation_id
+                                            CellType.BODY, None, CellType.BODY, cell_ann.annotation_id
                                         )
 
             # TODO: the summaries should be sub categories of the underlying ann
