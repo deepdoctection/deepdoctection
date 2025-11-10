@@ -267,6 +267,44 @@ class ImageAnnotationBaseView:
             )
         return {a.value if isinstance(a, ObjectTypes) else a for a in attr_names}
 
+    def __repr__(self) -> str:
+        """
+        A readable of the view object.
+
+        Includes:
+        - class name
+        - annotation_id
+        - category_name
+        - all dynamic attributes from `get_attribute_names()`
+
+        Any attribute that raises an exception during retrieval is shown as "<error>".
+        """
+
+        meta = {
+            "annotation_id": self.annotation_id,
+            "category_name": self.category_name,
+        }
+
+        attrs = {}
+        for name in sorted(self.get_attribute_names()):
+            try:
+                value = getattr(self, name)
+            except AttributeError:
+                value = "<error>"
+
+            if isinstance(value, list) and len(value) > 6:
+                attrs[name] = f"[{len(value)} items]"
+            elif isinstance(value, str) and len(value) > 120:
+                attrs[name] = value[:117] + "..."
+            else:
+                attrs[name] = value
+
+        all_attrs = {**meta, **attrs}
+
+        attrs_str = ", ".join(f"{k}={v!r}" for k, v in all_attrs.items())
+
+        return f"{self.__class__.__name__}({attrs_str})"
+
 
 class Word(ImageAnnotationBaseView):
     """
@@ -452,7 +490,7 @@ class Table(Layout):
             A list of a table cells.
         """
         cell_anns: list[Cell] = []
-        if self.number_of_rows:
+        if self.number_of_rows is not None:
             for row_number in range(1, self.number_of_rows + 1):  # type: ignore
                 cell_anns.extend(self.row(row_number))  # type: ignore
         return cell_anns
@@ -638,16 +676,16 @@ class Table(Layout):
             row or column spans will be shown at the upper left cell tile. All other tiles covered by the cell
             will be left as blank.
         """
+
         cells = self.cells
+        if self.number_of_rows is None or self.number_of_columns is None:
+            return [[]]
+
         table_list = [["" for _ in range(self.number_of_columns)] for _ in range(self.number_of_rows)]  # type: ignore
         for cell in cells:
             if cell.category_name == CellType.SPANNING:
-                log_once(
-                    LoggingRecord(
-                        "A cell with higher row/column span detected; rendering content at upper-left only.",
-                        {"annotation_id": cell.annotation_id},
-                    )
-                )
+                log_once(LoggingRecord(f"A cell with higher row/column span detected; rendering content"
+                                       f" at upper-left only, annotation_id: {cell.annotation_id}"))
             table_list[cell.row_number - 1][cell.column_number - 1] = (  # type: ignore
                 table_list[cell.row_number - 1][cell.column_number - 1] + cell.text + " "  # type: ignore
             )
@@ -1563,3 +1601,50 @@ class Page:
             self.residual_text_block_categories,
             self.include_residual_text_container,
         )
+
+
+    def __repr__(self) -> str:
+        """
+        Readable representation of the Page object.
+
+        Includes:
+        - class name
+        - image_id
+        - document_id
+        - page_number
+        - all dynamic attributes from get_attribute_names()
+
+        Any attribute that raises an exception during retrieval is shown as "<error>".
+        Long lists are abbreviated as "[N items]".
+        Long strings (>120 chars) are truncated.
+        """
+        cls = self.__class__.__name__
+
+        meta = {
+            "image_id": self.image_id,
+            "document_id": self.document_id,
+            "page_number": self.page_number,
+            "location": self.location,
+            "width": self.width,
+            "height": self.height,
+        }
+
+        attrs: dict[str, object] = {}
+
+        for name in sorted(self.get_attribute_names()):
+            try:
+                value = getattr(self, name)
+            except AttributeError:
+                value = "<error>"
+
+            if isinstance(value, list) and len(value) > 6:
+                attrs[name] = f"[{len(value)} items]"
+            elif isinstance(value, str) and len(value) > 120:
+                attrs[name] = value[:117] + "..."
+            else:
+                attrs[name] = value
+
+        all_attrs = {**meta, **attrs}
+        attrs_str = ", ".join(f"{k}={v!r}" for k, v in all_attrs.items())
+        return f"{cls}({attrs_str})"
+
