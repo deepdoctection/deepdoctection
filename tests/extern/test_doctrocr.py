@@ -32,7 +32,7 @@ from deepdoctection.utils.types import PixelValues
 from tests.data import Annotations
 
 
-def get_mock_word_results(np_img: PixelValues, predictor, device) -> List[DetectionResult]:  # type: ignore  # pylint: disable=W0613
+def get_mock_word_results(np_img: PixelValues, predictor) -> List[DetectionResult]:  # type: ignore  # pylint: disable=W0613
     """
     Returns WordResults attr: word_results_list
     """
@@ -40,7 +40,7 @@ def get_mock_word_results(np_img: PixelValues, predictor, device) -> List[Detect
 
 
 def get_mock_text_line_results(  # type: ignore
-    inputs: List[Tuple[str, PixelValues]], predictor, device  # pylint: disable=W0613
+    inputs: List[Tuple[str, PixelValues]], predictor  # pylint: disable=W0613
 ) -> List[DetectionResult]:
     """
     Returns two DetectionResult
@@ -60,7 +60,7 @@ class TestDoctrTextlineDetector:
     @staticmethod
     @mark.pt_deps
     @patch("deepdoctection.extern.doctrocr.doctr_predict_text_lines", MagicMock(side_effect=get_mock_word_results))
-    def test_pt_doctr_detector_predicts_image(np_image: PixelValues) -> None:
+    def test_doctr_detector_predicts_image(np_image: PixelValues) -> None:
         """
         Detector calls doctr_predict_text_lines. Only runs in pt environment
         """
@@ -69,29 +69,7 @@ class TestDoctrTextlineDetector:
         path_weights = ModelDownloadManager.maybe_download_weights_and_configs(
             "doctr/db_resnet50/pt/db_resnet50-ac60cadc.pt"
         )
-        categories = ModelCatalog.get_profile("doctr/db_resnet50/pt/db_resnet50-ac60cadc.pt").categories
-        doctr = DoctrTextlineDetector("db_resnet50", path_weights, categories, "cpu")  # type: ignore
-
-        # Act
-        results = doctr.predict(np_image)
-
-        # Assert
-        assert len(results) == 2
-
-    @staticmethod
-    @mark.tf_deps
-    @patch("deepdoctection.extern.doctrocr.doctr_predict_text_lines", MagicMock(side_effect=get_mock_word_results))
-    def test_tf_doctr_detector_predicts_image(np_image: PixelValues) -> None:
-        """
-        Detector calls doctr_predict_text_lines. Only runs in tf environment
-        """
-
-        # Arrange
-        path_weights = ModelDownloadManager.maybe_download_weights_and_configs(
-            "doctr/db_resnet50/tf/db_resnet50-adcafc63.zip"
-        )
-        os.environ["USE_TENSORFLOW"] = "True"
-        categories = ModelCatalog.get_profile("doctr/db_resnet50/tf/db_resnet50-adcafc63.zip").categories
+        categories = ModelCatalog.get_profile("doctr/db_resnet50/db_resnet50-ac60cadc.pt").categories
         doctr = DoctrTextlineDetector("db_resnet50", path_weights, categories, "cpu")  # type: ignore
 
         # Act
@@ -109,14 +87,14 @@ class TestDoctrTextRecognizer:
     @staticmethod
     @mark.pt_deps
     @patch("deepdoctection.extern.doctrocr.doctr_predict_text", MagicMock(side_effect=get_mock_text_line_results))
-    def test_doctr_pt_recognizer_predicts_text(text_lines: List[Tuple[str, PixelValues]]) -> None:
+    def test_doctr_recognizer_predicts_text(text_lines: List[Tuple[str, PixelValues]]) -> None:
         """
         Detector calls doctr_predict_text. Only runs in pt environment
         """
 
         # Arrange
         path_weights = ModelDownloadManager.maybe_download_weights_and_configs(
-            "doctr/crnn_vgg16_bn/pt/crnn_vgg16_bn-9762b0b0.pt"
+            "doctr/crnn_vgg16_bn/crnn_vgg16_bn-9762b0b0.pt"
         )
         doctr = DoctrTextRecognizer("crnn_vgg16_bn", path_weights, "cpu")
 
@@ -126,26 +104,6 @@ class TestDoctrTextRecognizer:
         # Assert
         assert len(results) == 2
 
-    @staticmethod
-    @mark.tf_deps
-    @patch("deepdoctection.extern.doctrocr.doctr_predict_text", MagicMock(side_effect=get_mock_text_line_results))
-    def test_doctr_tf_recognizer_predicts_text(text_lines: List[Tuple[str, PixelValues]]) -> None:
-        """
-        Detector calls doctr_predict_text. Only runs in tf environment
-        """
-
-        # Arrange
-        path_weights = ModelDownloadManager.maybe_download_weights_and_configs(
-            "doctr/crnn_vgg16_bn/tf/crnn_vgg16_bn-76b7f2c6.zip"
-        )
-        os.environ["USE_TENSORFLOW"] = "True"
-        doctr = DoctrTextRecognizer("crnn_vgg16_bn", path_weights, "cpu")
-
-        # Act
-        results = doctr.predict(text_lines)
-
-        # Assert
-        assert len(results) == 2
 
 
 class TestDocTrRotationTransformer:

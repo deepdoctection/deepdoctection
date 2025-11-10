@@ -876,16 +876,26 @@ class Page:
     ) -> None:
         self._base_image = base_image
         self.text_container: ObjectTypes = text_container
-        self.floating_text_block_categories: list[ObjectTypes] = list(
-            floating_text_block_categories or IMAGE_DEFAULTS.FLOATING_TEXT_BLOCK_CATEGORIES
-        )
-        self.residual_text_block_categories: list[ObjectTypes] = list(
-            residual_text_block_categories or IMAGE_DEFAULTS.RESIDUAL_TEXT_BLOCK_CATEGORIES
-        )
-        self.include_residual_text_container: bool = include_residual_text_container
 
-        # Build view siblings
-        anns = base_image.get_annotation(ignore_inactive=False)
+        ftb: tuple[ObjectTypes, ...] = (
+            tuple(floating_text_block_categories)
+            if floating_text_block_categories is not None
+            else IMAGE_DEFAULTS.FLOATING_TEXT_BLOCK_CATEGORIES
+        )
+        residual: tuple[ObjectTypes, ...] = (
+            tuple(residual_text_block_categories)
+            if residual_text_block_categories is not None
+            else IMAGE_DEFAULTS.RESIDUAL_TEXT_BLOCK_CATEGORIES
+        )
+
+        self.include_residual_text_container: bool = include_residual_text_container
+        if self.include_residual_text_container and LayoutType.LINE not in ftb:
+            ftb = ftb + (LayoutType.LINE,)
+
+        self.floating_text_block_categories: tuple[ObjectTypes, ...] = ftb
+        self.residual_text_block_categories: tuple[ObjectTypes, ...] = residual
+
+        anns = base_image.get_annotation()
         self.ann_base_view: list[ImageAnnotationBaseView] = [
             ann_obj_view_factory(ann, self.text_container, self) for ann in anns
         ]
