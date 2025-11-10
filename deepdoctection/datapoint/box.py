@@ -388,6 +388,20 @@ class BoundingBox(BaseModel):
             return self.width * self.height
         raise ValueError("Cannot calculate area, when bounding box coords are relative")
 
+    def _key(self) -> tuple[int, int, int, int, bool]:
+        # compare by exact internal storage, not float properties
+        return (self._ulx, self._uly, self._lrx, self._lry, self.absolute_coords)
+
+    def __eq__(self, other: object) -> bool:
+        if self is other:
+            return True
+        if not isinstance(other, BoundingBox):
+            return NotImplemented
+        return self._key() == other._key()
+
+
+    __hash__ = None
+
     def to_np_array(self, mode: str, scale_x: float = 1.0, scale_y: float = 1.0) -> npt.NDArray[np.float32]:
         np_box_scale = np.array([scale_x, scale_y, scale_x, scale_y], dtype=np.float32)
         np_poly_scale = np.array([scale_x, scale_y, scale_x, scale_y, scale_x, scale_y, scale_x, scale_y],
