@@ -1,0 +1,89 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "dd-datapoint"
+version = "1.0"
+authors = [
+    {name = "Dr. Janis Meyer"}
+]
+description = "Core data structures and utilities for deepdoctection"
+readme = "README.md"
+license = {text = "Apache License 2.0"}
+requires-python = ">=3.10"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "License :: OSI Approved :: Apache Software License",
+    "Natural Language :: English",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+
+dependencies = [
+    "catalogue==2.0.10",
+    "lazy-imports==0.3.1",
+    "numpy>2.0",
+    "packaging>=20.0",
+    "Pillow>=10.0.0",
+    "pydantic>=2.0",
+    "pydantic-settings",
+    "pypdf>=6.0.0",
+    "pyyaml>=6.0.1",
+    "scipy>=1.13.1",
+    "termcolor>=1.1",
+    "tabulate>=0.7.7",
+    "tqdm>=4.64.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "black==23.7.0",
+    "isort==5.13.2",
+    "pylint==2.17.4",
+    "mypy==1.4.1",
+    "types-PyYAML>=6.0.12.12",
+    "types-termcolor>=1.1.3",
+    "types-tabulate>=0.9.0.3",
+    "types-tqdm>=4.66.0.5",
+    "types-Pillow>=10.2.0.20240406",
+    "types-urllib3>=1.26.25.14",
+    "lxml-stubs>=0.5.1",
+]
+
+test = [
+    "pytest==8.0.2",
+    "pytest-cov",
+]
+
+[project.urls]
+Homepage = "https://github.com/deepdoctection/deepdoctection"
+Documentation = "https://deepdoctection.readthedocs.io"
+Repository = "https://github.com/deepdoctection/deepdoctection"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+dd_datapoint = ["py.typed"]
+
+[tool.black]
+line-length = 120
+target-version = ['py310']
+
+[tool.isort]
+profile = "black"
+line_length = 120
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+ignore_missing_imports = true
+
