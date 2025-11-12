@@ -19,6 +19,8 @@
 Functions for multi/threading purposes
 """
 
+from __future__ import annotations
+
 import multiprocessing as mp
 import platform
 import queue

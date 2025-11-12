@@ -8,6 +8,8 @@
 Utilities for maintaining dependencies and dealing with external library packages. Parts of this file is adapted from
 <https://github.com/huggingface/transformers/blob/master/src/transformers/file_utils.py>
 """
+from __future__ import annotations
+
 import importlib.metadata
 import importlib.util
 

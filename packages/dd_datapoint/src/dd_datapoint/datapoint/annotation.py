@@ -36,38 +36,6 @@ from .box import BoundingBox
 from .convert import as_dict
 
 
-@no_type_check
-def ann_from_dict(cls, **kwargs: AnnotationDict):
-    """
-    A factory function to create subclasses of annotations from a given dict
-    """
-    _init_kwargs = {
-        "external_id": kwargs.get("external_id"),
-        "category_name": kwargs.get("category_name"),
-        "category_id": kwargs.get("category_id", DEFAULT_CATEGORY_ID),
-        "score": kwargs.get("score"),
-        "service_id": kwargs.get("service_id"),
-        "model_id": kwargs.get("model_id"),
-        "session_id": kwargs.get("session_id"),
-    }
-    _init_kwargs["category_id"] = (
-        int(_init_kwargs["category_id"]) if (_init_kwargs)["category_id"] not in ("None", "") else DEFAULT_CATEGORY_ID
-    )
-    ann = cls(**_init_kwargs)
-    ann.active = kwargs.get("active")
-    ann._annotation_id = kwargs.get("_annotation_id")  # pylint: disable=W0212
-    if isinstance(kwargs.get("sub_categories"), dict):
-        for key, value in kwargs["sub_categories"].items():
-            if "value" in value:
-                ann.dump_sub_category(key, ContainerAnnotation.from_dict(**value))
-            else:
-                ann.dump_sub_category(key, CategoryAnnotation.from_dict(**value))
-    if isinstance(kwargs.get("relationships"), dict):
-        for key, values in kwargs["relationships"].items():
-            for value in values:
-                ann.dump_relationship(key, value)
-    return ann
-
 @dataclass(frozen=True)
 class AnnotationMap:
     """AnnotationMap to store all sub categories, relationship keys and summary keys of an annotation"""

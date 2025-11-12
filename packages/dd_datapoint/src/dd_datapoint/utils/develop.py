@@ -22,6 +22,8 @@
 """
 Utilities for developers only. These are not visible to users and should not appear in docs.
 """
+from __future__ import annotations
+
 import functools
 import inspect
 from collections import defaultdict

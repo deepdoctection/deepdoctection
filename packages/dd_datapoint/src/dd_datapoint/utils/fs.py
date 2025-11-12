@@ -19,6 +19,8 @@
 Methods and classes that incorporate filesystem operations as well as file checks
 """
 
+from __future__ import annotations
+
 import errno
 import json
 import os

@@ -19,6 +19,8 @@
 Pdf processing tools
 """
 
+from __future__ import annotations
+
 import os
 import platform
 import subprocess
@@ -27,11 +29,10 @@ from errno import ENOENT
 from io import BytesIO
 from pathlib import Path
 from shutil import copyfile
-from typing import Generator, Literal, Optional, Union
+from typing import TYPE_CHECKING, Generator, Literal, Optional, Union
 
 from lazy_imports import try_import
 from numpy import uint8
-from pypdf import PdfReader, PdfWriter, errors
 
 from .env_info import ENV_VARS_TRUE
 from .context import save_tmp_file, timeout_manager
@@ -41,6 +42,14 @@ from .logger import LoggingRecord, logger
 from .types import PathLikeOrStr, PixelValues, B64
 from .utils import is_file_extension
 from .viz import viz_handler
+
+if TYPE_CHECKING:
+    from pypdf import PdfReader, PdfWriter
+    from pypdf import errors as pypdf_errors
+else:
+    with try_import() as pypdf_import_guard:
+        from pypdf import PdfReader, PdfWriter
+        from pypdf import errors as pypdf_errors
 
 with try_import() as pt_import_guard:
     import pypdfium2
@@ -116,9 +125,8 @@ def decrypt_pdf_document_from_bytes(input_bytes: bytes) -> bytes:
         else:
             logger.error(LoggingRecord("pdf bytes cannot be decrypted and therefore cannot be processed further."))
             sys.exit()
-
-
 def get_pdf_file_reader(path_or_bytes: Union[PathLikeOrStr, bytes]) -> PdfReader:
+
     """
     Create a file reader object from a PDF document.
 
@@ -135,7 +143,7 @@ def get_pdf_file_reader(path_or_bytes: Union[PathLikeOrStr, bytes]) -> PdfReader
     if isinstance(path_or_bytes, bytes):
         try:
             reader = PdfReader(BytesIO(path_or_bytes))
-        except (errors.PdfReadError, AttributeError):
+        except (pypdf_errors.PdfReadError, AttributeError):  # type: ignore
             decrypted_bytes = decrypt_pdf_document_from_bytes(path_or_bytes)
             reader = PdfReader(BytesIO(decrypted_bytes))
         return reader
@@ -150,7 +158,7 @@ def get_pdf_file_reader(path_or_bytes: Union[PathLikeOrStr, bytes]) -> PdfReader
         qpdf_called = False
         try:
             reader = PdfReader(file)
-        except (errors.PdfReadError, AttributeError):
+        except (pypdf_errors.PdfReadError, AttributeError):  # type: ignore
             _ = decrypt_pdf_document(path_or_bytes)
             qpdf_called = True
 
@@ -167,9 +175,8 @@ def get_pdf_file_reader(path_or_bytes: Union[PathLikeOrStr, bytes]) -> PdfReader
                     sys.exit()
 
     return PdfReader(os.fspath(path_or_bytes))
-
-
 def get_pdf_file_writer() -> PdfWriter:
+
     """
     `PdfWriter` instance.
 
