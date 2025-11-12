@@ -25,18 +25,17 @@ import errno
 import json
 import os
 from base64 import b64encode
-
 from pathlib import Path
 from typing import Callable, Literal, Optional, Protocol, Union, overload
 from urllib.request import urlretrieve
 
+from .file_utils import mkdir_p
+from .logger import LoggingRecord, logger
+from .pdf_utils import load_bytes_from_pdf_file
 from .tqdm import get_tqdm
 from .types import B64, B64Str, JsonDict, PathLikeOrStr, PixelValues
 from .utils import is_file_extension
-from .pdf_utils import load_bytes_from_pdf_file
-from .logger import LoggingRecord, logger
 from .viz import viz_handler
-from .file_utils import mkdir_p
 
 __all__ = [
     "load_image_from_file",
@@ -44,7 +43,6 @@ __all__ = [
     "maybe_path_or_pdf",
     "download",
     "load_json",
-
 ]
 
 
@@ -94,7 +92,6 @@ def download(
         The path to the downloaded file.
     """
 
-
     mkdir_p(directory)
     if file_name is None:
         file_name = url.split("/")[-1]
@@ -140,13 +137,11 @@ def download(
 
 
 @overload
-def load_image_from_file(path: PathLikeOrStr, type_id: Literal["np"] = "np") -> Optional[PixelValues]:
-    ...
+def load_image_from_file(path: PathLikeOrStr, type_id: Literal["np"] = "np") -> Optional[PixelValues]: ...
 
 
 @overload
-def load_image_from_file(path: PathLikeOrStr, type_id: Literal["b64"]) -> Optional[B64Str]:
-    ...
+def load_image_from_file(path: PathLikeOrStr, type_id: Literal["b64"]) -> Optional[B64Str]: ...
 
 
 def load_image_from_file(
@@ -168,7 +163,6 @@ def load_image_from_file(
     Returns:
         The image in the desired representation or `None`.
     """
-
 
     image: Optional[Union[str, PixelValues]] = None
     path = path.as_posix() if isinstance(path, Path) else path
@@ -196,8 +190,7 @@ class LoadImageFunc(Protocol):
         This protocol defines the call signature for image loading functions.
     """
 
-    def __call__(self, path: PathLikeOrStr) -> Optional[PixelValues]:
-        ...
+    def __call__(self, path: PathLikeOrStr) -> Optional[PixelValues]: ...
 
 
 def get_load_image_func(
@@ -220,7 +213,6 @@ def get_load_image_func(
     Raises:
         NotImplementedError: If the file extension is not supported.
     """
-
 
     assert is_file_extension(path, [".png", ".jpeg", ".jpg", ".pdf", ".tif"]), f"image type not allowed: " f"{path}"
 
@@ -278,9 +270,3 @@ def load_json(path_ann: PathLikeOrStr) -> JsonDict:
     with open(path_ann, "r", encoding="utf-8") as file:
         json_dict = json.loads(file.read())
     return json_dict
-
-
-
-
-
-

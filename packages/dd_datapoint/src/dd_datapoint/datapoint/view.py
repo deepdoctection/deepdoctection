@@ -19,22 +19,24 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Dict, Mapping, Optional, Sequence, Tuple, Type, Union, Any, no_type_check
+from typing import Any, Dict, Mapping, Optional, Sequence, Tuple, Type, Union, no_type_check
 
 import numpy as np
 
-from ..utils.transform import box_to_point4, point4_to_box
 from ..utils.error import AnnotationError, ImageError
 from ..utils.logger import LoggingRecord, log_once, logger
 from ..utils.object_types import (
     CellType,
     LayoutType,
     ObjectTypes,
+    PageType,
     Relationships,
     TableType,
-    get_type, TokenClasses, PageType,
+    TokenClasses,
+    get_type,
 )
-from ..utils.types import HTML, Chunks, PathLikeOrStr, PixelValues, csv, ImageDict
+from ..utils.transform import box_to_point4, point4_to_box
+from ..utils.types import HTML, Chunks, ImageDict, PathLikeOrStr, PixelValues, csv
 from ..utils.viz import draw_boxes, interactive_imshow, viz_handler
 from .annotation import CategoryAnnotation, ContainerAnnotation, ImageAnnotation
 from .box import BoundingBox, crop_box_from_image
@@ -109,7 +111,9 @@ class ImageAnnotationBaseView:
         base_page: `Page` class instantiated by the lowest hierarchy `Image`
     """
 
-    def __init__(self, image_annotation: ImageAnnotation, base_page: Page, text_container: Optional[ObjectTypes] = None):
+    def __init__(
+        self, image_annotation: ImageAnnotation, base_page: Page, text_container: Optional[ObjectTypes] = None
+    ):
         self._image_annotation = image_annotation
         self.base_page = base_page
         self.text_container: Optional[ObjectTypes] = text_container
@@ -312,9 +316,13 @@ class Word(ImageAnnotationBaseView):
     """
 
     def get_attribute_names(self) -> set[str]:
-        attr_names = set(LayoutType).union(
-            super().get_attribute_names()
-        ).union({Relationships.READING_ORDER, Relationships.LAYOUT_LINK, Relationships.LINK, Relationships.SUCCESSOR})
+        attr_names = (
+            set(LayoutType)
+            .union(super().get_attribute_names())
+            .union(
+                {Relationships.READING_ORDER, Relationships.LAYOUT_LINK, Relationships.LINK, Relationships.SUCCESSOR}
+            )
+        )
         return {a.value if isinstance(a, ObjectTypes) else a for a in attr_names}
 
 
@@ -684,8 +692,12 @@ class Table(Layout):
         table_list = [["" for _ in range(self.number_of_columns)] for _ in range(self.number_of_rows)]  # type: ignore
         for cell in cells:
             if cell.category_name == CellType.SPANNING:
-                log_once(LoggingRecord(f"A cell with higher row/column span detected; rendering content"
-                                       f" at upper-left only, annotation_id: {cell.annotation_id}"))
+                log_once(
+                    LoggingRecord(
+                        f"A cell with higher row/column span detected; rendering content"
+                        f" at upper-left only, annotation_id: {cell.annotation_id}"
+                    )
+                )
             table_list[cell.row_number - 1][cell.column_number - 1] = (  # type: ignore
                 table_list[cell.row_number - 1][cell.column_number - 1] + cell.text + " "  # type: ignore
             )
@@ -847,7 +859,9 @@ class ImageDefaults:
 IMAGE_DEFAULTS = ImageDefaults()
 
 
-def ann_obj_view_factory(annotation: ImageAnnotation, text_container: ObjectTypes, base_page: Page) -> ImageAnnotationBaseView:
+def ann_obj_view_factory(
+    annotation: ImageAnnotation, text_container: ObjectTypes, base_page: Page
+) -> ImageAnnotationBaseView:
     """
     Create an `ImageAnnotationBaseView` subclass given the mapping `IMAGE_ANNOTATION_TO_LAYOUTS`.
 
@@ -1446,6 +1460,7 @@ class Page:
                 boxes = np.vstack(box_stack)
                 boxes = box_to_point4(boxes)
                 from deepdoctection import ResizeTransform
+
                 resizer = ResizeTransform(self.height, self.width, scaled_height, scaled_width, "VIZ")
                 boxes = resizer.apply_coords(boxes)
                 boxes = point4_to_box(boxes)
@@ -1506,11 +1521,11 @@ class Page:
         cls._attribute_names.add(attribute_name.value)
 
     def save(
-            self,
-            image_to_json: bool = True,
-            highest_hierarchy_only: bool = False,
-            path: Optional[PathLikeOrStr] = None,
-            dry: bool = False,
+        self,
+        image_to_json: bool = True,
+        highest_hierarchy_only: bool = False,
+        path: Optional[PathLikeOrStr] = None,
+        dry: bool = False,
     ) -> Optional[Union[ImageDict, str]]:
         """
         Export image as dictionary. As numpy array cannot be serialized `image` values will be converted into
@@ -1531,12 +1546,12 @@ class Page:
     @classmethod
     @no_type_check
     def from_file(
-            cls,
-            file_path: str,
-            text_container: Optional[ObjectTypes] = None,
-            floating_text_block_categories: Optional[list[ObjectTypes]] = None,
-            residual_text_block_categories: Optional[Sequence[ObjectTypes]] = None,
-            include_residual_text_container: bool = True,
+        cls,
+        file_path: str,
+        text_container: Optional[ObjectTypes] = None,
+        floating_text_block_categories: Optional[list[ObjectTypes]] = None,
+        residual_text_block_categories: Optional[Sequence[ObjectTypes]] = None,
+        include_residual_text_container: bool = True,
     ) -> Page:
         """
         Reading JSON file and building a `Page` object with given config.
@@ -1602,7 +1617,6 @@ class Page:
             self.include_residual_text_container,
         )
 
-
     def __repr__(self) -> str:
         """
         Readable representation of the Page object.
@@ -1647,4 +1661,3 @@ class Page:
         all_attrs = {**meta, **attrs}
         attrs_str = ", ".join(f"{k}={v!r}" for k, v in all_attrs.items())
         return f"{cls}({attrs_str})"
-

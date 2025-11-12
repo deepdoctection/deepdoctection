@@ -29,9 +29,8 @@ This is the minimal package needed for client-side processing of deepdoctection 
 
 __version__ = "1.0"
 
-# Import key utilities
-from .utils import *
-
 # Import datapoint structures
 from .datapoint import *
 
+# Import key utilities
+from .utils import *

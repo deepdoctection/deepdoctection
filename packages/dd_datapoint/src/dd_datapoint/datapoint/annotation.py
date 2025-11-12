@@ -24,8 +24,9 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from dataclasses import dataclass
-from typing import Optional, Union, TypeVar, Any, Literal, no_type_check
-from pydantic import BaseModel, Field, field_validator, model_validator, PrivateAttr
+from typing import Any, Literal, Optional, TypeVar, Union, no_type_check
+
+from pydantic import BaseModel, Field, PrivateAttr, field_validator, model_validator
 
 from ..utils.error import AnnotationError, UUIDError
 from ..utils.identifier import get_uuid, is_uuid_like
@@ -47,7 +48,7 @@ class AnnotationMap:
 
 DEFAULT_CATEGORY_ID = -1
 
-T = TypeVar('T', str, list[str], None)
+T = TypeVar("T", str, list[str], None)
 
 
 class Annotation(BaseModel, ABC):
@@ -101,15 +102,15 @@ class Annotation(BaseModel, ABC):
         if _annotation_id is not None:
             object.__setattr__(self, "_annotation_id", _annotation_id)
 
-    @model_validator(mode='after')
+    @model_validator(mode="after")
     def _setup_annotation_id(self) -> Annotation:
         """Set up annotation_id from external_id if provided."""
         if self.external_id is not None and self._annotation_id is None:
             external_id = str(self.external_id)
             if is_uuid_like(external_id):
-                object.__setattr__(self, '_annotation_id', external_id)
+                object.__setattr__(self, "_annotation_id", external_id)
             else:
-                object.__setattr__(self, '_annotation_id', get_uuid(external_id))
+                object.__setattr__(self, "_annotation_id", get_uuid(external_id))
         return self
 
     @property
@@ -257,7 +258,7 @@ class CategoryAnnotation(Annotation):
     sub_categories: dict[ObjectTypes, CategoryAnnotation] = Field(default_factory=dict)
     relationships: dict[ObjectTypes, list[str]] = Field(default_factory=dict)
 
-    @field_validator('category_name', mode='before')
+    @field_validator("category_name", mode="before")
     @classmethod
     def _validate_category_name(cls, v: TypeOrStr) -> ObjectTypes:
         """Convert string to ObjectTypes if needed."""
@@ -265,7 +266,7 @@ class CategoryAnnotation(Annotation):
             return get_type(v)
         return v
 
-    @field_validator('category_id', mode='before')
+    @field_validator("category_id", mode="before")
     @classmethod
     def _validate_category_id(cls, v: Any) -> int:
         """Convert category_id to int, handling special cases."""
@@ -327,7 +328,7 @@ class CategoryAnnotation(Annotation):
         return new
 
     def dump_sub_category(
-            self, sub_category_name: TypeOrStr, annotation: CategoryAnnotation, *container_id_context: Optional[str]
+        self, sub_category_name: TypeOrStr, annotation: CategoryAnnotation, *container_id_context: Optional[str]
     ) -> None:
         """
         Storage of sub categories. As sub categories usually only depend on very few attributes and the parent
@@ -351,12 +352,12 @@ class CategoryAnnotation(Annotation):
 
         if self._annotation_id is not None:
             if annotation._annotation_id is None:
-                annotation.annotation_id = self.set_annotation_id(annotation,  self.annotation_id, *container_id_context)
+                annotation.annotation_id = self.set_annotation_id(annotation, self.annotation_id, *container_id_context)
         else:
             tmp_annotation_id = self.set_annotation_id(self)
             if annotation._annotation_id is None:
                 annotation.annotation_id = annotation.set_annotation_id(
-                    annotation,  tmp_annotation_id, *container_id_context
+                    annotation, tmp_annotation_id, *container_id_context
                 )
 
         self.sub_categories[key] = annotation
@@ -441,19 +442,19 @@ class CategoryAnnotation(Annotation):
     def get_defining_attributes(self) -> list[str]:
         return ["category_name", "category_id"]
 
-
     @staticmethod
     def get_state_attributes() -> list[str]:
         return ["active", "sub_categories", "relationships"]
 
     def __repr__(self) -> str:
-        return (f"CategoryAnnotation(annotation_id: {self._annotation_id}, category_name={self.category_name},"
-                f"category_id={self.category_id}, score={self.score}, sub_categories={self.sub_categories},"
-                f" relationships={self.relationships})")
+        return (
+            f"CategoryAnnotation(annotation_id: {self._annotation_id}, category_name={self.category_name},"
+            f"category_id={self.category_id}, score={self.score}, sub_categories={self.sub_categories},"
+            f" relationships={self.relationships})"
+        )
 
     def __str__(self) -> str:
         return repr(self)
-
 
 
 class ImageAnnotation(CategoryAnnotation):
@@ -470,6 +471,7 @@ class ImageAnnotation(CategoryAnnotation):
         image: Image, defined by the bounding box and cropped from its parent image. Populate this attribute with
                `Image.image_ann_to_image`.
     """
+
     model_config = {
         "arbitrary_types_allowed": False,
         "validate_assignment": True,
@@ -499,7 +501,6 @@ class ImageAnnotation(CategoryAnnotation):
             return Image(**v)
         raise TypeError("image must be Image or dict")
 
-
     @field_validator("bounding_box", mode="before")
     @classmethod
     def _coerce_bounding_box(cls, v: Any) -> Optional[BoundingBox]:
@@ -509,7 +510,6 @@ class ImageAnnotation(CategoryAnnotation):
             # ensure proper init from dict payload
             return BoundingBox(**v)
         raise TypeError("bounding_box must be a BoundingBox or a dict")
-
 
     def get_defining_attributes(self) -> list[str]:
         return ["category_name", "bounding_box"]
@@ -581,15 +581,15 @@ class ImageAnnotation(CategoryAnnotation):
 
         return annotation_id_dict
 
-
-    def __repr__(self)  -> str:
-        return (f"ImageAnnotation(annotation_id: {self._annotation_id}, category_name={self.category_name},"
-                f"category_id={self.category_id}, score={self.score}, bounding_box: {self.bounding_box}, "
-                f"sub_categories={self.sub_categories}, relationships={self.relationships})")
+    def __repr__(self) -> str:
+        return (
+            f"ImageAnnotation(annotation_id: {self._annotation_id}, category_name={self.category_name},"
+            f"category_id={self.category_id}, score={self.score}, bounding_box: {self.bounding_box}, "
+            f"sub_categories={self.sub_categories}, relationships={self.relationships})"
+        )
 
     def __str__(self) -> str:
         return repr(self)
-
 
 
 class ContainerAnnotation(CategoryAnnotation):
@@ -599,10 +599,11 @@ class ContainerAnnotation(CategoryAnnotation):
     Use `set_type()` to set an expected type for `value`.
     Calling `set_type()` with no argument (or `None`) disables validation.
     """
+
     value: Optional[Union[list[str], str]] = Field(default=None)
     _value_type: Optional[Literal["str", "int", "float", "list[str]"]] = PrivateAttr(default=None)
 
-    @field_validator('value', mode='before')
+    @field_validator("value", mode="before")
     @classmethod
     def _validate_value(cls, v: Any) -> Optional[Union[list[str], str]]:
         """Basic coercion/normalization kept for backward compatibility."""
@@ -661,6 +662,8 @@ class ContainerAnnotation(CategoryAnnotation):
         return ["category_name", "value"]
 
     def __repr__(self) -> str:
-        return (f"ContainerAnnotation(annotation_id: {self.annotation_id}, category_name={self.category_name},"
-                f"category_id={self.category_id}, score={self.score}, sub_categories={self.sub_categories},"
-                f" relationships={self.relationships})")
+        return (
+            f"ContainerAnnotation(annotation_id: {self.annotation_id}, category_name={self.category_name},"
+            f"category_id={self.category_id}, score={self.score}, sub_categories={self.sub_categories},"
+            f" relationships={self.relationships})"
+        )

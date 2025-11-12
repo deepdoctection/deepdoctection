@@ -27,17 +27,15 @@ from os import environ, fspath
 from pathlib import Path
 from typing import Any, Optional, Sequence, TypedDict, Union
 
-from pydantic import BaseModel, Field, PrivateAttr, field_validator, model_validator, model_serializer
-
 import numpy as np
 from numpy import uint8
+from pydantic import BaseModel, Field, PrivateAttr, field_validator, model_serializer, model_validator
 
 from ..utils.error import AnnotationError, BoundingBoxError, ImageError
 from ..utils.identifier import get_uuid, is_uuid_like
 from ..utils.logger import LoggingRecord, logger
 from ..utils.object_types import ObjectTypes, SummaryType, get_type
 from ..utils.types import ImageDict, PathLikeOrStr, PixelValues
-
 from .annotation import Annotation, AnnotationMap, BoundingBox, CategoryAnnotation, ImageAnnotation
 from .box import BoxCoordinate, crop_box_from_image, global_to_local_coords, intersection_box
 from .convert import convert_b64_to_np_array, convert_np_array_to_b64, convert_pdf_bytes_to_np_array_v2
@@ -181,7 +179,6 @@ class Image(BaseModel):
                 # assign even if value is None to preserve explicit input
                 object.__setattr__(self, key, val)
 
-
     @field_validator("embeddings", mode="before")
     @classmethod
     def _coerce_embeddings(cls, v: Any) -> dict[str, BoundingBox]:
@@ -233,7 +230,6 @@ class Image(BaseModel):
             self.document_id = self._image_id  # bind document_id if not provided
         return self
 
-
     @property
     def image_id(self) -> str:
         """
@@ -242,7 +238,6 @@ class Image(BaseModel):
         if self._image_id is not None:
             return self._image_id
         raise ImageError("image_id not set")
-
 
     @image_id.setter
     def image_id(self, value: str) -> None:
@@ -256,7 +251,6 @@ class Image(BaseModel):
         if not is_uuid_like(value):
             raise ImageError("image_id must be uuid-like")
         object.__setattr__(self, "_image_id", value)
-
 
     @property
     def image(self) -> Optional[PixelValues]:
@@ -353,7 +347,6 @@ class Image(BaseModel):
             raise ImageError("Height not available. Call set_width_height first")
         return self._bbox.height
 
-
     def set_width_height(self, width: BoxCoordinate, height: BoxCoordinate) -> None:
         """
         Defines bounding box of the image if not already set. Use this, if you do not want to keep the image separated
@@ -405,8 +398,6 @@ class Image(BaseModel):
     def _self_embedding(self) -> None:
         if self._bbox is not None:
             self.set_embedding(self.image_id, self._bbox)
-
-
 
     def dump(self, annotation: ImageAnnotation) -> None:
         """
@@ -493,9 +484,11 @@ class Image(BaseModel):
 
         attributes = annotation.get_defining_attributes()
         attributes_values = [
-            str(getattr(annotation, attribute))
-            if attribute != "bounding_box"
-            else getattr(annotation, "bounding_box").get_legacy_string()
+            (
+                str(getattr(annotation, attribute))
+                if attribute != "bounding_box"
+                else getattr(annotation, "bounding_box").get_legacy_string()
+            )
             for attribute in attributes
         ]
         return get_uuid(*attributes_values, str(self.image_id))
@@ -546,7 +539,6 @@ class Image(BaseModel):
                 container_ids.append(str(attr))
         return get_uuid(self.image_id, *container_ids)
 
-
     @model_serializer(mode="wrap")
     def _serialize(self, handler):
         """
@@ -587,11 +579,7 @@ class Image(BaseModel):
         """
 
         # Uses fast Rust-based Pydantic core JSON
-        return self.model_dump_json(by_alias=True,
-                                    exclude_none=False,
-                                    indent=4)
-
-
+        return self.model_dump_json(by_alias=True, exclude_none=False, indent=4)
 
     @classmethod
     def from_file(cls, file_path: str) -> Image:
@@ -606,7 +594,6 @@ class Image(BaseModel):
         """
         with open(file_path, "r", encoding="UTF-8") as f:
             return cls(**json.load(f))
-
 
     def image_ann_to_image(self, annotation_id: str, crop_image: bool = False) -> None:
         """
@@ -642,7 +629,6 @@ class Image(BaseModel):
 
         ann.image = new_image
 
-
     def maybe_ann_to_sub_image(self, annotation_id: str, category_names: Union[str, list[str]]) -> None:
         """
         Provides a supplement to `image_ann_to_image` and mainly operates on the `ImageAnnotation.image` of
@@ -674,7 +660,9 @@ class Image(BaseModel):
             ann_box = ann_box.transform(self.width, self.height, absolute_coords=True)
         for sub_image in sub_images:
             if sub_image.image is None:
-                raise ImageError("When setting an embedding to ImageAnnotation then ImageAnnotation.image must not be None")
+                raise ImageError(
+                    "When setting an embedding to ImageAnnotation then ImageAnnotation.image must not be None"
+                )
             sub_image_box = sub_image.get_bounding_box(self.image_id)
             if not sub_image_box.absolute_coords:
                 sub_image_box = sub_image_box.transform(self.width, self.height, absolute_coords=True)
@@ -811,7 +799,7 @@ class Image(BaseModel):
             if annotation.image is not None:
                 annotation.image.summary.remove_sub_category(summary_key)
 
-    def get_image(self) -> Img: # type: ignore # pylint: disable=E0602
+    def get_image(self) -> Img:  # type: ignore # pylint: disable=E0602
         """
         Get the image either in base64 string representation or as `np.array`.
 
@@ -829,6 +817,7 @@ class Image(BaseModel):
         Returns:
             Desired image encoding representation
         """
+
         class Img:
             def __init__(self, img: Optional[PixelValues]):
                 self.img = img

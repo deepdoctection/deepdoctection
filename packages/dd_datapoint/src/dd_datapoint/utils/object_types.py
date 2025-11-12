@@ -20,12 +20,13 @@ Module for funcs and constants that maintain general settings
 """
 from __future__ import annotations
 
-from enum import Enum
 import threading
-from typing import Optional, Union, Iterable, Type, Any
+from enum import Enum
+from typing import Any, Iterable, Optional, Type, Union
 
 import catalogue  # type: ignore
-from . error import DuplicateObjectTypeError
+
+from .error import DuplicateObjectTypeError
 
 
 class ObjectTypes(str, Enum):
@@ -51,6 +52,7 @@ TypeOrStr = Union[ObjectTypes, str]  # pylint: disable=C0103
 
 object_types_registry = catalogue.create("deepdoctection", "settings", entry_points=True)
 _orig_register = object_types_registry.register
+
 
 def _iter_registered_enums() -> Iterable[Type[ObjectTypes]]:
     """
@@ -89,13 +91,16 @@ def _wrapped_register(name: str, func: Optional[Any] = None):
         registered_cls = _orig_register(name, func=func)(cls)
         _index_enum(registered_cls)
         return registered_cls
+
     return _decorator
+
 
 # Monkey-patch the registry to enforce duplicate detection for all modules.
 object_types_registry.register = _wrapped_register
 
 _TYPES_INDEX_LOCK = threading.RLock()
 _ALL_TYPES_DICT: dict[str, ObjectTypes] = {}
+
 
 # pylint: disable=invalid-name
 @object_types_registry.register("DefaultType")
@@ -412,8 +417,6 @@ def token_class_with_tag_to_token_class_and_tag(
     return {val: key for key, val in _TOKEN_AND_TAG_TO_TOKEN_CLASS_WITH_TAG.items()}.get(token_class_with_tag)
 
 
-
-
 def update_all_types_dict() -> None:
     """
     Compatibility helper retained for older code/tests that call it explicitly.
@@ -484,5 +487,6 @@ def get_type(obj_type: Union[str, ObjectTypes]) -> ObjectTypes:
         raise KeyError(f"String {obj_type} does not correspond to a registered ObjectType")
 
     return member
+
 
 _rebuild_types_index()

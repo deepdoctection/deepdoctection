@@ -5,7 +5,7 @@
 # Always load the shared plugin so pytest_sessionstart runs before any tests.
 # -p no:warnings: hide warnings as errors from the console (you can drop it if you prefer seeing them)
 # -ra: show extra summary info for skipped/xfail, etc.
-addopts = "-p tests._shared.plugin_testtypes -p no:warnings -ra"
+#addopts = "-p tests._shared.plugin_testtypes -p no:warnings -ra"
 testpaths = ["tests", "dd_datapoint/tests", "dd_datasets/tests"]
 xfail_strict = true
 
