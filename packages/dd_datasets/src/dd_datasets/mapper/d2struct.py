@@ -17,59 +17,23 @@
 
 """
 Module for mapping annotations into standard Detectron2 dataset dict.
-
-Also providing some tools for W&B mapping and visualisation.
 """
 from __future__ import annotations
 
 import os.path
-from typing import Mapping, Optional, Sequence, Union
+from typing import Optional, Sequence, Union
 
-import numpy as np
 from lazy_imports import try_import
 
-from dd_datapoint.datapoint.annotation import DEFAULT_CATEGORY_ID, ImageAnnotation
 from dd_datapoint.datapoint.image import Image
-from dd_datapoint.utils.object_types import DefaultType, ObjectTypes, TypeOrStr, get_type
+from dd_datapoint.utils.object_types import TypeOrStr
 from dd_datapoint.utils.types import Detectron2Dict
 from ..mapper.maputils import curry
 
-with try_import() as pt_import_guard:
-    import torch
-    from torchvision.ops import boxes as box_ops  # type: ignore
 
 with try_import() as d2_import_guard:
     from detectron2.structures import BoxMode
 
-with try_import() as wb_import_guard:
-    from wandb import Classes  # type: ignore
-    from wandb import Image as Wbimage
-
-
-def batched_nms(boxes: torch.Tensor, scores: torch.Tensor, idxs: torch.Tensor, iou_threshold: float) -> torch.Tensor:
-    """
-    Same as `torchvision.ops.boxes.batched_nms`, but with `float()`.
-
-    Args:
-        boxes: A `torch.Tensor` of shape (N, 4) containing bounding boxes.
-        scores: A `torch.Tensor` of shape (N,) containing scores for each box.
-        idxs: A `torch.Tensor` of shape (N,) containing the class indices for each box.
-        iou_threshold: A float representing the IoU threshold for suppression.
-
-    Returns:
-        A `torch.Tensor` containing the indices of the boxes to keep.
-
-    Note:
-        `Fp16` does not have enough range for batched NMS, so `float()` is used.
-        Torchvision already has a strategy to decide whether to use coordinate trick or for loop to implement
-        `batched_nms`.
-    """
-    assert boxes.shape[-1] == 4
-    # Note: Torchvision already has a strategy (https://github.com/pytorch/vision/issues/1311)
-    # to decide whether to use coordinate trick or for loop to implement batched_nms. So we
-    # just call it directly.
-    # Fp16 does not have enough range for batched NMS, so adding float().
-    return box_ops.batched_nms(boxes.float(), scores, idxs, iou_threshold)
 
 
 @curry
@@ -131,198 +95,3 @@ def image_to_d2_frcnn_training(
 
     return output
 
-
-def pt_nms_image_annotations_depr(
-    anns: Sequence[ImageAnnotation], threshold: float, image_id: Optional[str] = None, prio: str = ""
-) -> Sequence[str]:
-    """
-    Processing given image annotations through NMS. This is useful, if you want to supress some specific image
-    annotation, e.g. given by name or returned through different predictors. This is the pt version, for tf check
-    `mapper.tpstruct`
-
-    Args:
-        anns: A sequence of ImageAnnotations. All annotations will be treated as if they belong to one category
-        threshold: NMS threshold
-        image_id: id in order to get the embedding bounding box
-        prio: If an annotation has prio, it will overwrite its given score to 1 so that it will never be suppressed
-
-    Returns:
-        A list of `annotation_id`s that belong to the given input sequence and that survive the NMS process
-    """
-    if len(anns) == 1:
-        return [anns[0].annotation_id]
-
-    # if all annotations are the same and prio is set, we need to return all annotation ids
-    if prio and all(ann.category_name == anns[0].category_name for ann in anns):
-        return [ann.annotation_id for ann in anns]
-
-    if not anns:
-        return []
-    ann_ids = np.array([ann.annotation_id for ann in anns], dtype="object")
-    # safety net to ensure we do not run into a ValueError
-    boxes = torch.tensor(
-        [ann.get_bounding_box(image_id).to_list(mode="xyxy") for ann in anns if ann.bounding_box is not None]
-    )
-
-    def priority_to_confidence(ann: ImageAnnotation, priority: str) -> float:
-        if ann.category_name == priority:
-            return 1.0
-        if ann.score:
-            return ann.score
-        raise ValueError("score cannot be None")
-
-    scores = torch.tensor([priority_to_confidence(ann, prio) for ann in anns])
-    class_mask = torch.ones(len(boxes), dtype=torch.uint8)
-    keep = batched_nms(boxes, scores, class_mask, threshold)
-    ann_ids_keep = ann_ids[keep]
-    if not isinstance(ann_ids_keep, str):
-        return ann_ids_keep.tolist()
-    return []
-
-
-def pt_nms_image_annotations(
-    anns: Sequence[ImageAnnotation], threshold: float, image_id: Optional[str] = None, prio: str = ""
-) -> Sequence[str]:
-    """
-    Processes given image annotations through NMS (Non-Maximum Suppression). Useful for suppressing specific image
-    annotations, e.g., given by name or returned through different predictors. This is the pt version, for tf check
-    `mapper.tpstruct`
-
-    Args:
-        anns: A sequence of `ImageAnnotation`. All annotations will be treated as if they belong to one category.
-        threshold: NMS threshold.
-        image_id: ID to get the embedding bounding box.
-        prio: If an annotation has priority, its score will be set to 1 so that it will never be suppressed.
-
-    Returns:
-        A list of `annotation_id` that belong to the given input sequence and that survive the NMS process.
-    """
-    if len(anns) == 1:
-        return [anns[0].annotation_id]
-
-    if not anns:
-        return []
-
-    # First, identify priority annotations that should always be kept
-    priority_ann_ids = []
-
-    if prio:
-        for ann in anns:
-            if ann.category_name == prio:
-                priority_ann_ids.append(ann.annotation_id)
-
-    # If all annotations are priority or none are left for NMS, return all priority IDs
-    if len(priority_ann_ids) == len(anns):
-        return priority_ann_ids
-
-    def priority_to_confidence(ann: ImageAnnotation, priority: str) -> float:
-        if ann.category_name == priority:
-            return 1.0
-        if ann.score:
-            return ann.score
-        raise ValueError("score cannot be None")
-
-    # Perform NMS only on non-priority annotations
-    ann_ids = np.array([ann.annotation_id for ann in anns], dtype="object")
-
-    # Get boxes for non-priority annotations
-    boxes = torch.tensor(
-        [ann.get_bounding_box(image_id).to_list(mode="xyxy") for ann in anns if ann.bounding_box is not None]
-    )
-
-    scores = torch.tensor([priority_to_confidence(ann, prio) for ann in anns])
-    class_mask = torch.ones(len(boxes), dtype=torch.uint8)
-
-    keep = batched_nms(boxes, scores, class_mask, threshold)
-    kept_ids = ann_ids[keep]
-
-    # Convert to list if necessary
-    if isinstance(kept_ids, str):
-        kept_ids = [kept_ids]
-    elif not isinstance(kept_ids, list):
-        kept_ids = kept_ids.tolist()
-
-    # Combine priority annotations with surviving non-priority annotations
-    return list(set(priority_ann_ids + kept_ids))
-
-
-def _get_category_attributes(
-    ann: ImageAnnotation, cat_to_sub_cat: Optional[Mapping[ObjectTypes, ObjectTypes]] = None
-) -> tuple[ObjectTypes, int, Optional[float]]:
-    """
-    Gets the category attributes for an annotation, optionally using a mapping from category to sub-category.
-
-    Args:
-        ann: `ImageAnnotation`
-        cat_to_sub_cat: Optional mapping from `ObjectTypes` to `ObjectTypes`.
-
-    Returns:
-        Tuple of `ObjectTypes`, `category_id`, and `score`.
-    """
-    if cat_to_sub_cat:
-        sub_cat_key = cat_to_sub_cat.get(get_type(ann.category_name))
-        if sub_cat_key in ann.sub_categories:
-            sub_cat = ann.get_sub_category(sub_cat_key)
-            return get_type(sub_cat.category_name), sub_cat.category_id, sub_cat.score
-        return DefaultType.DEFAULT_TYPE, DEFAULT_CATEGORY_ID, 0.0
-    return get_type(ann.category_name), ann.category_id, ann.score
-
-
-@curry
-def to_wandb_image(
-    dp: Image,
-    categories: Mapping[int, TypeOrStr],
-    sub_categories: Optional[Mapping[int, TypeOrStr]] = None,
-    cat_to_sub_cat: Optional[Mapping[ObjectTypes, ObjectTypes]] = None,
-) -> tuple[str, Wbimage]:
-    """
-    Converts a deepdoctection `Image` into a `W&B` image.
-
-    Args:
-        dp: deepdoctection `Image`
-        categories: Dict of categories. The categories refer to categories of `ImageAnnotation`.
-        sub_categories: Dict of `sub_categories`. If provided, these categories will define the classes for the table.
-        cat_to_sub_cat: Dict of category to sub_category keys. Suppose your category `foo` has a sub-category defined
-                        by the key `sub_foo`. The range of sub-category values must then be given by `sub_categories`,
-                        and to extract the sub-category values, one must pass `{"foo": "sub_foo"}`.
-
-    Returns:
-        Tuple of `image_id` and a W&B image.
-
-    Example:
-        ```python
-        to_wandb_image(dp, categories)
-        ```
-    """
-    if dp.image is None:
-        raise ValueError("Cannot convert to W&B image type when Image.image is None")
-
-    boxes = []
-    anns = dp.get_annotation(category_names=list(categories.values()))
-
-    if sub_categories:
-        class_labels = dict(sub_categories.items())
-        class_set = Classes([{"name": val, "id": key} for key, val in sub_categories.items()])
-    else:
-        class_set = Classes([{"name": val, "id": key} for key, val in categories.items()])
-        class_labels = dict(categories.items())
-
-    for ann in anns:
-        bounding_box = ann.get_bounding_box(dp.image_id)
-        if not bounding_box.absolute_coords:
-            bounding_box = bounding_box.transform(dp.width, dp.height, True)
-        category_name, category_id, score = _get_category_attributes(ann, cat_to_sub_cat)
-        if category_name:
-            box = {
-                "position": {"middle": bounding_box.center, "width": bounding_box.width, "height": bounding_box.height},
-                "domain": "pixel",
-                "class_id": category_id,
-                "box_caption": category_name,
-            }
-            if score:
-                box["scores"] = {"acc": score}
-            boxes.append(box)
-
-    predictions = {"predictions": {"box_data": boxes, "class_labels": class_labels}}
-
-    return dp.image_id, Wbimage(dp.image[:, :, ::-1], mode="RGB", boxes=predictions, classes=class_set)

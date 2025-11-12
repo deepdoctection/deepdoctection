@@ -20,6 +20,8 @@
 """
 from typing import Callable
 
+from dd_datapoint.datapoint.image import Image
+
 from .cats import *
 from .cocostruct import *
 from .d2struct import *
@@ -28,9 +30,11 @@ from .laylmstruct import *
 from .maputils import *
 from .match import *
 from .misc import *
+from .nms import *
 from .pascalstruct import *
 from .prodigystruct import *
 from .pubstruct import *
+from .wandbstruct import *
 from .xfundstruct import *
 
 # Mapper

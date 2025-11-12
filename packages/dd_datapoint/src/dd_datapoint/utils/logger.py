@@ -25,6 +25,8 @@ Log levels can be set via the environment variable `LOG_LEVEL` (default: INFO).
 `STD_OUT_VERBOSE` will print a verbose message to the terminal (default: False).
 """
 
+from __future__ import annotations
+
 import errno
 import functools
 import json

@@ -18,6 +18,8 @@
 """
 Utility functions, only related to builtin objects
 """
+from __future__ import annotations
+
 import functools
 import inspect
 import os

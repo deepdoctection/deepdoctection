@@ -19,22 +19,30 @@
 Conversion functions for images and pdfs
 """
 
+from __future__ import annotations
+
 import base64
 import copy
 from dataclasses import fields, is_dataclass
 from io import BytesIO
 from shutil import which
-from typing import Any, Optional, Union, no_type_check
+from typing import TYPE_CHECKING, Any, Optional, Union, no_type_check
 
 import numpy as np
+from lazy_imports import try_import
 from numpy import uint8
-from pypdf import PdfReader
 
 from ..utils.develop import deprecated
 from ..utils.error import DependencyError
 from ..utils.pdf_utils import pdf_to_np_array
 from ..utils.types import PixelValues
 from ..utils.viz import viz_handler
+
+if TYPE_CHECKING:
+    from pypdf import PdfReader
+else:
+    with try_import() as pypdf_import_guard:
+        from pypdf import PdfReader
 
 __all__ = [
     "convert_b64_to_np_array",
@@ -157,7 +165,7 @@ def convert_pdf_bytes_to_np_array(pdf_bytes: bytes, dpi: Optional[int] = None) -
         raise DependencyError("convert_pdf_bytes_to_np_array requires poppler to be installed")
 
     with BytesIO(pdf_bytes) as pdf_file:
-        pdf = PdfReader(pdf_file).pages[0]
+        pdf = PdfReader(pdf_file).pages[0]  # type: ignore
     shape = pdf.mediabox  # pylint: disable=E1101
     height = shape[3] - shape[1]
     width = shape[2] - shape[0]
@@ -205,7 +213,7 @@ def convert_pdf_bytes_to_np_array_v2(
     if dpi is None:
         if width is None or height is None:
             with BytesIO(pdf_bytes) as pdf_file:
-                pdf = PdfReader(pdf_file).pages[0]
+                pdf = PdfReader(pdf_file).pages[0]  # type: ignore
             shape = pdf.mediabox  # pylint: disable=E1101
             height = shape[3] - shape[1]
             width = shape[2] - shape[0]

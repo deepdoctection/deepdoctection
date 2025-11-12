@@ -19,6 +19,8 @@
 Contextmanagers for various tasks
 """
 
+from __future__ import annotations
+
 import subprocess
 from contextlib import contextmanager
 from errno import ENOENT
