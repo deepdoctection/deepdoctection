@@ -33,7 +33,6 @@ from ..utils.logger import LoggingRecord, logger
 from ..utils.object_types import DefaultType, ObjectTypes, TypeOrStr, get_type
 from ..utils.types import AnnotationDict
 from .box import BoundingBox
-from .convert import as_dict
 
 
 @dataclass(frozen=True)
