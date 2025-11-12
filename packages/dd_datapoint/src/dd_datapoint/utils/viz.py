@@ -731,4 +731,5 @@ class VizPackageHandler:
         pil_image_rotated = pil_image.rotate(angle, expand=True)
         return np.array(pil_image_rotated)[:, :, ::-1]
 
+
 viz_handler = VizPackageHandler()

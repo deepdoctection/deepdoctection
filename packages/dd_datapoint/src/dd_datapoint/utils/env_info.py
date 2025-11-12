@@ -74,15 +74,12 @@ import re
 import subprocess
 import sys
 from collections import defaultdict
-from typing import Optional, Any
 from pathlib import Path
-
-from pydantic import Field, model_validator, SecretStr
-from pydantic_settings import BaseSettings, SettingsConfigDict
-
+from typing import Any, Optional
 
 import numpy as np
-
+from pydantic import Field, SecretStr, model_validator
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from tabulate import tabulate
 
 from .file_utils import (
@@ -90,12 +87,14 @@ from .file_utils import (
     aws_available,
     boto3_available,
     cocotools_available,
+    copy_file_to_target,
     distance_available,
     doctr_available,
     get_poppler_version,
     get_tesseract_version,
     jdeskew_available,
     lxml_available,
+    mkdir_p,
     opencv_available,
     pdf_to_cairo_available,
     pdf_to_ppm_available,
@@ -108,20 +107,15 @@ from .file_utils import (
     tesseract_available,
     transformers_available,
     wandb_available,
-    mkdir_p,
-    copy_file_to_target
 )
-
 from .types import KeyValEnvInfos, PathLikeOrStr
 
 ENV_VARS_TRUE: set[str] = {"1", "True", "TRUE", "true", "yes"}
 
-__all__ = ["collect_env_info",
-           "EnvSettings",
-           "SETTINGS",
-           "ENV_VARS_TRUE"]
+__all__ = ["collect_env_info", "EnvSettings", "SETTINGS", "ENV_VARS_TRUE"]
 
 # pylint: disable=import-outside-toplevel
+
 
 def _import_custom_object_types_module(mod: str) -> None:
     """
@@ -194,7 +188,7 @@ class EnvSettings(BaseSettings):
     USE_DD_OPENCV: bool = False
     USE_DD_PDFIUM: bool = False
     USE_DD_POPPLER: bool = False
-    DPI : int = 300
+    DPI: int = 300
     IMAGE_WIDTH: int = 0
     IMAGE_HEIGHT: int = 0
 
@@ -211,9 +205,15 @@ class EnvSettings(BaseSettings):
     PACKAGE_PATH: Path = Field(default_factory=lambda: Path(__file__).resolve().parents[1], frozen=True)
 
     # Default bundled config sources (inside the package)
-    PROFILES_SRC: Path = Field(default_factory=lambda: Path(__file__).resolve().parents[1] / "configs" / "profiles.jsonl")
-    CONF_DD_ONE_SRC: Path = Field(default_factory=lambda: Path(__file__).resolve().parents[1] / "configs" / "conf_dd_one.yaml")
-    CONF_TESSERACT_SRC: Path = Field(default_factory=lambda: Path(__file__).resolve().parents[1] / "configs" / "conf_tesseract.yaml")
+    PROFILES_SRC: Path = Field(
+        default_factory=lambda: Path(__file__).resolve().parents[1] / "configs" / "profiles.jsonl"
+    )
+    CONF_DD_ONE_SRC: Path = Field(
+        default_factory=lambda: Path(__file__).resolve().parents[1] / "configs" / "conf_dd_one.yaml"
+    )
+    CONF_TESSERACT_SRC: Path = Field(
+        default_factory=lambda: Path(__file__).resolve().parents[1] / "configs" / "conf_tesseract.yaml"
+    )
 
     # Target filenames in CONFIGS_DIR
     PROFILES_TARGET_NAME: str = "profiles.jsonl"
@@ -224,7 +224,6 @@ class EnvSettings(BaseSettings):
     AWS_ACCESS_KEY: Optional[SecretStr] = None
     AWS_SECRET_KEY: Optional[SecretStr] = None
     AWS_REGION: Optional[str] = None
-
 
     # Pydantic Settings config
     model_config = SettingsConfigDict(
@@ -251,7 +250,6 @@ class EnvSettings(BaseSettings):
         if "DATASET_DIR" not in fields_set:
             self.DATASET_DIR = self.DEEPDOCTECTION_CACHE / "datasets"
 
-
         # 1) DL framework (PyTorch, CUDA, MPS)
         if "PYTORCH_AVAILABLE" not in fields_set:
             if pytorch_available():
@@ -267,6 +265,7 @@ class EnvSettings(BaseSettings):
                 self.USE_TORCH = True
 
             import torch  # noqa
+
             if "USE_CUDA" not in fields_set:
                 self.USE_CUDA = bool(torch.cuda.is_available())
             if "USE_MPS" not in fields_set:
@@ -314,13 +313,13 @@ class EnvSettings(BaseSettings):
                 except ImportError:
                     pass
 
-
         return self
 
     def export_to_environ(self) -> None:
         """
         Export effective settings into `os.environ`, so legacy modules keep working without refactors.
         """
+
         def _set(k: str, v) -> None:
             if isinstance(v, bool):
                 os.environ[k] = "True" if v else "False"
@@ -371,7 +370,6 @@ class EnvSettings(BaseSettings):
         Ensure cache dirs exist and copy default config files to CONFIGS_DIR.
         """
 
-
         mkdir_p(self.DEEPDOCTECTION_CACHE)
         mkdir_p(self.MODEL_DIR)
         mkdir_p(self.CONFIGS_DIR)
@@ -391,6 +389,7 @@ class EnvSettings(BaseSettings):
         if self.CONF_TESSERACT_SRC.exists():
             copy_file_to_target(self.CONF_TESSERACT_SRC, conf_tesseract_target, force_copy=force_copy)
 
+
 # Load .env and OS env, apply rules, then export to environ for legacy modules
 SETTINGS = EnvSettings()
 SETTINGS.export_to_environ()
@@ -403,6 +402,7 @@ def append_settings_to_env_data(data: KeyValEnvInfos) -> KeyValEnvInfos:
     - SecretStr values are fully redacted.
     - Known secret keys are redacted even if not typed as SecretStr.
     """
+
     def _stringify(v: Any) -> str:
         if isinstance(v, SecretStr):
             return "***"
@@ -425,6 +425,7 @@ def append_settings_to_env_data(data: KeyValEnvInfos) -> KeyValEnvInfos:
     for key, val in sorted(items, key=lambda kv: kv[0]):
         data.append((f"{key}", _stringify(val)))
     return data
+
 
 # In 'collect_env_info()' add before pt_info/third-party info:
 # data = _append_settings_to_env_data(data)
@@ -458,7 +459,6 @@ def collect_installed_dependencies(data: KeyValEnvInfos) -> KeyValEnvInfos:
     Returns:
         A list of tuples containing the name of the library and the version (if available).
     """
-
 
     if opencv_available():
         import cv2
@@ -746,7 +746,6 @@ def collect_env_info() -> str:
 
     data = collect_installed_dependencies(data)
     data = append_settings_to_env_data(data)
-
 
     env_str = tabulate(data) + "\n"
 

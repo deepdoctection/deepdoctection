@@ -33,7 +33,7 @@ from dd_datapoint.utils import get_uuid
 from dd_datapoint.utils.error import ImageError
 from dd_datapoint.utils.object_types import get_type
 
-from ...helpers import get_test_path
+from ...conftest import get_test_path
 from .conftest import TestPdfPage, WhiteImage
 
 
@@ -87,7 +87,6 @@ class TestImage:
         # Act and assert
         with raises(ImageError):
             test_image.image_id = "ec2aac06-c261-3669-b8bd-4486a54ce740"
-
 
     @staticmethod
     @mark.basic
@@ -440,8 +439,7 @@ class TestImage:
         assert anns
 
         # Act
-        dp.remove(annotation_ids=["51fca38d-b181-3ea2-9c97-7e265febcc86",
-                                  "1413d499-ce19-3a50-861c-7d8c5a7ba772"])
+        dp.remove(annotation_ids=["51fca38d-b181-3ea2-9c97-7e265febcc86", "1413d499-ce19-3a50-861c-7d8c5a7ba772"])
 
         # Assert
         anns = dp.get_annotation(annotation_ids="51fca38d-b181-3ea2-9c97-7e265febcc86")

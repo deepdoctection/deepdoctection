@@ -21,14 +21,14 @@
 
 from __future__ import annotations
 
-from pydantic import BaseModel, PrivateAttr, model_serializer
 from math import ceil, floor
-from typing import Optional, Sequence, Union, no_type_check, TypedDict, cast
+from typing import Optional, Sequence, TypedDict, Union, cast, no_type_check
 
 import numpy as np
 import numpy.typing as npt
 from lazy_imports import try_import
 from numpy import float32
+from pydantic import BaseModel, PrivateAttr, model_serializer
 
 from ..utils.error import BoundingBoxError
 from ..utils.file_utils import cocotools_available
@@ -266,7 +266,6 @@ class BoundingBox(BaseModel):
         object.__setattr__(self, "_lry", i_lry)
         self._validate()
 
-
     # Plain serializer (faster than calling handler(self))
     @model_serializer(mode="plain")
     def _serialize(self):
@@ -345,7 +344,9 @@ class BoundingBox(BaseModel):
 
     @property
     def width(self) -> BoxCoordinate:
-        return (self._lrx - self._ulx) / RELATIVE_COORD_SCALE_FACTOR if not self.absolute_coords else self._lrx - self._ulx
+        return (
+            (self._lrx - self._ulx) / RELATIVE_COORD_SCALE_FACTOR if not self.absolute_coords else self._lrx - self._ulx
+        )
 
     @width.setter
     def width(self, value: BoxCoordinate) -> None:
@@ -358,8 +359,9 @@ class BoundingBox(BaseModel):
 
     @property
     def height(self) -> BoxCoordinate:
-        return (self._lry - self._uly) / RELATIVE_COORD_SCALE_FACTOR if\
-            not self.absolute_coords else self._lry - self._uly
+        return (
+            (self._lry - self._uly) / RELATIVE_COORD_SCALE_FACTOR if not self.absolute_coords else self._lry - self._uly
+        )
 
     @height.setter
     def height(self, value: BoxCoordinate) -> None:
@@ -399,34 +401,44 @@ class BoundingBox(BaseModel):
             return NotImplemented
         return self._key() == other._key()
 
-
     __hash__ = None
 
     def to_np_array(self, mode: str, scale_x: float = 1.0, scale_y: float = 1.0) -> npt.NDArray[np.float32]:
         np_box_scale = np.array([scale_x, scale_y, scale_x, scale_y], dtype=np.float32)
-        np_poly_scale = np.array([scale_x, scale_y, scale_x, scale_y, scale_x, scale_y, scale_x, scale_y],
-                                  dtype=np.float32)
+        np_poly_scale = np.array(
+            [scale_x, scale_y, scale_x, scale_y, scale_x, scale_y, scale_x, scale_y], dtype=np.float32
+        )
         assert mode in ("xyxy", "xywh", "poly"), "Not a valid mode"
         if mode == "xyxy":
             return np.array([self.ulx, self.uly, self.lrx, self.lry], dtype=np.float32) * np_box_scale
         if mode == "xywh":
             return np.array([self.ulx, self.uly, self.width, self.height], dtype=np.float32) * np_box_scale
-        return np.array([self.ulx, self.uly, self.lrx, self.uly, self.lrx, self.lry, self.ulx, self.lry],
-                         dtype=np.float32) * np_poly_scale
+        return (
+            np.array([self.ulx, self.uly, self.lrx, self.uly, self.lrx, self.lry, self.ulx, self.lry], dtype=np.float32)
+            * np_poly_scale
+        )
 
     def to_list(self, mode: str, scale_x: float = 1.0, scale_y: float = 1.0) -> list[BoxCoordinate]:
         assert mode in ("xyxy", "xywh", "poly"), "Not a valid mode"
         if mode == "xyxy":
             return (
-                [round(self.ulx * scale_x), round(self.uly * scale_y),
-                 round(self.lrx * scale_x), round(self.lry * scale_y)]
+                [
+                    round(self.ulx * scale_x),
+                    round(self.uly * scale_y),
+                    round(self.lrx * scale_x),
+                    round(self.lry * scale_y),
+                ]
                 if self.absolute_coords
                 else [self.ulx * scale_x, self.uly * scale_y, self.lrx * scale_x, self.lry * scale_y]
             )
         if mode == "xywh":
             return (
-                [round(self.ulx * scale_x), round(self.uly * scale_y),
-                 round(self.width * scale_x), round(self.height * scale_y)]
+                [
+                    round(self.ulx * scale_x),
+                    round(self.uly * scale_y),
+                    round(self.width * scale_x),
+                    round(self.height * scale_y),
+                ]
                 if self.absolute_coords
                 else [self.ulx * scale_x, self.uly * scale_y, self.width * scale_x, self.height * scale_y]
             )

@@ -42,8 +42,8 @@ from typing import Any, Optional, Union, no_type_check
 
 from termcolor import colored
 
-from .types import PathLikeOrStr
 from .env_info import ENV_VARS_TRUE
+from .types import PathLikeOrStr
 
 __all__ = ["logger", "set_logger_dir", "auto_set_dir", "get_logger_dir"]
 
@@ -117,7 +117,6 @@ class StreamFormatter(logging.Formatter):
 class FileFormatter(logging.Formatter):
     """A custom formatter to produce a loggings in json format"""
 
-
     @no_type_check
     def format(self, record: logging.LogRecord) -> str:
         message = super().format(record)
@@ -185,8 +184,11 @@ def _get_logger() -> logging.Logger:
             "streamformatter": {"()": lambda: StreamFormatter(datefmt="%m%d %H:%M.%S")},
         },
         "handlers": {
-            "streamhandler": {"filters": ["customfilter"], "formatter": "streamformatter",
-                              "class": "logging.StreamHandler"}
+            "streamhandler": {
+                "filters": ["customfilter"],
+                "formatter": "streamformatter",
+                "class": "logging.StreamHandler",
+            }
         },
         "root": {
             "handlers": ["streamhandler"],

@@ -77,4 +77,3 @@ def get_num_gpu() -> int:
 
 # Alias for backward compatibility
 set_torch_auto_device = get_torch_device
-

@@ -10,17 +10,16 @@ Utilities for maintaining dependencies and dealing with external library package
 """
 from __future__ import annotations
 
+import errno
 import importlib.metadata
 import importlib.util
-
-import errno
 import string
 import subprocess
-from os import environ, path, makedirs
-from shutil import which, copyfile
-from types import ModuleType
-from typing import Any, Union, no_type_check, Optional
+from os import environ, makedirs, path
 from pathlib import Path
+from shutil import copyfile, which
+from types import ModuleType
+from typing import Any, Optional, Union, no_type_check
 
 import numpy as np
 from packaging import version

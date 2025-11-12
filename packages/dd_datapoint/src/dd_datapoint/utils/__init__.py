@@ -8,19 +8,19 @@ from typing import Optional, Tuple, Union, no_type_check
 
 from .concurrency import *
 from .context import *
-from .env_info import * # only imports defined  in _global_import
+from .env_info import *  # only imports defined  in _global_import
 from .error import *
-from .file_utils import * # only imports defined  in _global_import
+from .file_utils import *  # only imports defined  in _global_import
 from .fs import *
 from .identifier import *
 from .logger import *
-from .metacfg import * # only imports defined  in _global_import
-from .object_types import * # only imports defined  in _global_import
+from .metacfg import *  # only imports defined  in _global_import
+from .object_types import *  # only imports defined  in _global_import
 from .pdf_utils import *
 from .ptutils import *
 from .tqdm import *
 from .transform import *
-from .utils import * # only imports defined  in _global_import
+from .utils import *  # only imports defined  in _global_import
 from .viz import *
 
 __all__ = []
@@ -53,11 +53,10 @@ _global_import("file_utils", suffix=("_available", "_requirement", "mkdir_p", "c
 _global_import("metacfg", prefix=("set_config_by_yaml", "save_config_to_yaml", "config_to_cli_str"))
 _global_import("utils", prefix=("delete_keys_from_dict", "split_string", "string_to_dict"))
 _global_import(
-    "object_types", suffix=("Type", "TokenClasses", "BioTag", "TokenClassWithTag", "Relationships", "Languages", "get_type")
+    "object_types",
+    suffix=("Type", "TokenClasses", "BioTag", "TokenClassWithTag", "Relationships", "Languages", "get_type"),
 )
-_global_import(
-    "env_info", prefix=("collect_env_info", "SETTINGS")
-)
+_global_import("env_info", prefix=("collect_env_info", "SETTINGS"))
 
 
 # pylint: disable=undefined-variable

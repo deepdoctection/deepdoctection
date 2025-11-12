@@ -21,7 +21,7 @@ Typing sheet for the whole package
 
 import os
 import queue
-from typing import TYPE_CHECKING, Any, Protocol, Type, TypeVar, Union, TypeAlias
+from typing import TYPE_CHECKING, Any, Protocol, Type, TypeAlias, TypeVar, Union
 
 import numpy.typing as npt
 import tqdm
