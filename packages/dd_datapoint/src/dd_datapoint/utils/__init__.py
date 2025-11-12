@@ -8,19 +8,19 @@ from typing import Optional, Tuple, Union, no_type_check
 
 from .concurrency import *
 from .context import *
-from .env_info import *
+from .env_info import * # only imports defined  in _global_import
 from .error import *
-from .file_utils import *
+from .file_utils import * # only imports defined  in _global_import
 from .fs import *
 from .identifier import *
 from .logger import *
-from .metacfg import *
+from .metacfg import * # only imports defined  in _global_import
+from .object_types import * # only imports defined  in _global_import
 from .pdf_utils import *
-from .object_types import *
 from .ptutils import *
 from .tqdm import *
 from .transform import *
-from .utils import *
+from .utils import * # only imports defined  in _global_import
 from .viz import *
 
 __all__ = []

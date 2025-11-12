@@ -535,7 +535,6 @@ def fixture_detr_categories() -> Mapping[int, ObjectTypes]:
 def pytest_sessionstart() -> None:
     """Pre configuration before testing starts"""
     object_types_registry.register("TestType")(TestType)
-    #update_all_types_dict()
     for item in TestType:
         update_black_list(item.value)
     viz_handler.refresh()

@@ -26,7 +26,7 @@ import copy
 from dataclasses import fields, is_dataclass
 from io import BytesIO
 from shutil import which
-from typing import TYPE_CHECKING, Any, Optional, Union, no_type_check
+from typing import Any, Optional, Union, no_type_check
 
 import numpy as np
 from lazy_imports import try_import
@@ -38,11 +38,8 @@ from ..utils.pdf_utils import pdf_to_np_array
 from ..utils.types import PixelValues
 from ..utils.viz import viz_handler
 
-if TYPE_CHECKING:
+with try_import() as pypdf_import_guard:
     from pypdf import PdfReader
-else:
-    with try_import() as pypdf_import_guard:
-        from pypdf import PdfReader
 
 __all__ = [
     "convert_b64_to_np_array",
@@ -50,41 +47,7 @@ __all__ = [
     "convert_np_array_to_b64_b",
     "convert_bytes_to_np_array",
     "convert_pdf_bytes_to_np_array_v2",
-    "as_dict",
 ]
-
-
-def as_dict(obj: Any, dict_factory) -> Union[Any]:  # type: ignore
-    """
-    Args:
-        custom func: as_dict to use instead of `dataclasses.asdict` . It also checks if a dataclass has a
-                     'remove_keys' and will remove all attributes that are returned. Ensures that private attributes
-                     are not taken into account when generating a `dict`.
-
-        obj: Object to convert into a dict.
-        dict_factory: A factory to generate the dict.
-    """
-
-    if is_dataclass(obj):
-        result = []
-        for attribute in fields(obj):
-            value = as_dict(getattr(obj, attribute.name), dict_factory)
-            if hasattr(obj, "remove_keys"):
-                if attribute.name in obj.remove_keys():
-                    continue
-            if hasattr(obj, "replace_keys"):
-                old_to_new_keys = obj.replace_keys()
-                if attribute.name in old_to_new_keys:
-                    attribute.name = obj.replace_keys()[attribute.name]
-            result.append((attribute.name, value))
-        return dict_factory(result)
-    if isinstance(obj, (list, tuple)):
-        return type(obj)(as_dict(v, dict_factory) for v in obj)  # pylint: disable=E0110
-    if isinstance(obj, dict):
-        return type(obj)((as_dict(k, dict_factory), as_dict(v, dict_factory)) for k, v in obj.items())
-    if isinstance(obj, (np.float32, np.float64)):
-        obj = obj.astype(float)
-    return copy.deepcopy(obj)
 
 
 def convert_b64_to_np_array(image: str) -> PixelValues:

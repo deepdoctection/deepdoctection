@@ -532,11 +532,6 @@ def collect_installed_dependencies(data: KeyValEnvInfos) -> KeyValEnvInfos:
     else:
         data.append(("Sklearn", "None"))
 
-    if qpdf_available():
-        data.append(("Qpdf", "available"))
-    else:
-        data.append(("Qpdf", "None"))
-
     if boto3_available():
         import boto3  # type: ignore
 
