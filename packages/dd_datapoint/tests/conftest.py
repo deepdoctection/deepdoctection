@@ -12,7 +12,7 @@ from dd_datapoint.utils.object_types import ObjectTypes, object_types_registry, 
 from dd_datapoint.utils.viz import viz_handler
 
 # Register custom pytest plugins (relative to tests/ directory)
-pytest_plugins = ["tests._pytest_plugins.dd_plugin"]
+#pytest_plugins = ["tests._shared.factory"]
 
 
 class ObjectTestType(ObjectTypes):

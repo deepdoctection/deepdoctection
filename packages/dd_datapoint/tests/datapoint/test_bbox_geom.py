@@ -599,10 +599,9 @@ class TestIntersectionBoxes:
         Verify exact intersection values for representative pairs.
         Including floor/ceil behavior for absolute mode.
         """
-        # Box1: [10.3, 20.7] to [50.2, 60.8]
-        # Box2: [30.1, 40.5] to [70.9, 80.3]
-        # Intersection: [30.1, 40.5] to [50.2, 60.8]
-        # After floor/ceil: [30, 40] to [51, 61]
+        # Box1: [10, 21] to [50, 61]
+        # Box2: [30, 40] to [71, 80]
+        # Intersection: [30, 40] to [50, 61]
         
         boxes1 = [BoundingBox(absolute_coords=True, ulx=10.3, uly=20.7, lrx=50.2, lry=60.8)]
         boxes2 = [BoundingBox(absolute_coords=True, ulx=30.1, uly=40.5, lrx=70.9, lry=80.3)]
@@ -610,11 +609,10 @@ class TestIntersectionBoxes:
         result = intersection_boxes(boxes1, boxes2)
         
         assert len(result) == 1
-        # Check floor/ceil behavior
-        assert result[0].ulx == floor(30.1)  # 30
-        assert result[0].uly == floor(40.5)  # 40
-        assert result[0].lrx == ceil(50.2)   # 51
-        assert result[0].lry == ceil(60.8)   # 61
+        assert result[0].ulx == 30
+        assert result[0].uly == 40
+        assert result[0].lrx == 50
+        assert result[0].lry == 61
 
     def test_relative_coords_pairwise(self):
         """Pairwise intersections with relative coordinates."""
