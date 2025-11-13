@@ -26,6 +26,7 @@ from typing import Optional, Sequence, TypedDict, Union, cast, no_type_check
 
 import numpy as np
 import numpy.typing as npt
+from dotenv.variables import Literal
 from lazy_imports import try_import
 from numpy import float32
 from pydantic import BaseModel, PrivateAttr, model_serializer
@@ -187,6 +188,14 @@ class BoxDict(TypedDict):
     lry: BoxCoordinate
 
 
+def _round_half_up(x: float) -> int:
+    return int(floor(x + 0.5))
+
+def _round_half_down(x: float) -> int:
+    f = floor(x)
+    return int(f if (x - f) <= 0.5 else f + 1)
+
+
 class BoundingBox(BaseModel):
     """
     Rectangular bounding box that stores coordinates and allows different representations.
@@ -240,19 +249,19 @@ class BoundingBox(BaseModel):
         height: BoxCoordinate = 0,
     ):
         if absolute_coords:
-            i_ulx = round(ulx)
-            i_uly = round(uly)
+            i_ulx = _round_half_down(float(ulx))
+            i_uly = _round_half_down(float(uly))
             if lrx and lry:
-                i_lrx = round(lrx)
-                i_lry = round(lry)
+                i_lrx = _round_half_up(float(lrx))
+                i_lry = _round_half_up(float(lry))
             else:
-                i_lrx = round(i_ulx + width)
-                i_lry = round(i_uly + height)
+                i_lrx = i_ulx + _round_half_up(float(width))
+                i_lry = i_uly + _round_half_up(float(height))
         else:
             scale = RELATIVE_COORD_SCALE_FACTOR
             i_ulx = round(ulx * scale)
             i_uly = round(uly * scale)
-            if lrx and lry:
+            if lrx or lry:
                 i_lrx = round(lrx * scale)
                 i_lry = round(lry * scale)
             else:
@@ -266,7 +275,6 @@ class BoundingBox(BaseModel):
         object.__setattr__(self, "_lry", i_lry)
         self._validate()
 
-    # Plain serializer (faster than calling handler(self))
     @model_serializer(mode="plain")
     def _serialize(self):
         return {
@@ -278,11 +286,6 @@ class BoundingBox(BaseModel):
         }
 
     def _validate(self) -> None:
-        if self._lrx == self._ulx or self._lry == self._uly:
-            raise BoundingBoxError(
-                f"Bounding box not fully initialized. Internals are set to _lrx: {self._lrx}, "
-                f"_ulx: {self._ulx}, _lry: {self._lry}, _uly: {self._uly}"
-            )
         if not (self._ulx >= 0 and self._uly >= 0):
             raise BoundingBoxError("Bounding box ul must be >= (0,0)")
         self._validate_width(self._lrx, self._ulx)
@@ -292,15 +295,13 @@ class BoundingBox(BaseModel):
         ):
             raise BoundingBoxError("coordinates must be between 0 and 1")
 
-    @staticmethod
-    def _validate_width(lrx, ulx):
+    def _validate_width(self,lrx, ulx):
         if lrx - ulx <= 0:
-            raise BoundingBoxError(f"width must be >0. Check coords: lrx: {lrx}, ulx: {ulx}")
+            raise BoundingBoxError(f"width must be >0. Check coords: lrx: {self.lrx}, ulx: {self.ulx}")
 
-    @staticmethod
-    def _validate_height(lry, uly):
+    def _validate_height(self, lry, uly):
         if lry - uly <= 0:
-            raise BoundingBoxError(f"width must be >0. Check coords: lrx: {lry}, ulx: {uly}")
+            raise BoundingBoxError(f"height must be >0. Check coords: lry: {self.lry}, uly: {self.uly}")
 
     @property
     def ulx(self) -> BoxCoordinate:
@@ -308,7 +309,10 @@ class BoundingBox(BaseModel):
 
     @ulx.setter
     def ulx(self, value: BoxCoordinate) -> None:
-        new_val = round(value * RELATIVE_COORD_SCALE_FACTOR) if not self.absolute_coords else round(value)
+        if self.absolute_coords:
+            new_val = _round_half_down(float(value))
+        else:
+            new_val = round(value * RELATIVE_COORD_SCALE_FACTOR)
         object.__setattr__(self, "_ulx", new_val)
         self._validate_width(self._lrx, self._ulx)
 
@@ -318,7 +322,10 @@ class BoundingBox(BaseModel):
 
     @uly.setter
     def uly(self, value: BoxCoordinate) -> None:
-        new_val = round(value * RELATIVE_COORD_SCALE_FACTOR) if not self.absolute_coords else round(value)
+        if self.absolute_coords:
+            new_val = _round_half_down(float(value))
+        else:
+            new_val = round(value * RELATIVE_COORD_SCALE_FACTOR)
         object.__setattr__(self, "_uly", new_val)
         self._validate_height(self._lry, self._uly)
 
@@ -328,7 +335,10 @@ class BoundingBox(BaseModel):
 
     @lrx.setter
     def lrx(self, value: BoxCoordinate) -> None:
-        new_val = round(value * RELATIVE_COORD_SCALE_FACTOR) if not self.absolute_coords else round(value)
+        if self.absolute_coords:
+            new_val = _round_half_up(float(value))
+        else:
+            new_val = round(value * RELATIVE_COORD_SCALE_FACTOR)
         object.__setattr__(self, "_lrx", new_val)
         self._validate_width(self._lrx, self._ulx)
 
@@ -338,7 +348,10 @@ class BoundingBox(BaseModel):
 
     @lry.setter
     def lry(self, value: BoxCoordinate) -> None:
-        new_val = round(value * RELATIVE_COORD_SCALE_FACTOR) if not self.absolute_coords else round(value)
+        if self.absolute_coords:
+            new_val = _round_half_up(float(value))
+        else:
+            new_val = round(value * RELATIVE_COORD_SCALE_FACTOR)
         object.__setattr__(self, "_lry", new_val)
         self._validate_height(self._lry, self._uly)
 
@@ -353,7 +366,7 @@ class BoundingBox(BaseModel):
         if not self.absolute_coords:
             new_lrx = self._ulx + round(value * RELATIVE_COORD_SCALE_FACTOR)
         else:
-            new_lrx = round(value)
+            new_lrx = self._ulx + _round_half_up(float(value))
         object.__setattr__(self, "_lrx", new_lrx)
         self._validate_width(self._lrx, self._ulx)
 
@@ -368,17 +381,21 @@ class BoundingBox(BaseModel):
         if not self.absolute_coords:
             new_lry = self._uly + round(value * RELATIVE_COORD_SCALE_FACTOR)
         else:
-            new_lry = round(value)
+            new_lry = self._uly + _round_half_up(float(value))
         object.__setattr__(self, "_lry", new_lry)
         self._validate_height(self._lry, self._uly)
 
     @property
     def cx(self) -> BoxCoordinate:
-        return round(self.ulx + 0.5 * self.width) if self.absolute_coords else self.ulx + 0.5 * self.width
+        if self.absolute_coords:
+            return _round_half_up(float(self.ulx + 0.5 * self.width))
+        return self.ulx + 0.5 * self.width
 
     @property
     def cy(self) -> BoxCoordinate:
-        return round(self.uly + 0.5 * self.height) if self.absolute_coords else self.uly + 0.5 * self.height
+        if self.absolute_coords:
+            return _round_half_up(float(self.uly + 0.5 * self.height))
+        return self.uly + 0.5 * self.height
 
     @property
     def center(self) -> tuple[BoxCoordinate, BoxCoordinate]:
@@ -403,7 +420,13 @@ class BoundingBox(BaseModel):
 
     __hash__ = None
 
-    def to_np_array(self, mode: str, scale_x: float = 1.0, scale_y: float = 1.0) -> npt.NDArray[np.float32]:
+    def to_np_array(self, mode: Literal["xyxy","xywh","poly"],
+                    scale_x: float = 1.0,
+                    scale_y: float = 1.0) -> npt.NDArray[np.float32]:
+
+        if not self.absolute_coords and (scale_x > 1.0 or scale_y > 1.0):
+            raise ValueError("Cannot scale up relative coordinates")
+
         np_box_scale = np.array([scale_x, scale_y, scale_x, scale_y], dtype=np.float32)
         np_poly_scale = np.array(
             [scale_x, scale_y, scale_x, scale_y, scale_x, scale_y, scale_x, scale_y], dtype=np.float32
@@ -418,43 +441,51 @@ class BoundingBox(BaseModel):
             * np_poly_scale
         )
 
-    def to_list(self, mode: str, scale_x: float = 1.0, scale_y: float = 1.0) -> list[BoxCoordinate]:
+
+    def to_list(self, mode: Literal["xyxy","xywh","poly"],
+                scale_x: float = 1.0,
+                scale_y: float = 1.0) -> list[BoxCoordinate]:
+
+        if not self.absolute_coords and (scale_x > 1.0 or scale_y > 1.0):
+            raise ValueError("Cannot scale up relative coordinates")
+
         assert mode in ("xyxy", "xywh", "poly"), "Not a valid mode"
         if mode == "xyxy":
-            return (
-                [
-                    round(self.ulx * scale_x),
-                    round(self.uly * scale_y),
-                    round(self.lrx * scale_x),
-                    round(self.lry * scale_y),
+            if self.absolute_coords:
+                return [
+                    _round_half_down(self.ulx * scale_x),
+                    _round_half_down(self.uly * scale_y),
+                    _round_half_up(self.lrx * scale_x),
+                    _round_half_up(self.lry * scale_y),
                 ]
-                if self.absolute_coords
-                else [self.ulx * scale_x, self.uly * scale_y, self.lrx * scale_x, self.lry * scale_y]
-            )
+            else:
+                return [self.ulx * scale_x, self.uly * scale_y, self.lrx * scale_x, self.lry * scale_y]
+
         if mode == "xywh":
-            return (
-                [
-                    round(self.ulx * scale_x),
-                    round(self.uly * scale_y),
-                    round(self.width * scale_x),
-                    round(self.height * scale_y),
+            if self.absolute_coords:
+                return [
+                    _round_half_down(self.ulx * scale_x),
+                    _round_half_down(self.uly * scale_y),
+                    _round_half_up(self.width * scale_x),
+                    _round_half_up(self.height * scale_y),
                 ]
-                if self.absolute_coords
-                else [self.ulx * scale_x, self.uly * scale_y, self.width * scale_x, self.height * scale_y]
-            )
-        return (
-            [
-                round(self.ulx * scale_x),
-                round(self.uly * scale_y),
-                round(self.lrx * scale_x),
-                round(self.uly * scale_y),
-                round(self.lrx * scale_x),
-                round(self.lry * scale_y),
-                round(self.ulx * scale_x),
-                round(self.lry * scale_y),
+            else:
+                return [self.ulx * scale_x, self.uly * scale_y, self.width * scale_x, self.height * scale_y]
+
+        # mode == "poly"
+        if self.absolute_coords:
+            return [
+                _round_half_down(self.ulx * scale_x),
+                _round_half_down(self.uly * scale_y),
+                _round_half_up(self.lrx * scale_x),
+                _round_half_down(self.uly * scale_y),
+                _round_half_up(self.lrx * scale_x),
+                _round_half_up(self.lry * scale_y),
+                _round_half_down(self.ulx * scale_x),
+                _round_half_up(self.lry * scale_y),
             ]
-            if self.absolute_coords
-            else [
+        else:
+            return [
                 self.ulx * scale_x,
                 self.uly * scale_y,
                 self.lrx * scale_x,
@@ -464,7 +495,6 @@ class BoundingBox(BaseModel):
                 self.ulx * scale_x,
                 self.lry * scale_y,
             ]
-        )
 
     def transform(self, image_width: float, image_height: float, absolute_coords: bool = False) -> BoundingBox:
         if absolute_coords != self.absolute_coords:
@@ -524,7 +554,7 @@ def intersection_box(
              not equal#
 
     Raises:
-        ValueError: If the intersection is empty, i.e. if the boxes do not overlap.
+        BoundingBoxError: If the intersection is empty, i.e. if the boxes do not overlap.
     """
 
     if box_1.absolute_coords != box_2.absolute_coords:
@@ -537,8 +567,6 @@ def intersection_box(
     uly = max(box_1.uly, box_2.uly)
     lrx = min(box_1.lrx, box_2.lrx)
     lry = min(box_1.lry, box_2.lry)
-    if box_2.absolute_coords:
-        ulx, uly, lrx, lry = np.floor(ulx), np.floor(uly), np.ceil(lrx), np.ceil(lry)
     return BoundingBox(box_2.absolute_coords, ulx=ulx, uly=uly, lrx=lrx, lry=lry)
 
 
@@ -563,15 +591,15 @@ def crop_box_from_image(
         assert (
             width is not None and height is not None
         ), "when crop_box has absolute coords set to False must pass width and height"
-        absolute_coord_box = crop_box.transform(width, height, absolute_coords=True)
+        absolute_coord_box = crop_box.transform(width, height, True)
     else:
         absolute_coord_box = crop_box
 
     assert isinstance(absolute_coord_box, BoundingBox)
     np_max_y, np_max_x = np_image.shape[0:2]
     return np_image[
-        int(floor(absolute_coord_box.uly)) : min(int(ceil(absolute_coord_box.lry)), np_max_y),
-        int(floor(absolute_coord_box.ulx)) : min(int(ceil(absolute_coord_box.lrx)), np_max_x),
+        absolute_coord_box.uly : min(absolute_coord_box.lry, np_max_y),
+        absolute_coord_box.ulx : min(absolute_coord_box.lrx, np_max_x),
     ]
 
 

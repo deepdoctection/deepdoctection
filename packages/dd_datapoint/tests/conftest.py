@@ -11,6 +11,9 @@ import pytest
 from dd_datapoint.utils.object_types import ObjectTypes, object_types_registry, update_black_list
 from dd_datapoint.utils.viz import viz_handler
 
+# Register custom pytest plugins (relative to tests/ directory)
+pytest_plugins = ["tests._pytest_plugins.dd_plugin"]
+
 
 class ObjectTestType(ObjectTypes):
     """Object type members for testing purposes"""
