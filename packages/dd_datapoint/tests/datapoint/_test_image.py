@@ -33,7 +33,7 @@ from dd_datapoint.utils import get_uuid
 from dd_datapoint.utils.error import ImageError
 from dd_datapoint.utils.object_types import get_type
 
-from ...conftest import get_test_path
+from packages.dd_datapoint.tests.conftest import get_test_path
 from .conftest import TestPdfPage, WhiteImage
 
 

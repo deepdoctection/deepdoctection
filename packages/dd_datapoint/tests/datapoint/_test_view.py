@@ -28,7 +28,7 @@ from dd_datapoint.datapoint.image import Image
 from dd_datapoint.datapoint.view import Page
 from dd_datapoint.utils.object_types import LayoutType, Relationships
 
-from ...conftest import get_test_path
+from packages.dd_datapoint.tests.conftest import get_test_path
 from .conftest import WhiteImage
 
 
