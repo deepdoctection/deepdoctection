@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "shared-test-utils"
+version = "1.0.0"
+description = "Shared test utilities (factories, Tier-A assets manifest & loader) for the deepdoctection monorepo"
+requires-python = ">=3.10"
+license = {text = "Apache-2.0"}
+dependencies = [
+    "PyYAML>=6.0.1",
+]
+
+[project.optional-dependencies]
+dev = ["black", "isort", "mypy"]
+test = ["pytest"]
+
+[project.scripts]
+dd-add-asset = "shared_test_utils.tools.add_asset:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.package-data]
+shared_test_utils = ["assets_manifest.yaml"]
+

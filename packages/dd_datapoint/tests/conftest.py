@@ -18,50 +18,16 @@ from dd_datapoint.utils.viz import viz_handler
 class ObjectTestType(ObjectTypes):
     """Object type members for testing purposes"""
 
-    foo = "foo"
-    FOO = "FOO"
-    bak = "bak"
-    BAK = "BAK"
-    BAK_1 = "BAK_1"
-    BAK_11 = "BAK_11"
-    BAK_12 = "BAK_12"
-    BAK_21 = "BAK_21"
-    BAK_22 = "BAK_22"
-    BLA = "BLA"
-    BLU = "BLU"
-    FOO_1 = "FOO_1"
-    FOO_2 = "FOO_2"
-    FOO_3 = "FOO_3"
-    BLI = "BLI"
-    FOOBAK = "FOOBAK"
-    Test = "TEST"
-    TEST_SUMMARY = "TEST_SUMMARY"
-    baz = "baz"
-    BAZ = "BAZ"
-    b_foo = "B-FOO"
-    i_foo = "I-FOO"
-    sub = "sub"
-    sub_2 = "sub_2"
-    one = "1"
-    two = "2"
-    three = "3"
-    four = "4"
-    five = "5"
-    report_date = "report_date"
-    umbrella = "umbrella"
-    report_type = "report_type"
-    fund_name = "fund_name"
+    PERSON = "person"
+    NUMBER = "number"
+    FOO = "foo"
+    BAR = "bar"
+    TEST = "test"
+    SUB_CATEGORY_NAME = "sub_category_name"
+    SUB_CATEGORY_NAME_2 = "sub_category_name_2"
+    SUB_CATEGORY_NAME_3 = "sub_category_name_3"
+    RELATIONSHIP_NAME = "relationship_name"
 
-
-def get_test_path() -> Path:
-    """
-    Get path to test objects
-    Note: This is a placeholder. Actual test assets should be copied to
-    packages/dd_datapoint/tests/assets/ or packages/tests/assets/
-    """
-    # For now, point to original test_objects location
-    # TODO: Copy needed test assets to package-local location
-    return Path(__file__).parent.parent.parent.parent.parent / "_tests" / "test_objects"
 
 
 @pytest.hookimpl(tryfirst=True)

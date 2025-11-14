@@ -274,6 +274,17 @@ class CategoryAnnotation(Annotation):
             return DEFAULT_CATEGORY_ID
         return int(v)
 
+    @field_validator("score", mode="before")
+    @classmethod
+    def _validate_score(cls, v: Any) -> Optional[float]:
+        """Validate score is between 0 and 1 and limit to 8 digits."""
+        if v is None:
+            return None
+        score = float(v)
+        if not 0.0 <= score <= 1.0:
+            raise ValueError(f"score must be between 0 and 1 (inclusive), got {score}")
+        return round(score, 8)
+
     @field_validator("sub_categories", mode="before")
     @classmethod
     def _coerce_sub_categories(cls, v: Any) -> dict[ObjectTypes, CategoryAnnotation]:
@@ -595,68 +606,86 @@ class ImageAnnotation(CategoryAnnotation):
 class ContainerAnnotation(CategoryAnnotation):
     """
     Container annotation with typed value.
-
-    Use `set_type()` to set an expected type for `value`.
-    Calling `set_type()` with no argument (or `None`) disables validation.
+    Rules:
+    - If initialized with a value and no type is set, infer the type from the value (keep native int/float).
+    - Calling set_type(<type>) enforces that type; existing value is converted if possible.
+    - Calling set_type(None) disables validation and coerces current value to its string (or list[str]) form.
     """
 
-    value: Optional[Union[list[str], str]] = Field(default=None)
-    _value_type: Optional[Literal["str", "int", "float", "list[str]"]] = PrivateAttr(default=None)
+    value: Optional[Union[list[str], str, int, float]] = Field(default=None)
+    value_type: Optional[Literal["str", "int", "float", "list[str]"]] = Field(default=None, exclude=True)
 
-    @field_validator("value", mode="before")
-    @classmethod
-    def _validate_value(cls, v: Any) -> Optional[Union[list[str], str]]:
-        """Basic coercion/normalization kept for backward compatibility."""
-        if v is None:
-            return None
-        if isinstance(v, (int, float)):
-            return str(v)
-        if isinstance(v, str):
-            return v
-        if isinstance(v, list):
-            return [str(item) for item in v]
-        return v
+    @model_validator(mode="after")
+    def _coerce_or_infer_value(self) -> "ContainerAnnotation":
+        effective_type =  self.value_type
+        # No explicit type: infer once
+        if effective_type is None:
+            if self.value is None:
+                return self
+            if isinstance(self.value, int):
+                self.value_type = "int"
+            elif isinstance(self.value, float):
+                self.value_type = "float"
+            elif isinstance(self.value, str):
+                self.value_type = "str"
+            elif isinstance(self.value, list):
+                if all(isinstance(el, str) for el in self.value):
+                    self.value_type = "list[str]"
+                else:
+                    object.__setattr__(self, "value", [str(el) for el in self.value])
+                    self.value_type = "list[str]"
+            return self
 
-    def set_type(self, type: Optional[Literal["str", "int", "float", "list[str]"]] = None) -> None:
-        """
-        Set expected type for `value`.
-        If `type` is None, disable validation (backward compatible).
-        If `value` is already set and `type` is provided, validate immediately.
-        """
+        # Explicit type: enforce / convert
+        if self.value is None:
+            return self
+
+        if effective_type == "int":
+            if isinstance(self.value, int):
+                return self
+            if isinstance(self.value, str) and self.value.isdigit():
+                object.__setattr__(self, "value", int(self.value))
+                return self
+            raise TypeError(f"value must be int when type='int', got {type(self.value).__name__}")
+
+        if effective_type == "float":
+            if isinstance(self.value, float):
+                return self
+            if isinstance(self.value, int):
+                object.__setattr__(self, "value", float(self.value))
+                return self
+            if isinstance(self.value, str):
+                try:
+                    object.__setattr__(self, "value", float(self.value))
+                    return self
+                except ValueError:
+                    pass
+            raise TypeError(f"value must be float when type='float', got {type(self.value).__name__}")
+
+        if effective_type == "str":
+            if not isinstance(self.value, str):
+                object.__setattr__(self, "value", str(self.value))
+            return self
+
+        if effective_type == "list[str]":
+            if not isinstance(self.value, list):
+                raise TypeError("value must be list[str] when type='list[str]'")
+            if not all(isinstance(el, str) for el in self.value):
+                object.__setattr__(self, "value", [str(el) for el in self.value])
+            return self
+
+        raise ValueError(f"Unsupported type {effective_type}")
+
+    def set_type(self, type: Literal["str", "int", "float", "list[str]"]) -> None:
         if type is None:
-            self._value_type = None
-            return
+            raise ValueError(f"type cannot be None, current value_type is {self.value_type}")
 
         allowed = {"str", "int", "float", "list[str]"}
         if type not in allowed:
             raise ValueError(f"type must be one of {sorted(allowed)}")
-
-        self._value_type = type
-
-        # validate existing value if present
-        if getattr(self, "value", None) is not None:
-            self._check_value_type(self.value)
-
-    def _check_value_type(self, value: Any) -> None:
-        """Raise TypeError if value does not match the configured _value_type."""
-        vt = self._value_type
-        if vt is None:
-            return  # no validation configured
-
-        if vt == "str":
-            if not isinstance(value, str):
-                raise TypeError(f"value must be str when type='str', got {type(value).__name__}")
-        elif vt == "int":
-            if not isinstance(value, int):
-                raise TypeError(f"value must be int when type='int', got {type(value).__name__}")
-        elif vt == "float":
-            if not isinstance(value, float):
-                raise TypeError(f"value must be float when type='float', got {type(value).__name__}")
-        elif vt == "list[str]":
-            if not isinstance(value, list) or not all(isinstance(el, str) for el in value):
-                raise TypeError("value must be list[str] when type='list[str]'")
-        else:
-            raise ValueError(f"Unsupported value type configured: {vt}")
+        self.value_type = type
+        # Re-run validator logic for conversion/enforcement
+        self._coerce_or_infer_value()
 
     def get_defining_attributes(self) -> list[str]:
         return ["category_name", "value"]
@@ -667,3 +696,4 @@ class ContainerAnnotation(CategoryAnnotation):
             f"category_id={self.category_id}, score={self.score}, sub_categories={self.sub_categories},"
             f" relationships={self.relationships})"
         )
+

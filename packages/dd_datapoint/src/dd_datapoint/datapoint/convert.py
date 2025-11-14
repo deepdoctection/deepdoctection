@@ -21,19 +21,12 @@ Conversion functions for images and pdfs
 
 from __future__ import annotations
 
-import base64
-import copy
-from dataclasses import fields, is_dataclass
 from io import BytesIO
-from shutil import which
-from typing import Any, Optional, Union, no_type_check
+from typing import Optional, no_type_check
 
-import numpy as np
 from lazy_imports import try_import
 from numpy import uint8
 
-from ..utils.develop import deprecated
-from ..utils.error import DependencyError
 from ..utils.pdf_utils import pdf_to_np_array
 from ..utils.types import PixelValues
 from ..utils.viz import viz_handler
@@ -104,47 +97,6 @@ def convert_bytes_to_np_array(image_bytes: bytes) -> PixelValues:
     return viz_handler.convert_bytes_to_np(image_bytes)
 
 
-@deprecated("Use convert_pdf_bytes_to_np_array_v2", "2022-02-23")
-def convert_pdf_bytes_to_np_array(pdf_bytes: bytes, dpi: Optional[int] = None) -> PixelValues:
-    """
-    Converts a pdf passed as bytes into a `np.array`. Note, that this method expects poppler to be installed.
-    Please check the installation guides at <https://poppler.freedesktop.org/> . If no value for `dpi` is provided
-    the output size will be determined by the mediaBox of the pdf file ready.
-
-    Note:
-        The image size will be in this case rather small.
-
-    Args:
-        pdf_bytes: A pdf as bytes object. A byte representation can from a pdf file can be generated e.g. with
-                   `utils.fs.load_bytes_from_pdf_file`
-        dpi: The dpi value of the resulting output image. For high resolution set `dpi=300`.
-
-    Returns:
-        Image as numpy array.
-    """
-    from pdf2image import convert_from_bytes  # type: ignore # pylint: disable=C0415, E0401
-
-    if which("pdftoppm") is None:
-        raise DependencyError("convert_pdf_bytes_to_np_array requires poppler to be installed")
-
-    with BytesIO(pdf_bytes) as pdf_file:
-        pdf = PdfReader(pdf_file).pages[0]  # type: ignore
-    shape = pdf.mediabox  # pylint: disable=E1101
-    height = shape[3] - shape[1]
-    width = shape[2] - shape[0]
-    buffered = BytesIO()
-
-    if dpi is None:
-        image = convert_from_bytes(pdf_bytes, size=(width, height))[0]
-    else:
-        image = convert_from_bytes(pdf_bytes, dpi=dpi)[0]
-
-    image.save(buffered, format="JPEG")
-    image = base64.b64encode(buffered.getvalue()).decode("utf-8")
-    np_array = convert_b64_to_np_array(image)
-    return np_array.astype(uint8)
-
-
 def convert_pdf_bytes_to_np_array_v2(
     pdf_bytes: bytes, dpi: Optional[int] = None, width: Optional[int] = None, height: Optional[int] = None
 ) -> PixelValues:
@@ -176,7 +128,10 @@ def convert_pdf_bytes_to_np_array_v2(
     if dpi is None:
         if width is None or height is None:
             with BytesIO(pdf_bytes) as pdf_file:
-                pdf = PdfReader(pdf_file).pages[0]  # type: ignore
+                try:
+                    pdf = PdfReader(pdf_file).pages[0]  # type: ignore
+                except NameError:
+                    raise ImportError("pypdf is not installed.")
             shape = pdf.mediabox  # pylint: disable=E1101
             height = shape[3] - shape[1]
             width = shape[2] - shape[0]
