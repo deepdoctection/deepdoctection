@@ -27,7 +27,7 @@ from dataclasses import dataclass
 import numpy as np
 from pytest import fixture
 
-#from tests._shared.factory import build_test_pdf_page, TestPdfPage
+import shared_test_utils as stu
 
 
 
@@ -84,8 +84,8 @@ def fixture_category_ann() -> CatAnn:
     return CatAnn()
 """
 
-#@fixture(name="pdf_page")
-#def fixture_pdf_page() -> TestPdfPage:
-#    """Provide a deterministic 1-page PDF for rendering tests."""
-#    return build_test_pdf_page()
+@fixture(name="pdf_page")
+def fixture_pdf_page() -> stu.TestPdfPage:
+    """Provide a deterministic 1-page PDF for rendering tests."""
+    return stu.build_test_pdf_page()
 
