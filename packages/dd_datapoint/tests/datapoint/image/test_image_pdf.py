@@ -19,8 +19,6 @@
 Testing Image PDF operations and special cases
 """
 
-from pytest import mark
-
 from dd_datapoint.datapoint import Image
 
 import shared_test_utils as stu

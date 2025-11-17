@@ -18,15 +18,16 @@ from dd_datapoint.utils.viz import viz_handler
 class ObjectTestType(ObjectTypes):
     """Object type members for testing purposes"""
 
-    PERSON = "person"
-    NUMBER = "number"
-    FOO = "foo"
-    BAR = "bar"
-    TEST = "test"
-    SUB_CATEGORY_NAME = "sub_category_name"
-    SUB_CATEGORY_NAME_2 = "sub_category_name_2"
-    SUB_CATEGORY_NAME_3 = "sub_category_name_3"
-    RELATIONSHIP_NAME = "relationship_name"
+    TEST_CAT_1 = "test_cat_1"
+    TEST_CAT_2 = "test_cat_2"
+    TEST_CAT_3 = "test_cat_3"
+    TEST_CAT_4 = "test_cat_4"
+    SUB_CAT_1 = "sub_cat_1"
+    SUB_CAT_2 = "sub_cat_2"
+    SUB_CAT_3 = "sub_cat_3"
+    RELATIONSHIP_1 = "relationship_1"
+    RELATIONSHIP_2 = "relationship_2"
+    NON_EXISTENT = "non_existent"
 
 
 

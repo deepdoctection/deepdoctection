@@ -24,17 +24,17 @@ from pytest import mark, raises
 from dd_datapoint.datapoint import BoundingBox, Image, ImageAnnotation
 from dd_datapoint.utils.error import AnnotationError, ImageError
 
-from .conftest import WhiteImage
+import shared_test_utils as stu
 
 
 class TestImageAnnotations:
     """Test Image annotation operations"""
 
-    def test_dump_assigns_annotation_id(self, image: WhiteImage):
+    def test_dump_assigns_annotation_id(self, white_image: stu.WhiteImage):
         """dump() assigns annotation_id if not set"""
-        img = Image(file_name=image.file_name)
+        img = Image(file_name=white_image.file_name)
         ann = ImageAnnotation(
-            category_name="TEST",
+            category_name="test_cat_1",
             bounding_box=BoundingBox(ulx=10, uly=10, width=20, height=20, absolute_coords=True)
         )
 
@@ -42,21 +42,21 @@ class TestImageAnnotations:
         img.dump(ann)
         assert ann.annotation_id is not None
 
-    def test_dump_tracks_annotation_ids(self, image: WhiteImage):
+    def test_dump_tracks_annotation_ids(self, white_image: stu.WhiteImage):
         """dump() tracks annotation_id in internal list"""
-        img = Image(file_name=image.file_name)
+        img = Image(file_name=white_image.file_name)
         ann = ImageAnnotation(
-            category_name="TEST",
+            category_name="test_cat_1",
             bounding_box=BoundingBox(ulx=10, uly=10, width=20, height=20, absolute_coords=True)
         )
         img.dump(ann)
         assert ann.annotation_id in img._annotation_ids
 
-    def test_dump_rejects_duplicate_annotation(self, image: WhiteImage):
+    def test_dump_rejects_duplicate_annotation(self, white_image: stu.WhiteImage):
         """dump() raises error for duplicate annotation"""
-        img = Image(file_name=image.file_name)
+        img = Image(file_name=white_image.file_name)
         ann = ImageAnnotation(
-            category_name="TEST",
+            category_name="test_cat_1",
             bounding_box=BoundingBox(ulx=10, uly=10, width=20, height=20, absolute_coords=True)
         )
         img.dump(ann)
@@ -64,15 +64,15 @@ class TestImageAnnotations:
         with raises(ImageError, match="Cannot dump annotation with existing id"):
             img.dump(ann)
 
-    def test_dump_multiple_annotations(self, image: WhiteImage):
+    def test_dump_multiple_annotations(self, white_image: stu.WhiteImage):
         """Multiple annotations can be dumped"""
-        img = Image(file_name=image.file_name)
+        img = Image(file_name=white_image.file_name)
         ann1 = ImageAnnotation(
-            category_name="TEST1",
+            category_name="test_cat_1",
             bounding_box=BoundingBox(ulx=10, uly=10, width=20, height=20, absolute_coords=True)
         )
         ann2 = ImageAnnotation(
-            category_name="TEST2",
+            category_name="test_cat_2",
             bounding_box=BoundingBox(ulx=50, uly=50, width=30, height=30, absolute_coords=True)
         )
         img.dump(ann1)
@@ -81,15 +81,15 @@ class TestImageAnnotations:
         assert len(img.annotations) == 2
         assert len(img._annotation_ids) == 2
 
-    def test_get_annotation_returns_all_by_default(self, image: WhiteImage):
+    def test_get_annotation_returns_all_by_default(self, white_image: stu.WhiteImage):
         """get_annotation() returns all active annotations by default"""
-        img = Image(file_name=image.file_name)
+        img = Image(file_name=white_image.file_name)
         ann1 = ImageAnnotation(
-            category_name="TEST1",
+            category_name="test_cat_1",
             bounding_box=BoundingBox(ulx=10, uly=10, width=20, height=20, absolute_coords=True)
         )
         ann2 = ImageAnnotation(
-            category_name="TEST2",
+            category_name="test_cat_2",
             bounding_box=BoundingBox(ulx=50, uly=50, width=30, height=30, absolute_coords=True)
         )
         img.dump(ann1)
@@ -98,46 +98,44 @@ class TestImageAnnotations:
         result = img.get_annotation()
         assert len(result) == 2
 
-    def test_get_annotation_filters_by_category_name(self, image: WhiteImage):
+    def test_get_annotation_filters_by_category_name(self, white_image: stu.WhiteImage):
         """get_annotation() filters by category_name"""
-        img = Image(file_name=image.file_name)
+        img = Image(file_name=white_image.file_name)
         ann1 = ImageAnnotation(
-            category_name="FOO",
+            category_name="test_cat_1",
             bounding_box=BoundingBox(ulx=10, uly=10, width=20, height=20, absolute_coords=True)
         )
         ann2 = ImageAnnotation(
-            category_name="BAR",
+            category_name="test_cat_2",
             bounding_box=BoundingBox(ulx=50, uly=50, width=30, height=30, absolute_coords=True)
         )
 
         img.dump(ann1)
         img.dump(ann2)
 
-        result = img.get_annotation(category_names="FOO")
+        result = img.get_annotation(category_names="test_cat_1")
         assert len(result) == 1
-        assert result[0].category_name.value == "FOO"
+        assert result[0].category_name.value == "test_cat_1"
 
-    def test_get_annotation_filters_by_multiple_category_names(self, image: WhiteImage):
+    def test_get_annotation_filters_by_multiple_category_names(self, white_image: stu.WhiteImage):
         """get_annotation() filters by multiple category names"""
-        img = Image(file_name=image.file_name)
-        ann1 = ImageAnnotation(category_name="FOO", bounding_box=BoundingBox(ulx=10, uly=10, width=20, height=20, absolute_coords=True))
-        ann2 = ImageAnnotation(category_name="BAR", bounding_box=BoundingBox(ulx=30, uly=30, width=20, height=20, absolute_coords=True))
-        ann3 = ImageAnnotation(category_name="BAZ", bounding_box=BoundingBox(ulx=50, uly=50, width=20, height=20, absolute_coords=True))
+        img = Image(file_name=white_image.file_name)
+        ann1 = ImageAnnotation(category_name="test_cat_1", bounding_box=BoundingBox(ulx=10, uly=10, width=20, height=20, absolute_coords=True))
+        ann2 = ImageAnnotation(category_name="test_cat_2", bounding_box=BoundingBox(ulx=30, uly=30, width=20, height=20, absolute_coords=True))
+        ann3 = ImageAnnotation(category_name="test_cat_3", bounding_box=BoundingBox(ulx=50, uly=50, width=20, height=20, absolute_coords=True))
 
         img.dump(ann1)
         img.dump(ann2)
         img.dump(ann3)
 
-        result = img.get_annotation(category_names=["FOO", "BAR"])
+        result = img.get_annotation(category_names=["test_cat_1", "test_cat_2"])
         assert len(result) == 2
 
-    @staticmethod
-    @mark.basic
-    def test_get_annotation_filters_by_annotation_id(image: WhiteImage):
+    def test_get_annotation_filters_by_annotation_id(self, white_image: stu.WhiteImage):
         """get_annotation() filters by annotation_id"""
-        img = Image(file_name=image.file_name)
-        ann1 = ImageAnnotation(category_name="TEST1", bounding_box=BoundingBox(ulx=10, uly=10, width=20, height=20, absolute_coords=True))
-        ann2 = ImageAnnotation(category_name="TEST2", bounding_box=BoundingBox(ulx=50, uly=50, width=30, height=30, absolute_coords=True))
+        img = Image(file_name=white_image.file_name)
+        ann1 = ImageAnnotation(category_name="test_cat_1", bounding_box=BoundingBox(ulx=10, uly=10, width=20, height=20, absolute_coords=True))
+        ann2 = ImageAnnotation(category_name="test_cat_2", bounding_box=BoundingBox(ulx=50, uly=50, width=30, height=30, absolute_coords=True))
         img.dump(ann1)
         img.dump(ann2)
 
@@ -145,16 +143,16 @@ class TestImageAnnotations:
         assert len(result) == 1
         assert result[0].annotation_id == ann1.annotation_id
 
-    def test_get_annotation_filters_by_service_id(self, image: WhiteImage):
+    def test_get_annotation_filters_by_service_id(self, white_image: stu.WhiteImage):
         """get_annotation() filters by service_id"""
-        img = Image(file_name=image.file_name)
+        img = Image(file_name=white_image.file_name)
         ann1 = ImageAnnotation(
-            category_name="TEST1",
+            category_name="test_cat_1",
             bounding_box=BoundingBox(ulx=10, uly=10, width=20, height=20, absolute_coords=True),
             service_id="service_a"
         )
         ann2 = ImageAnnotation(
-            category_name="TEST2",
+            category_name="test_cat_2",
             bounding_box=BoundingBox(ulx=50, uly=50, width=30, height=30, absolute_coords=True),
             service_id="service_b"
         )
@@ -165,11 +163,11 @@ class TestImageAnnotations:
         assert len(result) == 1
         assert result[0].service_id == "service_a"
 
-    def test_get_annotation_ignores_inactive_by_default(self, image: WhiteImage):
+    def test_get_annotation_ignores_inactive_by_default(self, white_image: stu.WhiteImage):
         """get_annotation() ignores inactive annotations by default"""
-        img = Image(file_name=image.file_name)
+        img = Image(file_name=white_image.file_name)
         ann = ImageAnnotation(
-            category_name="TEST",
+            category_name="test_cat_1",
             bounding_box=BoundingBox(ulx=10, uly=10, width=20, height=20, absolute_coords=True)
         )
         img.dump(ann)
@@ -178,11 +176,11 @@ class TestImageAnnotations:
         result = img.get_annotation()
         assert len(result) == 0
 
-    def test_get_annotation_can_include_inactive(self, image: WhiteImage):
+    def test_get_annotation_can_include_inactive(self, white_image: stu.WhiteImage):
         """get_annotation() can include inactive annotations"""
-        img = Image(file_name=image.file_name)
+        img = Image(file_name=white_image.file_name)
         ann = ImageAnnotation(
-            category_name="TEST",
+            category_name="test_cat_1",
             bounding_box=BoundingBox(ulx=10, uly=10, width=20, height=20, absolute_coords=True)
         )
         img.dump(ann)
@@ -191,21 +189,21 @@ class TestImageAnnotations:
         result = img.get_annotation(ignore_inactive=False)
         assert len(result) == 1
 
-    def test_get_annotation_combined_filters(self, image: WhiteImage):
+    def test_get_annotation_combined_filters(self, white_image: stu.WhiteImage):
         """get_annotation() applies multiple filters correctly"""
-        img = Image(file_name=image.file_name)
+        img = Image(file_name=white_image.file_name)
         ann1 = ImageAnnotation(
-            category_name="FOO",
+            category_name="test_cat_1",
             bounding_box=BoundingBox(ulx=10, uly=10, width=20, height=20, absolute_coords=True),
             service_id="service_a"
         )
         ann2 = ImageAnnotation(
-            category_name="FOO",
+            category_name="test_cat_1",
             bounding_box=BoundingBox(ulx=30, uly=30, width=20, height=20, absolute_coords=True),
             service_id="service_b"
         )
         ann3 = ImageAnnotation(
-            category_name="BAR",
+            category_name="test_cat_2",
             bounding_box=BoundingBox(ulx=50, uly=50, width=20, height=20, absolute_coords=True),
             service_id="service_a"
         )
@@ -214,18 +212,18 @@ class TestImageAnnotations:
         img.dump(ann3)
 
         # Filter by both category and service_id
-        result = img.get_annotation(category_names="FOO", service_ids="service_a")
+        result = img.get_annotation(category_names="test_cat_1", service_ids="service_a")
         assert len(result) == 1
         assert result[0].annotation_id == ann1.annotation_id
 
-    def test_annotation_id_uniqueness(self, image: WhiteImage):
+    def test_annotation_id_uniqueness(self, white_image: stu.WhiteImage):
         """Each annotation gets a unique annotation_id"""
-        img = Image(file_name=image.file_name)
+        img = Image(file_name=white_image.file_name)
         annotations = []
 
         for i in range(5):
             ann = ImageAnnotation(
-                category_name="TEST",
+                category_name="test_cat_1",
                 bounding_box=BoundingBox(ulx=i*10, uly=i*10, width=20, height=20, absolute_coords=True)
             )
             img.dump(ann)
