@@ -31,17 +31,17 @@ class TestImageAnnotation:
     def test_image_annotation_creation_basic(self):
         """Test basic ImageAnnotation creation"""
         img_ann = ImageAnnotation(
-            category_name="PERSON",
+            category_name="test_cat_1",
             category_id=1,
             bounding_box=BoundingBox(ulx=10, uly=20, width=30, height=40, absolute_coords=True)
         )
-        assert img_ann.category_name == get_type("PERSON")
+        assert img_ann.category_name == get_type("test_cat_1")
         assert img_ann.bounding_box is not None
 
     def test_image_annotation_bounding_box_from_dict(self):
         """Test creating ImageAnnotation with bounding_box from dict"""
         data = {
-            "category_name": "PERSON",
+            "category_name": "test_cat_1",
             "bounding_box": {
                 "ulx": 10,
                 "uly": 20,
@@ -57,13 +57,13 @@ class TestImageAnnotation:
     def test_image_annotation_get_bounding_box_basic(self):
         """Test getting bounding box from ImageAnnotation"""
         bbox = BoundingBox(ulx=10, uly=20, width=30, height=40, absolute_coords=True)
-        img_ann = ImageAnnotation(category_name="PERSON", bounding_box=bbox)
+        img_ann = ImageAnnotation(category_name="test_cat_1", bounding_box=bbox)
         retrieved_bbox = img_ann.get_bounding_box()
         assert retrieved_bbox == bbox
 
     def test_image_annotation_get_bounding_box_none_raises_error(self):
         """Test that getting bounding box when None raises error"""
-        img_ann = ImageAnnotation(category_name="PERSON", external_id="test")
+        img_ann = ImageAnnotation(category_name="test_cat_1", external_id="test")
         with pytest.raises(AnnotationError):
             img_ann.get_bounding_box()
 
@@ -72,8 +72,8 @@ class TestImageAnnotation:
         """Test that ImageAnnotation annotation_id is deterministic based on bounding_box"""
         bbox1 = BoundingBox(ulx=10, uly=20, width=30, height=40, absolute_coords=True)
         bbox2 = BoundingBox(ulx=10, uly=20, width=30, height=40, absolute_coords=True)
-        img_ann1 = ImageAnnotation(category_name="PERSON", bounding_box=bbox1)
-        img_ann2 = ImageAnnotation(category_name="PERSON", bounding_box=bbox2)
+        img_ann1 = ImageAnnotation(category_name="test_cat_1", bounding_box=bbox1)
+        img_ann2 = ImageAnnotation(category_name="test_cat_1", bounding_box=bbox2)
         ann_id_1 = ImageAnnotation.set_annotation_id(img_ann1)
         ann_id_2 = ImageAnnotation.set_annotation_id(img_ann2)
         assert ann_id_1 == ann_id_2
@@ -82,8 +82,8 @@ class TestImageAnnotation:
         """Test that different bounding boxes produce different annotation_ids"""
         bbox1 = BoundingBox(ulx=10, uly=20, width=30, height=40, absolute_coords=True)
         bbox2 = BoundingBox(ulx=15, uly=25, width=35, height=45, absolute_coords=True)
-        img_ann1 = ImageAnnotation(category_name="PERSON", bounding_box=bbox1)
-        img_ann2 = ImageAnnotation(category_name="PERSON", bounding_box=bbox2)
+        img_ann1 = ImageAnnotation(category_name="test_cat_1", bounding_box=bbox1)
+        img_ann2 = ImageAnnotation(category_name="test_cat_1", bounding_box=bbox2)
         ann_id_1 = ImageAnnotation.set_annotation_id(img_ann1)
         ann_id_2 = ImageAnnotation.set_annotation_id(img_ann2)
         assert ann_id_1 != ann_id_2
@@ -103,7 +103,7 @@ class TestBoundingBoxIntegration:
             "absolute_coords": True
         }
         img_ann = ImageAnnotation(
-            category_name="PERSON",
+            category_name="test_cat_1",
             bounding_box=bbox_dict
         )
         assert isinstance(img_ann.bounding_box, BoundingBox)

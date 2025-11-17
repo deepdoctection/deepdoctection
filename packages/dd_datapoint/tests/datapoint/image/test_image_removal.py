@@ -23,19 +23,18 @@ from pytest import mark
 
 from dd_datapoint.datapoint import BoundingBox, Image, ImageAnnotation
 
-from .conftest import WhiteImage
+import shared_test_utils as stu
 
 
 class TestImageRemoval:
     """Test Image annotation removal operations"""
 
     @staticmethod
-    @mark.basic
-    def test_remove_by_annotation_id_removes_annotation(image: WhiteImage):
+    def test_remove_by_annotation_id_removes_annotation(white_image: stu.WhiteImage):
         """remove() by annotation_id removes annotation"""
-        img = Image(file_name=image.file_name)
+        img = Image(file_name=white_image.file_name)
         ann = ImageAnnotation(
-            category_name="TEST",
+            category_name="test_cat_1",
             bounding_box=BoundingBox(ulx=10, uly=10, width=20, height=20, absolute_coords=True)
         )
         img.dump(ann)
@@ -46,16 +45,15 @@ class TestImageRemoval:
         assert len(result) == 0
 
     @staticmethod
-    @mark.basic
-    def test_remove_by_annotation_id_list(image: WhiteImage):
+    def test_remove_by_annotation_id_list(white_image: stu.WhiteImage):
         """remove() by list of annotation_ids removes all"""
-        img = Image(file_name=image.file_name)
+        img = Image(file_name=white_image.file_name)
         ann1 = ImageAnnotation(
-            category_name="TEST1",
+            category_name="test_cat_1",
             bounding_box=BoundingBox(ulx=10, uly=10, width=20, height=20, absolute_coords=True)
         )
         ann2 = ImageAnnotation(
-            category_name="TEST2",
+            category_name="test_cat_2",
             bounding_box=BoundingBox(ulx=30, uly=30, width=20, height=20, absolute_coords=True)
         )
         img.dump(ann1)
@@ -66,17 +64,16 @@ class TestImageRemoval:
         assert len(img.get_annotation()) == 0
 
     @staticmethod
-    @mark.basic
-    def test_remove_by_service_id_removes_matching(image: WhiteImage):
+    def test_remove_by_service_id_removes_matching(white_image: stu.WhiteImage):
         """remove() by service_id removes matching annotations"""
-        img = Image(file_name=image.file_name)
+        img = Image(file_name=white_image.file_name)
         ann1 = ImageAnnotation(
-            category_name="TEST1",
+            category_name="test_cat_1",
             bounding_box=BoundingBox(ulx=10, uly=10, width=20, height=20, absolute_coords=True),
             service_id="service_a"
         )
         ann2 = ImageAnnotation(
-            category_name="TEST2",
+            category_name="test_cat_2",
             bounding_box=BoundingBox(ulx=30, uly=30, width=20, height=20, absolute_coords=True),
             service_id="service_b"
         )
@@ -90,22 +87,21 @@ class TestImageRemoval:
         assert result[0].service_id == "service_b"
 
     @staticmethod
-    @mark.basic
-    def test_remove_by_multiple_service_ids(image: WhiteImage):
+    def test_remove_by_multiple_service_ids(white_image: stu.WhiteImage):
         """remove() by list of service_ids removes all matching"""
-        img = Image(file_name=image.file_name)
+        img = Image(file_name=white_image.file_name)
         ann1 = ImageAnnotation(
-            category_name="TEST1",
+            category_name="test_cat_1",
             bounding_box=BoundingBox(ulx=10, uly=10, width=20, height=20, absolute_coords=True),
             service_id="service_a"
         )
         ann2 = ImageAnnotation(
-            category_name="TEST2",
+            category_name="test_cat_2",
             bounding_box=BoundingBox(ulx=30, uly=30, width=20, height=20, absolute_coords=True),
             service_id="service_b"
         )
         ann3 = ImageAnnotation(
-            category_name="TEST3",
+            category_name="test_cat_3",
             bounding_box=BoundingBox(ulx=50, uly=50, width=20, height=20, absolute_coords=True),
             service_id="service_c"
         )
@@ -120,12 +116,11 @@ class TestImageRemoval:
         assert result[0].service_id == "service_c"
 
     @staticmethod
-    @mark.basic
-    def test_remove_updates_annotation_ids_list(image: WhiteImage):
+    def test_remove_updates_annotation_ids_list(white_image: stu.WhiteImage):
         """remove() updates internal _annotation_ids list"""
-        img = Image(file_name=image.file_name)
+        img = Image(file_name=white_image.file_name)
         ann = ImageAnnotation(
-            category_name="TEST",
+            category_name="test_cat_1",
             bounding_box=BoundingBox(ulx=10, uly=10, width=20, height=20, absolute_coords=True)
         )
         img.dump(ann)
@@ -136,20 +131,19 @@ class TestImageRemoval:
         assert ann.annotation_id not in img._annotation_ids
 
     @staticmethod
-    @mark.basic
-    def test_remove_preserves_other_annotations(image: WhiteImage):
+    def test_remove_preserves_other_annotations(white_image: stu.WhiteImage):
         """remove() preserves annotations not matching criteria"""
-        img = Image(file_name=image.file_name)
+        img = Image(file_name=white_image.file_name)
         ann1 = ImageAnnotation(
-            category_name="TEST1",
+            category_name="test_cat_1",
             bounding_box=BoundingBox(ulx=10, uly=10, width=20, height=20, absolute_coords=True)
         )
         ann2 = ImageAnnotation(
-            category_name="TEST2",
+            category_name="test_cat_2",
             bounding_box=BoundingBox(ulx=30, uly=30, width=20, height=20, absolute_coords=True)
         )
         ann3 = ImageAnnotation(
-            category_name="TEST3",
+            category_name="test_cat_3",
             bounding_box=BoundingBox(ulx=50, uly=50, width=20, height=20, absolute_coords=True)
         )
         img.dump(ann1)
@@ -165,22 +159,21 @@ class TestImageRemoval:
         assert ann3.annotation_id in result_ids
 
     @staticmethod
-    @mark.basic
-    def test_get_service_id_to_annotation_id_mapping(image: WhiteImage):
+    def test_get_service_id_to_annotation_id_mapping(white_image: stu.WhiteImage):
         """get_service_id_to_annotation_id returns correct mapping"""
-        img = Image(file_name=image.file_name)
+        img = Image(file_name=white_image.file_name)
         ann1 = ImageAnnotation(
-            category_name="TEST1",
+            category_name="test_cat_1",
             bounding_box=BoundingBox(ulx=10, uly=10, width=20, height=20, absolute_coords=True),
             service_id="service_a"
         )
         ann2 = ImageAnnotation(
-            category_name="TEST2",
+            category_name="test_cat_2",
             bounding_box=BoundingBox(ulx=30, uly=30, width=20, height=20, absolute_coords=True),
             service_id="service_a"
         )
         ann3 = ImageAnnotation(
-            category_name="TEST3",
+            category_name="test_cat_3",
             bounding_box=BoundingBox(ulx=50, uly=50, width=20, height=20, absolute_coords=True),
             service_id="service_b"
         )
@@ -196,12 +189,11 @@ class TestImageRemoval:
         assert len(mapping["service_b"]) == 1
 
     @staticmethod
-    @mark.basic
-    def test_get_annotation_id_to_annotation_maps(image: WhiteImage):
+    def test_get_annotation_id_to_annotation_maps(white_image: stu.WhiteImage):
         """get_annotation_id_to_annotation_maps returns correct structure"""
-        img = Image(file_name=image.file_name)
+        img = Image(file_name=white_image.file_name)
         ann = ImageAnnotation(
-            category_name="TEST",
+            category_name="test_cat_1",
             bounding_box=BoundingBox(ulx=10, uly=10, width=20, height=20, absolute_coords=True)
         )
         img.dump(ann)

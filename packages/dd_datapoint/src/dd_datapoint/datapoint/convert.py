@@ -34,12 +34,16 @@ from ..utils.viz import viz_handler
 with try_import() as pypdf_import_guard:
     from pypdf import PdfReader
 
+with try_import() as torch_import_guard:
+    import torch
+
 __all__ = [
     "convert_b64_to_np_array",
     "convert_np_array_to_b64",
     "convert_np_array_to_b64_b",
     "convert_bytes_to_np_array",
     "convert_pdf_bytes_to_np_array_v2",
+    "convert_np_array_to_torch"
 ]
 
 
@@ -137,3 +141,31 @@ def convert_pdf_bytes_to_np_array_v2(
             width = shape[2] - shape[0]
         return pdf_to_np_array(pdf_bytes, size=(int(width), int(height)))  # type: ignore
     return pdf_to_np_array(pdf_bytes, dpi=dpi)
+
+
+def convert_np_array_to_torch(np_image: PixelValues, device: Optional[torch.device] = None) -> torch.Tensor:
+    """
+    Converts a numpy image array into a torch tensor (dtype uint8) and moves it to the given device.
+
+    Args:
+        np_image: An image as numpy array.
+        device: Target torch device.
+
+    Returns:
+        A torch.Tensor with dtype uint8 on the given device.
+
+    Raises:
+        ImportError: If torch is not installed.
+    """
+    try:
+        tensor = torch.from_numpy(np_image)
+    except NameError as exc:
+        raise ImportError("torch is not installed.") from exc
+
+    if device is None:
+        device = torch.device("cpu")
+
+    if tensor.dtype != torch.uint8:
+        tensor = tensor.to(torch.uint8)
+
+    return tensor.to(device)

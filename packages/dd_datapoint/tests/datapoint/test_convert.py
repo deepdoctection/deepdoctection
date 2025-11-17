@@ -83,7 +83,6 @@ def test_pdfium_without_dpi_but_only_size_raises_valueerror(monkeypatch: pytest.
         convert_pdf_bytes_to_np_array_v2(pdf_page.pdf_bytes, dpi=None, width=800, height=600)
 
 
-@pytest.mark.basic
 @pytest.mark.skipif(not POPLER_AVAILABLE, reason="Poppler is not available")
 def test_poppler_with_dpi_300(monkeypatch: pytest.MonkeyPatch, pdf_page: stu.TestPdfPage) -> None:
     """
@@ -94,7 +93,6 @@ def test_poppler_with_dpi_300(monkeypatch: pytest.MonkeyPatch, pdf_page: stu.Tes
     assert np_array.shape == pdf_page.np_array_shape
 
 
-@pytest.mark.basic
 @pytest.mark.skipif(not POPLER_AVAILABLE, reason="Poppler is not available")
 def test_poppler_with_explicit_size(monkeypatch: pytest.MonkeyPatch, pdf_page: stu.TestPdfPage) -> None:
     """

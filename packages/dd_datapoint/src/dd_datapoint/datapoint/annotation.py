@@ -489,7 +489,7 @@ class ImageAnnotation(CategoryAnnotation):
     }
 
     bounding_box: Optional[BoundingBox] = Field(default=None)
-    image: Optional[Any] = Field(default=None, exclude=True)  # Avoid circular import
+    image: Optional[Any] = Field(default=None)
 
     @field_validator("image", mode="before")
     @classmethod

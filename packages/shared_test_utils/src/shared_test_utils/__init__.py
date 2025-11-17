@@ -11,11 +11,13 @@ Exports:
 """
 
 from shared_test_utils.assets import asset_info, asset_path, list_keys
-from shared_test_utils.factories import TestPdfPage, build_test_pdf_page
+from shared_test_utils.factories import TestPdfPage, build_test_pdf_page, WhiteImage, build_white_image
 
 __all__ = [
     "TestPdfPage",
+    "WhiteImage",
     "build_test_pdf_page",
+    "build_white_image",
     "asset_path",
     "asset_info",
     "list_keys",

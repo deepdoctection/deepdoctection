@@ -24,6 +24,8 @@ All factories produce stable, reproducible outputs suitable for cross-platform t
 
 from dataclasses import dataclass
 
+import numpy as np
+
 from ._data import PDF_BYTES
 
 
@@ -43,8 +45,20 @@ class TestPdfPage:
     pdf_bytes: bytes
     loc: str =  "/testlocation/test"
     file_name: str  = "test_image_0.pdf"
-    np_array_shape: tuple[int, int, int] = (3301, 2550, 3)
+    np_array_shape: tuple[int, int, int] = (3300, 2550, 3)
     np_array_shape_default: tuple[int, int, int] = (792, 612, 3)
+
+
+
+@dataclass(frozen=True)
+class WhiteImage:
+    """Test fixture for a white image with deterministic properties"""
+
+    image = np.ones([400, 600, 3], dtype=np.uint8)
+    location = "/testlocation/test"
+    file_name = "test_image.png"
+    external_id = "1234"
+    uuid = "90c05f37-0000-0000-0000-b84f9d14ff44"
 
 
 def build_test_pdf_page() -> TestPdfPage:
@@ -55,4 +69,12 @@ def build_test_pdf_page() -> TestPdfPage:
     return TestPdfPage(
         pdf_bytes=PDF_BYTES
     )
+
+
+def build_white_image() -> WhiteImage:
+    """
+    Build a deterministic white image for testing.
+    """
+    return WhiteImage()
+
 
