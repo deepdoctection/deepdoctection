@@ -10,8 +10,9 @@ Exports:
     - list_keys: List all available asset keys
 """
 
-from shared_test_utils.assets import asset_info, asset_path, list_keys
-from shared_test_utils.factories import TestPdfPage, build_test_pdf_page, WhiteImage, build_white_image
+from .assets import asset_info, asset_path, list_keys
+from .factories import TestPdfPage, build_test_pdf_page, WhiteImage, build_white_image
+from .tools.collector import collect_datapoint_from_dataflow
 
 __all__ = [
     "TestPdfPage",
@@ -21,6 +22,7 @@ __all__ = [
     "asset_path",
     "asset_info",
     "list_keys",
+    "collect_datapoint_from_dataflow",
 ]
 
 __version__ = "1.0.0"
