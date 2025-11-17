@@ -22,7 +22,6 @@ Fixtures for view module testing
 from pathlib import Path
 from pytest import fixture
 
-import shared_test_utils as stu
 from dd_datapoint.datapoint.view import Page
 
 
@@ -30,4 +29,3 @@ from dd_datapoint.datapoint.view import Page
 def fixture_page(page_json_path: Path) -> Page:
     """Provide a Page instance loaded from page_json fixture."""
     return Page.from_file(file_path=str(page_json_path))
-
