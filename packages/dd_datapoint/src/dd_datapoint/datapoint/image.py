@@ -169,6 +169,11 @@ class Image(BaseModel):
             if key in data:
                 priv[key] = data.pop(key)
         super().__init__(**data)
+
+        raw_image = priv.pop("_image", None)
+        if raw_image is not None:
+            self.image = raw_image
+
         for key, val in priv.items():
             # coerce dict representations back to their classes
             if key == "_bbox" and isinstance(val, dict):

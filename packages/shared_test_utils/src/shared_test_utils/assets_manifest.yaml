@@ -1,27 +1,6 @@
-# Tier-A Test Assets Manifest
-#
-# This YAML file tracks small test assets that are checked directly into the repository.
-# Each entry represents a single test asset with its metadata and integrity information.
-#
-# Schema per entry:
-#   <logical_key>:
-#     path: <relative path from repository root>
-#     sha256: <hex digest for integrity verification>
-#     size: <file size in bytes>
-#     license: <license identifier, e.g., Apache-2.0, CC0-1.0>
-#     tags: [optional, list of tags for categorization]
-#     description: <optional, human-readable description>
-#
-# Notes:
-# - Keys must be unique logical identifiers (no path separators recommended)
-# - Paths are stored as forward-slash separated, relative to repo root
-# - SHA-256 and size are computed automatically by the dd-add-asset CLI
-# - This manifest is for Tier-A assets only (small files < 1MB typically)
-# - Tier-B (Git LFS) and Tier-C (DVC) assets are managed separately
-#
-# To add a new asset, use:
-#   dd-add-asset --key <key> --path <path> --license <license> [options]
-#
-
-{}
-
+page_json:
+  path: dd_datapoint/tests/assets/a8d0e15c-7463-378a-a3e5-28590a4440ab.json
+  sha256: ae8e68f2b06624986ef959feb38b7431c8b666927442dbfe9abc263ca00d3286
+  size: 3564716
+  license: Apache-2.0
+  description: Sample JSON for generating dd.Page
