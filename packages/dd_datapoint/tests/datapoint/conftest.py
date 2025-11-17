@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # File: conftest.py
 
-# Copyright 2021 Dr. Janis Meyer. All rights reserved.
+# Copyright 2025 Dr. Janis Meyer. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,9 +22,8 @@ Fixtures for datapoint package testing
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 from pathlib import Path
-import numpy as np
+
 from pytest import fixture
 
 import shared_test_utils as stu

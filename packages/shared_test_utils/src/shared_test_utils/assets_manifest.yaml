@@ -4,3 +4,15 @@ page_json:
   size: 3564716
   license: Apache-2.0
   description: Sample JSON for generating dd.Page
+pdf_file_two_pages:
+  path: dd_datapoint/tests/assets/test_file.pdf
+  sha256: 8decc8571946d4cd70a024949e033a2a2a54377fe9f1c1b944c20f9ee11a9e51
+  size: 3028
+  license: Apache-2.0
+  description: pdf sample with two pages
+sample_document_image:
+  path: dd_datapoint/tests/assets/sample_document_image.png
+  sha256: a55679ce5cad22ffbea912eea1973bf5c1032abdce7105662844a936f7cd910d
+  size: 458046
+  license: Prop-Corpoorate-Doc
+  description: PNG of a page from some DB financial report

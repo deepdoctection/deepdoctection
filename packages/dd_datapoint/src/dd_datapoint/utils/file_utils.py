@@ -711,6 +711,19 @@ def get_pypdfium2_requirement() -> Requirement:
     """
     return "pypdfium2", pypdfium2_available(), _PYPDFIUM2_ERR_MSG
 
+# Pypdf
+_PYPDF_AVAILABLE = importlib.util.find_spec("pypdf") is not None
+
+
+def pypdf_available() -> bool:
+    """
+    Returns whether `pypdfium2` is installed.
+
+    Returns:
+        bool: `True` if `pypdfium2` is installed, `False` otherwise.
+    """
+    return bool(_PYPDF_AVAILABLE)
+
 
 # SpaCy
 _SPACY_AVAILABLE = importlib.util.find_spec("spacy") is not None
