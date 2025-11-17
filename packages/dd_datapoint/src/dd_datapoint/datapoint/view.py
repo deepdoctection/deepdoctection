@@ -28,6 +28,7 @@ from ..utils.logger import LoggingRecord, log_once, logger
 from ..utils.object_types import (
     CellType,
     LayoutType,
+    WordType,
     ObjectTypes,
     PageType,
     Relationships,
@@ -35,7 +36,7 @@ from ..utils.object_types import (
     TokenClasses,
     get_type,
 )
-from ..utils.transform import box_to_point4, point4_to_box
+from ..utils.transform import box_to_point4, point4_to_box, ResizeTransform
 from ..utils.types import HTML, Chunks, ImageDict, PathLikeOrStr, PixelValues, csv
 from ..utils.viz import draw_boxes, interactive_imshow, viz_handler
 from .annotation import CategoryAnnotation, ContainerAnnotation, ImageAnnotation
@@ -151,7 +152,6 @@ class ImageAnnotationBaseView:
     def relationships(self) -> dict[ObjectTypes, list[str]]:
         return self._image_annotation.relationships
 
-    # Delegating helpers
     def get_bounding_box(self, image_id: str) -> BoundingBox:
         return self._image_annotation.get_bounding_box(image_id)
 
@@ -317,7 +317,7 @@ class Word(ImageAnnotationBaseView):
 
     def get_attribute_names(self) -> set[str]:
         attr_names = (
-            set(LayoutType)
+            set(WordType)
             .union(super().get_attribute_names())
             .union(
                 {Relationships.READING_ORDER, Relationships.LAYOUT_LINK, Relationships.LINK, Relationships.SUCCESSOR}
@@ -383,17 +383,16 @@ class Layout(ImageAnnotationBaseView):
             ```
 
         """
-        # Keep original behavior; relies on .words and attributes resolved via __getattr__
         words = self.get_ordered_words()
         if words:
             characters = [w.characters for w in words]  # type: ignore
             ann_ids = [w.annotation_id for w in words]
             token_classes = [w.token_class for w in words if getattr(w, "token_class", None) is not None]  # type: ignore
-            token_class_ann_ids = [w.token_class_id for w in words if getattr(w, "token_class_id", None) is not None]  # type: ignore
+            token_class_ann_ids = [w.get_sub_category(WordType.TOKEN_CLASS).annotation_id if WordType.TOKEN_CLASS in w.sub_categories else None for w in words]  # type: ignore
             token_tags = [w.token_tag for w in words if getattr(w, "token_tag", None) is not None]  # type: ignore
-            token_tag_ann_ids = [w.token_tag_id for w in words if getattr(w, "token_tag_id", None) is not None]  # type: ignore
-            token_classes_ids = [w.token_class for w in words if getattr(w, "token_class", None) is not None]  # type: ignore
-            token_tag_ids = [w.token_tag for w in words if getattr(w, "token_tag", None) is not None]  # type: ignore
+            token_tag_ann_ids = [w.get_sub_category(WordType.TOKEN_TAG).annotation_id if WordType.TOKEN_TAG in w.sub_categories else None for w in words]  # type: ignore
+            token_classes_ids = [w.get_sub_category(WordType.TOKEN_CLASS).category_id if WordType.TOKEN_CLASS in w.sub_categories else None for w in words]  # type: ignore
+            token_tag_ids = [w.get_sub_category(WordType.TOKEN_TAG).category_id if WordType.TOKEN_TAG in w.sub_categories else None for w in words]  # type: ignore
         else:
             characters, ann_ids = [], []
             token_classes, token_class_ann_ids = [], []
@@ -921,13 +920,13 @@ class Page:
     def __init__(
         self,
         base_image: Image,
-        text_container: ObjectTypes = IMAGE_DEFAULTS.TEXT_CONTAINER,
+        text_container: Optional[ObjectTypes] = None ,
         floating_text_block_categories: Optional[Sequence[ObjectTypes]] = None,
         residual_text_block_categories: Optional[Sequence[ObjectTypes]] = None,
         include_residual_text_container: bool = True,
     ) -> None:
         self._base_image = base_image
-        self.text_container: ObjectTypes = text_container
+        self.text_container: ObjectTypes = text_container if text_container is not None else IMAGE_DEFAULTS.TEXT_CONTAINER
 
         ftb: tuple[ObjectTypes, ...] = (
             tuple(floating_text_block_categories)
@@ -989,7 +988,6 @@ class Page:
     def summary(self) -> CategoryAnnotation:
         return self._base_image.summary
 
-    # View-level API
     def get_annotation(  # type: ignore
         self,
         category_names: Optional[Union[str, ObjectTypes, Sequence[Union[str, ObjectTypes]]]] = None,
@@ -1459,7 +1457,6 @@ class Page:
             if box_stack:
                 boxes = np.vstack(box_stack)
                 boxes = box_to_point4(boxes)
-                from deepdoctection import ResizeTransform
 
                 resizer = ResizeTransform(self.height, self.width, scaled_height, scaled_width, "VIZ")
                 boxes = resizer.apply_coords(boxes)

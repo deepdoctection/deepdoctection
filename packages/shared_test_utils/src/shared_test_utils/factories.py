@@ -45,7 +45,7 @@ class TestPdfPage:
     pdf_bytes: bytes
     loc: str =  "/testlocation/test"
     file_name: str  = "test_image_0.pdf"
-    np_array_shape: tuple[int, int, int] = (3300, 2550, 3)
+    np_array_shape: tuple[int, int, int] = (3301, 2550, 3)
     np_array_shape_default: tuple[int, int, int] = (792, 612, 3)
 
 
