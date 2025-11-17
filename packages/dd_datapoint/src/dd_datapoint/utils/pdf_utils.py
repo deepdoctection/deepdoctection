@@ -29,7 +29,7 @@ from errno import ENOENT
 from io import BytesIO
 from pathlib import Path
 from shutil import copyfile
-from typing import TYPE_CHECKING, Generator, Literal, Optional, Union
+from typing import Generator, Literal, Optional, Union
 
 from lazy_imports import try_import
 from numpy import uint8
@@ -43,13 +43,10 @@ from .types import B64, PathLikeOrStr, PixelValues
 from .utils import is_file_extension
 from .viz import viz_handler
 
-if TYPE_CHECKING:
+with try_import() as pypdf_import_guard:
     from pypdf import PdfReader, PdfWriter
     from pypdf import errors as pypdf_errors
-else:
-    with try_import() as pypdf_import_guard:
-        from pypdf import PdfReader, PdfWriter
-        from pypdf import errors as pypdf_errors
+
 
 with try_import() as pt_import_guard:
     import pypdfium2
