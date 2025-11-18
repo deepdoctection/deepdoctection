@@ -44,12 +44,12 @@ from typing import Mapping, Union
 
 from lazy_imports import try_import
 
-from ...dataflow import DataFlow, MapData, SerializerFiles
+from dd_datapoint.dataflow import DataFlow, MapData, SerializerFiles
 from ...datasets.info import DatasetInfo
-from ...mapper.cats import filter_cat
-from ...mapper.maputils import curry
-from ...mapper.misc import xml_to_dict
-from ...mapper.pascalstruct import pascal_voc_dict_to_image
+from dd_datapoint.mapper.cats import filter_cat
+from dd_datapoint.mapper import curry
+from dd_datapoint.mapper import xml_to_dict
+from dd_datapoint.mapper.pascalstruct import pascal_voc_dict_to_image
 from dd_datapoint.utils.env_info import SETTINGS
 from dd_datapoint.utils.file_utils import lxml_available
 from dd_datapoint.utils.object_types import CellType, DatasetType, LayoutType

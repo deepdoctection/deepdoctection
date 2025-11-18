@@ -28,7 +28,7 @@ from typing import Callable, Optional, Sequence, Union
 
 import tqdm
 
-from dd_datasets.dataflow import DataFlow, MapData
+from dd_datapoint.dataflow import DataFlow, MapData
 from dd_datapoint.datapoint.image import Image, MetaAnnotation
 from dd_datapoint.utils.context import timed_operation
 from dd_datapoint.utils.tqdm import get_tqdm

@@ -23,12 +23,12 @@ import os
 from pathlib import Path
 from typing import List, Mapping, Optional, Sequence, Tuple, Union
 
-from dd_datasets.dataflow import CustomDataFromIterable, DataFlow, DataFromList, MapData
-from dd_datasets.dataflow.custom_serialize import SerializerFiles, SerializerPdfDoc
+from dd_datapoint.dataflow import CustomDataFromIterable, DataFlow, DataFromList, MapData
+from dd_datapoint.dataflow import SerializerFiles, SerializerPdfDoc
 from dd_datapoint.datapoint.image import Image
 from dd_datapoint.datapoint.view import IMAGE_DEFAULTS
-from dd_datasets.mapper.maputils import curry
-from dd_datasets.mapper.misc import to_image
+from dd_datapoint.mapper.maputils import curry
+from dd_datapoint.mapper.misc import to_image
 from dd_datapoint.utils.fs import maybe_path_or_pdf
 from dd_datapoint.utils.identifier import get_uuid_from_str
 from dd_datapoint.utils.logger import LoggingRecord, logger

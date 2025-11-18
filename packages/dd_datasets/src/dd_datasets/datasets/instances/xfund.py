@@ -33,10 +33,10 @@ import json
 import os
 from typing import Mapping, Sequence, Union
 
-from ...dataflow import CustomDataFromList, DataFlow, MapData
+from dd_datapoint.dataflow import CustomDataFromList, DataFlow, MapData
 from ...datasets.info import DatasetInfo
-from ...mapper.cats import cat_to_sub_cat, filter_cat
-from ...mapper.xfundstruct import xfund_to_image
+from dd_datapoint.mapper.cats import cat_to_sub_cat, filter_cat
+from dd_datapoint.mapper.xfundstruct import xfund_to_image
 from dd_datapoint.utils.object_types import BioTag, DatasetType, LayoutType, ObjectTypes, TokenClasses, TokenClassWithTag, WordType
 from dd_datapoint.utils.types import FunsdDict
 from ..base import _BuiltInDataset

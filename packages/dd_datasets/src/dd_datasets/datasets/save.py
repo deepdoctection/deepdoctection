@@ -29,7 +29,7 @@ from dd_datapoint.datapoint.image import Image
 from dd_datapoint.utils.file_utils import mkdir_p
 from dd_datapoint.utils.types import ImageDict, PathLikeOrStr
 from dd_datapoint.utils.viz import viz_handler
-from ..dataflow import DataFlow, MapData, SerializerJsonlines
+from dd_datapoint.dataflow import DataFlow, MapData, SerializerJsonlines
 
 
 def dataflow_to_json(

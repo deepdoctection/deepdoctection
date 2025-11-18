@@ -28,10 +28,10 @@ from __future__ import annotations
 
 from typing import Mapping, Union
 
-from ...dataflow import DataFlow, MapData
-from ...dataflow.custom_serialize import SerializerJsonlines
+from dd_datapoint.dataflow import DataFlow, MapData
+from dd_datapoint.dataflow.custom_serialize import SerializerJsonlines
 from ...datasets.info import DatasetInfo
-from ...mapper.prodigystruct import prodigy_to_image
+from dd_datapoint.mapper.prodigystruct import prodigy_to_image
 from dd_datapoint.utils.object_types import DatasetType, LayoutType
 from ..base import _BuiltInDataset
 from ..dataflow_builder import DataFlowBaseBuilder

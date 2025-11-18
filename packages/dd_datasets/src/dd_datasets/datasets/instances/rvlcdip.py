@@ -34,12 +34,12 @@ from __future__ import annotations
 import os
 from typing import Mapping, Union
 
-from ...dataflow import DataFlow, MapData
-from ...dataflow.custom_serialize import SerializerTabsepFiles
+from dd_datapoint.dataflow import DataFlow, MapData
+from dd_datapoint.dataflow.custom_serialize import SerializerTabsepFiles
 from dd_datapoint.datapoint.annotation import CategoryAnnotation
 from dd_datapoint.datapoint.image import Image
-from ...mapper.cats import filter_summary
-from ...mapper.maputils import curry
+from dd_datapoint.mapper.cats import filter_summary
+from dd_datapoint.mapper import curry
 from dd_datapoint.utils.fs import load_image_from_file
 from dd_datapoint.utils.object_types import DatasetType, DocumentType, PageType, SummaryType, TypeOrStr, WordType
 from ..base import _BuiltInDataset

@@ -36,7 +36,7 @@ from dd_datapoint.datapoint.image import Image, MetaAnnotation
 from dd_datapoint.utils.logger import LoggingRecord, logger
 from dd_datapoint.utils.object_types import DatasetType, ObjectTypes, TypeOrStr, get_type
 from dd_datapoint.utils.types import PathLikeOrStr
-from ..dataflow import CacheData, ConcatData, CustomDataFromList, DataFlow
+from dd_datapoint.dataflow import CacheData, ConcatData, CustomDataFromList, DataFlow
 from .dataflow_builder import DataFlowBaseBuilder
 from .info import DatasetCategories, DatasetInfo, get_merged_categories
 

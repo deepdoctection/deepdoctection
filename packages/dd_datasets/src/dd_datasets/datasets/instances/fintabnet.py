@@ -36,14 +36,14 @@ import os
 from pathlib import Path
 from typing import Mapping, Sequence, Union
 
-from ...dataflow import DataFlow, MapData
-from ...dataflow.common import FlattenData
-from ...dataflow.custom_serialize import SerializerJsonlines
+from dd_datapoint.dataflow import DataFlow, MapData
+from dd_datapoint.dataflow import FlattenData
+from dd_datapoint.dataflow.custom_serialize import SerializerJsonlines
 from dd_datapoint.datapoint.image import Image
-from ...mapper.cats import cat_to_sub_cat, filter_cat
-from ...mapper.maputils import curry
-from ...mapper.misc import image_ann_to_image, maybe_ann_to_sub_image
-from ...mapper.pubstruct import pub_to_image
+from dd_datapoint.mapper.cats import cat_to_sub_cat, filter_cat
+from dd_datapoint.mapper import curry
+from dd_datapoint.mapper import image_ann_to_image, maybe_ann_to_sub_image
+from dd_datapoint.mapper.pubstruct import pub_to_image
 from dd_datapoint.utils.logger import LoggingRecord, logger
 from dd_datapoint.utils.object_types import CellType, DatasetType, LayoutType, ObjectTypes, TableType
 from dd_datapoint.utils.types import PubtabnetDict

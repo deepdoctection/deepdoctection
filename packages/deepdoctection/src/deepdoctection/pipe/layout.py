@@ -26,7 +26,7 @@ import numpy as np
 
 from dd_datapoint.datapoint.image import Image, MetaAnnotation
 from ..extern.base import ObjectDetector, PdfMiner
-from dd_datasets.mapper.misc import curry
+from dd_datapoint.mapper.misc import curry
 from dd_datapoint.utils.error import ImageError
 from dd_datapoint.utils.object_types import ObjectTypes
 from dd_datapoint.utils.transform import PadTransform

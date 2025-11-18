@@ -27,7 +27,7 @@ from dd_datapoint.datapoint.annotation import DEFAULT_CATEGORY_ID, CategoryAnnot
 from dd_datapoint.datapoint.box import BoundingBox, local_to_global_coords, rescale_coords
 from dd_datapoint.datapoint.image import Image
 from ..extern.base import DetectionResult
-from dd_datasets.mapper.maputils import MappingContextManager
+from dd_datapoint.mapper.maputils import MappingContextManager
 from dd_datapoint.utils.object_types import ObjectTypes, Relationships
 
 

@@ -33,7 +33,7 @@ from dd_datapoint.datapoint.annotation import ImageAnnotation
 from dd_datapoint.datapoint.box import merge_boxes
 from dd_datapoint.datapoint.image import Image, MetaAnnotation
 from ..extern.base import DetectionResult
-from dd_datasets.mapper.maputils import MappingContextManager
+from dd_datapoint.mapper.maputils import MappingContextManager
 from dd_datapoint.utils.error import ImageError
 from dd_datapoint.utils.file_utils import networkx_available
 from dd_datapoint.utils.object_types import CellType, LayoutType, ObjectTypes, Relationships, TableType, get_type

@@ -33,7 +33,7 @@ from ..eval.base import MetricBase
 from ..eval.eval import Evaluator
 from ..eval.registry import metric_registry
 from ..extern.hfdetr import HFDetrDerivedDetector
-from dd_datasets.mapper.hfstruct import DetrDataCollator, image_to_hf_detr_training
+from dd_datapoint.mapper.hfstruct import DetrDataCollator, image_to_hf_detr_training
 from ..pipe.base import PipelineComponent
 from ..pipe.registry import pipeline_component_registry
 from dd_datapoint.utils.error import DependencyError

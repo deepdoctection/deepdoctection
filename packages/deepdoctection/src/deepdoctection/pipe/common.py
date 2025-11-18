@@ -27,12 +27,12 @@ from typing import Literal, Mapping, Optional, Sequence, Union
 
 import numpy as np
 
-from dd_datasets.dataflow import DataFlow, MapData
+from dd_datapoint.dataflow import DataFlow, MapData
 from dd_datapoint.datapoint.image import Image, MetaAnnotation
 from dd_datapoint.datapoint.view import IMAGE_DEFAULTS, Page
 from ..extern.base import DetectionResult
-from dd_datasets.mapper.match import match_anns_by_distance, match_anns_by_intersection
-from dd_datasets.mapper.misc import to_image
+from dd_datapoint.mapper.match import match_anns_by_distance, match_anns_by_intersection
+from dd_datapoint.mapper.misc import to_image
 from dd_datapoint.utils.object_types import LayoutType, ObjectTypes, Relationships, TypeOrStr, get_type
 from .base import PipelineComponent
 from .registry import pipeline_component_registry
