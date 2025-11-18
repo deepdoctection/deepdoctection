@@ -24,7 +24,7 @@ from typing import Any, Callable, Optional
 
 from lazy_imports import try_import
 
-from dd_datasets.dataflow import DataFlow, DataFromList, MapData, MultiThreadMapData
+from dd_datapoint.dataflow import DataFlow, DataFromList, MapData, MultiThreadMapData
 from dd_datapoint.datapoint.image import Image
 from dd_datapoint.datapoint.view import Page
 from dd_datasets.datasets.base import DatasetCategories

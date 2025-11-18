@@ -25,7 +25,7 @@ from typing import Mapping, Optional, Sequence, Union
 
 from dd_datapoint.utils.env_info import SETTINGS
 from dd_datapoint.utils.types import PathLikeOrStr
-from ..dataflow import DataFlow
+from dd_datapoint.dataflow import DataFlow
 from .info import DatasetCategories
 
 

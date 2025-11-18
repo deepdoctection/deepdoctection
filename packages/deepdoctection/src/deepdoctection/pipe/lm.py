@@ -26,7 +26,7 @@ from typing import TYPE_CHECKING, Any, Callable, Literal, Optional, Sequence, Un
 
 from dd_datapoint.datapoint.image import Image, MetaAnnotation
 from ..extern.base import SequenceClassResult
-from dd_datasets.mapper.laylmstruct import image_to_layoutlm_features, image_to_lm_features
+from dd_datapoint.mapper.laylmstruct import image_to_layoutlm_features, image_to_lm_features
 from dd_datapoint.utils.object_types import BioTag, LayoutType, ObjectTypes, PageType, TokenClasses, WordType
 from .base import PipelineComponent
 from .registry import pipeline_component_registry

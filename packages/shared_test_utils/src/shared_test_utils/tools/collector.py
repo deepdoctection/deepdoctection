@@ -46,4 +46,8 @@ def collect_datapoint_from_dataflow(
     if isinstance(df, SupportsResetState):
         df.reset_state()
 
-    return list(islice(df, max_datapoints)) if max_datapoints is not None else list(df)
+    result: List[T] = []
+    source = islice(df, max_datapoints) if max_datapoints is not None else df
+    for item in source:
+        result.append(item)
+    return result

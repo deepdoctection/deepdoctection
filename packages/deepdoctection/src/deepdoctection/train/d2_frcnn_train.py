@@ -34,7 +34,7 @@ from ..eval.base import MetricBase
 from ..eval.eval import Evaluator
 from ..eval.registry import metric_registry
 from ..extern.d2detect import D2FrcnnDetector
-from dd_datasets.mapper.d2struct import image_to_d2_frcnn_training
+from dd_datapoint.mapper.d2struct import image_to_d2_frcnn_training
 from ..pipe.base import PipelineComponent
 from ..pipe.registry import pipeline_component_registry
 from dd_datapoint.utils.error import DependencyError

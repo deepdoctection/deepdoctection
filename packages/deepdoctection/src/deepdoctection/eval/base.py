@@ -22,7 +22,7 @@ Base classes for evaluations and metrics
 from abc import ABC, abstractmethod
 from typing import Any, Callable, Optional
 
-from dd_datasets.dataflow import DataFlow
+from dd_datapoint.dataflow import DataFlow
 from dd_datasets.datasets.info import DatasetCategories
 from dd_datapoint.utils.error import DependencyError
 from dd_datapoint.utils.file_utils import Requirement

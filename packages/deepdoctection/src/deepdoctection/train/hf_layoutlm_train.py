@@ -49,7 +49,7 @@ from ..extern.hflayoutlm import (
 )
 from ..extern.hflm import HFLmSequenceClassifier
 from dd_datapoint.utils import get_torch_device
-from dd_datasets.mapper.laylmstruct import LayoutLMDataCollator, image_to_raw_layoutlm_features, image_to_raw_lm_features
+from dd_datapoint.mapper.laylmstruct import LayoutLMDataCollator, image_to_raw_layoutlm_features, image_to_raw_lm_features
 from ..pipe.base import PipelineComponent
 from ..pipe.registry import pipeline_component_registry
 from dd_datapoint.utils.error import DependencyError

@@ -37,7 +37,7 @@ from dd_datapoint.utils.object_types import DefaultType, ObjectTypes, TypeOrStr,
 from dd_datapoint.utils.transform import InferenceResize, ResizeTransform
 from dd_datapoint.utils.types import PathLikeOrStr, PixelValues, Requirement
 from dd_datapoint.utils import get_torch_device
-from dd_datasets.mapper.nms import batched_nms
+from dd_datapoint.mapper.nms import batched_nms
 from .base import DetectionResult, ModelCategories, ObjectDetector
 
 with try_import() as pt_import_guard:

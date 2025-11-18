@@ -31,8 +31,8 @@ from dd_datapoint.datapoint.annotation import ImageAnnotation
 from dd_datapoint.datapoint.box import BoundingBox, global_to_local_coords, intersection_box, intersection_boxes, iou, merge_boxes
 from dd_datapoint.datapoint.image import Image, MetaAnnotation
 from ..extern.base import DetectionResult
-from dd_datasets.mapper.maputils import MappingContextManager
-from dd_datasets.mapper.match import match_anns_by_intersection
+from dd_datapoint.mapper.maputils import MappingContextManager
+from dd_datapoint.mapper.match import match_anns_by_intersection
 from dd_datapoint.utils.error import ImageError
 from dd_datapoint.utils.object_types import CellType, LayoutType, ObjectTypes, Relationships, TableType, TypeOrStr, get_type
 from .base import PipelineComponent

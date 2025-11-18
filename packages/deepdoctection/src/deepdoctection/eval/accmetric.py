@@ -29,9 +29,9 @@ from numpy.typing import NDArray
 from tabulate import tabulate
 from termcolor import colored
 
-from dd_datasets.dataflow import DataFlow
+from dd_datapoint.dataflow import DataFlow
 from dd_datasets.datasets.info import DatasetCategories
-from dd_datasets.mapper.cats import image_to_cat_id
+from dd_datapoint.mapper import image_to_cat_id
 from dd_datapoint.utils.file_utils import Requirement
 from dd_datapoint.utils.logger import LoggingRecord, logger
 from dd_datapoint.utils.object_types import ObjectTypes, TypeOrStr, get_type

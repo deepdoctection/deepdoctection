@@ -37,10 +37,10 @@ from __future__ import annotations
 import os
 from typing import Dict, List, Mapping, Union
 
-from ...dataflow import DataFlow, MapData, SerializerFiles
+from dd_datapoint.dataflow import DataFlow, MapData, SerializerFiles
 from ...datasets.info import DatasetInfo
-from ...mapper.cats import cat_to_sub_cat, filter_cat
-from ...mapper.xfundstruct import xfund_to_image
+from dd_datapoint.mapper.cats import cat_to_sub_cat, filter_cat
+from dd_datapoint.mapper.xfundstruct import xfund_to_image
 from dd_datapoint.utils.fs import load_json
 from dd_datapoint.utils.object_types import BioTag, DatasetType, LayoutType, ObjectTypes, TokenClasses, TokenClassWithTag, WordType
 from dd_datapoint.utils.types import FunsdDict, PathLikeOrStr

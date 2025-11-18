@@ -29,9 +29,9 @@ from dd_datapoint.utils.logger import LoggingRecord, log_once, logger
 from dd_datapoint.utils.object_types import DatasetType, LayoutType, ObjectTypes, PageType, WordType
 from dd_datapoint.utils.tqdm import get_tqdm
 from dd_datapoint.utils.types import DP, JsonDict
-from ..dataflow import CustomDataFromList, MapData, RepeatedData
+from dd_datapoint.dataflow import CustomDataFromList, MapData, RepeatedData
 from ..datasets.base import DatasetBase
-from ..mapper.maputils import LabelSummarizer
+from dd_datapoint.mapper import LabelSummarizer
 from .registry import get_dataset
 
 with try_import() as import_guard:
