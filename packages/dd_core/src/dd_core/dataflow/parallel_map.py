@@ -82,7 +82,7 @@ def _get_pipe_name(name):
 class _ParallelMapData(ProxyDataFlow, ABC):
     def __init__(self, df: DataFlow, buffer_size: int, strict: bool = False) -> None:
         if not pyzmq_available():
-            raise ModuleNotFoundError("pyzmq is required for running parallel dataflows (multiprocess/multithread).")
+            raise ImportError("pyzmq is required for running parallel dataflows (multiprocess/multithread).")
         super().__init__(df)
         if buffer_size <= 0:
             raise ValueError(f"buffer_size must be a positive number, got {buffer_size}")
