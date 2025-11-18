@@ -30,6 +30,12 @@ class ObjectTestType(ObjectTypes):
     NON_EXISTENT = "non_existent"
 
 
+@pytest.fixture(name="page_json_path")
+def fixture_page_json_path() -> Path:
+    """Provide path to a sample page json file."""
+    return stu.asset_path("page_json")
+
+
 @pytest.fixture(name="pdf_file_path_two_pages")
 def fixture_pdf_file_path_two_pages() -> Path:
     return stu.asset_path("pdf_file_two_pages")

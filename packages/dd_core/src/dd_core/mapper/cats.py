@@ -98,8 +98,8 @@ def re_assign_cat_ids(
 
     Args:
         dp: Image
-        categories_dict_name_as_key: e.g. `{LayoutType.word: 1}`
-        cat_to_sub_cat_mapping: e.g. `{LayoutType.word: {WordType.token_class:
+        categories_dict_name_as_key: e.g. `{LayoutType.WORD: 1}`
+        cat_to_sub_cat_mapping: e.g. `{LayoutType.WORD: {WordType.TOKEN_CLASS:
                                                           {FundsFirstPage.REPORT_DATE: 1,
                                                            FundsFirstPage.REPORT_TYPE: 2,
                                                            FundsFirstPage.UMBRELLA: 3,

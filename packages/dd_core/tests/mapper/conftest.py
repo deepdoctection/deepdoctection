@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-# File: conftest.py
+# File: xxx.py
 
-# Copyright 2025 Dr. Janis Meyer. All rights reserved.
+# Copyright 2024 Dr. Janis Meyer. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,31 +16,19 @@
 # limitations under the License.
 
 
-"""
-Fixtures for datapoint package testing
-"""
-
-from __future__ import annotations
-
 from pathlib import Path
-
 from pytest import fixture
 
-import shared_test_utils as stu
+from dd_core.datapoint.image import Image
 
 
-@fixture(name="white_image")
-def fixture_image() -> stu.WhiteImage:
-    """Provide a white test image"""
-    return stu.build_white_image()
+@fixture(name="image")
+def fixture_page(page_json_path: Path) -> Image:
+    """Provide a Page instance loaded from page_json fixture."""
+    return Image.from_file(file_path=str(page_json_path))
 
 
-@fixture(name="pdf_page")
-def fixture_pdf_page() -> stu.TestPdfPage:
-    """Provide a deterministic 1-page PDF for rendering tests."""
-    return stu.build_test_pdf_page()
-
-
-
-
-
+@fixture(name="table_image")
+def fixture_table_image(image: Image) -> Image:
+    """An image from a table image annotation crop"""
+    return image.get_annotation(category_names="table")[0].image

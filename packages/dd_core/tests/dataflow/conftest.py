@@ -76,3 +76,52 @@ def fixture_coco_file_path() -> Path:
 def fixture_test_text_file_path() -> Path:
     """Provide path to a sample page json file."""
     return stu.asset_path("text_file")
+
+
+@fixture(name="numerical_dataset")
+def fixture_numerical_dataset() -> list[list[list[float]]]:
+    """
+    Numerical dataset of shape (2,2,3) for stats testing
+    """
+    return [[[1.0, 0.0, 2.0], [0.5, 1.0, 1.0]], [[2.0, 0.0, 4.0], [0.0, 1.0, 1.0]]]
+
+
+@fixture(name="numerical_dataflow")
+def fixture_numerical_dataflow(numerical_dataset) -> DataFromList:
+    """
+    Numerical dataflow for stats testing
+    """
+    return DataFromList(numerical_dataset, shuffle=False)
+
+
+@fixture(name="expected_mean_axis_zero")
+def fixture_expected_mean_axis_zero() -> list[list[float]]:
+    """
+    Expected mean along axis 0 for numerical_dataset
+    """
+    return [[1.5, 0.0, 3.0], [0.25, 1.0, 1.0]]
+
+
+@fixture(name="expected_mean_all_axes")
+def fixture_expected_mean_all_axes() -> float:
+    """
+    Expected mean along all axes for numerical_dataset
+    """
+    return 1.125
+
+
+@fixture(name="expected_std_axis_zero")
+def fixture_expected_std_axis_zero() -> list[list[float]]:
+    """
+    Expected std along axis 0 for numerical_dataset
+    """
+    return [[0.70710678, 0.0, 1.41421356], [0.35355339, 0.0, 0.0]]
+
+
+@fixture(name="expected_std_all_axes")
+def fixture_expected_std_all_axes() -> float:
+    """
+    Expected std along all axes for numerical_dataset
+    """
+    return 0.29462782549439476
+
