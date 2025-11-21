@@ -15,20 +15,106 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import numpy as np
 
 from pathlib import Path
 from pytest import fixture
 
-from dd_core.datapoint.image import Image
+import shared_test_utils as stu
 
+from dd_core.datapoint.image import Image
+from dd_core.dataflow.custom_serialize import SerializerCoco
+from dd_core.mapper.cats import filter_cat
+from dd_core.mapper.xfundstruct import xfund_to_image
+
+from .data import XFUND_RAW_LAYOUTLM_FEATURES, XFUND_LAYOUTLM_FEATURES
 
 @fixture(name="image")
 def fixture_page(page_json_path: Path) -> Image:
     """Provide a Page instance loaded from page_json fixture."""
     return Image.from_file(file_path=str(page_json_path))
 
+@fixture(name="image_with_layout_anns")
+def fixture_image_with_layout_anns(image: Image) -> Image:
+    """An image with layout annotations"""
+    categories_as_list_filtered = [
+        "text",
+        "page_footer",
+        "caption",
+        "table",
+        "figure",
+        "section_header",
+        "page_header",
+        "column_header",
+    ]
+    categories_as_list_unfiltered = [
+        "text",
+        "page_footer",
+        "caption",
+        "cell",
+        "table",
+        "line",
+        "column",
+        "word",
+        "row",
+        "figure",
+        "section_header",
+        "page_header",
+        "column_header",
+    ]
+    image = filter_cat(
+        categories_as_list_filtered=categories_as_list_filtered,
+        categories_as_list_unfiltered=categories_as_list_unfiltered,
+    )(image)
+    return image
+
 
 @fixture(name="table_image")
 def fixture_table_image(image: Image) -> Image:
     """An image from a table image annotation crop"""
     return image.get_annotation(category_names="table")[0].image
+
+
+@fixture(name="coco_datapoint")
+def fixture_coco_datapoint() -> dict:
+    """Provide a COCO datapoint dict loaded from coco_datapoint_json fixture."""
+    path =stu.asset_path("coco_like")
+    df = SerializerCoco.load(path=path)
+    df.reset_state()
+    return next(iter(df))
+
+@fixture(name="xfund_datapoint")
+def fixture_xfund_datapoint() -> dict:
+    xfund_dict = stu.build_xfund_sample().data
+    return xfund_dict
+
+@fixture(name="xfund_image")
+def fixture_xfund_image(xfund_datapoint: dict) -> Image:
+    categories_dict = {"word": 1, "text": 2}
+    token_class_names_mapping= {
+        "other": "other",
+        "header": "header",
+    }
+    ner_token_to_id_mapping= {"word": {"token_class": {"other": 1, "question": 2, "answer": 3, "header": 4},
+              "tag": {"I": 1, "O": 2, "B": 3},
+              "token_tag": {"B-answer": 1, "B-header": 2, "B-question": 3, "I-answer": 4, "I-header": 5,
+                            "I-question": 6, "O": 7}},
+     "text": {"token_class": {"other": 1, "question": 2, "answer": 3, "header": 4}}}
+
+    img: Image = xfund_to_image(load_image=False,
+                                fake_score=False,
+                                categories_dict_name_as_key=categories_dict,
+                                token_class_names_mapping=token_class_names_mapping,
+                                ner_token_to_id_mapping=ner_token_to_id_mapping)(xfund_datapoint)
+    img.image= np.zeros((3508, 2480, 3), dtype=np.uint8)
+    return img
+
+
+@fixture(name="xfund_raw_layoutlm_features")
+def fixture_xfund_raw_layoutlm_features() -> dict:
+    return XFUND_RAW_LAYOUTLM_FEATURES
+
+
+@fixture(name="layoutlm_features")
+def fixture_layoutlm_features() -> dict:
+    return XFUND_LAYOUTLM_FEATURES
