@@ -22,11 +22,11 @@ Provides factory functions for creating test assets without filesystem dependenc
 All factories produce stable, reproducible outputs suitable for cross-platform testing.
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 import numpy as np
 
-from ._data import PDF_BYTES
+from ._data import PDF_BYTES, PRODIGY_SAMPLE, XFUND_SAMPLE
 
 
 @dataclass(frozen=True)
@@ -49,6 +49,15 @@ class TestPdfPage:
     np_array_shape_default: tuple[int, int, int] = (792, 612, 3)
 
 
+def build_test_pdf_page() -> TestPdfPage:
+    """
+    Build a deterministic single-page PDF for testing.
+    """
+
+    return TestPdfPage(
+        pdf_bytes=PDF_BYTES
+    )
+
 
 @dataclass(frozen=True)
 class WhiteImage:
@@ -61,16 +70,6 @@ class WhiteImage:
     uuid = "90c05f37-0000-0000-0000-b84f9d14ff44"
 
 
-def build_test_pdf_page() -> TestPdfPage:
-    """
-    Build a deterministic single-page PDF for testing.
-    """
-
-    return TestPdfPage(
-        pdf_bytes=PDF_BYTES
-    )
-
-
 def build_white_image() -> WhiteImage:
     """
     Build a deterministic white image for testing.
@@ -78,3 +77,13 @@ def build_white_image() -> WhiteImage:
     return WhiteImage()
 
 
+@dataclass(frozen=True)
+class XFundSample:
+    """Deterministic XFund sample datapoint for testing."""
+    data: dict = field(default_factory=lambda: XFUND_SAMPLE["documents"][0])
+    np_array_shape: tuple[int, int, int] = (3508, 2480, 3)
+
+
+def build_xfund_sample() -> XFundSample:
+    """Build a deterministic XFund sample datapoint for testing."""
+    return XFundSample()

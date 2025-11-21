@@ -17,7 +17,8 @@
 
 
 from dd_core.datapoint.image import Image
-from dd_core.mapper.cats import cat_to_sub_cat, re_assign_cat_ids, filter_cat, filter_summary, image_to_cat_id
+from dd_core.mapper.cats import (cat_to_sub_cat, re_assign_cat_ids, filter_cat,
+                                 filter_summary, image_to_cat_id, remove_cats)
 
 
 def test_cat_to_sub_word_to_characters_with_id_mapping(image: Image):
@@ -149,7 +150,6 @@ def test_filter_summary_columns_name_none(table_image: Image) -> None:
     assert result is None
 
 
-
 def test_image_to_cat_id_basic_categories(table_image: Image) -> None:
     """Extract ids for column, row, cell categories."""
     result, img_id = image_to_cat_id(
@@ -225,3 +225,64 @@ def test_image_to_cat_id_summary_names(table_image: Image) -> None:
         "max_col_span": ["max_col_span"],
     }
     assert img_id == table_image.image_id
+
+
+def test_remove_cats_category_names(image: Image) -> None:
+    """Remove text category annotations."""
+    dp = remove_cats(category_names=["text"])(image)
+    anns = dp.get_annotation()
+    assert all(ann.category_name != "text" for ann in anns)
+
+
+def test_remove_cats_sub_categories(image: Image) -> None:
+    """Remove characters subcategory from text annotations."""
+    dp = remove_cats(sub_categories={"text": "characters"})(image)
+    for ann in dp.get_annotation(category_names=["text"]):
+        assert "characters" not in ann.sub_categories
+
+
+def test_remove_cats_relationships(image: Image) -> None:
+    """Remove child relationship from text annotations."""
+    dp = remove_cats(relationships={"text": "child"})(image)
+    for ann in dp.get_annotation(category_names=["text"]):
+        assert len(ann.relationships["child"])==0
+
+
+def test_remove_cats_category_and_sub_category(image: Image) -> None:
+    """Remove text category and its characters subcategory."""
+    dp = remove_cats(category_names=["text"], sub_categories={"text": "characters"})(image)
+    assert all(ann.category_name != "text" for ann in dp.get_annotation())
+
+
+def test_remove_cats_category_and_relationship(image: Image) -> None:
+    """Remove text category and its child relationship."""
+    dp = remove_cats(category_names=["text"], relationships={"text": "child"})(image)
+    assert all(ann.category_name != "text" for ann in dp.get_annotation())
+
+
+def test_remove_cats_sub_category_and_relationship(image: Image) -> None:
+    """Remove characters subcategory and child relationship from text."""
+    dp = remove_cats(sub_categories={"text": "characters"}, relationships={"text": "child"})(image)
+    for ann in dp.get_annotation(category_names=["text"]):
+        assert "characters" not in ann.sub_categories
+        assert len(ann.relationships["child"])==0
+
+
+def test_remove_cats_all(image: Image) -> None:
+    """Remove text category, characters subcategory and child relationship."""
+    dp = remove_cats(
+        category_names=["text"],
+        sub_categories={"text": "characters"},
+        relationships={"text": "child"},
+    )(image)
+    assert all(ann.category_name != "text" for ann in dp.get_annotation())
+
+
+def test_remove_cats_summary_sub_categories(table_image: Image) -> None:
+    """Remove number_of_rows and number_of_columns from summary."""
+    dp = remove_cats(summary_sub_categories=["number_of_rows", "number_of_columns"])(table_image)
+    assert "number_of_rows" not in dp.summary.sub_categories
+    assert "number_of_columns" not in dp.summary.sub_categories
+    assert "max_row_span" in dp.summary.sub_categories
+    assert "max_col_span" in dp.summary.sub_categories
+

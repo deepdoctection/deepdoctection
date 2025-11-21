@@ -16,6 +16,12 @@ pdf_file_two_pages:
   size: 3028
   license: Apache-2.0
   description: pdf sample with two pages
+pubtabnet_like:
+  path: dd_core/tests/assets/pubtabnet_like.json
+  sha256: 0870ac1b3df6842078d94762f1bbfe5a771e195f66c288cc509da56b01e67a0a
+  size: 19237
+  license: Apache-2.0
+  description: Sample Pubtabnet GT sample
 sample_document_image:
   path: dd_core/tests/assets/sample_document_image.png
   sha256: a55679ce5cad22ffbea912eea1973bf5c1032abdce7105662844a936f7cd910d
