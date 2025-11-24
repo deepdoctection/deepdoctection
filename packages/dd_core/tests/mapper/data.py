@@ -126,3 +126,37 @@ XFUND_LAYOUTLM_FEATURES = {
         "attention_mask": [[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]],
         "token_type_ids": [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
     },
+
+
+PRODIGY_DATAPOINT = {
+    "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABEAAAAiCAIAAAA24aWuAAAAWElEQVQ4EZXBAQEAAAABIP6P"
+    "zgZV5FTkVORU5FTkVORU5FTkVORU5FTkVORU5FTkVORU5FTkVORU5FTkVORU5FTkVORU5FTkVORU5FTkVORU5FTkVORU5DTzFG"
+    "W9r8aRmwAAAABJRU5ErkJggg==",
+    "text": "99999984_310518_J_1_150819_page_252.png",
+    "spans": [
+        {
+            "label": "table",
+            "x": 100,
+            "y": 223.7,
+            "w": 1442,
+            "h": 1875.3,
+            "type": "rect",
+            "points": [[1, 2.7], [1, 29], [15, 29], [15, 2.7]],
+        },
+        {
+            "label": "title",
+            "x": 1181.6,
+            "y": 99.2,
+            "w": 364.6,
+            "h": 68.8,
+            "type": "rect",
+            "points": [[11.6, 9.2], [11.6, 18], [16.2, 18], [16.2, 9.2]],
+        },
+    ],
+    "_input_hash": -2030256107,
+    "_task_hash": 1310891334,
+    "_view_id": "image_manual",
+    "width": 1650,
+    "height": 2350,
+    "answer": "reject",
+}

@@ -41,6 +41,7 @@ dependencies = [
 full = [
     "pypdf>=6.0.0",
     "jsonlines==3.1.0",
+    "scipy>=1.13.1"
 ]
 
 types = [

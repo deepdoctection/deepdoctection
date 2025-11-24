@@ -35,7 +35,6 @@ if transformers_available():
     from transformers import LayoutLMTokenizerFast
 
 
-@mark.basic
 def test_image_to_raw_layoutlm_features_for_token_data(
     monkeypatch: pytest.MonkeyPatch,
     xfund_image: Image,
@@ -66,7 +65,6 @@ def test_image_to_raw_layoutlm_features_for_token_data(
     assert raw_features["labels"] == xfund_raw_layoutlm_features["labels"]
 
 
-@mark.basic
 def test_image_to_raw_layoutlm_features_for_inference(
     monkeypatch: pytest.MonkeyPatch,
     xfund_image: Image,
@@ -104,7 +102,6 @@ def test_image_to_raw_layoutlm_features_for_inference(
     assert "labels" not in raw_features
 
 
-@mark.pt_deps
 def test_raw_features_to_layoutlm_features(
     xfund_image: Image, layoutlm_features: JsonDict
 ) -> None:
