@@ -259,7 +259,7 @@ class DocLayNetSeqBuilder(DataFlowBaseBuilder):
 
         @curry
         def _map_to_image(dp: CocoDatapointDict, load_img: bool) -> Image:
-            image = Image(location=dp["file_name"], file_name=os.path.split(dp["file_name"])[1])
+            image = Image(location=dp["file_name"].as_posix(), file_name=os.path.split(dp["file_name"])[1])
             image.image = load_image_from_file(image.location)
             summary = CategoryAnnotation(category_name=SummaryType.SUMMARY)
             label_to_category_name = {
