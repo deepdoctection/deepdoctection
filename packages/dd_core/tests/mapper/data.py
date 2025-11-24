@@ -160,3 +160,27 @@ PRODIGY_DATAPOINT = {
     "height": 2350,
     "answer": "reject",
 }
+
+
+IIITAR13K_DATAPOINT = {
+        "annotation": "2004",
+        "filename": "/home/janis/.cache/deepdoctection/datasets/iiitar13k/validation_xml/ar_alphabet_2004_eng_32.xml",
+        "path": "/home/cvit/Desktop/Phase2_OpenText_Annotation/Annual_Report/Alphabet/2004/NASDAQ_GOOG_2004_80.png",
+        "database": "Unknown",
+        "width": "1100",
+        "height": "850",
+        "depth": "3",
+        "segmented": "0",
+        "objects": [
+            {
+                "name": "table",
+                "pose": "Unspecified",
+                "truncated": "0",
+                "difficult": 0,
+                "xmin": 127,
+                "ymin": 202,
+                "xmax": 1006,
+                "ymax": 580,
+            }
+        ],
+    }
