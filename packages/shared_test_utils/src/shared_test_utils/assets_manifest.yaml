@@ -34,6 +34,12 @@ sample_document_image:
   size: 458046
   license: Prop-Corpoorate-Doc
   description: PNG of a page from some DB financial report
+testlayout:
+  path: dd_datasets/tests/assets/datasets/testlayout/test_layout.jsonl
+  sha256: f00ac10b4180404d9e4633d53d4b53095a1bbc524f164105d07f1b61c1cc839e
+  size: 5709
+  license: Apache-2.0
+  description: Layout test file with two samples
 text_file:
   path: dd_core/tests/assets/test_text_file.txt
   sha256: df0f36eec9b5d4905af65db3df540b616102ed5cc57896a6e6d8fd1837483f39

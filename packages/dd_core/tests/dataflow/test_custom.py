@@ -34,7 +34,6 @@ def rebalance_remove_first(lst: list[Any]) -> list[Any]:
     return lst[1:]
 
 
-@mark.basic
 def test_cache_data_caches_dataflow(simple_list_dataflow: Any) -> None:
     """
     Test that CacheData properly caches a dataflow after first iteration
@@ -52,7 +51,6 @@ def test_cache_data_caches_dataflow(simple_list_dataflow: Any) -> None:
     assert first_pass == [["a", "b"], ["c", "d"], ["e", "f"]]
 
 
-@mark.basic
 def test_cache_data_get_cache(simple_dict_dataflow: Any) -> None:
     """
     Test CacheData get_cache method returns complete list
@@ -70,7 +68,6 @@ def test_cache_data_get_cache(simple_dict_dataflow: Any) -> None:
     assert cached_list[2] == {"key1": "c", "key2": 3}
 
 
-@mark.basic
 def test_cache_data_with_shuffle(simple_list_dataflow: Any) -> None:
     """
     Test CacheData shuffle option
@@ -86,7 +83,6 @@ def test_cache_data_with_shuffle(simple_list_dataflow: Any) -> None:
     assert set(map(tuple, first_pass)) == {("a", "b"), ("c", "d"), ("e", "f")}
 
 
-@mark.basic
 def test_custom_data_from_list_with_max_datapoints(simple_list: list[str]) -> None:
     """
     Test CustomDataFromList respects max_datapoints limit
@@ -103,7 +99,6 @@ def test_custom_data_from_list_with_max_datapoints(simple_list: list[str]) -> No
     assert len(df) == 3
 
 
-@mark.basic
 def test_custom_data_from_list_with_rebalance_func(simple_dict_list: list[dict[str, Any]]) -> None:
     """
     Test CustomDataFromList with rebalance function
@@ -120,7 +115,6 @@ def test_custom_data_from_list_with_rebalance_func(simple_dict_list: list[dict[s
     assert result[1]["key2"] == 3
 
 
-@mark.basic
 def test_custom_data_from_iterable(simple_list: list[str]) -> None:
     """
     Test CustomDataFromIterable with max_datapoints

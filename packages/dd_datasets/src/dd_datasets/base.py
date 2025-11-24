@@ -32,11 +32,11 @@ from typing import Any, Mapping, Optional, Sequence, Type, TypedDict, Union
 
 import numpy as np
 
-from dd_datapoint.datapoint.image import Image, MetaAnnotation
-from dd_datapoint.utils.logger import LoggingRecord, logger
-from dd_datapoint.utils.object_types import DatasetType, ObjectTypes, TypeOrStr, get_type
-from dd_datapoint.utils.types import PathLikeOrStr
-from dd_datapoint.dataflow import CacheData, ConcatData, CustomDataFromList, DataFlow
+from dd_core.datapoint.image import Image, MetaAnnotation
+from dd_core.utils.logger import LoggingRecord, logger
+from dd_core.utils.object_types import DatasetType, ObjectTypes, TypeOrStr, get_type
+from dd_core.utils.types import PathLikeOrStr
+from dd_core.dataflow import CacheData, ConcatData, CustomDataFromList, DataFlow
 from .dataflow_builder import DataFlowBaseBuilder
 from .info import DatasetCategories, DatasetInfo, get_merged_categories
 

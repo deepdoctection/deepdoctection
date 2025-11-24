@@ -170,7 +170,7 @@ def test_image_to_cat_id_subcategory_ids(table_image: Image) -> None:
         sub_categories={"column": "column_number"},
     )(table_image)
     assert result == {
-        "column_number": [3, 1, 2],
+        "column": [2,2,2], "column_number": [3, 1, 2],
     }
     assert img_id == table_image.image_id
 
@@ -183,6 +183,7 @@ def test_image_to_cat_id_subcategory_names(table_image: Image) -> None:
         id_name_or_value="name",
     )(table_image)
     assert result == {
+        "column": [2] * 3,
         "column_number": ["column_number"] * 3,
     }
     assert img_id == table_image.image_id

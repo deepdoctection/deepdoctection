@@ -27,7 +27,7 @@ import numpy as np
 from lazy_imports import try_import
 
 from dd_datapoint.dataflow import DataFlow
-from dd_datasets.datasets.info import DatasetCategories
+from dd_datasets.info import DatasetCategories
 from dd_datapoint.mapper import re_assign_cat_ids
 from dd_datapoint.mapper import image_to_coco
 from dd_datapoint.utils.file_utils import Requirement, cocotools_available, get_cocotools_requirement

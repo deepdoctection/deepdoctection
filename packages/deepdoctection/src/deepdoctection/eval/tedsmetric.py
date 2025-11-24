@@ -27,7 +27,7 @@ from lazy_imports import try_import
 from dd_datapoint.dataflow import DataFlow, DataFromList, MapData, MultiThreadMapData
 from dd_datapoint.datapoint.image import Image
 from dd_datapoint.datapoint.view import Page
-from dd_datasets.datasets.base import DatasetCategories
+from dd_datasets.base import DatasetCategories
 from dd_datapoint.utils.file_utils import Requirement, get_apted_requirement, get_distance_requirement, get_lxml_requirement
 from dd_datapoint.utils.logger import LoggingRecord, logger
 from dd_datapoint.utils.object_types import LayoutType

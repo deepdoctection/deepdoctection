@@ -102,6 +102,7 @@ def test_image_to_raw_layoutlm_features_for_inference(
     assert "labels" not in raw_features
 
 
+@pytest.mark.skipif(not transformers_available(), reason="Transformers is not installed")
 def test_raw_features_to_layoutlm_features(
     xfund_image: Image, layoutlm_features: JsonDict
 ) -> None:

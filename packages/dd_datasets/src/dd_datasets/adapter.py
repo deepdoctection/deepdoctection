@@ -24,14 +24,15 @@ from typing import Any, Callable, Iterator, Mapping, Optional, Union
 
 from lazy_imports import try_import
 
-from dd_datapoint.datapoint.image import Image
-from dd_datapoint.utils.logger import LoggingRecord, log_once, logger
-from dd_datapoint.utils.object_types import DatasetType, LayoutType, ObjectTypes, PageType, WordType
-from dd_datapoint.utils.tqdm import get_tqdm
-from dd_datapoint.utils.types import DP, JsonDict
-from dd_datapoint.dataflow import CustomDataFromList, MapData, RepeatedData
-from ..datasets.base import DatasetBase
-from dd_datapoint.mapper import LabelSummarizer
+from dd_core.datapoint.image import Image
+from dd_core.utils.logger import LoggingRecord, log_once, logger
+from dd_core.utils.object_types import DatasetType, LayoutType, ObjectTypes, PageType, WordType
+from dd_core.utils.tqdm import get_tqdm
+from dd_core.utils.types import DP, JsonDict
+from dd_core.dataflow import CustomDataFromList, MapData, RepeatedData
+from dd_core.mapper import LabelSummarizer
+
+from .base import DatasetBase
 from .registry import get_dataset
 
 with try_import() as import_guard:

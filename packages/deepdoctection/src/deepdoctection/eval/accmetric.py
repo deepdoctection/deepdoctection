@@ -30,7 +30,7 @@ from tabulate import tabulate
 from termcolor import colored
 
 from dd_datapoint.dataflow import DataFlow
-from dd_datasets.datasets.info import DatasetCategories
+from dd_datasets.info import DatasetCategories
 from dd_datapoint.mapper import image_to_cat_id
 from dd_datapoint.utils.file_utils import Requirement
 from dd_datapoint.utils.logger import LoggingRecord, logger

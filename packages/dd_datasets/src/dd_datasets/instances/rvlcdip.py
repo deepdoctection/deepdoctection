@@ -34,14 +34,15 @@ from __future__ import annotations
 import os
 from typing import Mapping, Union
 
-from dd_datapoint.dataflow import DataFlow, MapData
-from dd_datapoint.dataflow.custom_serialize import SerializerTabsepFiles
-from dd_datapoint.datapoint.annotation import CategoryAnnotation
-from dd_datapoint.datapoint.image import Image
-from dd_datapoint.mapper.cats import filter_summary
-from dd_datapoint.mapper import curry
-from dd_datapoint.utils.fs import load_image_from_file
-from dd_datapoint.utils.object_types import DatasetType, DocumentType, PageType, SummaryType, TypeOrStr, WordType
+from dd_core.dataflow import DataFlow, MapData
+from dd_core.dataflow.custom_serialize import SerializerTabsepFiles
+from dd_core.datapoint.annotation import CategoryAnnotation
+from dd_core.datapoint.image import Image
+from dd_core.mapper.cats import filter_summary
+from dd_core.mapper import curry
+from dd_core.utils.fs import load_image_from_file
+from dd_core.utils.object_types import DatasetType, DocumentType, PageType, SummaryType, TypeOrStr, WordType
+
 from ..base import _BuiltInDataset
 from ..dataflow_builder import DataFlowBaseBuilder
 from ..info import DatasetCategories, DatasetInfo

@@ -30,7 +30,6 @@ from ..datapoint.annotation import ImageAnnotation
 from ..datapoint.box import iou, ioa as np_ioa
 from ..datapoint.image import Image
 from ..utils.object_types import TypeOrStr
-from ..utils.file_utils import scipy_available
 
 with try_import() as scipy_import_guard:
     from scipy.spatial import distance

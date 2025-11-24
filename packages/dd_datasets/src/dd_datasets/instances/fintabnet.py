@@ -36,17 +36,18 @@ import os
 from pathlib import Path
 from typing import Mapping, Sequence, Union
 
-from dd_datapoint.dataflow import DataFlow, MapData
-from dd_datapoint.dataflow import FlattenData
-from dd_datapoint.dataflow.custom_serialize import SerializerJsonlines
-from dd_datapoint.datapoint.image import Image
-from dd_datapoint.mapper.cats import cat_to_sub_cat, filter_cat
-from dd_datapoint.mapper import curry
-from dd_datapoint.mapper import image_ann_to_image, maybe_ann_to_sub_image
-from dd_datapoint.mapper.pubstruct import pub_to_image
-from dd_datapoint.utils.logger import LoggingRecord, logger
-from dd_datapoint.utils.object_types import CellType, DatasetType, LayoutType, ObjectTypes, TableType
-from dd_datapoint.utils.types import PubtabnetDict
+from dd_core.dataflow import DataFlow, MapData
+from dd_core.dataflow import FlattenData
+from dd_core.dataflow.custom_serialize import SerializerJsonlines
+from dd_core.datapoint.image import Image
+from dd_core.mapper.cats import cat_to_sub_cat, filter_cat
+from dd_core.mapper import curry
+from dd_core.mapper import image_ann_to_image, maybe_ann_to_sub_image
+from dd_core.mapper.pubstruct import pub_to_image
+from dd_core.utils.logger import LoggingRecord, logger
+from dd_core.utils.object_types import CellType, DatasetType, LayoutType, ObjectTypes, TableType
+from dd_core.utils.types import PubtabnetDict
+
 from ..base import _BuiltInDataset
 from ..dataflow_builder import DataFlowBaseBuilder
 from ..info import DatasetCategories, DatasetInfo

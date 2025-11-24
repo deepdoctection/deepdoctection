@@ -28,14 +28,14 @@ from __future__ import annotations
 
 from typing import Mapping, Union
 
-from dd_datapoint.dataflow import DataFlow, MapData
-from dd_datapoint.dataflow.custom_serialize import SerializerJsonlines
-from ...datasets.info import DatasetInfo
-from dd_datapoint.mapper.prodigystruct import prodigy_to_image
-from dd_datapoint.utils.object_types import DatasetType, LayoutType
+from dd_core.dataflow import DataFlow, MapData
+from dd_core.dataflow.custom_serialize import SerializerJsonlines
+from dd_core.mapper.prodigystruct import prodigy_to_image
+from dd_core.utils.object_types import DatasetType, LayoutType
+
 from ..base import _BuiltInDataset
 from ..dataflow_builder import DataFlowBaseBuilder
-from ..info import DatasetCategories
+from ..info import DatasetCategories, DatasetInfo
 from ..registry import dataset_registry
 
 _NAME = "testlayout"

@@ -18,7 +18,7 @@
 import numpy as np
 import pytest
 
-from dd_core.datapoint.annotation import ImageAnnotation
+from dd_core.utils.file_utils import scipy_available
 from dd_core.mapper.match import match_anns_by_intersection, match_anns_by_distance
 from dd_core.utils.object_types import LayoutType
 
@@ -63,6 +63,7 @@ def test_iou_threshold_monotonicity(annotations):
     assert len(child_idx_low) >= len(child_idx_high)
 
 
+@pytest.mark.skipif(not scipy_available(), reason="Scipy is not installed")
 def test_distance_assigned_child_is_closest(annotations):
     """
     For each returned (parent, child) pair the child must be the nearest among all children.

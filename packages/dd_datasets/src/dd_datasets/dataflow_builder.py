@@ -23,9 +23,9 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Mapping, Optional, Sequence, Union
 
-from dd_datapoint.utils.env_info import SETTINGS
-from dd_datapoint.utils.types import PathLikeOrStr
-from dd_datapoint.dataflow import DataFlow
+from dd_core.utils.env_info import SETTINGS
+from dd_core.utils.types import PathLikeOrStr
+from dd_core.dataflow import DataFlow
 from .info import DatasetCategories
 
 
