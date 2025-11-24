@@ -15,6 +15,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import json
 import numpy as np
 
 from pathlib import Path
@@ -22,12 +23,13 @@ from pytest import fixture
 
 import shared_test_utils as stu
 
+from dd_core.datapoint.annotation import ImageAnnotation
 from dd_core.datapoint.image import Image
 from dd_core.dataflow.custom_serialize import SerializerCoco
 from dd_core.mapper.cats import filter_cat
 from dd_core.mapper.xfundstruct import xfund_to_image
 
-from .data import XFUND_RAW_LAYOUTLM_FEATURES, XFUND_LAYOUTLM_FEATURES
+from .data import XFUND_RAW_LAYOUTLM_FEATURES, XFUND_LAYOUTLM_FEATURES, PRODIGY_DATAPOINT
 
 @fixture(name="image")
 def fixture_page(page_json_path: Path) -> Image:
@@ -118,3 +120,51 @@ def fixture_xfund_raw_layoutlm_features() -> dict:
 @fixture(name="layoutlm_features")
 def fixture_layoutlm_features() -> dict:
     return XFUND_LAYOUTLM_FEATURES
+
+
+@fixture(name="prodigy_datapoint")
+def fixture_prodigy_datapoint() -> dict:
+    return PRODIGY_DATAPOINT
+
+
+@fixture(name="pubtabnet_datapoint")
+def fixture_pubtabnet_datapoint() -> dict:
+    path = stu.asset_path("pubtabnet_like")
+    with open(path, "r") as f:
+        pubtabnet_dict = json.load(f)
+    return pubtabnet_dict
+
+
+@fixture(name="dp_image")
+def fixture_dp_image() -> Image:
+    """fixture Image datapoint"""
+    img = Image(location="/test/to/path", file_name="test_name")
+    img.image = np.ones([400, 600, 3], dtype=np.float32)
+    return img
+
+
+@fixture(name="annotations")
+def fixture_annotations_dict(dp_image: Image):
+    path = stu.asset_path("annotations")
+    with open(path, "r") as f:
+        annotations_dict = json.load(f)
+
+    def make_annotation(use_layout: bool, use_captions: bool):
+
+        layout_anns = [ImageAnnotation(**data) for data in annotations_dict["layout_anns"]]
+        captions = [ImageAnnotation(**data) for data in annotations_dict["caption_anns"]]
+
+        if use_layout:
+            for img_ann in layout_anns:
+                dp_image.dump(img_ann)
+                dp_image.image_ann_to_image(img_ann.annotation_id, True)
+        if use_captions:
+            for cap_ann in captions:
+                dp_image.dump(cap_ann)
+                dp_image.image_ann_to_image(cap_ann.annotation_id, True)
+
+        return dp_image
+
+    return make_annotation
+
+

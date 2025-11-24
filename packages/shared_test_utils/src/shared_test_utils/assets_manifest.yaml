@@ -1,3 +1,9 @@
+annotations:
+  path: dd_core/tests/assets/annotations.json
+  sha256: d4d85b04867eb0c6db4977495606ada598b0980060944473332bf5b0d3e547fa
+  size: 45268
+  license: Apache-2.0
+  description: Annotations for mapper und pipe unittests
 coco_like:
   path: dd_core/tests/assets/coco_like.json
   sha256: 40d2efc6a7d36c8722e0999958eb935c8c814b89a44c309d5c964b6d9dcfd35b
@@ -18,8 +24,8 @@ pdf_file_two_pages:
   description: pdf sample with two pages
 pubtabnet_like:
   path: dd_core/tests/assets/pubtabnet_like.json
-  sha256: 0870ac1b3df6842078d94762f1bbfe5a771e195f66c288cc509da56b01e67a0a
-  size: 19237
+  sha256: b570cb58922405d08d89907a2db6a1279ae204bc260b08c9724d45227a8acd14
+  size: 19201
   license: Apache-2.0
   description: Sample Pubtabnet GT sample
 sample_document_image:
