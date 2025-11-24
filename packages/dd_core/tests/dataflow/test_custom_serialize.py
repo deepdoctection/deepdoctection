@@ -18,9 +18,14 @@
 """
 Testing the module dataflow.custom_serialize
 """
+
+import json
 import tempfile
+import importlib
+
 from pathlib import Path
 from typing import Any
+from lazy_imports import try_import
 
 import pytest
 
@@ -36,8 +41,11 @@ from dd_core.dataflow import (
     SerializerJsonlines,
     SerializerPdfDoc,
     SerializerTabsepFiles,
+    FileClosingIterator,
 )
 
+with try_import() as pt_import_guard:
+    import jsonlines
 
 
 @pytest.fixture(name="temp_dir")
@@ -53,11 +61,7 @@ def test_file_closing_iterator_closes_file(temp_dir: str, simple_dict_list: list
     """
     Test that FileClosingIterator properly closes the file after iteration completes
     """
-    # Arrange
-    import json
-    
-    from dd_core.dataflow.custom_serialize import FileClosingIterator
-    
+
     file_path = Path(temp_dir) / "test.json"
     with open(file_path, "w") as f:
         for item in simple_dict_list:
@@ -74,12 +78,11 @@ def test_file_closing_iterator_closes_file(temp_dir: str, simple_dict_list: list
     assert file_obj.closed
 
 
+@pytest.mark.skipif(not importlib.util.find_spec("jsonlines") is not None, reason="Jsonlines is not installed")
 def test_serializer_jsonlines_load(temp_dir: str, simple_dict_list: list[dict[str, Any]]) -> None:
     """
     Test SerializerJsonlines loading from jsonlines file
     """
-    # Arrange
-    import jsonlines
     
     file_path = Path(temp_dir) / "test.jsonl"
     with jsonlines.open(file_path, "w") as writer:
@@ -97,12 +100,11 @@ def test_serializer_jsonlines_load(temp_dir: str, simple_dict_list: list[dict[st
     assert result[2]["key1"] == "c"
 
 
+@pytest.mark.skipif(not importlib.util.find_spec("jsonlines") is not None, reason="Jsonlines is not installed")
 def test_serializer_jsonlines_save(temp_dir: str, simple_dict_list: list[dict[str, Any]]) -> None:
     """
     Test SerializerJsonlines saving to jsonlines file
     """
-    # Arrange
-    import jsonlines
     
     df = CustomDataFromList(simple_dict_list)
     file_name = "output.jsonl"
@@ -204,6 +206,7 @@ def test_serializer_coco_load(coco_file_path: Path) -> None:
     assert isinstance(result[0]["annotations"], list)
 
 
+@pytest.mark.skipif(not fu.pypdf_available(), reason="Pypdf is not installed")
 def test_serializer_pdf_doc_load(pdf_file_path_two_pages: Path) -> None:
     """
     Test SerializerPdfDoc loads PDF pages correctly

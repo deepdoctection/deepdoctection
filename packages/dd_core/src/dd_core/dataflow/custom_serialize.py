@@ -48,7 +48,7 @@ with try_import() as jsonlines_import_guard:
     from jsonlines import Reader, Writer
 
 __all__ = ["SerializerJsonlines", "SerializerFiles", "CocoParser",
-           "SerializerCoco", "SerializerPdfDoc", "SerializerTabsepFiles"]
+           "SerializerCoco", "SerializerPdfDoc", "SerializerTabsepFiles", "FileClosingIterator"]
 
 
 def _reset_df_and_get_length(df: DataFlow) -> int:

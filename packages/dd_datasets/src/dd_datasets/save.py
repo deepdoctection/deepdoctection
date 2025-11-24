@@ -24,12 +24,12 @@ import os
 from pathlib import Path
 from typing import Optional
 
-from dd_datapoint.datapoint.convert import convert_b64_to_np_array
-from dd_datapoint.datapoint.image import Image
-from dd_datapoint.utils.file_utils import mkdir_p
-from dd_datapoint.utils.types import ImageDict, PathLikeOrStr
-from dd_datapoint.utils.viz import viz_handler
-from dd_datapoint.dataflow import DataFlow, MapData, SerializerJsonlines
+from dd_core.datapoint.convert import convert_b64_to_np_array
+from dd_core.datapoint.image import Image
+from dd_core.utils.file_utils import mkdir_p
+from dd_core.utils.types import ImageDict, PathLikeOrStr
+from dd_core.utils.viz import viz_handler
+from dd_core.dataflow import DataFlow, MapData, SerializerJsonlines
 
 
 def dataflow_to_json(

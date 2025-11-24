@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-# File: __init__.py
+# File: xxx.py
 
-# Copyright 2021 Dr. Janis Meyer. All rights reserved.
+# Copyright 2024 Dr. Janis Meyer. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,16 +15,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-dd_datasets: Dataset building and processing for deepdoctection
-
-This package provides dataset management capabilities including:
-- Dataflow: Efficient data loading and processing pipelines
-- Mapper: Transformation functions for various dataset formats (COCO, Pascal VOC, etc.)
-- Datasets: Built-in dataset definitions and builders
-"""
-
-__version__ = "1.0"
-
-from .datasets import *
-
+from .adapter import *
+from .base import *
+from .dataflow_builder import DataFlowBaseBuilder
+from .info import *
+from .instances import *
+from .registry import *
+from .save import *

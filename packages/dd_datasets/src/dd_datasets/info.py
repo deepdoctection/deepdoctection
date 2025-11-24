@@ -24,8 +24,8 @@ from dataclasses import dataclass, field
 from itertools import chain
 from typing import Any, Literal, Mapping, Optional, Sequence, Union, no_type_check, overload
 
-from dd_datapoint.utils.object_types import DatasetType, ObjectTypes, TypeOrStr, get_type
-from dd_datapoint.utils.utils import call_only_once
+from dd_core.utils.object_types import DatasetType, ObjectTypes, TypeOrStr, get_type
+from dd_core.utils.utils import call_only_once
 
 __all__ = ["DatasetInfo", "DatasetCategories", "get_merged_categories"]
 

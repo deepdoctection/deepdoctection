@@ -32,11 +32,12 @@ from __future__ import annotations
 
 from typing import Mapping, Union
 
-from dd_datapoint.dataflow import DataFlow, MapData, MapDataComponent
-from dd_datapoint.dataflow.custom_serialize import SerializerCoco
-from dd_datapoint.mapper.cats import add_summary, filter_cat
-from dd_datapoint.mapper.cocostruct import coco_to_image
-from dd_datapoint.utils.object_types import DatasetType, LayoutType
+from dd_core.dataflow import DataFlow, MapData, MapDataComponent
+from dd_core.dataflow.custom_serialize import SerializerCoco
+from dd_core.mapper.cats import add_summary, filter_cat
+from dd_core.mapper.cocostruct import coco_to_image
+from dd_core.utils.object_types import DatasetType, LayoutType
+
 from ..base import _BuiltInDataset
 from ..dataflow_builder import DataFlowBaseBuilder
 from ..info import DatasetCategories, DatasetInfo

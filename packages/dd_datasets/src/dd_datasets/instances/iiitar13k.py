@@ -42,18 +42,19 @@ from typing import Mapping, Union
 
 from lazy_imports import try_import
 
-from dd_datapoint.dataflow import DataFlow, MapData, SerializerFiles
-from ...datasets.info import DatasetInfo
-from dd_datapoint.mapper import curry
-from dd_datapoint.mapper import xml_to_dict
-from dd_datapoint.mapper.pascalstruct import pascal_voc_dict_to_image
-from dd_datapoint.utils.env_info import SETTINGS
-from dd_datapoint.utils.file_utils import lxml_available
-from dd_datapoint.utils.object_types import DatasetType, LayoutType
-from dd_datapoint.utils.types import JsonDict
+from dd_core.dataflow import DataFlow, MapData, SerializerFiles
+
+from dd_core.mapper import curry
+from dd_core.mapper import xml_to_dict
+from dd_core.mapper.pascalstruct import pascal_voc_dict_to_image
+from dd_core.utils.env_info import SETTINGS
+from dd_core.utils.file_utils import lxml_available
+from dd_core.utils.object_types import DatasetType, LayoutType
+from dd_core.utils.types import JsonDict
+
 from ..base import _BuiltInDataset
 from ..dataflow_builder import DataFlowBaseBuilder
-from ..info import DatasetCategories
+from ..info import DatasetCategories, DatasetInfo
 from ..registry import dataset_registry
 
 with try_import() as import_guard:

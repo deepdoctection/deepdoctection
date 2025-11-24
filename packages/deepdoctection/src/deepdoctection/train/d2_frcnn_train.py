@@ -27,9 +27,9 @@ from typing import Any, Mapping, Optional, Sequence, Type, Union
 
 from lazy_imports import try_import
 
-from dd_datasets.datasets.adapter import DatasetAdapter
-from dd_datasets.datasets.base import DatasetBase
-from dd_datasets.datasets.registry import get_dataset
+from dd_datasets.adapter import DatasetAdapter
+from dd_datasets.base import DatasetBase
+from dd_datasets.registry import get_dataset
 from ..eval.base import MetricBase
 from ..eval.eval import Evaluator
 from ..eval.registry import metric_registry

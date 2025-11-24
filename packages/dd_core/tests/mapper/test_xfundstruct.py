@@ -20,9 +20,9 @@ import numpy as np
 import pytest
 from typing import Any, Dict, List, Optional
 
-from deepdoctection.mapper.xfundstruct import xfund_to_image
-from deepdoctection.datapoint import Image
-from deepdoctection.utils.object_types import (
+from dd_core.mapper.xfundstruct import xfund_to_image
+from dd_core.datapoint import Image
+from dd_core.utils.object_types import (
     LayoutType,
     WordType,
     BioTag,
@@ -62,7 +62,7 @@ def test_xfund_to_image_load_image_fake_score(
     }
 
     monkeypatch.setattr(
-        "deepdoctection.mapper.xfundstruct.load_image_from_file",
+        "dd_core.mapper.xfundstruct.load_image_from_file",
         lambda fn: np.zeros((3508, 2480, 3), dtype=np.uint8),
     )
 
