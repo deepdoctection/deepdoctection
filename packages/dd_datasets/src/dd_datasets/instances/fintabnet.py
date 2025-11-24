@@ -228,7 +228,7 @@ class FintabnetBuilder(DataFlowBaseBuilder):
                     category_names=[
                         LayoutType.TABLE,
                         LayoutType.CELL,
-                        CellType.HEADER,
+                        CellType.COLUMN_HEADER,
                         CellType.BODY,
                         TableType.ITEM,
                         LayoutType.ROW,
@@ -242,7 +242,7 @@ class FintabnetBuilder(DataFlowBaseBuilder):
                     category_names_sub_image=LayoutType.TABLE,
                     category_names=[
                         LayoutType.CELL,
-                        CellType.HEADER,
+                        CellType.COLUMN_HEADER,
                         CellType.BODY,
                         TableType.ITEM,
                         LayoutType.ROW,

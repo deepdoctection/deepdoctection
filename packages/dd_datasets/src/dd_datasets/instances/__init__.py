@@ -56,4 +56,5 @@ __all__ = [
     "Pubtables1MStruct",
     "Rvlcdip",
     "DocLayNet",
+    "DocLayNetSeq",
 ]

@@ -18,6 +18,7 @@
 from typing import Any
 
 import jsonlines
+from pathlib import Path
 
 import pytest
 
@@ -48,4 +49,9 @@ def fixture_test_layout():
                 return images
 
     return test_layout
+
+@pytest.fixture(name="dataset_test_base_dir")
+def fixture_dataset_test_base_dir() -> str:
+    return (Path(__file__).parent / "assets" / "datasets").as_posix()
+
 
