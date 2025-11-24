@@ -103,16 +103,15 @@ def to_wandb_image(
         if not bounding_box.absolute_coords:
             bounding_box = bounding_box.transform(dp.width, dp.height, True)
         category_name, category_id, score = _get_category_attributes(ann, cat_to_sub_cat)
-        if category_name:
-            box = {
-                "position": {"middle": bounding_box.center, "width": bounding_box.width, "height": bounding_box.height},
-                "domain": "pixel",
-                "class_id": category_id,
-                "box_caption": category_name,
-            }
-            if score:
-                box["scores"] = {"acc": score}
-            boxes.append(box)
+        box = {
+            "position": {"middle": bounding_box.center, "width": bounding_box.width, "height": bounding_box.height},
+            "domain": "pixel",
+            "class_id": category_id,
+            "box_caption": category_name,
+        }
+        if score:
+            box["scores"] = {"acc": score}
+        boxes.append(box)
 
     predictions = {"predictions": {"box_data": boxes, "class_labels": class_labels}}
 

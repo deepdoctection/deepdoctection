@@ -29,7 +29,7 @@ from dd_core.dataflow.custom_serialize import SerializerCoco
 from dd_core.mapper.cats import filter_cat
 from dd_core.mapper.xfundstruct import xfund_to_image
 
-from .data import XFUND_RAW_LAYOUTLM_FEATURES, XFUND_LAYOUTLM_FEATURES, PRODIGY_DATAPOINT
+from .data import XFUND_RAW_LAYOUTLM_FEATURES, XFUND_LAYOUTLM_FEATURES, PRODIGY_DATAPOINT, IIITAR13K_DATAPOINT
 
 @fixture(name="image")
 def fixture_page(page_json_path: Path) -> Image:
@@ -134,6 +134,9 @@ def fixture_pubtabnet_datapoint() -> dict:
         pubtabnet_dict = json.load(f)
     return pubtabnet_dict
 
+@fixture(name="iiitar13k_datapoint")
+def fixture_iiitar13k_datapoint() -> dict:
+    return IIITAR13K_DATAPOINT
 
 @fixture(name="dp_image")
 def fixture_dp_image() -> Image:

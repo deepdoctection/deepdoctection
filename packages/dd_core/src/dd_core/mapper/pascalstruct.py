@@ -70,10 +70,10 @@ def pascal_voc_dict_to_image(
         image.set_width_height(float(dp.get("width", 0)), float(dp.get("height", 0)))
 
         for ann in anns:
-            x_1 = min(max(ann["xmin"], 0), image.width if image.width else float(dp.get("width", 0)))
-            x_2 = min(max(ann["xmax"], 0), image.width if image.width else float(dp.get("width", 0)))
-            y_1 = min(max(ann["ymin"], 0), image.height if image.height else float(dp.get("height", 0)))
-            y_2 = min(max(ann["ymax"], 0), image.height if image.height else float(dp.get("height", 0)))
+            x_1 = min(max(ann["xmin"], 0), image.width if image.width else int(dp.get("width", 0)))
+            x_2 = min(max(ann["xmax"], 0), image.width if image.width else int(dp.get("width", 0)))
+            y_1 = min(max(ann["ymin"], 0), image.height if image.height else int(dp.get("height", 0)))
+            y_2 = min(max(ann["ymax"], 0), image.height if image.height else int(dp.get("height", 0)))
 
             bbox = BoundingBox(absolute_coords=True, ulx=x_1, uly=y_1, lrx=x_2, lry=y_2)
 
