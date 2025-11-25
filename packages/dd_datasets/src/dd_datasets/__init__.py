@@ -15,10 +15,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .adapter import *
+from dd_core.utils.file_utils import pytorch_available
+
 from .base import *
 from .dataflow_builder import DataFlowBaseBuilder
 from .info import *
 from .instances import *
 from .registry import *
 from .save import *
+
+if pytorch_available():
+    from .adapter import *
