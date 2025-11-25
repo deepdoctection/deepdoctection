@@ -33,14 +33,14 @@ from ..eval.base import MetricBase
 from ..eval.eval import Evaluator
 from ..eval.registry import metric_registry
 from ..extern.hfdetr import HFDetrDerivedDetector
-from dd_datapoint.mapper.hfstruct import DetrDataCollator, image_to_hf_detr_training
+from dd_core.mapper.hfstruct import DetrDataCollator, image_to_hf_detr_training
 from ..pipe.base import PipelineComponent
 from ..pipe.registry import pipeline_component_registry
-from dd_datapoint.utils.error import DependencyError
-from dd_datapoint.utils.file_utils import wandb_available
-from dd_datapoint.utils.logger import LoggingRecord, logger
-from dd_datapoint.utils.types import PathLikeOrStr
-from dd_datapoint.utils.utils import string_to_dict
+from dd_core.utils.error import DependencyError
+from dd_core.utils.file_utils import wandb_available
+from dd_core.utils.logger import LoggingRecord, logger
+from dd_core.utils.types import PathLikeOrStr
+from dd_core.utils.utils import string_to_dict
 
 with try_import() as pt_import_guard:
     from torch import nn

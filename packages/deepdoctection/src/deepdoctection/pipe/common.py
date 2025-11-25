@@ -27,18 +27,17 @@ from typing import Literal, Mapping, Optional, Sequence, Union
 
 import numpy as np
 
-from dd_datapoint.dataflow import DataFlow, MapData
-from dd_datapoint.datapoint.image import Image, MetaAnnotation
-from dd_datapoint.datapoint.view import IMAGE_DEFAULTS, Page
+from dd_core.dataflow import DataFlow, MapData
+from dd_core.datapoint.image import Image, MetaAnnotation
+from dd_core.datapoint.view import IMAGE_DEFAULTS, Page
 from ..extern.base import DetectionResult
-from dd_datapoint.mapper.match import match_anns_by_distance, match_anns_by_intersection
-from dd_datapoint.mapper.misc import to_image
-from dd_datapoint.utils.object_types import LayoutType, ObjectTypes, Relationships, TypeOrStr, get_type
+from dd_core.mapper.match import match_anns_by_distance, match_anns_by_intersection
+from dd_core.mapper.misc import to_image
+from dd_core.mapper.nms import pt_nms_image_annotations as nms_image_annotations
+from dd_core.utils.object_types import LayoutType, ObjectTypes, Relationships, TypeOrStr, get_type
 from .base import PipelineComponent
 from .registry import pipeline_component_registry
 
-if os.environ.get("DD_USE_TORCH"):
-    from ..mapper.d2struct import pt_nms_image_annotations as nms_image_annotations
 
 
 @pipeline_component_registry.register("ImageCroppingService")

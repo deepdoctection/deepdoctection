@@ -29,13 +29,13 @@ from numpy.typing import NDArray
 from tabulate import tabulate
 from termcolor import colored
 
-from dd_datapoint.dataflow import DataFlow
+from dd_core.dataflow import DataFlow
 from dd_datasets.info import DatasetCategories
-from dd_datapoint.mapper import image_to_cat_id
-from dd_datapoint.utils.file_utils import Requirement
-from dd_datapoint.utils.logger import LoggingRecord, logger
-from dd_datapoint.utils.object_types import ObjectTypes, TypeOrStr, get_type
-from dd_datapoint.utils.types import MetricResults
+from dd_core.mapper import image_to_cat_id
+from dd_core.utils.file_utils import Requirement
+from dd_core.utils.logger import LoggingRecord, logger
+from dd_core.utils.object_types import ObjectTypes, TypeOrStr, get_type
+from dd_core.utils.types import MetricResults
 from .base import MetricBase
 from .registry import metric_registry
 

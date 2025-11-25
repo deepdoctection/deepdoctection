@@ -30,9 +30,9 @@ import numpy as np
 from lazy_imports import try_import
 from typing_extensions import TypeAlias
 
-from dd_datapoint.utils.file_utils import get_pytorch_requirement, get_transformers_requirement
-from dd_datapoint.utils.object_types import TypeOrStr
-from dd_datapoint.utils.types import JsonDict, PathLikeOrStr, Requirement
+from dd_core.utils.file_utils import get_pytorch_requirement, get_transformers_requirement
+from dd_core.utils.object_types import TypeOrStr
+from dd_core.utils.types import JsonDict, PathLikeOrStr, Requirement
 from .base import (
     LMSequenceClassifier,
     LMTokenClassifier,
@@ -41,7 +41,7 @@ from .base import (
     SequenceClassResult,
     TokenClassResult,
 )
-from dd_datapoint.utils import get_torch_device
+from dd_core.utils import get_torch_device
 
 with try_import() as pt_import_guard:
     import torch

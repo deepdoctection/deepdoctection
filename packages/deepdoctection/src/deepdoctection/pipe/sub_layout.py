@@ -26,13 +26,13 @@ from typing import Mapping, Optional, Sequence, Union
 
 import numpy as np
 
-from dd_datapoint.datapoint.annotation import ImageAnnotation
-from dd_datapoint.datapoint.box import crop_box_from_image
-from dd_datapoint.datapoint.image import Image, MetaAnnotation
+from dd_core.datapoint.annotation import ImageAnnotation
+from dd_core.datapoint.box import crop_box_from_image
+from dd_core.datapoint.image import Image, MetaAnnotation
 from ..extern.base import DetectionResult, ObjectDetector, PdfMiner
-from dd_datapoint.utils.object_types import ObjectTypes, Relationships, TypeOrStr, get_type
-from dd_datapoint.utils.transform import PadTransform
-from dd_datapoint.utils.types import PixelValues
+from dd_core.utils.object_types import ObjectTypes, Relationships, TypeOrStr, get_type
+from dd_core.utils.transform import PadTransform
+from dd_core.utils.types import PixelValues
 from .base import PipelineComponent
 from .registry import pipeline_component_registry
 

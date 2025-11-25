@@ -26,12 +26,12 @@ from typing import Optional, Union
 import numpy as np
 from lazy_imports import try_import
 
-from dd_datapoint.dataflow import DataFlow
+from dd_core.dataflow import DataFlow
 from dd_datasets.info import DatasetCategories
-from dd_datapoint.mapper import re_assign_cat_ids
-from dd_datapoint.mapper import image_to_coco
-from dd_datapoint.utils.file_utils import Requirement, cocotools_available, get_cocotools_requirement
-from dd_datapoint.utils.types import JsonDict, MetricResults
+from dd_core.mapper import re_assign_cat_ids
+from dd_core.mapper import image_to_coco
+from dd_core.utils.file_utils import Requirement, cocotools_available, get_cocotools_requirement
+from dd_core.utils.types import JsonDict, MetricResults
 from .base import MetricBase
 from .registry import metric_registry
 

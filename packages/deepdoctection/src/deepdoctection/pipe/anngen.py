@@ -23,12 +23,12 @@ from typing import Optional, Sequence, Union
 
 import numpy as np
 
-from dd_datapoint.datapoint.annotation import DEFAULT_CATEGORY_ID, CategoryAnnotation, ContainerAnnotation, ImageAnnotation
-from dd_datapoint.datapoint.box import BoundingBox, local_to_global_coords, rescale_coords
-from dd_datapoint.datapoint.image import Image
+from dd_core.datapoint.annotation import DEFAULT_CATEGORY_ID, CategoryAnnotation, ContainerAnnotation, ImageAnnotation
+from dd_core.datapoint.box import BoundingBox, local_to_global_coords, rescale_coords
+from dd_core.datapoint.image import Image
 from ..extern.base import DetectionResult
-from dd_datapoint.mapper.maputils import MappingContextManager
-from dd_datapoint.utils.object_types import ObjectTypes, Relationships
+from dd_core.mapper.maputils import MappingContextManager
+from dd_core.utils.object_types import ObjectTypes, Relationships
 
 
 class DatapointManager:

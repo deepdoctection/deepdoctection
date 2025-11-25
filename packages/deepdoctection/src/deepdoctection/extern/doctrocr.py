@@ -29,18 +29,18 @@ from typing import Any, Literal, Mapping, Optional, Sequence, Union
 import numpy as np
 from lazy_imports import try_import
 
-from dd_datapoint.utils.env_info import ENV_VARS_TRUE
-from dd_datapoint.utils.file_utils import (
+from dd_core.utils.env_info import ENV_VARS_TRUE
+from dd_core.utils.file_utils import (
     get_doctr_requirement,
     get_pytorch_requirement,
 )
-from dd_datapoint.utils.fs import load_json
-from dd_datapoint.utils.object_types import LayoutType, ObjectTypes, PageType, TypeOrStr
-from dd_datapoint.utils.transform import RotationTransform
-from dd_datapoint.utils.types import PathLikeOrStr, PixelValues, Requirement
-from dd_datapoint.utils.viz import viz_handler
+from dd_core.utils.fs import load_json
+from dd_core.utils.object_types import LayoutType, ObjectTypes, PageType, TypeOrStr
+from dd_core.utils.transform import RotationTransform
+from dd_core.utils.types import PathLikeOrStr, PixelValues, Requirement
+from dd_core.utils.viz import viz_handler
 from .base import DetectionResult, ImageTransformer, ModelCategories, ObjectDetector, TextRecognizer
-from dd_datapoint.utils import get_torch_device
+from dd_core.utils import get_torch_device
 
 with try_import() as pt_import_guard:
     import torch

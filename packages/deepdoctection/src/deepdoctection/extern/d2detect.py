@@ -31,13 +31,13 @@ from typing import Literal, Mapping, Optional, Sequence, Union
 import numpy as np
 from lazy_imports import try_import
 
-from dd_datapoint.utils.file_utils import get_detectron2_requirement, get_pytorch_requirement
-from dd_datapoint.utils.metacfg import AttrDict, set_config_by_yaml
-from dd_datapoint.utils.object_types import DefaultType, ObjectTypes, TypeOrStr, get_type
-from dd_datapoint.utils.transform import InferenceResize, ResizeTransform
-from dd_datapoint.utils.types import PathLikeOrStr, PixelValues, Requirement
-from dd_datapoint.utils import get_torch_device
-from dd_datapoint.mapper.nms import batched_nms
+from dd_core.utils.file_utils import get_detectron2_requirement, get_pytorch_requirement
+from dd_core.utils.metacfg import AttrDict, set_config_by_yaml
+from dd_core.utils.object_types import DefaultType, ObjectTypes, TypeOrStr, get_type
+from dd_core.utils.transform import InferenceResize, ResizeTransform
+from dd_core.utils.types import PathLikeOrStr, PixelValues, Requirement
+from dd_core.utils import get_torch_device
+from dd_core.mapper.nms import batched_nms
 from .base import DetectionResult, ModelCategories, ObjectDetector
 
 with try_import() as pt_import_guard:

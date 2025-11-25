@@ -24,9 +24,10 @@ import numpy as np
 import pytest
 
 import shared_test_utils as stu
+from dd_core.utils.object_types import LayoutType, WordType
 
 from dd_datasets import Funsd
-from deepdoctection.utils.object_types import LayoutType, WordType
+
 
 
 def test_dataset_funsd_returns_image_and_annotations(

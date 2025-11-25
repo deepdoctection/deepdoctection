@@ -64,11 +64,11 @@ from ..pipe.segment import PubtablesSegmentationService, TableSegmentationServic
 from ..pipe.sub_layout import DetectResultGenerator, SubImageLayoutService
 from ..pipe.text import TextExtractionService
 from ..pipe.transform import SimpleTransformService
-from dd_datapoint.utils.error import DependencyError
-from dd_datapoint.utils.env_info import SETTINGS
-from dd_datapoint.utils.metacfg import AttrDict
-from dd_datapoint.utils.object_types import CellType, LayoutType, ObjectTypes, Relationships
-from dd_datapoint.utils.transform import PadTransform
+from dd_core.utils.error import DependencyError
+from dd_core.utils.env_info import SETTINGS
+from dd_core.utils.metacfg import AttrDict
+from dd_core.utils.object_types import CellType, LayoutType, ObjectTypes, Relationships
+from dd_core.utils.transform import PadTransform
 
 with try_import() as image_guard:
     from botocore.config import Config  # type: ignore

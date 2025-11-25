@@ -19,9 +19,12 @@
 import pytest
 import numpy as np
 
-from dd_datasets.adapter import DatasetAdapter
+
 from dd_core.mapper import image_to_hf_detr_training
 from dd_core.utils.file_utils import pytorch_available
+
+if pytorch_available():
+    from dd_datasets.adapter import DatasetAdapter
 
 
 def _patch_pdf(monkeypatch):
@@ -50,7 +53,7 @@ def test_dataset_adapter_cache_d2_mapping(monkeypatch: pytest.MonkeyPatch, finta
         assert key in first
     assert first["annotations"]
 
-
+@pytest.mark.skipif(not pytorch_available(), reason="torch not installed")
 def test_dataset_adapter_non_cache_infinite_raises(fintabnet):
     with pytest.raises(ValueError):
         DatasetAdapter(
@@ -60,7 +63,7 @@ def test_dataset_adapter_non_cache_infinite_raises(fintabnet):
             image_to_framework_func=image_to_hf_detr_training(),
         )
 
-
+@pytest.mark.skipif(not pytorch_available(), reason="torch not installed")
 def test_dataset_adapter_non_cache_repetition(monkeypatch: pytest.MonkeyPatch, fintabnet):
     _patch_pdf(monkeypatch)
     adapter = DatasetAdapter(
@@ -76,7 +79,7 @@ def test_dataset_adapter_non_cache_repetition(monkeypatch: pytest.MonkeyPatch, f
         collected.append(dp)
     assert len(collected) == 8
 
-
+@pytest.mark.skipif(not pytorch_available(), reason="torch not installed")
 def test_dataset_adapter_max_datapoints_limits(monkeypatch: pytest.MonkeyPatch, fintabnet):
     _patch_pdf(monkeypatch)
     adapter = DatasetAdapter(
@@ -91,7 +94,7 @@ def test_dataset_adapter_max_datapoints_limits(monkeypatch: pytest.MonkeyPatch, 
     all_items = list(iter(adapter))
     assert len(all_items) == 2
 
-
+@pytest.mark.skipif(not pytorch_available(), reason="torch not installed")
 def test_dataset_adapter_hf_detr_annotations_non_empty(monkeypatch: pytest.MonkeyPatch, fintabnet):
     _patch_pdf(monkeypatch)
     adapter = DatasetAdapter(

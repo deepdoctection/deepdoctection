@@ -29,14 +29,14 @@ from typing import DefaultDict, Optional, Sequence, Union
 
 from lazy_imports import try_import
 
-from dd_datapoint.datapoint.annotation import ImageAnnotation
-from dd_datapoint.datapoint.box import merge_boxes
-from dd_datapoint.datapoint.image import Image, MetaAnnotation
+from dd_core.datapoint.annotation import ImageAnnotation
+from dd_core.datapoint.box import merge_boxes
+from dd_core.datapoint.image import Image, MetaAnnotation
 from ..extern.base import DetectionResult
-from dd_datapoint.mapper.maputils import MappingContextManager
-from dd_datapoint.utils.error import ImageError
-from dd_datapoint.utils.file_utils import networkx_available
-from dd_datapoint.utils.object_types import CellType, LayoutType, ObjectTypes, Relationships, TableType, get_type
+from dd_core.mapper.maputils import MappingContextManager
+from dd_core.utils.error import ImageError
+from dd_core.utils.file_utils import networkx_available
+from dd_core.utils.object_types import CellType, LayoutType, ObjectTypes, Relationships, TableType, get_type
 from .base import PipelineComponent
 from .registry import pipeline_component_registry
 

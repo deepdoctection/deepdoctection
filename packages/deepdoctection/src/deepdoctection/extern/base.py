@@ -30,9 +30,9 @@ from typing import TYPE_CHECKING, Any, Literal, Mapping, Optional, Sequence, Uni
 import numpy as np
 from lazy_imports import try_import
 
-from dd_datapoint.utils.identifier import get_uuid_from_str
-from dd_datapoint.utils.logger import logger
-from dd_datapoint.utils.object_types import (
+from dd_core.utils.identifier import get_uuid_from_str
+from dd_core.utils.logger import logger
+from dd_core.utils.object_types import (
     DefaultType,
     ObjectTypes,
     TypeOrStr,
@@ -40,8 +40,8 @@ from dd_datapoint.utils.object_types import (
     token_class_tag_to_token_class_with_tag,
     token_class_with_tag_to_token_class_and_tag,
 )
-from dd_datapoint.utils.transform import BaseTransform, box_to_point4, point4_to_box
-from dd_datapoint.utils.types import JsonDict, PixelValues, Requirement
+from dd_core.utils.transform import BaseTransform, box_to_point4, point4_to_box
+from dd_core.utils.types import JsonDict, PixelValues, Requirement
 
 if TYPE_CHECKING:
     with try_import() as import_guard:

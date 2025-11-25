@@ -28,11 +28,11 @@ from typing import TYPE_CHECKING, Literal, Mapping, Optional, Sequence, Union
 
 from lazy_imports import try_import
 
-from dd_datapoint.utils.file_utils import get_pytorch_requirement, get_transformers_requirement
-from dd_datapoint.utils.object_types import DefaultType, ObjectTypes, TypeOrStr, get_type
-from dd_datapoint.utils.types import PathLikeOrStr, PixelValues, Requirement
+from dd_core.utils.file_utils import get_pytorch_requirement, get_transformers_requirement
+from dd_core.utils.object_types import DefaultType, ObjectTypes, TypeOrStr, get_type
+from dd_core.utils.types import PathLikeOrStr, PixelValues, Requirement
 from .base import DetectionResult, ModelCategories, ObjectDetector
-from dd_datapoint.utils import get_torch_device
+from dd_core.utils import get_torch_device
 
 with try_import() as pt_import_guard:
     import torch  # pylint: disable=W0611
