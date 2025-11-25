@@ -25,7 +25,7 @@ import pytest
 from dd_core.datapoint import convert_pdf_bytes_to_np_array_v2
 from dd_core.utils import file_utils as fu
 
-import shared_test_utils as stu
+from .conftest import TestPdfPage
 
 PDFIUM_AVAILABLE = True
 try:
@@ -38,7 +38,7 @@ POPLER_AVAILABLE = bool(
 )
 
 
-def test_importerror_when_pypdf_missing(monkeypatch: pytest.MonkeyPatch, pdf_page: stu.TestPdfPage) -> None:
+def test_importerror_when_pypdf_missing(monkeypatch: pytest.MonkeyPatch, pdf_page: TestPdfPage) -> None:
     """
     When dpi, width and height are not given, PdfReader is used to infer size.
     If pypdf is not installed, ImportError must be raised.
@@ -52,7 +52,7 @@ def test_importerror_when_pypdf_missing(monkeypatch: pytest.MonkeyPatch, pdf_pag
 
 
 @pytest.mark.skipif(not PDFIUM_AVAILABLE, reason="pypdfium2 is not installed")
-def test_pdfium_with_dpi_200_fixed_shape(monkeypatch: pytest.MonkeyPatch, pdf_page: stu.TestPdfPage) -> None:
+def test_pdfium_with_dpi_200_fixed_shape(monkeypatch: pytest.MonkeyPatch, pdf_page: TestPdfPage) -> None:
     """
     With USE_DD_PDFIUM=True and dpi=200 there is a predetermined shape.
     """
@@ -62,7 +62,7 @@ def test_pdfium_with_dpi_200_fixed_shape(monkeypatch: pytest.MonkeyPatch, pdf_pa
 
 
 @pytest.mark.skipif(not PDFIUM_AVAILABLE, reason="pypdfium2 is not installed")
-def test_pdfium_with_dpi_and_size_falls_back_to_dpi(monkeypatch: pytest.MonkeyPatch, pdf_page: stu.TestPdfPage) -> None:
+def test_pdfium_with_dpi_and_size_falls_back_to_dpi(monkeypatch: pytest.MonkeyPatch, pdf_page: TestPdfPage) -> None:
     """
     If dpi is provided together with width/height under PDFium, width/height are ignored (fallback to dpi).
     """
@@ -74,7 +74,7 @@ def test_pdfium_with_dpi_and_size_falls_back_to_dpi(monkeypatch: pytest.MonkeyPa
 
 
 @pytest.mark.skipif(not PDFIUM_AVAILABLE, reason="pypdfium2 is not installed")
-def test_pdfium_without_dpi_but_only_size_raises_valueerror(monkeypatch: pytest.MonkeyPatch, pdf_page: stu.TestPdfPage) -> None:
+def test_pdfium_without_dpi_but_only_size_raises_valueerror(monkeypatch: pytest.MonkeyPatch, pdf_page: TestPdfPage) -> None:
     """
     Under PDFium, providing only width/height must raise ValueError('dpi must be provided.').
     """
@@ -84,7 +84,7 @@ def test_pdfium_without_dpi_but_only_size_raises_valueerror(monkeypatch: pytest.
 
 
 @pytest.mark.skipif(not POPLER_AVAILABLE, reason="Poppler is not available")
-def test_poppler_with_dpi_300(monkeypatch: pytest.MonkeyPatch, pdf_page: stu.TestPdfPage) -> None:
+def test_poppler_with_dpi_300(monkeypatch: pytest.MonkeyPatch, pdf_page: TestPdfPage) -> None:
     """
     With Poppler (USE_DD_PDFIUM=False) and dpi=300, expect the known shape from fixture.
     """
@@ -94,7 +94,7 @@ def test_poppler_with_dpi_300(monkeypatch: pytest.MonkeyPatch, pdf_page: stu.Tes
 
 
 @pytest.mark.skipif(not POPLER_AVAILABLE, reason="Poppler is not available")
-def test_poppler_with_explicit_size(monkeypatch: pytest.MonkeyPatch, pdf_page: stu.TestPdfPage) -> None:
+def test_poppler_with_explicit_size(monkeypatch: pytest.MonkeyPatch, pdf_page: TestPdfPage) -> None:
     """
     With Poppler and explicit width/height, expect exact (height,width,3).
     Use values less than 1000.

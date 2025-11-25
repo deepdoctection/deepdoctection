@@ -22,7 +22,7 @@ from pathlib import Path
 
 import shared_test_utils as stu
 from dd_datasets.base import SplitDataFlow
-from dd_datasets import Fintabnet, Pubtabnet,MergeDataset
+from dd_datasets import MergeDataset
 
 
 
@@ -49,25 +49,6 @@ def test_splitdataflow_invalid_split_type_raises(test_layout):
     sdf = SplitDataFlow(train=images, val=[], test=None)
     with pytest.raises(ValueError):
         sdf.build(split=123)
-
-
-@pytest.fixture()
-def fintabnet(monkeypatch: pytest.MonkeyPatch, dataset_test_base_dir: str):
-    monkeypatch.setattr("dd_core.mapper.pubstruct.load_bytes_from_pdf_file", lambda _fn: b"\x01\x02")
-    monkeypatch.setattr(
-        "dd_core.mapper.pubstruct.convert_pdf_bytes_to_np_array_v2",
-        lambda *args, **kwargs: np.ones((794, 596, 3), dtype=np.uint8) * 255,
-    )
-    ds = Fintabnet()
-    ds.dataflow.get_workdir = lambda: Path(dataset_test_base_dir) / ds.dataflow.location
-    return ds
-
-
-@pytest.fixture()
-def pubtabnet(dataset_test_base_dir: str):
-    ds = Pubtabnet()
-    ds.dataflow.get_workdir = lambda: Path(dataset_test_base_dir) / ds.dataflow.location
-    return ds
 
 
 def test_merge_dataset_build_concatenates_datapoints(fintabnet, pubtabnet):

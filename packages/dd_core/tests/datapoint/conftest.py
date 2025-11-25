@@ -22,23 +22,25 @@ Fixtures for datapoint package testing
 
 from __future__ import annotations
 
-from pathlib import Path
-
 from pytest import fixture
 
-import shared_test_utils as stu
+from ..data import PDF_BYTES
+from ..conftest import WhiteImage, TestPdfPage
+
 
 
 @fixture(name="white_image")
-def fixture_image() -> stu.WhiteImage:
+def fixture_image() -> WhiteImage:
     """Provide a white test image"""
-    return stu.build_white_image()
+    return WhiteImage()
 
 
 @fixture(name="pdf_page")
-def fixture_pdf_page() -> stu.TestPdfPage:
+def fixture_pdf_page() -> TestPdfPage:
     """Provide a deterministic 1-page PDF for rendering tests."""
-    return stu.build_test_pdf_page()
+    return TestPdfPage(
+        pdf_bytes=PDF_BYTES
+    )
 
 
 

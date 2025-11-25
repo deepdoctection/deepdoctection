@@ -21,13 +21,12 @@ Testing Image PDF operations and special cases
 
 from dd_core.datapoint import Image
 
-import shared_test_utils as stu
-
+from ..conftest import TestPdfPage
 
 class TestImagePDF:
     """Test Image with PDF inputs"""
 
-    def test_image_stores_pdf_bytes(self, pdf_page: stu.TestPdfPage):
+    def test_image_stores_pdf_bytes(self, pdf_page: TestPdfPage):
         """Image can store PDF bytes"""
         img = Image(file_name=pdf_page.file_name, location=pdf_page.loc)
         img.image = pdf_page.pdf_bytes
@@ -35,7 +34,7 @@ class TestImagePDF:
         assert img.height == pdf_page.np_array_shape[0]
         assert img.width == pdf_page.np_array_shape[1]
 
-    def test_pdf_bytes_property_can_be_set(self, pdf_page: stu.TestPdfPage):
+    def test_pdf_bytes_property_can_be_set(self, pdf_page: TestPdfPage):
         """pdf_bytes property can be set"""
         img = Image(file_name=pdf_page.file_name)
         img.pdf_bytes = pdf_page.pdf_bytes
@@ -49,7 +48,7 @@ class TestImagePDF:
 
         assert img.pdf_bytes is None
 
-    def test_image_from_pdf_creates_numpy_array(self, pdf_page: stu.TestPdfPage):
+    def test_image_from_pdf_creates_numpy_array(self, pdf_page: TestPdfPage):
         """Setting image from PDF bytes creates numpy array"""
         img = Image(file_name=pdf_page.file_name)
         img.image = pdf_page.pdf_bytes

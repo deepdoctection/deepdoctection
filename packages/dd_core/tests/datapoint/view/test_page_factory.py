@@ -23,7 +23,6 @@ from pathlib import Path
 
 from dd_core.datapoint.view import Page
 from dd_core.datapoint.image import Image
-from dd_core.utils.object_types import LayoutType
 
 
 class TestPageFactory:

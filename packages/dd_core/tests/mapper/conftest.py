@@ -30,6 +30,7 @@ from dd_core.mapper.cats import filter_cat
 from dd_core.mapper.xfundstruct import xfund_to_image
 
 from .data import XFUND_RAW_LAYOUTLM_FEATURES, XFUND_LAYOUTLM_FEATURES, PRODIGY_DATAPOINT, IIITAR13K_DATAPOINT
+from ..conftest import XFundSample
 
 @fixture(name="image")
 def fixture_page(page_json_path: Path) -> Image:
@@ -87,7 +88,7 @@ def fixture_coco_datapoint() -> dict:
 
 @fixture(name="xfund_datapoint")
 def fixture_xfund_datapoint() -> dict:
-    xfund_dict = stu.build_xfund_sample().data
+    xfund_dict = XFundSample().data
     return xfund_dict
 
 @fixture(name="xfund_image")

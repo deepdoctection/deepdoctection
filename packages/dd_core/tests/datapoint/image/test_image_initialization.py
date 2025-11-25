@@ -25,7 +25,7 @@ from dd_core.datapoint import Image
 from dd_core.utils import get_uuid
 from dd_core.utils.error import ImageError
 
-import shared_test_utils as stu
+from ..conftest import WhiteImage
 
 class TestImageInitialization:
     """Test Image initialization and basic properties"""
@@ -66,7 +66,7 @@ class TestImageInitialization:
 
         assert img.document_id == img.image_id
 
-    def test_image_id_cannot_be_reassigned_once_set(self, white_image: stu.WhiteImage):
+    def test_image_id_cannot_be_reassigned_once_set(self, white_image: WhiteImage):
         """image_id cannot be reassigned after initialization"""
         img = Image(file_name=white_image.file_name, location=white_image.location)
 

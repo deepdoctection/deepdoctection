@@ -23,13 +23,13 @@ from typing import Dict
 
 import numpy as np
 import pytest
-from pytest import mark
 
 from dd_core.datapoint import Image
 from dd_core.mapper.laylmstruct import image_to_raw_layoutlm_features, raw_features_to_layoutlm_features
 from dd_core.utils.file_utils import transformers_available
 from dd_core.utils.object_types import DatasetType, WordType
 from dd_core.utils.types import JsonDict
+
 
 if transformers_available():
     from transformers import LayoutLMTokenizerFast
