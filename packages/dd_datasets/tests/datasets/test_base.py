@@ -16,10 +16,14 @@
 # limitations under the License.
 
 
+import numpy as np
 import pytest
+from pathlib import Path
 
 import shared_test_utils as stu
 from dd_datasets.base import SplitDataFlow
+from dd_datasets import Fintabnet, Pubtabnet,MergeDataset
+
 
 
 def test_splitdataflow_default_train_split(test_layout):
@@ -45,3 +49,95 @@ def test_splitdataflow_invalid_split_type_raises(test_layout):
     sdf = SplitDataFlow(train=images, val=[], test=None)
     with pytest.raises(ValueError):
         sdf.build(split=123)
+
+
+@pytest.fixture()
+def fintabnet(monkeypatch: pytest.MonkeyPatch, dataset_test_base_dir: str):
+    monkeypatch.setattr("dd_core.mapper.pubstruct.load_bytes_from_pdf_file", lambda _fn: b"\x01\x02")
+    monkeypatch.setattr(
+        "dd_core.mapper.pubstruct.convert_pdf_bytes_to_np_array_v2",
+        lambda *args, **kwargs: np.ones((794, 596, 3), dtype=np.uint8) * 255,
+    )
+    ds = Fintabnet()
+    ds.dataflow.get_workdir = lambda: Path(dataset_test_base_dir) / ds.dataflow.location
+    return ds
+
+
+@pytest.fixture()
+def pubtabnet(dataset_test_base_dir: str):
+    ds = Pubtabnet()
+    ds.dataflow.get_workdir = lambda: Path(dataset_test_base_dir) / ds.dataflow.location
+    return ds
+
+
+def test_merge_dataset_build_concatenates_datapoints(fintabnet, pubtabnet):
+    merge = MergeDataset(fintabnet, pubtabnet)
+    df = merge.dataflow.build(split="val")
+    out = stu.collect_datapoint_from_dataflow(df)
+    assert len(out) == 4 + 3  # fintabnet val + pubtabnet val
+
+
+def test_merge_dataset_categories_union(fintabnet, pubtabnet):
+    merge = MergeDataset(fintabnet, pubtabnet)
+    cats = merge.dataflow.categories.get_categories(as_dict=False, init=True)
+    assert 'table' in cats
+    assert 'cell' in cats
+    assert 'item' in cats
+    assert 'word' in cats
+
+
+def test_merge_dataset_explicit_dataflows(fintabnet, pubtabnet):
+    df_fn = fintabnet.dataflow.build(split="val", max_datapoints=2)
+    df_pt = pubtabnet.dataflow.build(split="train", max_datapoints=1) # there is no train split in for this test setting
+    merge = MergeDataset(fintabnet, pubtabnet)
+    merge.explicit_dataflows(df_fn, df_pt)
+    df = merge.dataflow.build()
+    out = stu.collect_datapoint_from_dataflow(df)
+    assert len(out) == 2
+
+
+def test_merge_dataset_buffer_and_split_datasets(monkeypatch: pytest.MonkeyPatch, fintabnet, pubtabnet):
+    # Deterministic split for 7 datapoints -> train:5, val:1, test:1
+    monkeypatch.setattr(
+        np.random,
+        "binomial",
+        lambda n, p, size: np.array([0, 0, 0, 0, 1, 1, 0])  # 7 samples: zeros->train, ones->val/test
+    )
+    merge = MergeDataset(fintabnet, pubtabnet)
+    merge.buffer_datasets(split="val")
+    merge.split_datasets(ratio=0.3, add_test=True)
+    split_ids = merge.get_ids_by_split()
+    assert len(split_ids["train"]) == 5
+    assert len(split_ids["val"]) == 1
+    assert len(split_ids["test"]) == 1
+
+
+def test_merge_dataset_create_split_by_id_reproduces(monkeypatch: pytest.MonkeyPatch, fintabnet, pubtabnet):
+    monkeypatch.setattr(
+        np.random,
+        "binomial",
+        lambda n, p, size: np.array([0, 0, 0, 0, 1, 1, 0])
+    )
+    merge = MergeDataset(fintabnet, pubtabnet)
+    merge.buffer_datasets(split="val")
+    merge.split_datasets(ratio=0.3, add_test=True)
+    original_split = merge.get_ids_by_split()
+
+    # Reproduce
+    merge2 = MergeDataset(fintabnet, pubtabnet)
+    merge2.create_split_by_id(original_split, split="val")
+    reproduced_split = merge2.get_ids_by_split()
+
+    assert {k: len(v) for k, v in reproduced_split.items()} == {k: len(v) for k, v in original_split.items()}
+
+
+def test_merge_dataset_explicit_dataflows_warning(fintabnet, pubtabnet, caplog):
+    df_fn = fintabnet.dataflow.build(split="val", max_datapoints=1)
+    df_pt = pubtabnet.dataflow.build(split="val", max_datapoints=1)
+    merge = MergeDataset(fintabnet, pubtabnet)
+    merge.explicit_dataflows(df_fn, df_pt)
+    caplog.clear()
+    _ = stu.collect_datapoint_from_dataflow(merge.dataflow.build())
+    # Expect info log about using explicit dataflows
+    assert any("explicitly passed configuration" in rec.getMessage() for rec in caplog.records)
+

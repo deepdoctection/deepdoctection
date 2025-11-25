@@ -29,6 +29,10 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+full = [
+    "lxml>=4.9.1",
+]
+
 types = [
     "mypy==1.18.2",
     "types-PyYAML>=6.0.12.12",

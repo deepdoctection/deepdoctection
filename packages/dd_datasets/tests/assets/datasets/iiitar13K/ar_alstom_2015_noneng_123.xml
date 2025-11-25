@@ -1,0 +1,26 @@
+<annotation>
+	<folder>2015_noneng</folder>
+	<filename>ALSTOM DDR2015-16_FR_BAT_0_268.jpg</filename>
+	<path>/home/cvit/Desktop/Phase3_OpenText_Annotation/Annual_Report/NONENG/Alstom/2015_noneng/ALSTOM DDR2015-16_FR_BAT_0_268.jpg</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>827</width>
+		<height>1189</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>table</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>62</xmin>
+			<ymin>165</ymin>
+			<xmax>771</xmax>
+			<ymax>838</ymax>
+		</bndbox>
+	</object>
+</annotation>
