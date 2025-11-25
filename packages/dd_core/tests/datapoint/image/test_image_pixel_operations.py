@@ -26,13 +26,12 @@ from pytest import raises
 from dd_core.datapoint import Image, convert_np_array_to_b64
 from dd_core.utils.error import ImageError
 
-
-import shared_test_utils as stu
+from ..conftest import WhiteImage
 
 class TestImagePixelOperations:
     """Test Image pixel data handling"""
 
-    def test_image_accepts_numpy_array(self, white_image: stu.WhiteImage):
+    def test_image_accepts_numpy_array(self, white_image: WhiteImage):
         """Image accepts and stores numpy array"""
         img = Image(file_name=white_image.file_name, location=white_image.location)
         img.image = white_image.image
@@ -50,7 +49,7 @@ class TestImagePixelOperations:
         assert img.image.dtype == np.uint8
         assert_array_equal(img.image, np.ones([10, 10, 3], dtype=np.uint8) * 255)
 
-    def test_image_accepts_b64_string(self, white_image: stu.WhiteImage):
+    def test_image_accepts_b64_string(self, white_image: WhiteImage):
         """Image accepts and converts base64 string"""
         img = Image(file_name=white_image.file_name, location=white_image.location)
         b64_str = convert_np_array_to_b64(white_image.image)
@@ -59,7 +58,7 @@ class TestImagePixelOperations:
         assert img.image is not None
         assert_array_equal(img.image, white_image.image)
 
-    def test_image_get_image_to_np_array(self, white_image: stu.WhiteImage):
+    def test_image_get_image_to_np_array(self, white_image: WhiteImage):
         """get_image().to_np_array() returns numpy array"""
         img = Image(file_name=white_image.file_name)
         img.image = white_image.image
@@ -68,7 +67,7 @@ class TestImagePixelOperations:
         assert isinstance(result, np.ndarray)
         assert_array_equal(result, white_image.image)
 
-    def test_image_get_image_to_b64(self, white_image: stu.WhiteImage):
+    def test_image_get_image_to_b64(self, white_image: WhiteImage):
         """get_image().to_b64() returns base64 string"""
         img = Image(file_name=white_image.file_name)
         img.image = white_image.image
@@ -91,7 +90,7 @@ class TestImagePixelOperations:
         with raises(ImageError, match="Cannot load image. Unsupported type"):
             img.image = [1, 2, 3]  # type: ignore
 
-    def test_image_clear_image_preserves_bbox_by_default(self, white_image: stu.WhiteImage):
+    def test_image_clear_image_preserves_bbox_by_default(self, white_image: WhiteImage):
         """clear_image() preserves bbox by default"""
         img = Image(file_name=white_image.file_name)
         img.image = white_image.image
@@ -100,7 +99,7 @@ class TestImagePixelOperations:
         img.clear_image(clear_bbox=False)
         assert img._bbox == original_bbox
 
-    def test_image_clear_image_can_clear_bbox(self, white_image: stu.WhiteImage):
+    def test_image_clear_image_can_clear_bbox(self, white_image: WhiteImage):
         """clear_image(clear_bbox=True) clears bbox"""
         img = Image(file_name=white_image.file_name)
         img.image = white_image.image
@@ -108,7 +107,7 @@ class TestImagePixelOperations:
         img.clear_image(clear_bbox=True)
         assert img._bbox is None
 
-    def test_image_clear_bbox_removes_self_embedding(self, white_image: stu.WhiteImage):
+    def test_image_clear_bbox_removes_self_embedding(self, white_image: WhiteImage):
         """clear_image(clear_bbox=True) removes self embedding"""
         img = Image(file_name=white_image.file_name)
         img.image = white_image.image
@@ -118,7 +117,7 @@ class TestImagePixelOperations:
         img.clear_image(clear_bbox=True)
         assert image_id not in img.embeddings
 
-    def test_setting_image_creates_self_embedding(self, white_image: stu.WhiteImage):
+    def test_setting_image_creates_self_embedding(self, white_image: WhiteImage):
         """Setting image creates self embedding"""
         img = Image(file_name=white_image.file_name)
         img.image = white_image.image

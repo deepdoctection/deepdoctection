@@ -20,11 +20,10 @@ Testing Image state_id and state management
 """
 
 import numpy as np
-from pytest import mark
 
 from dd_core.datapoint import BoundingBox, Image, ImageAnnotation
 
-import shared_test_utils as stu
+from ..conftest import WhiteImage
 
 
 class TestImageState:
@@ -40,7 +39,7 @@ class TestImageState:
 
 
     @staticmethod
-    def test_state_id_changes_when_annotation_added(white_image: stu.WhiteImage):
+    def test_state_id_changes_when_annotation_added(white_image: WhiteImage):
         """state_id changes when annotation is added"""
         img = Image(file_name=white_image.file_name, location=white_image.location)
         initial_state_id = img.state_id
@@ -54,7 +53,7 @@ class TestImageState:
         assert img.state_id != initial_state_id
 
     @staticmethod
-    def test_state_id_changes_when_image_added(white_image: stu.WhiteImage):
+    def test_state_id_changes_when_image_added(white_image: WhiteImage):
         """state_id changes when image pixels are set"""
         img = Image(file_name=white_image.file_name)
         initial_state_id = img.state_id
@@ -97,7 +96,7 @@ class TestImageState:
 
 
     @staticmethod
-    def test_state_id_with_multiple_annotations(white_image: stu.WhiteImage):
+    def test_state_id_with_multiple_annotations(white_image: WhiteImage):
         """state_id changes with each annotation added"""
         img = Image(file_name=white_image.file_name)
         state_ids = [img.state_id]
@@ -114,7 +113,7 @@ class TestImageState:
         assert len(set(state_ids)) == len(state_ids)
 
     @staticmethod
-    def test_state_id_includes_image_content(white_image: stu.WhiteImage):
+    def test_state_id_includes_image_content(white_image: WhiteImage):
         """state_id reflects image content changes"""
         img = Image(file_name=white_image.file_name)
 
