@@ -27,20 +27,20 @@ from typing import Any, Generator, Literal, Mapping, Optional, Type, Union, over
 import numpy as np
 from lazy_imports import try_import
 
-from dd_datapoint.dataflow import CacheData, DataFlow, DataFromList, MapData
-from dd_datapoint.datapoint.image import Image
+from dd_core.dataflow import CacheData, DataFlow, DataFromList, MapData
+from dd_core.datapoint.image import Image
 from dd_datasets.base import DatasetBase
-from dd_datapoint.mapper import filter_cat, remove_cats
-from dd_datapoint.mapper.d2struct import to_wandb_image
-from dd_datapoint.mapper.misc import maybe_load_image, maybe_remove_image, maybe_remove_image_from_category
+from dd_core.mapper import filter_cat, remove_cats
+from dd_core.mapper.wandbstruct import to_wandb_image
+from dd_core.mapper.misc import maybe_load_image, maybe_remove_image, maybe_remove_image_from_category
 from ..pipe.base import PipelineComponent
 from ..pipe.common import PageParsingService
 from ..pipe.concurrency import MultiThreadPipelineComponent
 from ..pipe.doctectionpipe import DoctectionPipe
-from dd_datapoint.utils.logger import LoggingRecord, logger
-from dd_datapoint.utils.object_types import DatasetType, LayoutType, TypeOrStr, get_type
-from dd_datapoint.utils.types import PixelValues
-from dd_datapoint.utils.viz import interactive_imshow
+from dd_core.utils.logger import LoggingRecord, logger
+from dd_core.utils.object_types import DatasetType, LayoutType, TypeOrStr, get_type
+from dd_core.utils.types import PixelValues
+from dd_core.utils.viz import interactive_imshow
 from .base import MetricBase
 
 with try_import() as wb_import_guard:

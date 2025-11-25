@@ -48,16 +48,16 @@ from ..extern.hflayoutlm import (
     get_tokenizer_from_model_class,
 )
 from ..extern.hflm import HFLmSequenceClassifier
-from dd_datapoint.utils import get_torch_device
-from dd_datapoint.mapper.laylmstruct import LayoutLMDataCollator, image_to_raw_layoutlm_features, image_to_raw_lm_features
+from dd_core.utils import get_torch_device
+from dd_core.mapper.laylmstruct import LayoutLMDataCollator, image_to_raw_layoutlm_features, image_to_raw_lm_features
 from ..pipe.base import PipelineComponent
 from ..pipe.registry import pipeline_component_registry
-from dd_datapoint.utils.error import DependencyError
-from dd_datapoint.utils.file_utils import wandb_available
-from dd_datapoint.utils.logger import LoggingRecord, logger
-from dd_datapoint.utils.object_types import DatasetType, LayoutType, WordType
-from dd_datapoint.utils.types import PathLikeOrStr
-from dd_datapoint.utils.utils import string_to_dict
+from dd_core.utils.error import DependencyError
+from dd_core.utils.file_utils import wandb_available
+from dd_core.utils.logger import LoggingRecord, logger
+from dd_core.utils.object_types import DatasetType, LayoutType, WordType
+from dd_core.utils.types import PathLikeOrStr
+from dd_core.utils.utils import string_to_dict
 
 with try_import() as pt_import_guard:
     from torch import nn

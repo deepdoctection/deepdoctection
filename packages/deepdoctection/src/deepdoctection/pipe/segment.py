@@ -27,14 +27,14 @@ from typing import Literal, Optional, Sequence, Union
 
 import numpy as np
 
-from dd_datapoint.datapoint.annotation import ImageAnnotation
-from dd_datapoint.datapoint.box import BoundingBox, global_to_local_coords, intersection_box, intersection_boxes, iou, merge_boxes
-from dd_datapoint.datapoint.image import Image, MetaAnnotation
+from dd_core.datapoint.annotation import ImageAnnotation
+from dd_core.datapoint.box import BoundingBox, global_to_local_coords, intersection_box, intersection_boxes, iou, merge_boxes
+from dd_core.datapoint.image import Image, MetaAnnotation
 from ..extern.base import DetectionResult
-from dd_datapoint.mapper.maputils import MappingContextManager
-from dd_datapoint.mapper.match import match_anns_by_intersection
-from dd_datapoint.utils.error import ImageError
-from dd_datapoint.utils.object_types import CellType, LayoutType, ObjectTypes, Relationships, TableType, TypeOrStr, get_type
+from dd_core.mapper.maputils import MappingContextManager
+from dd_core.mapper.match import match_anns_by_intersection
+from dd_core.utils.error import ImageError
+from dd_core.utils.object_types import CellType, LayoutType, ObjectTypes, Relationships, TableType, TypeOrStr, get_type
 from .base import PipelineComponent
 from .refine import generate_html_string
 from .registry import pipeline_component_registry

@@ -28,13 +28,13 @@ from huggingface_hub import hf_hub_download
 from tabulate import tabulate
 from termcolor import colored
 
-from dd_datapoint.utils.env_info import SETTINGS
-from dd_datapoint.utils.fs import (
+from dd_core.utils.env_info import SETTINGS
+from dd_core.utils.fs import (
     download,
 )
-from dd_datapoint.utils.logger import LoggingRecord, log_once, logger
-from dd_datapoint.utils.object_types import ObjectTypes, get_type
-from dd_datapoint.utils.types import PathLikeOrStr
+from dd_core.utils.logger import LoggingRecord, log_once, logger
+from dd_core.utils.object_types import ObjectTypes, get_type
+from dd_core.utils.types import PathLikeOrStr
 
 __all__ = ["ModelCatalog", "ModelDownloadManager", "print_model_infos", "ModelProfile"]
 

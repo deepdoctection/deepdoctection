@@ -23,10 +23,10 @@ from __future__ import annotations
 
 from lazy_imports import try_import
 
-from dd_datapoint.utils.file_utils import get_jdeskew_requirement
-from dd_datapoint.utils.object_types import ObjectTypes, PageType
-from dd_datapoint.utils.types import PixelValues, Requirement
-from dd_datapoint.utils.viz import viz_handler
+from dd_core.utils.file_utils import get_jdeskew_requirement
+from dd_core.utils.object_types import ObjectTypes, PageType
+from dd_core.utils.types import PixelValues, Requirement
+from dd_core.utils.viz import viz_handler
 from .base import DetectionResult, ImageTransformer
 
 with try_import() as import_guard:

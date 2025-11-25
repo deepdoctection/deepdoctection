@@ -26,13 +26,13 @@ from collections import defaultdict
 from typing import Any, Callable, Mapping, Optional, Union
 from uuid import uuid1
 
-from dd_datapoint.dataflow import DataFlow, MapData
-from dd_datapoint.datapoint.image import Image, MetaAnnotation
-from dd_datapoint.mapper.misc import curry
-from dd_datapoint.utils.context import timed_operation
-from dd_datapoint.utils.identifier import get_uuid_from_str
-from dd_datapoint.utils.object_types import ObjectTypes
-from dd_datapoint.utils.types import DP
+from dd_core.dataflow import DataFlow, MapData
+from dd_core.datapoint.image import Image, MetaAnnotation
+from dd_core.mapper.misc import curry
+from dd_core.utils.context import timed_operation
+from dd_core.utils.identifier import get_uuid_from_str
+from dd_core.utils.object_types import ObjectTypes
+from dd_core.utils.types import DP
 from .anngen import DatapointManager
 
 

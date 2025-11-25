@@ -23,10 +23,10 @@ from typing import Optional
 
 from lazy_imports import try_import
 
-from dd_datapoint.utils.context import save_tmp_file
-from dd_datapoint.utils.file_utils import get_pdfplumber_requirement, get_pypdfium2_requirement
-from dd_datapoint.utils.object_types import LayoutType, ObjectTypes
-from dd_datapoint.utils.types import Requirement
+from dd_core.utils.context import save_tmp_file
+from dd_core.utils.file_utils import get_pdfplumber_requirement, get_pypdfium2_requirement
+from dd_core.utils.object_types import LayoutType, ObjectTypes
+from dd_core.utils.types import Requirement
 from .base import DetectionResult, ModelCategories, PdfMiner
 
 with try_import() as pdfplumber_import_guard:

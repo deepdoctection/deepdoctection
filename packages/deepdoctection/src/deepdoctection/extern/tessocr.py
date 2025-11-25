@@ -33,14 +33,14 @@ from typing import Any, Mapping, Optional, Sequence, Union
 import numpy as np
 from packaging.version import InvalidVersion, Version, parse
 
-from dd_datapoint.utils.context import save_tmp_file, timeout_manager
-from dd_datapoint.utils.error import DependencyError, TesseractError
-from dd_datapoint.utils.file_utils import _TESS_PATH, get_tesseract_requirement
-from dd_datapoint.utils.metacfg import config_to_cli_str, set_config_by_yaml
-from dd_datapoint.utils.object_types import LayoutType, ObjectTypes, PageType
-from dd_datapoint.utils.transform import RotationTransform
-from dd_datapoint.utils.types import PathLikeOrStr, PixelValues, Requirement
-from dd_datapoint.utils.viz import viz_handler
+from dd_core.utils.context import save_tmp_file, timeout_manager
+from dd_core.utils.error import DependencyError, TesseractError
+from dd_core.utils.file_utils import _TESS_PATH, get_tesseract_requirement
+from dd_core.utils.metacfg import config_to_cli_str, set_config_by_yaml
+from dd_core.utils.object_types import LayoutType, ObjectTypes, PageType
+from dd_core.utils.transform import RotationTransform
+from dd_core.utils.types import PathLikeOrStr, PixelValues, Requirement
+from dd_core.utils.viz import viz_handler
 from .base import DetectionResult, ImageTransformer, ModelCategories, ObjectDetector
 
 # copy and paste with some light modifications from https://github.com/madmaze/pytesseract/tree/master/pytesseract

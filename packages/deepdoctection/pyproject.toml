@@ -23,32 +23,27 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
 
-# Core dependencies for deepdoctection (server/inference)
-# Note: Heavy ML dependencies (PyTorch, DocTr, Transformers, Detectron2) should be installed separately by users
 dependencies = [
-    "dd-datapoint>=1.0",
-    "dd-datasets>=1.0",
+    #"dd-core[full]>=1.0",
     "huggingface_hub>=0.26.0",
-    "opencv-python==4.8.0.76",
-    "pycocotools>=2.0.2",
-    "pyzmq>=16",
-    # External services/tools
-    "boto3==1.34.102",
-    "pdfplumber>=0.11.0",
-    "jdeskew>=0.2.2",
-    "apted==1.0.3",
-    "distance==0.1.3",
-    "networkx>=2.7.1",
 ]
 
 [project.optional-dependencies]
-# Full installation including all training and evaluation dependencies
-# Note: PyTorch should still be installed separately by users
 full = [
+    #"dd-datasets[full]>=1.0",
+    # Additional dependencies/ Non DL predictors
+    "boto3==1.34.102",
+    "pdfplumber>=0.11.0",
+    "jdeskew>=0.2.2",
+    "networkx>=2.7.1",
+    # Some libs for evals
+    "apted==1.0.3",
+    "distance==0.1.3",
+    # DL dependencies
     "timm>=0.9.16",
     "transformers>=4.48.0",
     "accelerate>=0.29.1",
-    "python-doctr==0.10.0",
+    "python-doctr>=1.0.0",
     "detectron2 @ git+https://github.com/deepdoctection/detectron2.git",
 ]
 

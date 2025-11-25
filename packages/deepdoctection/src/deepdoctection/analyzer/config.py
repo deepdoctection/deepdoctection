@@ -421,9 +421,9 @@ The distance is calculated using the center points of the layout elements.
 
 """
 
-from dd_datapoint.datapoint.view import IMAGE_DEFAULTS
-from dd_datapoint.utils.metacfg import AttrDict
-from dd_datapoint.utils.object_types import CellType, LayoutType
+from dd_core.datapoint.view import IMAGE_DEFAULTS
+from dd_core.utils.metacfg import AttrDict
+from dd_core.utils.object_types import CellType, LayoutType
 
 cfg = AttrDict()
 

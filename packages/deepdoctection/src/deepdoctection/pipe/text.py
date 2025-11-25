@@ -24,13 +24,13 @@ from __future__ import annotations
 from copy import deepcopy
 from typing import Optional, Sequence, Union
 
-from dd_datapoint.datapoint.annotation import ImageAnnotation
-from dd_datapoint.datapoint.image import Image, MetaAnnotation
+from dd_core.datapoint.annotation import ImageAnnotation
+from dd_core.datapoint.image import Image, MetaAnnotation
 from ..extern.base import ObjectDetector, PdfMiner, TextRecognizer
 from ..extern.tessocr import TesseractOcrDetector
-from dd_datapoint.utils.error import ImageError
-from dd_datapoint.utils.object_types import ObjectTypes, PageType, TypeOrStr, WordType, get_type
-from dd_datapoint.utils.types import PixelValues
+from dd_core.utils.error import ImageError
+from dd_core.utils.object_types import ObjectTypes, PageType, TypeOrStr, WordType, get_type
+from dd_core.utils.types import PixelValues
 from .base import PipelineComponent
 from .registry import pipeline_component_registry
 

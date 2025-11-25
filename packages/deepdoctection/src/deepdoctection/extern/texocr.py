@@ -25,12 +25,12 @@ import traceback
 
 from lazy_imports import try_import
 
-from dd_datapoint.datapoint.convert import convert_np_array_to_b64_b
-from dd_datapoint.utils.file_utils import get_boto3_requirement
-from dd_datapoint.utils.logger import LoggingRecord, logger
-from dd_datapoint.utils.object_types import LayoutType, ObjectTypes
-from dd_datapoint.utils.types import JsonDict, PixelValues, Requirement
-from .base import DetectionResult, ModelCategories, ObjectDetector
+from dd_core.datapoint.convert import convert_np_array_to_b64_b
+from dd_core.utils.file_utils import get_boto3_requirement
+from dd_core.utils.logger import LoggingRecord, logger
+from dd_core.utils.object_types import LayoutType, ObjectTypes
+from dd_core.utils.types import PixelValues, Requirement
+from .base import DetectionResult, ModelCategories, ObjectDetector, TextRecognizer
 
 with try_import() as import_guard:
     import boto3  # type:ignore

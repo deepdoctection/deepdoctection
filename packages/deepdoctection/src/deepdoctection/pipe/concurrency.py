@@ -28,11 +28,11 @@ from typing import Callable, Optional, Sequence, Union
 
 import tqdm
 
-from dd_datapoint.dataflow import DataFlow, MapData
-from dd_datapoint.datapoint.image import Image, MetaAnnotation
-from dd_datapoint.utils.context import timed_operation
-from dd_datapoint.utils.tqdm import get_tqdm
-from dd_datapoint.utils.types import QueueType, TqdmType
+from dd_core.dataflow import DataFlow, MapData
+from dd_core.datapoint.image import Image, MetaAnnotation
+from dd_core.utils.context import timed_operation
+from dd_core.utils.tqdm import get_tqdm
+from dd_core.utils.types import QueueType, TqdmType
 from .base import PipelineComponent
 from .common import ImageParsingService, PageParsingService
 from .registry import pipeline_component_registry

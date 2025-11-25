@@ -9,10 +9,10 @@ import os
 import sys
 from typing import TYPE_CHECKING
 
-# Import from dd_datapoint (utils and datapoint are now external dependencies)
-from dd_datapoint.utils.env_info import collect_env_info
-from dd_datapoint.utils.logger import LoggingRecord, logger
-from dd_datapoint.utils.file_utils import _LazyModule, pytorch_available
+# Import from dd_core (utils and datapoint are now external dependencies)
+from dd_core.utils.env_info import collect_env_info
+from dd_core.utils.logger import LoggingRecord, logger
+from dd_core.utils.file_utils import _LazyModule, pytorch_available
 
 __version__ = "1.0"
 

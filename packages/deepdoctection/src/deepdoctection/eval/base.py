@@ -22,11 +22,11 @@ Base classes for evaluations and metrics
 from abc import ABC, abstractmethod
 from typing import Any, Callable, Optional
 
-from dd_datapoint.dataflow import DataFlow
+from dd_core.dataflow import DataFlow
 from dd_datasets.info import DatasetCategories
-from dd_datapoint.utils.error import DependencyError
-from dd_datapoint.utils.file_utils import Requirement
-from dd_datapoint.utils.types import MetricResults
+from dd_core.utils.error import DependencyError
+from dd_core.utils.file_utils import Requirement
+from dd_core.utils.types import MetricResults
 
 
 class MetricBase(ABC):

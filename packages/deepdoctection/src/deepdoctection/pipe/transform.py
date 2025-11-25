@@ -22,7 +22,7 @@ Transform style pipeline components.
 from __future__ import annotations
 
 from .. import DetectionResult
-from dd_datapoint.datapoint.image import Image, MetaAnnotation
+from dd_core.datapoint.image import Image, MetaAnnotation
 from ..extern.base import ImageTransformer
 from .base import PipelineComponent
 from .registry import pipeline_component_registry

@@ -23,18 +23,18 @@ import os
 from pathlib import Path
 from typing import List, Mapping, Optional, Sequence, Tuple, Union
 
-from dd_datapoint.dataflow import CustomDataFromIterable, DataFlow, DataFromList, MapData
-from dd_datapoint.dataflow import SerializerFiles, SerializerPdfDoc
-from dd_datapoint.datapoint.image import Image
-from dd_datapoint.datapoint.view import IMAGE_DEFAULTS
-from dd_datapoint.mapper.maputils import curry
-from dd_datapoint.mapper.misc import to_image
-from dd_datapoint.utils.fs import maybe_path_or_pdf
-from dd_datapoint.utils.identifier import get_uuid_from_str
-from dd_datapoint.utils.logger import LoggingRecord, logger
-from dd_datapoint.utils.pdf_utils import PDFStreamer
-from dd_datapoint.utils.types import PathLikeOrStr
-from dd_datapoint.utils.utils import is_file_extension
+from dd_core.dataflow import CustomDataFromIterable, DataFlow, DataFromList, MapData
+from dd_core.dataflow import SerializerFiles, SerializerPdfDoc
+from dd_core.datapoint.image import Image
+from dd_core.datapoint.view import IMAGE_DEFAULTS
+from dd_core.mapper.maputils import curry
+from dd_core.mapper.misc import to_image
+from dd_core.utils.fs import maybe_path_or_pdf
+from dd_core.utils.identifier import get_uuid_from_str
+from dd_core.utils.logger import LoggingRecord, logger
+from dd_core.utils.pdf_utils import PDFStreamer
+from dd_core.utils.types import PathLikeOrStr
+from dd_core.utils.utils import is_file_extension
 from .base import Pipeline, PipelineComponent
 from .common import PageParsingService
 

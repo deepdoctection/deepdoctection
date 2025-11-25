@@ -24,14 +24,14 @@ from typing import Any, Callable, Optional
 
 from lazy_imports import try_import
 
-from dd_datapoint.dataflow import DataFlow, DataFromList, MapData, MultiThreadMapData
-from dd_datapoint.datapoint.image import Image
-from dd_datapoint.datapoint.view import Page
+from dd_core.dataflow import DataFlow, DataFromList, MapData, MultiThreadMapData
+from dd_core.datapoint.image import Image
+from dd_core.datapoint.view import Page
 from dd_datasets.base import DatasetCategories
-from dd_datapoint.utils.file_utils import Requirement, get_apted_requirement, get_distance_requirement, get_lxml_requirement
-from dd_datapoint.utils.logger import LoggingRecord, logger
-from dd_datapoint.utils.object_types import LayoutType
-from dd_datapoint.utils.types import MetricResults
+from dd_core.utils.file_utils import Requirement, get_apted_requirement, get_distance_requirement, get_lxml_requirement
+from dd_core.utils.logger import LoggingRecord, logger
+from dd_core.utils.object_types import LayoutType
+from dd_core.utils.types import MetricResults
 from .base import MetricBase
 from .registry import metric_registry
 

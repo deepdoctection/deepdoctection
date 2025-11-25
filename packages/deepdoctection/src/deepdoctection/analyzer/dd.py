@@ -26,12 +26,12 @@ from __future__ import annotations
 import os
 from typing import Optional
 
-from dd_datapoint.utils import get_torch_device
+from dd_core.utils import get_torch_device
 from ..pipe.doctectionpipe import DoctectionPipe
-from dd_datapoint.utils.logger import LoggingRecord, logger
-from dd_datapoint.utils.metacfg import set_config_by_yaml
-from dd_datapoint.utils.types import PathLikeOrStr
-from dd_datapoint.utils.env_info import ENV_VARS_TRUE
+from dd_core.utils.logger import LoggingRecord, logger
+from dd_core.utils.metacfg import set_config_by_yaml
+from dd_core.utils.types import PathLikeOrStr
+from dd_core.utils.env_info import ENV_VARS_TRUE
 from .config import cfg
 from .factory import ServiceFactory
 
