@@ -385,7 +385,7 @@ class DoctrTextRecognizer(TextRecognizer):
             if architecture not in ARCHS:
                 raise ValueError(f"unknown architecture '{architecture}'")
 
-            model = recognition.__dict__[architecture](pretrained=True, pretrained_backbone=True, **custom_configs)
+            model = recognition.__dict__[architecture](pretrained=False, pretrained_backbone=True, **custom_configs)
         else:
             # This is not documented, but you can also directly pass the model class to architecture
             if not isinstance(
