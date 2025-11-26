@@ -17,7 +17,7 @@ dev = ["black", "isort", "mypy"]
 test = ["pytest"]
 
 [project.scripts]
-dd-add-asset = "shared_test_utils.tools.add_asset:main"
+dd-add-asset = "shared_test_utils.add_asset:main"
 
 [tool.setuptools]
 package-dir = {"" = "src"}

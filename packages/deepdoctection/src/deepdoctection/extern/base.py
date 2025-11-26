@@ -786,9 +786,7 @@ class DeterministicImageTransformer(ImageTransformer):
 
     def transform_coords(self, detect_results: Sequence[DetectionResult]) -> Sequence[DetectionResult]:
         boxes = np.array([detect_result.box for detect_result in detect_results])
-        # boxes = box_to_point4(boxes)
         boxes = self.base_transform.apply_coords(boxes)
-        # boxes = point4_to_box(boxes)
         detection_results = []
         for idx, detect_result in enumerate(detect_results):
             detection_results.append(
@@ -805,9 +803,7 @@ class DeterministicImageTransformer(ImageTransformer):
 
     def inverse_transform_coords(self, detect_results: Sequence[DetectionResult]) -> Sequence[DetectionResult]:
         boxes = np.array([detect_result.box for detect_result in detect_results])
-        boxes = box_to_point4(boxes)
         boxes = self.base_transform.inverse_apply_coords(boxes)
-        boxes = point4_to_box(boxes)
         detection_results = []
         for idx, detect_result in enumerate(detect_results):
             detection_results.append(

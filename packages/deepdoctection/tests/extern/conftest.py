@@ -27,8 +27,8 @@ from deepdoctection.extern.base import (
     DeterministicImageTransformer,
     DetectionResult,
 )
-from deepdoctection.utils.object_types import get_type
-from deepdoctection.utils.transform import BaseTransform
+from dd_core.utils.object_types import get_type
+from dd_core.utils.transform import BaseTransform
 
 
 @pytest.fixture
@@ -60,7 +60,7 @@ def ner_model_categories(ner_semantics, ner_bio):
 def mock_base_transform():
     mock = MagicMock(spec=BaseTransform)
     mock.get_init_args.return_value = ["angle"]
-    mock.get_category_names.return_value = (get_type("foo"),)
+    mock.get_category_names.return_value = (get_type("text"),)
     mock.angle = 90
     mock.apply_image.return_value = np.ones((10, 10, 3))
     mock.apply_coords.return_value = np.array([[10, 10, 20, 20], [30, 30, 40, 40]])
@@ -92,3 +92,4 @@ def detection_results():
         uuid=str(uuid.uuid4()),
     )
     return [dr1, dr2]
+
