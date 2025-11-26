@@ -10,6 +10,18 @@ coco_like:
   size: 22652
   license: Apache-2.0
   description: Excerpt from Publaynet train GT
+deskewed_gt_opencv:
+  path: deepdoctection/tests/assets/deskew/skewed_gt_opencv.png
+  sha256: e32b1c80a82e38376bdb5c54ddb1a96558d104514ce05904d5211067193540e7
+  size: 176758
+  license: Apache-2.0
+  description: Deskewed image using OpenCV
+deskewed_gt_pil:
+  path: deepdoctection/tests/assets/deskew/skewed_gt_pil.png
+  sha256: e29d466203708e716b636cb3841de3315dcde59abd4012547defa03783b2b2b9
+  size: 118079
+  license: Apache-2.0
+  description: Deskewed image using Pillow
 page_json:
   path: dd_core/tests/assets/a8d0e15c-7463-378a-a3e5-28590a4440ab.json
   sha256: ae8e68f2b06624986ef959feb38b7431c8b666927442dbfe9abc263ca00d3286
@@ -34,6 +46,12 @@ sample_document_image:
   size: 458046
   license: Prop-Corpoorate-Doc
   description: PNG of a page from some DB financial report
+skewed_input:
+  path: deepdoctection/tests/assets/deskew/skewed_input.png
+  sha256: 675ff47da7dbe47e3e2e3d8072d76bfbe96066ca5028db5f0bae918a5147edce
+  size: 114606
+  license: Apache-2.0
+  description: Skewed image for testing
 testlayout:
   path: dd_datasets/tests/assets/datasets/testlayout/test_layout.jsonl
   sha256: f00ac10b4180404d9e4633d53d4b53095a1bbc524f164105d07f1b61c1cc839e

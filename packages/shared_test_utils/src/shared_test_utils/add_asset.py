@@ -13,7 +13,7 @@ from typing import Any
 
 import yaml
 
-from ..assets import get_repo_root, get_default_manifest_path
+from shared_test_utils.assets import get_repo_root, get_default_manifest_path
 
 
 

@@ -22,16 +22,14 @@ from unittest.mock import MagicMock
 import numpy as np
 import pytest
 
+from dd_core.utils.object_types import get_type
+
 from deepdoctection.extern.base import (
     ModelCategories,
     NerModelCategories,
     DeterministicImageTransformer,
     DetectionResult,
 )
-from deepdoctection.utils.object_types import get_type
-from deepdoctection.utils.transform import BaseTransform
-
-
 
 
 
@@ -47,6 +45,21 @@ def test_model_categories_get_categories_dict(model_categories):
             4: get_type("figure"),
             5: get_type("header"),
             6: get_type("footnote"),
+        }
+    )
+    assert cats == expected
+
+
+def test_model_categories_get_categories_dict_name_as_key(model_categories):
+    cats = model_categories.get_categories()
+    expected = MappingProxyType(
+        {
+            get_type("word"): 1,
+            get_type("line"): 2,
+            get_type("table"): 3,
+            get_type("figure"): 4,
+            get_type("header"): 5,
+            get_type("footnote"): 6,
         }
     )
     assert cats == expected
@@ -89,10 +102,6 @@ def test_model_categories_shift_ids(model_categories):
     assert shifted == expected
 
 
-# ------------------------
-# NerModelCategories tests
-# ------------------------
-
 def test_ner_model_categories_merge(ner_model_categories):
     cats = ner_model_categories.get_categories()
     expected = MappingProxyType(
@@ -116,10 +125,6 @@ def test_ner_model_categories_preserve_init(ner_semantics, ner_bio):
     expected = MappingProxyType({1: get_type("B-answer"), 2: get_type("B-question")})
     assert cats == expected
 
-
-# ------------------------
-# DeterministicImageTransformer tests
-# ------------------------
 
 def test_transform_image(transformer, mock_base_transform):
     img = np.zeros((10, 10, 3))

@@ -11,7 +11,7 @@ Exports:
 """
 
 from .assets import asset_info, asset_path, list_keys
-from .tools.collector import collect_datapoint_from_dataflow
+from shared_test_utils.collector import collect_datapoint_from_dataflow
 
 __all__ = [
     "asset_path",
