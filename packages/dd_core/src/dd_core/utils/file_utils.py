@@ -751,6 +751,31 @@ def get_spacy_requirement() -> Requirement:
     return "spacy", spacy_available(), _SPACY_ERR_MSG
 
 
+# Timm
+_TIMM_AVAILABLE = importlib.util.find_spec("timm") is not None
+_TIMM_ERR_MSG = f"Timm must be installed. {_GENERIC_ERR_MSG}"
+
+
+def timm_available() -> bool:
+    """
+    Returns whether Timm is installed.
+
+    Returns:
+        bool: True if Timm is installed, False otherwise.
+    """
+
+    return bool(_TIMM_AVAILABLE)
+
+
+def get_timm_requirement() -> Requirement:
+    """
+    Returns the Timm requirement.
+
+    Returns:
+        tuple: A tuple containing the package name, whether the requirement is satisfied, and an error message.
+    """
+    return "timm", timm_available(), _TIMM_ERR_MSG
+
 class _LazyModule(ModuleType):
     """
     Module class that surfaces all objects but only performs associated imports when the objects are requested.
