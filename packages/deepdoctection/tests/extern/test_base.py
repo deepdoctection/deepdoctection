@@ -51,7 +51,7 @@ def test_model_categories_get_categories_dict(model_categories):
 
 
 def test_model_categories_get_categories_dict_name_as_key(model_categories):
-    cats = model_categories.get_categories()
+    cats = model_categories.get_categories(name_as_key=True)
     expected = MappingProxyType(
         {
             get_type("word"): 1,
@@ -122,7 +122,7 @@ def test_ner_model_categories_preserve_init(ner_semantics, ner_bio):
         categories_bio=ner_bio,
     )
     cats = nm.get_categories()
-    expected = MappingProxyType({1: get_type("B-answer"), 2: get_type("B-question")})
+    expected = MappingProxyType({1: get_type("B-answer"), 2: get_type("B-question"), 3:get_type("I-answer"), 4: get_type("I-question")})
     assert cats == expected
 
 
