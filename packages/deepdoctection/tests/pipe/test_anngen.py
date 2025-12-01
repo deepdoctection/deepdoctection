@@ -44,7 +44,7 @@ def test_set_image_annotation_and_cache(dp_image: Image):
     assert ann_id in mgr._cache_anns
     ann = mgr.get_annotation(ann_id)
     assert ann.category_name == "text"
-    assert ann.bounding_box.ulx == pytest.approx(10 / dp_image.width)
+    assert ann.bounding_box.ulx == 10
 
 
 def test_set_image_annotation_with_image_and_child_relationship(dp_image: Image):
@@ -68,12 +68,12 @@ def test_category_and_container_annotations(dp_image: Image):
     mgr.datapoint = dp_image
     ann_id = mgr.set_image_annotation(_detection_result([0, 0, 10, 10]))
 
-    mgr.set_category_annotation(get_type("catA"), 7, get_type("CAT_A"), ann_id, 0.5)
-    mgr.set_container_annotation(get_type("catB"), 9, get_type("CAT_B"), ann_id, "value_x", 0.6)
+    mgr.set_category_annotation(get_type("test_cat_1"), 7, get_type("sub_cat_1"), ann_id, 0.5)
+    mgr.set_container_annotation(get_type("test_cat_2"), 9, get_type("sub_cat_2"), ann_id, "value_x", 0.6)
 
     ann = mgr.get_annotation(ann_id)
-    cat_ann = ann.get_sub_category(get_type("CAT_A"))
-    cont_ann = ann.get_sub_category(get_type("CAT_B"))
+    cat_ann = ann.get_sub_category(get_type("sub_cat_1"))
+    cont_ann = ann.get_sub_category(get_type("sub_cat_2"))
 
     assert cat_ann.category_id == 7
     assert cat_ann.score == 0.5
@@ -86,11 +86,11 @@ def test_summary_annotation(dp_image: Image):
     mgr.datapoint = dp_image
     ann_id = mgr.set_image_annotation(_detection_result([0, 0, 20, 20]), to_image=True)
 
-    summ_global_id = mgr.set_summary_annotation(get_type("sumA"), get_type("sumA"), 1)
-    summ_local_id = mgr.set_summary_annotation(get_type("sumB"), get_type("sumB"), 2, annotation_id=ann_id)
+    summ_global_id = mgr.set_summary_annotation(get_type("sub_cat_1"), get_type("test_cat_1"), 1)
+    summ_local_id = mgr.set_summary_annotation(get_type("sub_cat_2"), get_type("test_cat_2"), 2, annotation_id=ann_id)
 
-    global_summ = mgr.datapoint.summary.get_sub_category(get_type("sumA"))
-    local_summ = mgr.get_annotation(ann_id).get_summary(get_type("sumB"))
+    global_summ = mgr.datapoint.summary.get_sub_category(get_type("sub_cat_1"))
+    local_summ = mgr.get_annotation(ann_id).get_summary(get_type("sub_cat_2"))
 
     assert global_summ.annotation_id == summ_global_id
     assert local_summ.annotation_id == summ_local_id

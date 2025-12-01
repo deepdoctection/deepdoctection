@@ -28,7 +28,16 @@ class ObjectTestType(ObjectTypes):
 
     REPORT_DATE = "report_date"
     UMBRELLA = "umbrella"
-
+    TEST_CAT_1 = "test_cat_1"
+    TEST_CAT_2 = "test_cat_2"
+    TEST_CAT_3 = "test_cat_3"
+    TEST_CAT_4 = "test_cat_4"
+    SUB_CAT_1 = "sub_cat_1"
+    SUB_CAT_2 = "sub_cat_2"
+    SUB_CAT_3 = "sub_cat_3"
+    RELATIONSHIP_1 = "relationship_1"
+    RELATIONSHIP_2 = "relationship_2"
+    NON_EXISTENT = "non_existent"
 
 
 @pytest.hookimpl(tryfirst=True)

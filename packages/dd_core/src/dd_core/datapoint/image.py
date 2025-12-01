@@ -622,9 +622,12 @@ class Image(BaseModel):
             width = new_bounding_box.width
             height = new_bounding_box.height
         else:
-            width = new_bounding_box.width * self.width
-            height = new_bounding_box.height * self.height
+            new_bounding_box = new_bounding_box.transform(self.width, self.height, absolute_coords=True)
+            width = new_bounding_box.width
+            height = new_bounding_box.height
         new_image.set_width_height(width, height)
+        if new_bounding_box.absolute_coords:
+            new_bounding_box = new_bounding_box.transform(width, height, absolute_coords=False)
         new_image.set_embedding(self.image_id, bounding_box=new_bounding_box)
 
         if crop_image and self.image is not None:

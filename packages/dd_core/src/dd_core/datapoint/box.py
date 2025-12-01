@@ -619,17 +619,12 @@ def local_to_global_coords(local_box: BoundingBox, embedding_box: BoundingBox) -
     """
 
     assert local_box.absolute_coords and embedding_box.absolute_coords, (
-        f"absolute coords "
-        f"(={local_box.absolute_coords} for local_box and embedding_box (={embedding_box.absolute_coords}) must be "
-        f"True"
+        f"absolute coords={local_box.absolute_coords} for local_box and"
+        f" embedding_box={embedding_box.absolute_coords} must be "
+        f" both equal True"
     )
     assert embedding_box.ulx is not None and embedding_box.uly is not None
-    assert (
-        local_box.ulx is not None
-        and local_box.uly is not None
-        and local_box.lrx is not None
-        and local_box.lry is not None
-    )
+
     return BoundingBox(
         absolute_coords=True,
         ulx=embedding_box.ulx + local_box.ulx,
