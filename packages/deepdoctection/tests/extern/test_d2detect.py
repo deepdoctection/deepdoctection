@@ -16,8 +16,7 @@
 # limitations under the License.
 
 
-# python
-# File: deepdoctection/_tests_d2/test_d2detect_unit.py
+from __future__ import annotations
 
 from typing import Dict, List
 from types import SimpleNamespace

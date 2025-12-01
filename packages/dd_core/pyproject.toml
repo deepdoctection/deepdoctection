@@ -42,7 +42,7 @@ full = [
     "pypdf>=6.0.0",
     "jsonlines==3.1.0",
     "scipy>=1.13.1",
-    "pypdfium2>=4.30.0"
+    "pypdfium2>=4.30.0,<5.0"
 ]
 
 types = [

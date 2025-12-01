@@ -18,14 +18,14 @@
 """
 Module for language detection pipeline component
 """
-from typing import Optional, Union
+from typing import Optional, Sequence
 
 from dd_core.datapoint.image import Image, MetaAnnotation
 from dd_core.datapoint.view import IMAGE_DEFAULTS, Page
-from ..extern.base import LanguageDetector
+from ..extern.base import LanguageDetector, ObjectDetector
 from dd_core.utils.error import ImageError
 from dd_core.utils.object_types import PageType, TypeOrStr, get_type
-from .base import LanguageModelPipelineComponent
+from .base  import PipelineComponent
 from .registry import pipeline_component_registry
 
 

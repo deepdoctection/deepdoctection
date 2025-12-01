@@ -20,17 +20,16 @@ Module for layout pipeline component
 """
 from __future__ import annotations
 
+import numpy as np
 from typing import Optional, Sequence, Union
 
-from typing import Literal, Optional, Sequence, Union
-
 from dd_core.datapoint.image import Image, MetaAnnotation
-from ..extern.base import DetectionResult, ObjectDetector
+from ..extern.base import DetectionResult, ObjectDetector, PdfMiner
 from dd_core.mapper.misc import curry
 from dd_core.utils.error import ImageError
 from dd_core.utils.object_types import ObjectTypes
 from dd_core.utils.transform import PadTransform
-from .base import PredictorPipelineComponent
+from .base import PipelineComponent
 from .registry import pipeline_component_registry
 
 

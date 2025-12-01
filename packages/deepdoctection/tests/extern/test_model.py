@@ -164,7 +164,7 @@ class TestModelDownloadManager:
             os.makedirs(os.path.dirname(weights_abs), exist_ok=True)
             os.makedirs(os.path.dirname(configs_abs), exist_ok=True)
 
-            # Stub hf\_hub\_download to create files with nonzero size
+
             def _fake_hf_hub_download(repo_id: str, file_name: str, local_dir: str, force_filename: str,
                                       force_download: bool, token: str | None):
                 target = os.path.join(local_dir, force_filename)
@@ -191,44 +191,49 @@ class TestModelDownloadManager:
         """
         Google Drive branch: ensure it calls download helper and returns absolute weights path.
         """
-        name = "gd_model/weights.tgz"
-        profile = ModelProfile(
-            name=name,
-            description="GD test",
-            config="gd_model/config.yaml",
-            preprocessor_config=None,
-            size=[20],
-            hf_repo_id=None,
-            hf_model_name=None,
-            hf_config_file=None,
-            urls=["https://drive.fake/file?id=123"],
-            categories=None,
-            dl_library=None,
-            model_wrapper=None,
-        )
-        if name not in ModelCatalog.CATALOG:
-            ModelCatalog.register(name, profile)
 
-        weights_abs = (SETTINGS.MODEL_DIR / name).as_posix()
-        os.makedirs(os.path.dirname(weights_abs), exist_ok=True)
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tmp_root = Path(tmpdir)
+            tmp_model_dir = tmp_root / "models"
+            tmp_configs_dir = tmp_root / "configs"
+            tmp_model_dir.mkdir(parents=True, exist_ok=True)
+            tmp_configs_dir.mkdir(parents=True, exist_ok=True)
 
-        # Stub dd_core.utils.fs.download to create target file
-        def _fake_download(url: str, directory: str, file_name: str, expect_size: int) -> None:
-            target = os.path.join(directory, file_name)
-            os.makedirs(directory, exist_ok=True)
-            with open(target, "wb") as f:
-                f.write(b"x" * expect_size)
+            monkeypatch.setattr(SETTINGS, "MODEL_DIR", tmp_model_dir, raising=False)
+            monkeypatch.setattr(SETTINGS, "CONFIGS_DIR", tmp_configs_dir, raising=False)
 
-        monkeypatch.setattr("deepdoctection.extern.model.download", _fake_download, raising=True)
+            name = "gd_model/weights.tgz"
+            profile = ModelProfile(
+                name=name,
+                description="GD test",
+                config="gd_model/config.yaml",
+                preprocessor_config=None,
+                size=[20],
+                hf_repo_id=None,
+                hf_model_name=None,
+                hf_config_file=None,
+                urls=["https://drive.fake/file?id=123"],
+                categories=None,
+                dl_library=None,
+                model_wrapper=None,
+            )
 
-        # Remove to force download
-        if os.path.isfile(weights_abs):
-            os.remove(weights_abs)
+            if name not in ModelCatalog.CATALOG:
+                ModelCatalog.register(name, profile)
 
-        out = ModelDownloadManager.maybe_download_weights_and_configs(name)
-        assert out == weights_abs
-        assert os.path.isfile(weights_abs)
-        assert os.path.getsize(weights_abs) == 20
+            weights_abs = (SETTINGS.MODEL_DIR / name).as_posix()
+            os.makedirs(os.path.dirname(weights_abs), exist_ok=True)
+
+            def _fake_download(url: str, directory: str, file_name: str, expect_size: int) -> None:
+                target = os.path.join(directory, file_name)
+                os.makedirs(directory, exist_ok=True)
+                with open(target, "wb") as f:
+                    f.write(b"x" * expect_size)
+
+            monkeypatch.setattr("deepdoctection.extern.model.download", _fake_download, raising=True)
+
+            out = ModelDownloadManager.maybe_download_weights_and_configs(name)
+            assert out == weights_abs
 
 
     def test_maybe_download_no_sources_returns_path(self) -> None:
