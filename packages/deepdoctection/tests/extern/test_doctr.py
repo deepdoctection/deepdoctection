@@ -15,9 +15,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-# file: deepdoctection/packages/deepdoctection/tests/extern/test_doctrocr_integration.py
-
 import numpy as np
 import pytest
 from unittest.mock import MagicMock
