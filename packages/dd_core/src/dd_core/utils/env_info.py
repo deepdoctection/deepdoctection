@@ -69,6 +69,8 @@ can store an (absolute) path to a `.jsonl` file.
 from __future__ import annotations
 
 import importlib
+from importlib.resources import files as pkg_files
+
 import os
 import re
 import subprocess
@@ -152,6 +154,31 @@ def _import_custom_object_types_module(mod: str) -> None:
     spec.loader.exec_module(module)  # type: ignore[union-attr]
 
 
+def resolve_config_source(
+    filename: str,
+    env_keys: tuple[str, ...],
+    pkg_subdirs: tuple[tuple[str, str], ...],
+) -> Path:
+    for key in env_keys:
+        val = os.environ.get(key)
+        if val:
+            p = Path(val).expanduser()
+            if p.is_file():
+                return p
+
+    here = Path(__file__).resolve()
+    for parent in here.parents:
+        for pkg, subdir in pkg_subdirs:
+            candidate = parent / pkg / "src" / pkg / subdir / filename
+            if candidate.is_file():
+                return candidate
+
+    legacy = here.parents[1] / "configs" / filename
+    if legacy.is_file():
+        return legacy
+    return legacy
+
+
 class EnvSettings(BaseSettings):
     """
     Central settings manager for deepdoctection.
@@ -206,13 +233,24 @@ class EnvSettings(BaseSettings):
 
     # Default bundled config sources (inside the package)
     PROFILES_SRC: Path = Field(
-        default_factory=lambda: Path(__file__).resolve().parents[1] / "configs" / "profiles.jsonl"
-    )
+        default_factory=lambda: resolve_config_source(
+            filename="profiles.jsonl",
+            env_keys=("PROFILES_SRC", "DD_PROFILES_SRC"),
+            pkg_subdirs=(("dd_core", "configs"), ("deepdoctection", "configs")),
+        ))
     CONF_DD_ONE_SRC: Path = Field(
-        default_factory=lambda: Path(__file__).resolve().parents[1] / "configs" / "conf_dd_one.yaml"
+        default_factory=lambda: resolve_config_source(
+            filename="conf_dd_one.yaml",
+            env_keys=("CONF_DD_ONE_SRC", "DD_CONF_DD_ONE_SRC"),
+            pkg_subdirs=(("dd_core", "configs"), ("deepdoctection", "configs")),
+        )
     )
     CONF_TESSERACT_SRC: Path = Field(
-        default_factory=lambda: Path(__file__).resolve().parents[1] / "configs" / "conf_tesseract.yaml"
+        default_factory=lambda: resolve_config_source(
+            filename="conf_tesseract.yaml",
+            env_keys=("CONF_TESSERACT_SRC", "DD_CONF_TESSERACT_SRC"),
+            pkg_subdirs=(("deepdoctection", "configs"), ("dd_core", "configs")),
+        )
     )
 
     # Target filenames in CONFIGS_DIR

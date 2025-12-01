@@ -15,11 +15,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import json
 import uuid
 from unittest.mock import MagicMock
 
 import numpy as np
 import pytest
+import shared_test_utils as stu
+
+from  dd_core.dataflow.custom_serialize import SerializerPdfDoc
 
 from deepdoctection.extern.base import (
     ModelCategories,
@@ -28,6 +32,7 @@ from deepdoctection.extern.base import (
     DetectionResult,
 )
 from dd_core.utils.object_types import get_type
+from dd_core.utils.types import PixelValues
 from dd_core.utils.transform import BaseTransform
 
 
@@ -92,4 +97,25 @@ def detection_results():
         uuid=str(uuid.uuid4()),
     )
     return [dr1, dr2]
+
+
+@pytest.fixture
+def sample_np_img() -> PixelValues:
+    # Small dummy image
+    return np.zeros((10, 20, 3), dtype=np.uint8)
+
+
+@pytest.fixture
+def sample_pdf_bytes() -> bytes:
+    # Load first page bytes of the two-page test PDF
+    df =  SerializerPdfDoc.load(stu.asset_path("pdf_file_two_pages"))
+    df.reset_state()
+    dp = next(iter(df))
+    return dp["pdf_bytes"]
+
+@pytest.fixture
+def textract_json() -> dict:
+    with open(stu.asset_path("textract_sample"),"r") as f:
+        return json.load(f)
+
 

@@ -64,3 +64,9 @@ text_file:
   size: 206
   license: Apache-2.0
   description: Text file with RVLCDIP sample files
+textract_sample:
+  path: deepdoctection/tests/assets/textract.json
+  sha256: a3d940d465c9684514cc66871d79d1f11d3dfcb360890d405af1720b1805fcb8
+  size: 46277
+  license: Apache-2.0
+  description: Textract JSON sample

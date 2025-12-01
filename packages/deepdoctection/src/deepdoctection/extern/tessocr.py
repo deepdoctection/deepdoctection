@@ -371,7 +371,9 @@ class TesseractOcrDetector(ObjectDetector):
 
         hyper_param_config = set_config_by_yaml(path_yaml)
         if len(config_overwrite):
+            hyper_param_config.freeze(freezed=False)
             hyper_param_config.update_args(config_overwrite)
+            hyper_param_config.freeze(freezed=True)
 
         self.path_yaml = Path(path_yaml)
         self.config_overwrite = config_overwrite
@@ -418,7 +420,9 @@ class TesseractOcrDetector(ObjectDetector):
             language: One of the following: `fre`,`dut`,`chi`,`cze`,`per`,`gre`,`mac`,`rum`,`arm`,
                       `geo`,`war`,`glg`,`slv`,`alb`,`nn`.
         """
+        self.config.freeze(freezed=False)
         self.config.LANGUAGES = _LANG_CODE_TO_TESS_LANG_CODE.get(language, language.value)
+        self.config.freeze(freezed=True)
 
     @staticmethod
     def get_name() -> str:
