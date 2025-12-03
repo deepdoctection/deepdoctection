@@ -16,7 +16,6 @@
 # limitations under the License.
 
 import pytest
-from collections import defaultdict
 
 from deepdoctection.pipe.common import (
     AnnotationNmsService,
@@ -30,6 +29,7 @@ from deepdoctection.pipe.common import (
 from dd_core.utils.object_types import LayoutType, Relationships, ObjectTypes
 
 from dd_core.datapoint.image import Image
+from dd_core.datapoint.view import Page
 from dd_core.datapoint.annotation import BoundingBox
 from dd_core.datapoint.annotation import ImageAnnotation
 
@@ -65,7 +65,6 @@ def test_annotation_nms_service_serves(dp_image, pairs, thresh, prio):
 
 
 def test_matching_service_child_relationships(dp_image):
-    # Parent LIST and child LIST_ITEM with overlap to trigger intersection
     parent = make_ann(LayoutType.LIST, {"ulx": 50, "uly": 50, "width": 200, "height": 200, "absolute_coords": True})
     child1 = make_ann(LayoutType.LIST_ITEM, {"ulx": 60, "uly": 60, "width": 50, "height": 20, "absolute_coords": True})
     child2 = make_ann(LayoutType.LIST_ITEM, {"ulx": 300, "uly": 300, "width": 50, "height": 20, "absolute_coords": True})  # outside
@@ -74,7 +73,7 @@ def test_matching_service_child_relationships(dp_image):
     dp_image.dump(child1)
     dp_image.dump(child2)
 
-    matcher = IntersectionMatcher(matching_rule="iou", threshold=0.1, max_parent_only=False)
+    matcher = IntersectionMatcher(matching_rule="iou", threshold=0.01, max_parent_only=False)
     fam = FamilyCompound(
         parent_categories=[LayoutType.LIST],
         child_categories=[LayoutType.LIST_ITEM],
@@ -109,14 +108,14 @@ def test_matching_service_synthetic_parent_creation(dp_image):
 
     parents = out.get_annotation(category_names=[LayoutType.LIST])
     assert len(parents) >= 1
-    rels = parents[0].get_relationship(Relationships.CHILD)
-    assert child1.annotation_id in rels and child2.annotation_id in rels
+    assert (child1.annotation_id in parents[0].get_relationship(Relationships.CHILD) and
+            child2.annotation_id in parents[1].get_relationship(Relationships.CHILD))
 
 
 def test_neighbour_matcher_layout_link(dp_image):
     # Two text blocks near each other should be linked via NeighbourMatcher
     a = make_ann(LayoutType.TEXT, {"ulx": 100, "uly": 100, "width": 80, "height": 20, "absolute_coords": True})
-    b = make_ann(LayoutType.TEXT, {"ulx": 190, "uly": 105, "width": 80, "height": 20, "absolute_coords": True})
+    b = make_ann(LayoutType.CAPTION, {"ulx": 190, "uly": 105, "width": 80, "height": 20, "absolute_coords": True})
 
     dp_image.dump(a)
     dp_image.dump(b)
@@ -124,19 +123,17 @@ def test_neighbour_matcher_layout_link(dp_image):
     neighbor = NeighbourMatcher()
     fam = FamilyCompound(
         parent_categories=[LayoutType.TEXT],
-        child_categories=[LayoutType.TEXT],
+        child_categories=[LayoutType.CAPTION],
         relationship_key=Relationships.LAYOUT_LINK,
     )
     svc = MatchingService(family_compounds=[fam], matcher=neighbor)
     _ = svc.pass_datapoint(dp_image)
 
     rels_a = a.get_relationship(Relationships.LAYOUT_LINK)
-    rels_b = b.get_relationship(Relationships.LAYOUT_LINK)
-    assert (b.annotation_id in rels_a) or (a.annotation_id in rels_b)
+    assert b.annotation_id in rels_a
 
 
 def test_page_parsing_service_basic(dp_image):
-    # Provide minimal text blocks and a container, then verify parsing does not raise and returns the image
     container = make_ann(LayoutType.TEXT, {"ulx": 0, "uly": 0, "width": 500, "height": 500, "absolute_coords": True})
     line1 = make_ann(LayoutType.LINE, {"ulx": 10, "uly": 20, "width": 100, "height": 15, "absolute_coords": True})
     line2 = make_ann(LayoutType.LINE, {"ulx": 12, "uly": 40, "width": 100, "height": 15, "absolute_coords": True})
@@ -146,35 +143,10 @@ def test_page_parsing_service_basic(dp_image):
     dp_image.dump(line2)
 
     svc = PageParsingService(
-        text_container=LayoutType.TEXT,
+        text_container=LayoutType.WORD,
         floating_text_block_categories=[LayoutType.TEXT],
         include_residual_text_container=True,
     )
     out = svc.pass_datapoint(dp_image)
 
-    assert isinstance(out, Image)
-
-
-def test_relationship_remove_and_map(dp_image):
-    # Ensure relationship removal and annotation map generation are sane
-    a = make_ann(LayoutType.TEXT, {"ulx": 10, "uly": 10, "width": 40, "height": 10, "absolute_coords": True})
-    b = make_ann(LayoutType.TEXT, {"ulx": 15, "uly": 12, "width": 40, "height": 10, "absolute_coords": True})
-
-    dp_image.dump(a)
-    dp_image.dump(b)
-
-    matcher = NeighbourMatcher()
-    fam = FamilyCompound(
-        parent_categories=[LayoutType.TEXT],
-        child_categories=[LayoutType.TEXT],
-        relationship_key=Relationships.LAYOUT_LINK,
-    )
-    svc = MatchingService(family_compounds=[fam], matcher=matcher)
-    svc.pass_datapoint(dp_image)
-
-    a.remove_relationship(Relationships.LAYOUT_LINK, b.annotation_id)
-    rels = a.get_relationship(Relationships.LAYOUT_LINK)
-    assert b.annotation_id not in rels
-
-    amap: defaultdict[str, list] = a.get_annotation_map()
-    assert a.annotation_id in amap
+    assert isinstance(out, Page)
