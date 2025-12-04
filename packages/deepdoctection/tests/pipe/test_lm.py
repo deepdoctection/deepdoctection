@@ -1,0 +1,102 @@
+# -*- coding: utf-8 -*-
+# File: test_lm.py
+
+# Copyright 2025 Dr. Janis Meyer. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import pytest
+from unittest.mock import MagicMock
+
+from lazy_imports import try_import
+from dd_core.utils.object_types import get_type
+from dd_core.datapoint.image import Image
+from dd_core.utils.file_utils import transformers_available
+
+from deepdoctection.extern.base import TokenClassResult, SequenceClassResult
+from deepdoctection.pipe.lm import LMTokenClassifierService, LMSequenceClassifierService
+
+with try_import() as import_guard:
+    from transformers import LayoutLMForSequenceClassification, LayoutLMForTokenClassification, LayoutLMTokenizerFast
+
+
+REQUIRES_TRANSFORMERS = pytest.mark.skipif(not transformers_available(),
+                                        reason="Requires Transformers to be installed",
+)
+
+@REQUIRES_TRANSFORMERS
+def test_lm_token_classifier_service_creates_token_classes(
+        dp_image_with_layout_and_word_annotations: Image,
+        token_class_result: list[TokenClassResult],
+) -> None:
+    """
+    Testing pass_datapoint with fast tokenizer
+    """
+
+    tokenizer_fast = LayoutLMTokenizerFast.from_pretrained("microsoft/layoutlm-base-uncased")
+
+    language_model = MagicMock()
+    language_model.predict.return_value = token_class_result
+    language_model.image_to_features_mapping = MagicMock(return_value="image_to_layoutlm_features")
+    language_model.name = "test"
+    language_model.default_kwargs_for_input_mapping = MagicMock(return_value={})
+    language_model.model = MagicMock(spec=LayoutLMForTokenClassification)
+    language_model.model.config = MagicMock()
+    language_model.model_id = "test_model_id"
+    language_model.model.config.tokenizer_class = "LayoutLMTokenizerFast"
+    lm_service = LMTokenClassifierService(tokenizer_fast, language_model)
+
+    dp = dp_image_with_layout_and_word_annotations
+
+    dp = lm_service.pass_datapoint(dp)
+
+    words = dp.get_annotation(annotation_ids="e9c4b3e7-0b2c-3d45-89f3-db6e3ef864ad")
+    assert words[0].get_sub_category(get_type("token_class")).category_name == get_type("header")
+    assert words[0].get_sub_category(get_type("tag")).category_name == get_type("begin")
+
+    words = dp.get_annotation(annotation_ids="44ef758d-92f5-3f57-b6a3-aa95b9606f70")
+    assert words[0].get_sub_category(get_type("token_class")).category_name == get_type("header")
+    assert words[0].get_sub_category(get_type("begin")).category_name == get_type("begin")
+
+    words = dp.get_annotation(annotation_ids="1413d499-ce19-3a50-861c-7d8c5a7ba772")
+    assert words[0].get_sub_category(get_type("token_class")).category_name == get_type("header")
+    assert words[0].get_sub_category(get_type("tag")).category_name == get_type("inside")
+
+    words = dp.get_annotation(annotation_ids="fd78767a-227d-3c17-83cb-586d24cb0c55")
+    assert words[0].get_sub_category(get_type("token_class")).category_name == get_type("header")
+    assert words[0].get_sub_category(get_type("tag")).category_name == get_type("inside")
+
+
+def test_lm_sequence_classifier_service_creates_sequence_class(
+    dp_image_with_layout_and_word_annotations: Image,
+) -> None:
+    """
+    Testing pass_datapoint
+    """
+
+    tokenizer_fast = LayoutLMTokenizerFast.from_pretrained("microsoft/layoutlm-base-uncased")
+
+    language_model = MagicMock()
+    language_model.model = MagicMock(spec=LayoutLMForSequenceClassification)
+    language_model.model_id = "test_model_id"
+    language_model.model.config = MagicMock()
+    language_model.model.config.tokenizer_class = "LayoutLMTokenizerFast"
+    language_model.predict = MagicMock(return_value=SequenceClassResult(class_name=get_type("deu"), class_id=1))
+    language_model.image_to_features_mapping = MagicMock(return_value="image_to_layoutlm_features")
+    lm_service = LMSequenceClassifierService(tokenizer_fast, language_model)
+
+    dp = dp_image_with_layout_and_word_annotations
+
+    dp = lm_service.pass_datapoint(dp)
+
+    assert dp.summary.get_sub_category(get_type("document_type")).category_name == "deu"

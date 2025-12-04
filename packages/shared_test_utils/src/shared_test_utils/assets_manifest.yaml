@@ -46,6 +46,12 @@ sample_document_image:
   size: 458046
   license: Prop-Corpoorate-Doc
   description: PNG of a page from some DB financial report
+sample_image:
+  path: deepdoctection/tests/assets/image_dir/sample_image.png
+  sha256: a55679ce5cad22ffbea912eea1973bf5c1032abdce7105662844a936f7cd910d
+  size: 458046
+  license: Apache-2.0
+  description: Sample PNG with DPI=300
 skewed_input:
   path: deepdoctection/tests/assets/deskew/skewed_input.png
   sha256: 675ff47da7dbe47e3e2e3d8072d76bfbe96066ca5028db5f0bae918a5147edce

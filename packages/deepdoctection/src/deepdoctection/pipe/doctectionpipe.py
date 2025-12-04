@@ -378,5 +378,5 @@ class DoctectionPipe(Pipeline):
             df = self.dataflow_to_page(df)
         elif output == "dict":
             df = self.dataflow_to_page(df)
-            df = MapData(df, lambda dp: dp.as_dict())
+            df = MapData(df, lambda dp: dp.base_image.as_dict())
         return df
