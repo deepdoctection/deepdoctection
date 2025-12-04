@@ -988,6 +988,10 @@ class Page:
     def summary(self) -> CategoryAnnotation:
         return self._base_image.summary
 
+    @property
+    def base_image(self) -> Image:
+        return self._base_image
+
     def get_annotation(  # type: ignore
         self,
         category_names: Optional[Union[str, ObjectTypes, Sequence[Union[str, ObjectTypes]]]] = None,

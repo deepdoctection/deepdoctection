@@ -28,9 +28,7 @@ from deepdoctection.pipe.doctectionpipe import DoctectionPipe
 
 @pytest.fixture(autouse=True)
 def _set_env_dpi(monkeypatch):
-    # Ensure DoctectionPipe uses DPI branch for image conversion
     monkeypatch.setenv("DPI", "72")
-    # Clear width/height to avoid interference
     monkeypatch.delenv("IMAGE_WIDTH", raising=False)
     monkeypatch.delenv("IMAGE_HEIGHT", raising=False)
 
@@ -48,14 +46,13 @@ def test_analyze_path_dir_png_identity_image(image_dir_and_file):
     identity_pipe= DoctectionPipe(pipeline_component_list=[])
     df = identity_pipe.analyze(path=img_dir, file_type=".png", output="image")
     items = stu.collect_datapoint_from_dataflow(df)
-    assert len(items) >= 1
+    assert len(items) == 1
     assert all(isinstance(img, Image) for img in items)
 
 
 def test_analyze_bytes_single_image(image_dir_and_file, image_bytes):
     identity_pipe= DoctectionPipe(pipeline_component_list=[])
     _, img_path = image_dir_and_file
-    # When passing a path to a single image, bytes must be provided
     df = identity_pipe.analyze(path=img_path, bytes=image_bytes, file_type=".png", output="image")
     items = stu.collect_datapoint_from_dataflow(df)
     assert len(items) == 1
@@ -63,7 +60,6 @@ def test_analyze_bytes_single_image(image_dir_and_file, image_bytes):
 
 
 def test_analyze_dataset_dataflow_image(dp_image):
-    # Build dataset_dataflow from fixture dp_image
     identity_pipe= DoctectionPipe(pipeline_component_list=[])
     dp_list = [dp_image]
     dataset_df = DataFromList(lst=dp_list)
@@ -73,8 +69,8 @@ def test_analyze_dataset_dataflow_image(dp_image):
     assert isinstance(items[0], Image)
 
 
-def test_analyze_path_pdf_dict(identity_pipe, pdf_path):
-    # Validate dict output mapping after page conversion
+def test_analyze_path_pdf_dict(pdf_path):
+    identity_pipe = DoctectionPipe(pipeline_component_list=[])
     df = identity_pipe.analyze(path=pdf_path, output="dict")
     items = stu.collect_datapoint_from_dataflow(df)
     assert len(items) >= 1
