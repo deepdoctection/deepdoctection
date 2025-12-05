@@ -402,7 +402,7 @@ class Image(BaseModel):
 
     def _self_embedding(self) -> None:
         if self._bbox is not None:
-            self.set_embedding(self.image_id, self._bbox)
+            self.set_embedding(self.image_id, self._bbox.transform(image_width=self.width,image_height=self.height))
 
     def dump(self, annotation: ImageAnnotation) -> None:
         """
@@ -676,7 +676,8 @@ class Image(BaseModel):
                 sub_image_box = sub_image_box.transform(self.width, self.height, absolute_coords=True)
             sub_image.image.set_embedding(
                 annotation_id,
-                global_to_local_coords(sub_image_box, ann_box),
+                global_to_local_coords(sub_image_box, ann_box).transform(image_width = ann.image.width,
+                                                                         image_height = ann.image.height),
             )
             ann.image.dump(sub_image)
 

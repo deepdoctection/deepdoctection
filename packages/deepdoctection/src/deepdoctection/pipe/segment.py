@@ -165,20 +165,19 @@ def stretch_item_per_table(
         if row.image is None:
             raise ImageError("row.image cannot be None")
         row_embedding_box = row.get_bounding_box(dp.image_id)
-        row_embedding_box.ulx = table_embedding_box.ulx + 1.0
-        row_embedding_box.lrx = table_embedding_box.lrx - 1.0
+
+        if row_embedding_box.absolute_coords == table_embedding_box.absolute_coords:
+            if row_embedding_box.absolute_coords:
+                row_embedding_box.ulx = table_embedding_box.ulx + 1.0
+                row_embedding_box.lrx = table_embedding_box.lrx - 1.0
+            else:
+                row_embedding_box.ulx = table_embedding_box.ulx + 1.0/dp.width
+                row_embedding_box.lrx = table_embedding_box.lrx - 1.0/dp.height
+        else:
+            raise ValueError(f"Row box absolute coords {row_embedding_box.absolute_coords} and table box absolute coords "
+                             f"{table_embedding_box.absolute_coords} do not match.")
 
         # updating all bounding boxes for rows
-        row.image.set_embedding(
-            row.annotation_id,
-            BoundingBox(
-                ulx=0.0,
-                uly=0.0,
-                height=row_embedding_box.height,
-                width=row_embedding_box.width,
-                absolute_coords=row_embedding_box.absolute_coords,
-            ),
-        )
         local_row_box = global_to_local_coords(row_embedding_box, table_embedding_box)
         row.image.set_embedding(table.annotation_id, local_row_box)
 
@@ -190,20 +189,18 @@ def stretch_item_per_table(
         if col.image is None:
             raise ImageError("row.image cannot be None")
         col_embedding_box = col.get_bounding_box(dp.image_id)
-        col_embedding_box.uly = table_embedding_box.uly + 1.0
-        col_embedding_box.lry = table_embedding_box.lry - 1.0
+        if col_embedding_box.absolute_coords == table_embedding_box.absolute_coords:
+            if col_embedding_box.absolute_coords:
+                col_embedding_box.uly = table_embedding_box.uly + 1.0
+                col_embedding_box.lry = table_embedding_box.lry - 1.0
+            else:
+                col_embedding_box.uly = table_embedding_box.uly + 1.0/dp.width
+                col_embedding_box.lry = table_embedding_box.lry - 1.0/dp.height
+        else:
+            raise ValueError(f"Row box absolute coords {col_embedding_box.absolute_coords} and table box absolute coords "
+                             f"{table_embedding_box.absolute_coords} do not match.")
 
         # updating all bounding boxes for cols
-        col.image.set_embedding(
-            col.annotation_id,
-            BoundingBox(
-                ulx=0.0,
-                uly=0.0,
-                height=col_embedding_box.height,
-                width=col_embedding_box.width,
-                absolute_coords=col_embedding_box.absolute_coords,
-            ),
-        )
         local_row_box = global_to_local_coords(col_embedding_box, table_embedding_box)
         col.image.set_embedding(table.annotation_id, local_row_box)
 
@@ -219,8 +216,14 @@ def _tile_by_stretching_rows_left_and_rightwise(
         raise ImageError("table.image cannot be None")
     table_embedding_box = table.get_bounding_box(dp.image_id)
 
-    tmp_item_xy = table_embedding_box.uly + 1.0 if item_name == LayoutType.ROW else table_embedding_box.ulx + 1.0
-    tmp_item_table_xy = 1.0
+    if table_embedding_box.absolute_coords:
+        tmp_item_xy = table_embedding_box.uly + 1.0 if item_name == LayoutType.ROW else table_embedding_box.ulx + 1.0
+        tmp_item_table_xy = 1.0
+    else:
+        tmp_item_xy = table_embedding_box.uly + 1.0/dp.height if item_name == LayoutType.ROW \
+            else table_embedding_box.ulx + 1.0/dp.width
+        tmp_item_table_xy = 1.0/dp.height if item_name == LayoutType.ROW else 1.0/dp.width
+
     for idx, item in enumerate(items):
         with MappingContextManager(
             dp_name=dp.file_name,
@@ -230,8 +233,14 @@ def _tile_by_stretching_rows_left_and_rightwise(
             if item.image is None:
                 raise ImageError("item.image cannot be None")
             item_embedding_box = item.get_bounding_box(dp.image_id)
+            if item_embedding_box.absolute_coords:
+                item_embedding_box = item_embedding_box.transform(image_width=dp.width, image_height=dp.height)
             if idx != len(items) - 1:
                 next_item_embedding_box = items[idx + 1].get_bounding_box(dp.image_id)
+                if next_item_embedding_box.absolute_coords:
+                    next_item_embedding_box = next_item_embedding_box.transform(
+                        image_width=dp.width, image_height=dp.height
+                    )
                 tmp_next_item_xy = (
                     (item_embedding_box.lry + next_item_embedding_box.uly) / 2
                     if item_name == LayoutType.ROW
@@ -239,7 +248,8 @@ def _tile_by_stretching_rows_left_and_rightwise(
                 )
             else:
                 tmp_next_item_xy = (
-                    table_embedding_box.lry - 1.0 if item_name == LayoutType.ROW else table_embedding_box.lrx - 1.0
+                    table_embedding_box.lry - 1.0/dp.height if item_name == LayoutType.ROW else
+                    table_embedding_box.lrx - 1.0/dp.width
                 )
 
             new_embedding_box = BoundingBox(
@@ -247,7 +257,7 @@ def _tile_by_stretching_rows_left_and_rightwise(
                 uly=tmp_item_xy if item_name == LayoutType.ROW else item_embedding_box.uly,
                 lrx=item_embedding_box.lrx if item_name == LayoutType.ROW else tmp_next_item_xy,
                 lry=tmp_next_item_xy if item_name == LayoutType.ROW else item_embedding_box.lry,
-                absolute_coords=True,
+                absolute_coords=False,
             )
             item.image.set_embedding(dp.image_id, new_embedding_box)
             tmp_item_xy = tmp_next_item_xy
@@ -262,7 +272,8 @@ def _tile_by_stretching_rows_left_and_rightwise(
                 )
             else:
                 tmp_table_next_item_xy = (
-                    table.image.height - 1.0 if item_name == LayoutType.ROW else table.image.width - 1.0
+                    table.image.height - 1.0/table.image.height if item_name == LayoutType.ROW else
+                    table.image.width - 1.0/table.image.width
                 )
 
             new_table_embedding_box = BoundingBox(
@@ -270,7 +281,7 @@ def _tile_by_stretching_rows_left_and_rightwise(
                 uly=tmp_item_table_xy if item_name == LayoutType.ROW else item_table_embedding_box.uly,
                 lrx=item_table_embedding_box.lrx if item_name == LayoutType.ROW else tmp_table_next_item_xy,
                 lry=tmp_table_next_item_xy if item_name == LayoutType.ROW else item_table_embedding_box.lry,
-                absolute_coords=True,
+                absolute_coords=False,
             )
             item.image.set_embedding(table.annotation_id, new_table_embedding_box)
             tmp_item_table_xy = tmp_table_next_item_xy
@@ -283,8 +294,14 @@ def _tile_by_stretching_rows_leftwise_column_downwise(
         raise ImageError("table.image cannot be None")
     table_embedding_box = table.get_bounding_box(dp.image_id)
 
-    tmp_item_xy = table_embedding_box.uly + 1.0 if item_name == LayoutType.ROW else table_embedding_box.ulx + 1.0
-    tmp_item_table_xy = 1.0
+    if table_embedding_box.absolute_coords:
+        tmp_item_xy = table_embedding_box.uly + 1.0 if item_name == LayoutType.ROW else table_embedding_box.ulx + 1.0
+        tmp_item_table_xy = 1.0
+    else:
+        tmp_item_xy = table_embedding_box.uly + 1.0/dp.height if item_name == LayoutType.ROW \
+            else table_embedding_box.ulx + 1.0/dp.width
+        tmp_item_table_xy = 1.0/dp.height if item_name == LayoutType.ROW else 1.0/dp.width
+
     for item in items:
         with MappingContextManager(
             dp_name=dp.file_name,
@@ -294,36 +311,46 @@ def _tile_by_stretching_rows_leftwise_column_downwise(
             if item.image is None:
                 raise ImageError("item.image cannot be None")
             item_embedding_box = item.get_bounding_box(dp.image_id)
+            if item_embedding_box.absolute_coords:
+                item_embedding_box = item_embedding_box.transform(image_width=dp.width, image_height=dp.height)
             new_embedding_box = BoundingBox(
                 ulx=item_embedding_box.ulx if item_name == LayoutType.ROW else tmp_item_xy,
                 uly=tmp_item_xy if item_name == LayoutType.ROW else item_embedding_box.uly,
                 lrx=item_embedding_box.lrx,
                 lry=item_embedding_box.lry,
-                absolute_coords=True,
+                absolute_coords=False,
             )
             item_table_embedding_box = item.get_bounding_box(table.annotation_id)
+            if item_table_embedding_box.absolute_coords:
+                item_table_embedding_box = item_table_embedding_box.transform(
+                    image_width=table.image.width, image_height=table.image.height
+                )
             new_table_embedding_box = BoundingBox(
                 ulx=item_table_embedding_box.ulx if item_name == LayoutType.ROW else tmp_item_table_xy,
                 uly=tmp_item_table_xy if item_name == LayoutType.ROW else item_table_embedding_box.uly,
                 lrx=item_table_embedding_box.lrx,
                 lry=item_table_embedding_box.lry,
-                absolute_coords=True,
+                absolute_coords=False,
             )
 
             if item == items[-1]:
                 new_embedding_box = BoundingBox(
                     ulx=item_embedding_box.ulx if item_name == LayoutType.ROW else tmp_item_xy,
                     uly=tmp_item_xy if item_name == LayoutType.ROW else item_embedding_box.uly,
-                    lrx=item_embedding_box.lrx if item_name == LayoutType.ROW else table_embedding_box.lrx - 1.0,
-                    lry=table_embedding_box.lry - 1.0 if item_name == LayoutType.ROW else item_embedding_box.lry,
-                    absolute_coords=True,
+                    lrx=item_embedding_box.lrx if item_name == LayoutType.ROW else
+                    table_embedding_box.lrx - 1.0/dp.width,
+                    lry=table_embedding_box.lry - 1.0/dp.height if item_name == LayoutType.ROW else
+                    item_embedding_box.lry,
+                    absolute_coords=False,
                 )
                 new_table_embedding_box = BoundingBox(
                     ulx=item_table_embedding_box.ulx if item_name == LayoutType.ROW else tmp_item_table_xy,
                     uly=tmp_item_table_xy if item_name == LayoutType.ROW else item_table_embedding_box.uly,
-                    lrx=item_table_embedding_box.lrx if item_name == LayoutType.ROW else table.image.width - 1.0,
-                    lry=table.image.height - 1.0 if item_name == LayoutType.ROW else item_table_embedding_box.lry,
-                    absolute_coords=True,
+                    lrx=item_table_embedding_box.lrx if item_name == LayoutType.ROW else
+                    1.0 - 1.0/table.image.width,
+                    lry=1.0 - 1.0/table.image.height if item_name == LayoutType.ROW else
+                    item_table_embedding_box.lry,
+                    absolute_coords=False,
                 )
 
             tmp_item_xy = item_embedding_box.lry if item_name == LayoutType.ROW else item_embedding_box.lrx

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# File: xxx.py
+# File: conftest.py
 
 # Copyright 2025 Dr. Janis Meyer. All rights reserved.
 #
@@ -17,11 +17,13 @@
 
 import os
 import numpy as np
+from copy import deepcopy
 
 import pytest
 
-from dd_core.utils.object_types import LayoutType, WordType, Relationships, BioTag, TokenClassWithTag, TokenClasses
-from dd_core.datapoint.box import BoundingBox
+from dd_core.utils.object_types import get_type
+
+from dd_core.datapoint.box import BoundingBox, local_to_global_coords
 from dd_core.datapoint.annotation import ImageAnnotation, CategoryAnnotation, ContainerAnnotation
 from dd_core.datapoint.image import Image
 from deepdoctection.extern.base import TokenClassResult
@@ -79,34 +81,307 @@ def image_without_anns(image: Image, anns):
 
 
 @pytest.fixture
+def layout_annotation():
+
+    def layout_ann(segmentation: bool =False):
+        if segmentation:
+            table_layout_ann = [
+        ImageAnnotation(
+            bounding_box=BoundingBox(ulx=100.0, uly=100.0, lrx=200.0, lry=400.0, absolute_coords=True),
+            score=0.97,
+            category_name=get_type("table"),
+            category_id=2,
+            model_id="test_model",
+            service_id="test_service",
+        )
+    ]
+            cell_layout_anns = [
+        ImageAnnotation(
+            bounding_box=BoundingBox(ulx=10.0, uly=100.0, lrx=20.0, lry=150.0, absolute_coords=True),
+            score=0.8,
+            category_name=get_type("cell"),
+            category_id=3,
+            model_id="test_model",
+            service_id="test_service",
+        ),
+        ImageAnnotation(
+            bounding_box=BoundingBox(ulx=10.0, uly=200.0, lrx=20.0, lry=250.0, absolute_coords=True),
+            score=0.7,
+            category_name=get_type("cell"),
+            category_id=3,
+            model_id="test_model",
+            service_id="test_service",
+        ),
+        ImageAnnotation(
+            bounding_box=BoundingBox(ulx=40.0, uly=100.0, lrx=50.0, lry=150.0, absolute_coords=True),
+            score=0.6,
+            category_name=get_type("cell"),
+            category_id=3,
+            model_id="test_model",
+            service_id="test_service",
+        ),
+        ImageAnnotation(
+            bounding_box=BoundingBox(ulx=40.0, uly=200.0, lrx=50.0, lry=250.0, absolute_coords=True),
+            score=0.5,
+            category_name=get_type("cell"),
+            category_id=3,
+            model_id="test_model",
+            service_id="test_service",
+        ),
+        ImageAnnotation(
+            bounding_box=BoundingBox(ulx=80.0, uly=260.0, lrx=90.0, lry=280.0, absolute_coords=True),
+            score=0.4,
+            category_name=get_type("cell"),
+            category_id=3,
+            model_id="test_model",
+            service_id="test_service",
+        ),
+    ]
+            row_layout_anns = [
+        ImageAnnotation(
+            bounding_box=BoundingBox(ulx=15.0, uly=100.0, lrx=60.0, lry=150.0, absolute_coords=True),
+            score=0.8,
+            category_name=get_type("row"),
+            category_id=6,
+            model_id="test_model",
+            service_id="test_service",
+        ),
+        ImageAnnotation(
+            bounding_box=BoundingBox(ulx=15.0, uly=200.0, lrx=70.0, lry=240.0, absolute_coords=True),
+            score=0.7,
+            category_name=get_type("row"),
+            category_id=6,
+            model_id="test_model",
+            service_id="test_service",
+        ),
+    ]
+            col_layout_anns = [
+                    ImageAnnotation(
+                        bounding_box=BoundingBox(ulx=10.0, uly=50.0, lrx=20.0, lry=250.0, absolute_coords=True),
+                        score=0.3,
+                        category_name=get_type("column"),
+                        category_id=7,
+                        model_id="test_model",
+                        service_id="test_service",
+                    ),
+                    ImageAnnotation(
+                        bounding_box=BoundingBox(ulx=40.0, uly=20.0, lrx=50.0, lry=240.0, absolute_coords=True),
+                        score=0.2,
+                        category_name=get_type("column"),
+                        category_id=7,
+                        model_id="test_model",
+                        service_id="test_service",
+                    ),
+                ]
+
+            return table_layout_ann + cell_layout_anns + row_layout_anns + col_layout_anns
+
+        return [
+        ImageAnnotation(
+            bounding_box=BoundingBox(absolute_coords=True, ulx=100, uly=160, lrx=200, lry=260),
+            score=0.63,
+            category_name=get_type("title"),
+            category_id=2,
+            model_id="test_model",
+            service_id="d0b8e9f3",
+        ),
+        ImageAnnotation(
+            bounding_box=BoundingBox(absolute_coords=True, ulx=50, uly=50, lrx=150, lry=200),
+            score=0.97,
+            category_name=get_type("table"),
+            category_id=4,
+            model_id="test_model",
+            service_id="d0b8e9f3",
+        ),
+        ImageAnnotation(
+            bounding_box=BoundingBox(absolute_coords=True, ulx=100, uly=320, lrx=150, lry=350),
+            score=0.53,
+            category_name=get_type("text"),
+            category_id=1,
+            model_id="test_model",
+            service_id="d0b8e9f3",
+        ),
+        ImageAnnotation(
+            bounding_box=BoundingBox(absolute_coords=True, ulx=200, uly=50, lrx=250, lry=200),
+            score=0.83,
+            category_name=get_type("table"),
+            category_id=4,
+            model_id="test_model",
+            service_id="d0b8e9f3",
+        ),
+    ]
+
+    return layout_ann
+
+
+
+@pytest.fixture
+def dp_image_tab_cell_item(dp_image: Image, layout_annotation) -> Image:
+    """fixture dp_image_tab_cell_item"""
+    dp_image = deepcopy(dp_image)
+    for ann in layout_annotation(segmentation=True):
+        dp_image.dump(ann)
+    table = dp_image.get_annotation(category_names=get_type("table"))[0]
+    dp_image.image_ann_to_image(table.annotation_id, True)
+    table_anns = dp_image.get_annotation(category_names=[get_type("cell"), get_type("row"), get_type("column")])
+    for ann in table_anns:
+        table.image.dump(ann)
+        table.image.image_ann_to_image(ann.annotation_id)
+        ann_global_box = local_to_global_coords(
+            ann.bounding_box, table.get_bounding_box(dp_image.image_id).transform(image_width=dp_image.width,
+                                                                                  image_height=dp_image.height,
+                                                                                  absolute_coords=True)  # type: ignore
+        )
+
+        ann.image.set_embedding(table.annotation_id, ann.bounding_box.transform(image_width=table.image.width,
+                                                                            image_height=table.image.height,
+                                                                            absolute_coords=False))  # type: ignore
+        ann.image.set_embedding(dp_image.image_id, ann_global_box.transform(image_width=dp_image.width,
+                                                                            image_height=dp_image.height,
+                                                                            absolute_coords=False))
+        table.dump_relationship(get_type("child"), ann.annotation_id)
+    return dp_image
+
+
+@pytest.fixture
+def dp_image_item_stretched(dp_image_tab_cell_item: Image) -> Image:
+    """fixture dp_image_tab_cell_item"""
+    dp = dp_image_tab_cell_item
+    table = dp.get_annotation(category_names=get_type("table"))[0]
+    assert isinstance(table, ImageAnnotation)
+    rows = dp.get_annotation(category_names=get_type("row"))
+    cols = dp.get_annotation(category_names=get_type("column"))
+    table_embedding_box = table.get_bounding_box(dp.image_id)
+    for row in rows:
+        assert isinstance(row, ImageAnnotation)
+        embedding_box = row.get_bounding_box(dp.image_id)
+        embedding_box.ulx = table_embedding_box.ulx + 1.0/dp.width
+        embedding_box.lrx = table_embedding_box.lrx - 1.0/dp.height
+
+    for col in cols:
+        assert isinstance(col, ImageAnnotation)
+        embedding_box = col.get_bounding_box(dp.image_id)
+        embedding_box.uly = table_embedding_box.uly + 1.0/dp.width
+        embedding_box.lry = table_embedding_box.lry - 1.0/dp.height
+
+    return deepcopy(dp)
+
+@pytest.fixture
+def row_sub_cats() -> list[CategoryAnnotation]:
+    return [
+        CategoryAnnotation(category_name=get_type("row_number"), category_id=1, service_id="dbf4f87c"),
+        CategoryAnnotation(category_name=get_type("row_number"), category_id=2, service_id="dbf4f87c"),
+    ]
+
+
+@pytest.fixture
+def column_sub_cats() -> list[CategoryAnnotation]:
+    return [
+        CategoryAnnotation(category_name=get_type("column_number"), category_id=1, service_id="dbf4f87c"),
+        CategoryAnnotation(category_name=get_type("column_number"), category_id=2, service_id="dbf4f87c"),
+    ]
+
+
+@pytest.fixture
+def dp_image_fully_segmented(
+    dp_image_tab_cell_item: Image,
+    row_sub_cats: list[CategoryAnnotation],
+    column_sub_cats:  list[CategoryAnnotation],
+) -> Image:
+    """fixture dp_image_fully_segmented"""
+    dp = deepcopy(dp_image_tab_cell_item)
+    table = dp.get_annotation(category_names=get_type("table"))[0]
+    rows = dp.get_annotation(category_names=get_type("row"))
+    cols = dp.get_annotation(category_names=get_type("column"))
+    table_embedding_box = table.get_bounding_box(dp.image_id)
+    for row in rows:
+        embedding_box = row.get_bounding_box(dp.image_id)
+        embedding_box.ulx = table_embedding_box.ulx + 1.0/dp.width
+        embedding_box.lrx = table_embedding_box.lrx - 1.0/dp.height
+
+    for col in cols:
+        embedding_box = col.get_bounding_box(dp.image_id)
+        embedding_box.uly = table_embedding_box.uly + 1.0/dp.width
+        embedding_box.lry = table_embedding_box.lry - 1.0/dp.height
+
+
+    cell_sub_cats = [
+        (
+            CategoryAnnotation(category_name=get_type("row_number"), category_id=1, service_id="dbf4f87c"),
+            CategoryAnnotation(category_name=get_type("column_number"), category_id=1, service_id="dbf4f87c"),
+            CategoryAnnotation(category_name=get_type("row_span"), category_id=1, service_id="dbf4f87c"),
+            CategoryAnnotation(category_name=get_type("column_span"), category_id=1, service_id="dbf4f87c"),
+        ),
+        (
+            CategoryAnnotation(category_name=get_type("row_number"), category_id=2, service_id="dbf4f87c"),
+            CategoryAnnotation(category_name=get_type("column_number"), category_id=1, service_id="dbf4f87c"),
+            CategoryAnnotation(category_name=get_type("row_span"), category_id=1, service_id="dbf4f87c"),
+            CategoryAnnotation(category_name=get_type("column_span"), category_id=1, service_id="dbf4f87c"),
+        ),
+        (
+            CategoryAnnotation(category_name=get_type("row_number"), category_id=1, service_id="dbf4f87c"),
+            CategoryAnnotation(category_name=get_type("column_number"), category_id=2, service_id="dbf4f87c"),
+            CategoryAnnotation(category_name=get_type("row_span"), category_id=1, service_id="dbf4f87c"),
+            CategoryAnnotation(category_name=get_type("column_span"), category_id=1, service_id="dbf4f87c"),
+        ),
+        (
+            CategoryAnnotation(category_name=get_type("row_number"), category_id=2, service_id="dbf4f87c"),
+            CategoryAnnotation(category_name=get_type("column_number"), category_id=2, service_id="dbf4f87c"),
+            CategoryAnnotation(category_name=get_type("row_span"), category_id=1, service_id="dbf4f87c"),
+            CategoryAnnotation(category_name=get_type("column_span"), category_id=1, service_id="dbf4f87c"),
+        ),
+        (
+            CategoryAnnotation(category_name=get_type("row_number"), category_id=0, service_id="dbf4f87c"),
+            CategoryAnnotation(category_name=get_type("column_number"), category_id=0, service_id="dbf4f87c"),
+            CategoryAnnotation(category_name=get_type("row_span"), category_id=0, service_id="dbf4f87c"),
+            CategoryAnnotation(category_name=get_type("column_span"), category_id=0, service_id="dbf4f87c"),
+        ),
+    ]
+    rows = dp.get_annotation(category_names=get_type("row"))
+    cols = dp.get_annotation(category_names=get_type("column"))
+    for row, col, row_sub_cat, col_sub_cat in zip(rows, cols, row_sub_cats, column_sub_cats):
+        row.dump_sub_category(get_type("row_number"), row_sub_cat)
+        col.dump_sub_category(get_type("column_number"), col_sub_cat)
+
+    cells = dp.get_annotation(category_names=[get_type("cell"), get_type("column_header"), get_type("body")])
+
+    for cell, sub_cats in zip(cells, cell_sub_cats):
+        cell.dump_sub_category(get_type("row_number"), sub_cats[0])
+        cell.dump_sub_category(get_type("column_number"), sub_cats[1])
+        cell.dump_sub_category(get_type("row_span"), sub_cats[2])
+        cell.dump_sub_category(get_type("column_span"), sub_cats[3])
+
+    return dp
+
+@pytest.fixture
 def word_layout_annotations_for_ordering() -> list[ImageAnnotation]:
     """fixture word_layout_annotations_for_ordering"""
     return [
         ImageAnnotation(
             bounding_box=BoundingBox(ulx=110.0, uly=165.0, lrx=130.0, lry=180.0, absolute_coords=True),
             score=0.9,
-            category_name=LayoutType.WORD,
+            category_name=get_type("word"),
             category_id=8,
             service_id="test_service_word",
         ),
         ImageAnnotation(
             bounding_box=BoundingBox(ulx=140.0, uly=162.0, lrx=180.0, lry=180.0, absolute_coords=True),
             score=0.8,
-            category_name=LayoutType.WORD,
+            category_name=get_type("word"),
             category_id=8,
             service_id="test_service_word",
         ),
         ImageAnnotation(
             bounding_box=BoundingBox(ulx=100.0, uly=320.0, lrx=130.0, lry=340.0, absolute_coords=True),
             score=0.7,
-            category_name=LayoutType.WORD,
+            category_name=get_type("word"),
             category_id=8,
             service_id="test_service_word",
         ),
         ImageAnnotation(
             bounding_box=BoundingBox(ulx=175.0, uly=320.0, lrx=205.0, lry=340.0, absolute_coords=True),
             score=0.6,
-            category_name=LayoutType.WORD,
+            category_name=get_type("word"),
             category_id=8,
             service_id="test_service_word",
         ),
@@ -117,24 +392,24 @@ def word_sub_cats_for_ordering() -> list[list[CategoryAnnotation]]:
     """fixture word_sub_cats_for_ordering"""
     return [
         [
-            ContainerAnnotation(category_name=WordType.CHARACTERS, value="hello"),
-            CategoryAnnotation(category_name=WordType.BLOCK, category_id=1),
-            CategoryAnnotation(category_name=WordType.TEXT_LINE, category_id=1),
+            ContainerAnnotation(category_name=get_type("characters"), value="hello"),
+            CategoryAnnotation(category_name=get_type("block"), category_id=1),
+            CategoryAnnotation(category_name=get_type("text_line"), category_id=1),
         ],
         [
-            ContainerAnnotation(category_name=WordType.CHARACTERS, value="world"),
-            CategoryAnnotation(category_name=WordType.BLOCK, category_id=1),
-            CategoryAnnotation(category_name=WordType.TEXT_LINE, category_id=2),
+            ContainerAnnotation(category_name=get_type("characters"), value="world"),
+            CategoryAnnotation(category_name=get_type("block"), category_id=1),
+            CategoryAnnotation(category_name=get_type("text_line"), category_id=2),
         ],
         [
-            ContainerAnnotation(category_name=WordType.CHARACTERS, value="bye"),
-            CategoryAnnotation(category_name=WordType.BLOCK, category_id=2),
-            CategoryAnnotation(category_name=WordType.TEXT_LINE, category_id=2),
+            ContainerAnnotation(category_name=get_type("characters"), value="bye"),
+            CategoryAnnotation(category_name=get_type("block"), category_id=2),
+            CategoryAnnotation(category_name=get_type("text_line"), category_id=2),
         ],
         [
-            ContainerAnnotation(category_name=WordType.CHARACTERS, value="world"),
-            CategoryAnnotation(category_name=WordType.BLOCK, category_id=2),
-            CategoryAnnotation(category_name=WordType.TEXT_LINE, category_id=2),
+            ContainerAnnotation(category_name=get_type("characters"), value="world"),
+            CategoryAnnotation(category_name=get_type("block"), category_id=2),
+            CategoryAnnotation(category_name=get_type("text_line"), category_id=2),
         ],
     ]
 
@@ -145,9 +420,9 @@ def words_annotations_with_sub_cats(
 ) -> list[ImageAnnotation]:
     """fixture words_annotations_with_sub_cats"""
     for ann, sub_cat_list in zip(word_layout_annotations_for_ordering, word_sub_cats_for_ordering):
-        ann.dump_sub_category(WordType.CHARACTERS, sub_cat_list[0])
-        ann.dump_sub_category(WordType.BLOCK, sub_cat_list[1])
-        ann.dump_sub_category(LayoutType.LINE, sub_cat_list[2])
+        ann.dump_sub_category(get_type("characters"), sub_cat_list[0])
+        ann.dump_sub_category(get_type("block"), sub_cat_list[1])
+        ann.dump_sub_category(get_type("line"), sub_cat_list[2])
     return word_layout_annotations_for_ordering
 
 
@@ -158,7 +433,7 @@ def layout_annotations_for_ordering() -> list[ImageAnnotation]:
         ImageAnnotation(
             bounding_box=BoundingBox(ulx=100.0, uly=160.0, lrx=200.0, lry=260.0, absolute_coords=True),
             score=0.9,
-            category_name=LayoutType.TITLE,
+            category_name=get_type("title"),
             category_id=2,
             model_id="test_model",
             service_id="test_service",
@@ -166,7 +441,7 @@ def layout_annotations_for_ordering() -> list[ImageAnnotation]:
         ImageAnnotation(
             bounding_box=BoundingBox(ulx=100.0, uly=300.0, lrx=250.0, lry=350.0, absolute_coords=True),
             score=0.8,
-            category_name=LayoutType.TEXT,
+            category_name=get_type("text"),
             category_id=1,
             model_id="test_model",
             service_id="test_service",
@@ -183,21 +458,97 @@ def dp_image_with_layout_and_word_annotations(
     """
     fixture dp_image_with_layout_and_word_annotations
     """
+    dp_image = deepcopy(dp_image)
     layout_anns = layout_annotations_for_ordering
     word_anns = words_annotations_with_sub_cats
     dp_image.dump(layout_anns[0])
     dp_image.dump(layout_anns[1])
     dp_image.dump(word_anns[0])
-    layout_anns[0].dump_relationship(Relationships.CHILD, word_anns[0].annotation_id)
+    layout_anns[0].dump_relationship(get_type("child"), word_anns[0].annotation_id)
     dp_image.dump(word_anns[1])
-    layout_anns[0].dump_relationship(Relationships.CHILD, word_anns[1].annotation_id)
+    layout_anns[0].dump_relationship(get_type("child"), word_anns[1].annotation_id)
 
     dp_image.dump(word_anns[2])
-    layout_anns[1].dump_relationship(Relationships.CHILD, word_anns[2].annotation_id)
+    layout_anns[1].dump_relationship(get_type("child"), word_anns[2].annotation_id)
     dp_image.dump(word_anns[3])
-    layout_anns[1].dump_relationship(Relationships.CHILD, word_anns[3].annotation_id)
+    layout_anns[1].dump_relationship(get_type("child"), word_anns[3].annotation_id)
     return dp_image
 
+
+@pytest.fixture
+def dp_image_fully_segmented_fully_tiled(
+    dp_image_tab_cell_item: Image,
+    row_sub_cats: list[CategoryAnnotation],
+    column_sub_cats: list[CategoryAnnotation],
+) -> Image:
+    """
+    fixture datapoint_fully_segmented_when_table_fully_tiled. Note that bounding boxes of row and cols are not adjusted
+    """
+    dp = deepcopy(dp_image_tab_cell_item)
+    table = dp.get_annotation(category_names=get_type("table"))[0]
+    assert isinstance(table, ImageAnnotation)
+    rows = dp.get_annotation(category_names=get_type("row"))
+    cols = dp.get_annotation(category_names=get_type("column"))
+    table_embedding_box = table.get_bounding_box(dp.image_id)
+    for row in rows:
+        assert isinstance(row, ImageAnnotation)
+        embedding_box = row.get_bounding_box(dp.image_id)
+        embedding_box.ulx = table_embedding_box.ulx + 1.0/dp.width
+        embedding_box.lrx = table_embedding_box.lrx - 1.0/dp.width
+
+    for col in cols:
+        assert isinstance(col, ImageAnnotation)
+        embedding_box = col.get_bounding_box(dp.image_id)
+        embedding_box.uly = table_embedding_box.uly + 1.0/dp.height
+        embedding_box.lry = table_embedding_box.lry - 1.0/dp.height
+
+    rows = dp.get_annotation(category_names=get_type("row"))
+    cols = dp.get_annotation(category_names=get_type("column"))
+    for row, col, row_sub_cat, col_sub_cat in zip(rows, cols, row_sub_cats, column_sub_cats):
+        row.dump_sub_category(get_type("row_number"), row_sub_cat)
+        col.dump_sub_category(get_type("column_number"), col_sub_cat)
+
+    cell_sub_cats = [
+        (
+            CategoryAnnotation(category_name=get_type("row_number"), category_id=1, service_id="dbf4f87c"),
+            CategoryAnnotation(category_name=get_type("column_number"), category_id=1, service_id="dbf4f87c"),
+            CategoryAnnotation(category_name=get_type("row_span"), category_id=1, service_id="dbf4f87c"),
+            CategoryAnnotation(category_name=get_type("column_span"), category_id=1, service_id="dbf4f87c"),
+        ),
+        (
+            CategoryAnnotation(category_name=get_type("row_number"), category_id=2, service_id="dbf4f87c"),
+            CategoryAnnotation(category_name=get_type("column_number"), category_id=1, service_id="dbf4f87c"),
+            CategoryAnnotation(category_name=get_type("row_span"), category_id=1, service_id="dbf4f87c"),
+            CategoryAnnotation(category_name=get_type("column_span"), category_id=1, service_id="dbf4f87c"),
+        ),
+        (
+            CategoryAnnotation(category_name=get_type("row_number"), category_id=1, service_id="dbf4f87c"),
+            CategoryAnnotation(category_name=get_type("column_number"), category_id=2, service_id="dbf4f87c"),
+            CategoryAnnotation(category_name=get_type("row_span"), category_id=1, service_id="dbf4f87c"),
+            CategoryAnnotation(category_name=get_type("column_span"), category_id=1, service_id="dbf4f87c"),
+        ),
+        (
+            CategoryAnnotation(category_name=get_type("row_number"), category_id=2, service_id="dbf4f87c"),
+            CategoryAnnotation(category_name=get_type("column_number"), category_id=2, service_id="dbf4f87c"),
+            CategoryAnnotation(category_name=get_type("row_span"), category_id=1, service_id="dbf4f87c"),
+            CategoryAnnotation(category_name=get_type("column_span"), category_id=1, service_id="dbf4f87c"),
+        ),
+        (
+            CategoryAnnotation(category_name=get_type("row_number"), category_id=2, service_id="dbf4f87c"),
+            CategoryAnnotation(category_name=get_type("column_number"), category_id=2, service_id="dbf4f87c"),
+            CategoryAnnotation(category_name=get_type("row_span"), category_id=1, service_id="dbf4f87c"),
+            CategoryAnnotation(category_name=get_type("column_span"), category_id=1, service_id="dbf4f87c"),
+        ),
+    ]
+    cells = dp.get_annotation(category_names=[get_type("cell"), get_type("column_header"), get_type("body")])
+
+    for cell, sub_cats in zip(cells, cell_sub_cats):
+        cell.dump_sub_category(get_type("row_number"), sub_cats[0])
+        cell.dump_sub_category(get_type("column_number"), sub_cats[1])
+        cell.dump_sub_category(get_type("row_span"), sub_cats[2])
+        cell.dump_sub_category(get_type("column_span"), sub_cats[3])
+
+    return dp
 
 @pytest.fixture
 def token_class_result() -> list:
@@ -213,22 +564,22 @@ def token_class_result() -> list:
     token_class_predictions = [0, 1, 1, 2, 2, 0]
     tokens = ["CLS", "hello", "world", "bye", "word", "SEP"]
     class_name = [
-        BioTag.OUTSIDE,
-        TokenClassWithTag.B_HEADER,
-        TokenClassWithTag.B_HEADER,
-        TokenClassWithTag.I_HEADER,
-        TokenClassWithTag.I_HEADER,
-        BioTag.OUTSIDE,
+        get_type("O"),
+        get_type("b-header"),
+        get_type("b-header"),
+        get_type("i-header"),
+        get_type("i-header"),
+        get_type("O"),
     ]
     semantic_name = [
-        TokenClasses.OTHER,
-        TokenClasses.HEADER,
-        TokenClasses.HEADER,
-        TokenClasses.HEADER,
-        TokenClasses.HEADER,
-        TokenClasses.OTHER,
+        get_type("other"),
+        get_type("header"),
+        get_type("header"),
+        get_type("header"),
+        get_type("header"),
+        get_type("other"),
     ]
-    bio_tag = [BioTag.OUTSIDE, BioTag.BEGIN, BioTag.BEGIN, BioTag.INSIDE, BioTag.INSIDE, BioTag.OUTSIDE]
+    bio_tag = [get_type("O"), get_type("B"), get_type("B"), get_type("I"), get_type("I"), get_type("O")]
     return [
         TokenClassResult(
             uuid=out[0],

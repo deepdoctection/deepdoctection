@@ -240,8 +240,8 @@ def fixture_dp_image_tab_cell_item(dp_image: Image) -> Image:
     return deepcopy(dp_image)
 
 
-@fixture(name="dp_image_item_stretched")
-def fixture_dp_image_item_stretched(dp_image_tab_cell_item: Image) -> Image:
+@fixture
+def dp_image_item_stretched(dp_image_tab_cell_item: Image) -> Image:
     """fixture dp_image_tab_cell_item"""
     dp = dp_image_tab_cell_item
     table = dp.get_annotation(category_names=LayoutType.TABLE)[0]
@@ -252,14 +252,14 @@ def fixture_dp_image_item_stretched(dp_image_tab_cell_item: Image) -> Image:
     for row in rows:
         assert isinstance(row, ImageAnnotation)
         embedding_box = row.get_bounding_box(dp.image_id)
-        embedding_box.ulx = table_embedding_box.ulx + 1.0
-        embedding_box.lrx = table_embedding_box.lrx - 1.0
+        embedding_box.ulx = table_embedding_box.ulx + 1.0/dp.width
+        embedding_box.lrx = table_embedding_box.lrx - 1.0/dp.height
 
     for col in cols:
         assert isinstance(col, ImageAnnotation)
         embedding_box = col.get_bounding_box(dp.image_id)
-        embedding_box.uly = table_embedding_box.uly + 1.0
-        embedding_box.lry = table_embedding_box.lry - 1.0
+        embedding_box.uly = table_embedding_box.uly + 1.0/dp.width
+        embedding_box.lry = table_embedding_box.lry - 1.0/dp.height
 
     return deepcopy(dp)
 

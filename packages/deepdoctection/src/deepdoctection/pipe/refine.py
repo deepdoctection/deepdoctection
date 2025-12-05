@@ -476,9 +476,9 @@ class TableSegmentationRefinementService(PipelineComponent):
                     merged_box = merge_boxes(*cell_boxes)
                     det_result = DetectionResult(
                         box=merged_box.to_list(mode="xyxy"),
-                        score=-1.0,
                         class_id=cells[0].category_id,
                         class_name=get_type(cells[0].category_name),
+                        absolute_coords=False
                     )
                     new_cell_ann_id = self.dp_manager.set_image_annotation(det_result, table.annotation_id)
                     if new_cell_ann_id is not None:
