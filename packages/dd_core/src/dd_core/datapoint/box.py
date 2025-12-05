@@ -22,7 +22,7 @@
 from __future__ import annotations
 
 from math import ceil, floor
-from typing import Optional, Sequence, TypedDict, Union, cast, no_type_check
+from typing import Optional, Sequence, TypedDict, Union, cast, ClassVar
 
 import numpy as np
 import numpy.typing as npt
@@ -177,7 +177,7 @@ def ioa(boxes1: npt.NDArray[float32], boxes2: npt.NDArray[float32]) -> npt.NDArr
     return intersect * inv_areas
 
 
-RELATIVE_COORD_SCALE_FACTOR = 10**8
+
 
 
 class BoxDict(TypedDict):
@@ -227,6 +227,8 @@ class BoundingBox(BaseModel):
 
     """
 
+    RELATIVE_COORD_SCALE_FACTOR: ClassVar[int] = 10 ** 8
+
     model_config = {
         "arbitrary_types_allowed": True,
         "validate_assignment": False,  # avoid assignment hooks
@@ -258,7 +260,7 @@ class BoundingBox(BaseModel):
                 i_lrx = i_ulx + _round_half_up(float(width))
                 i_lry = i_uly + _round_half_up(float(height))
         else:
-            scale = RELATIVE_COORD_SCALE_FACTOR
+            scale = self.RELATIVE_COORD_SCALE_FACTOR
             i_ulx = round(ulx * scale)
             i_uly = round(uly * scale)
             if lrx or lry:
@@ -305,66 +307,66 @@ class BoundingBox(BaseModel):
 
     @property
     def ulx(self) -> BoxCoordinate:
-        return self._ulx / RELATIVE_COORD_SCALE_FACTOR if not self.absolute_coords else self._ulx
+        return self._ulx / self.RELATIVE_COORD_SCALE_FACTOR if not self.absolute_coords else self._ulx
 
     @ulx.setter
     def ulx(self, value: BoxCoordinate) -> None:
         if self.absolute_coords:
             new_val = _round_half_down(float(value))
         else:
-            new_val = round(value * RELATIVE_COORD_SCALE_FACTOR)
+            new_val = round(value * self.RELATIVE_COORD_SCALE_FACTOR)
         object.__setattr__(self, "_ulx", new_val)
         self._validate_width(self._lrx, self._ulx)
 
     @property
     def uly(self) -> BoxCoordinate:
-        return self._uly / RELATIVE_COORD_SCALE_FACTOR if not self.absolute_coords else self._uly
+        return self._uly / self.RELATIVE_COORD_SCALE_FACTOR if not self.absolute_coords else self._uly
 
     @uly.setter
     def uly(self, value: BoxCoordinate) -> None:
         if self.absolute_coords:
             new_val = _round_half_down(float(value))
         else:
-            new_val = round(value * RELATIVE_COORD_SCALE_FACTOR)
+            new_val = round(value * self.RELATIVE_COORD_SCALE_FACTOR)
         object.__setattr__(self, "_uly", new_val)
         self._validate_height(self._lry, self._uly)
 
     @property
     def lrx(self) -> BoxCoordinate:
-        return self._lrx / RELATIVE_COORD_SCALE_FACTOR if not self.absolute_coords else self._lrx
+        return self._lrx / self.RELATIVE_COORD_SCALE_FACTOR if not self.absolute_coords else self._lrx
 
     @lrx.setter
     def lrx(self, value: BoxCoordinate) -> None:
         if self.absolute_coords:
             new_val = _round_half_up(float(value))
         else:
-            new_val = round(value * RELATIVE_COORD_SCALE_FACTOR)
+            new_val = round(value * self.RELATIVE_COORD_SCALE_FACTOR)
         object.__setattr__(self, "_lrx", new_val)
         self._validate_width(self._lrx, self._ulx)
 
     @property
     def lry(self) -> BoxCoordinate:
-        return self._lry / RELATIVE_COORD_SCALE_FACTOR if not self.absolute_coords else self._lry
+        return self._lry / self.RELATIVE_COORD_SCALE_FACTOR if not self.absolute_coords else self._lry
 
     @lry.setter
     def lry(self, value: BoxCoordinate) -> None:
         if self.absolute_coords:
             new_val = _round_half_up(float(value))
         else:
-            new_val = round(value * RELATIVE_COORD_SCALE_FACTOR)
+            new_val = round(value * self.RELATIVE_COORD_SCALE_FACTOR)
         object.__setattr__(self, "_lry", new_val)
         self._validate_height(self._lry, self._uly)
 
     @property
     def width(self) -> BoxCoordinate:
         return (
-            (self._lrx - self._ulx) / RELATIVE_COORD_SCALE_FACTOR if not self.absolute_coords else self._lrx - self._ulx
+            (self._lrx - self._ulx) / self.RELATIVE_COORD_SCALE_FACTOR if not self.absolute_coords else self._lrx - self._ulx
         )
 
     @width.setter
     def width(self, value: BoxCoordinate) -> None:
         if not self.absolute_coords:
-            new_lrx = self._ulx + round(value * RELATIVE_COORD_SCALE_FACTOR)
+            new_lrx = self._ulx + round(value * self.RELATIVE_COORD_SCALE_FACTOR)
         else:
             new_lrx = self._ulx + _round_half_up(float(value))
         object.__setattr__(self, "_lrx", new_lrx)
@@ -373,13 +375,13 @@ class BoundingBox(BaseModel):
     @property
     def height(self) -> BoxCoordinate:
         return (
-            (self._lry - self._uly) / RELATIVE_COORD_SCALE_FACTOR if not self.absolute_coords else self._lry - self._uly
+            (self._lry - self._uly) / self.RELATIVE_COORD_SCALE_FACTOR if not self.absolute_coords else self._lry - self._uly
         )
 
     @height.setter
     def height(self, value: BoxCoordinate) -> None:
         if not self.absolute_coords:
-            new_lry = self._uly + round(value * RELATIVE_COORD_SCALE_FACTOR)
+            new_lry = self._uly + round(value * self.RELATIVE_COORD_SCALE_FACTOR)
         else:
             new_lry = self._uly + _round_half_up(float(value))
         object.__setattr__(self, "_lry", new_lry)
@@ -634,7 +636,8 @@ def local_to_global_coords(local_box: BoundingBox, embedding_box: BoundingBox) -
     )
 
 
-def global_to_local_coords(global_box: BoundingBox, embedding_box: BoundingBox) -> BoundingBox:
+def global_to_local_coords(global_box: BoundingBox,
+                           embedding_box: BoundingBox) -> BoundingBox:
     """
     Transforming global bounding box coords into the coordinate system given by the embedding box. The transformation
     requires that the global bounding box coordinates lie completely within the rectangle of the embedding box.
@@ -649,13 +652,22 @@ def global_to_local_coords(global_box: BoundingBox, embedding_box: BoundingBox) 
         Bounding box of the embedded box in local coordinates.
     """
 
-    assert global_box.absolute_coords and embedding_box.absolute_coords, (
+    assert global_box.absolute_coords == embedding_box.absolute_coords, (
         f"absolute coords "
-        f"(={global_box.absolute_coords} for local_box and embedding_box (={embedding_box.absolute_coords}) must be "
-        f"True"
+        f"(={global_box.absolute_coords} for local_box and embedding_box (={embedding_box.absolute_coords}) "
+        f"must be equal"
     )
 
-    return BoundingBox(
+    if not embedding_box.absolute_coords:
+        return BoundingBox(
+        absolute_coords=False,
+        ulx=max(global_box.ulx - embedding_box.ulx, 0) / embedding_box.width ,
+        uly=max(global_box.uly - embedding_box.uly, 0) / embedding_box.height,
+        lrx=min(global_box.lrx - embedding_box.ulx, embedding_box.width) / embedding_box.width,
+        lry=min(global_box.lry - embedding_box.uly, embedding_box.height) / embedding_box.height,
+    )
+
+    return  BoundingBox(
         absolute_coords=True,
         ulx=max(global_box.ulx - embedding_box.ulx, 0),
         uly=max(global_box.uly - embedding_box.uly, 0),
