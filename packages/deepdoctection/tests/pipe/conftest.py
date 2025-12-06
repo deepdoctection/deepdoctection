@@ -26,7 +26,7 @@ from dd_core.utils.object_types import get_type
 from dd_core.datapoint.box import BoundingBox, local_to_global_coords
 from dd_core.datapoint.annotation import ImageAnnotation, CategoryAnnotation, ContainerAnnotation
 from dd_core.datapoint.image import Image
-from deepdoctection.extern.base import TokenClassResult
+from deepdoctection.extern.base import TokenClassResult, DetectionResult
 
 import shared_test_utils as stu
 
@@ -83,7 +83,7 @@ def image_without_anns(image: Image, anns):
 @pytest.fixture
 def layout_annotation():
 
-    def layout_ann(segmentation: bool =False):
+    def layout_ann(segmentation: bool =False) -> list[ImageAnnotation]:
         if segmentation:
             table_layout_ann = [
         ImageAnnotation(
@@ -214,6 +214,16 @@ def layout_annotation():
     return layout_ann
 
 
+@pytest.fixture
+def cell_detect_result():
+    return [
+        [
+            DetectionResult(box=[20.0, 20.0, 25.0, 30.0], score=0.8, class_id=1, class_name=get_type("column_header")),
+            DetectionResult(box=[40.0, 40.0, 50.0, 50.0], score=0.53, class_id=2, class_name=get_type("body")),
+        ],
+        [DetectionResult(box=[15.0, 20.0, 20.0, 30.0], score=0.4, class_id=1, class_name=get_type("body"))],
+    ]
+
 
 @pytest.fixture
 def dp_image_tab_cell_item(dp_image: Image, layout_annotation) -> Image:
@@ -221,6 +231,7 @@ def dp_image_tab_cell_item(dp_image: Image, layout_annotation) -> Image:
     dp_image = deepcopy(dp_image)
     for ann in layout_annotation(segmentation=True):
         dp_image.dump(ann)
+
     table = dp_image.get_annotation(category_names=get_type("table"))[0]
     dp_image.image_ann_to_image(table.annotation_id, True)
     table_anns = dp_image.get_annotation(category_names=[get_type("cell"), get_type("row"), get_type("column")])
