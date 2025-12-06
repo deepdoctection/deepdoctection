@@ -1,1 +1,2 @@
+packages/deepdoctection/tests/assets/image_dir/* filter=lfs diff=lfs merge=lfs -text
 docs/tutorials/_imgs/*.png filter=lfs diff=lfs merge=lfs -text
