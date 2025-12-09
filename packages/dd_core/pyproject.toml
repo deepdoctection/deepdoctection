@@ -62,7 +62,6 @@ dev = [
     "pylint==4.0.2",
 ]
 
-
 test = [
     "hypothesis",
     "pytest==9.0.1",
