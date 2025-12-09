@@ -1,4 +1,4 @@
-.PHONY: clean clean-test clean-pyc clean-build develop help venv start pytest test
+.PHONY: clean clean-test clean-pyc clean-build develop help venv start pytest test install-dd
 
 UNAME_S := $(shell uname -s)
 
@@ -115,7 +115,16 @@ up-req-docs: check-venv
 	pip-compile  --output-file docs/requirements.txt  --extra docs  setup.py
 	@echo "--> Done updating Python requirements"
 
-
+install-dd: check-venv
+	@echo "--> Installing detectron2 without build isolation"
+	pip install --no-build-isolation 'detectron2 @ git+https://github.com/deepdoctection/detectron2.git'
+	@echo "--> Installing local packages"
+	pip install -e  ./packages/shared_test_utils
+	pip install -e ./packages/dd_core[full]
+	pip install -e ./packages/dd_datasets[full]
+	@echo "--> Installing deepdoctection (full) into active venv"
+	pip install -e ./packages/deepdoctection[full,test]
+	@echo "--> Done"
 
 venv:
 	$(PYTHON) -m venv venv --system-site-packages

@@ -20,6 +20,7 @@ Some custom dataflow classes. Some ideas have been taken from
 
 <https://github.com/tensorpack/dataflow/blob/master/dataflow/dataflow/common.py>
 """
+
 from typing import Any, Callable, Iterable, Iterator, Optional
 
 import numpy as np

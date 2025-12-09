@@ -1,4 +1,4 @@
-# Installation Guide for dd_datapoint
+# Installation Guide for dd_core
 
 ## Quick Start
 
@@ -6,15 +6,22 @@
 For active development on the package:
 
 ```bash
-cd packages/dd_datapoint
+cd packages/dd_core
 pip install -e .
+```
+
+For installation with the more dependencies, i.e. to run with deepdoctection:
+
+```bash
+cd packages/dd_core
+pip install -e ".[full]"
 ```
 
 ### Option 2: Editable Installation with Development Tools
 Include linting, type checking, and formatting tools:
 
 ```bash
-cd packages/dd_datapoint
+cd packages/dd_core
 pip install -e ".[dev]"
 ```
 
@@ -22,32 +29,14 @@ pip install -e ".[dev]"
 Include both dev and test dependencies:
 
 ```bash
-cd packages/dd_datapoint
+cd packages/dd_core
 pip install -e ".[dev,test]"
 ```
 
-## Verify Installation
-
-After installation, verify everything works:
-
-```bash
-python verify_setup.py
-```
-
-Or manually test:
-
-```python
-python -c "import dd_datapoint; print(f'✓ dd_datapoint v{dd_datapoint.__version__}')"
-```
-
-
-### Verification Failed
-Check the error message from `verify_setup.py` and ensure all dependencies are installed.
-
 ## Notes
 
-- Package name on PyPI will be `dd-datapoint` (with hyphen)
-- Import name in Python is `dd_datapoint` (with underscore)
+- Package name on PyPI will be `dd-docre` (with hyphen)
+- Import name in Python is `dd_core` (with underscore)
 - Editable install means changes to source files are immediately reflected
 - No need to reinstall after making changes to the code
 

@@ -115,39 +115,43 @@ def deps_list(*pkgs: str):
 
 # pypi dependencies without considering DL models specific dependencies
 dist_deps = deps_list(
-    "catalogue",
-    "huggingface_hub",
-    "jsonlines",
-    "lazy-imports",
-    "numpy",
-    "packaging",
-    "Pillow",
-    "pydantic",
-    "pydantic-settings",
-    "pypdf",
-    "pypdfium2",
-    "pyyaml",
-    "scipy",
-    "termcolor",
-    "tabulate",
-    "tqdm",
+    "catalogue", # dd-core
+    "huggingface_hub", # deepdoctection
+    "jsonlines", # dd-datasets
+    "lazy-imports", # dd-core
+    "numpy", # dd-core
+    "packaging", # dd-core
+    "Pillow", # dd-core
+    "pydantic", # dd-core
+    "pydantic-settings", # dd-core
+    "pypdf", # dd-core[full]
+    "pypdfium2", # dd-core[full]
+    "pyyaml", # dd-core
+    "scipy", # dd-core[full]
+    "termcolor", # dd-core
+    "tabulate", # dd-core
+    "tqdm", # dd-core
 )
 
 
 # remaining dependencies to use models that neither require TF nor PyTorch
 additional_deps = deps_list(
-    "boto3",
-    "pdfplumber",
-    "pyzmq",
-    "jdeskew",
-    "apted",
-    "distance",
-    "lxml",
-    "networkx",
+    "boto3", # deepdoctection[full]
+    "pdfplumber", # deepdoctection[full]
+    "pyzmq", # optional full multithreading dataflows
+    "jdeskew", # deepdoctection[full]
+    "apted", # deepdoctection[full]
+    "distance", # deepdoctection[full]
+    "lxml", # dd-datasets[full]
+    "networkx", # deepdoctection[full]
 )
 
 # PyTorch dependencies
-pt_deps = deps_list("timm", "transformers", "accelerate", "python-doctr", "pycocotools")
+pt_deps = deps_list("timm", # deepdoctection[full]
+                    "transformers",  # deepdoctection[full]
+                    "accelerate", # deepdoctection[full]
+                    "python-doctr",  # deepdoctection[full]
+                    "pycocotools") # deepdoctection[full]
 
 pt_deps = dist_deps + pt_deps + additional_deps
 

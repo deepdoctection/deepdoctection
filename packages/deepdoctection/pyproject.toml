@@ -44,7 +44,7 @@ full = [
     "transformers>=4.48.0",
     "accelerate>=0.29.1",
     "python-doctr>=1.0.0",
-    "detectron2 @ git+https://github.com/deepdoctection/detectron2.git",
+    "pycocotools>=2.0.2",
 ]
 
 dev = [
@@ -64,15 +64,6 @@ dev = [
 test = [
     "pytest==8.0.2",
     "pytest-cov",
-]
-
-docs = [
-    "jinja2",
-    "mkdocs-material",
-    "mkdocstrings-python",
-    "griffe==0.25.0",
-    "transformers>=4.48.0",
-    "accelerate>=0.29.1",
 ]
 
 [project.urls]
