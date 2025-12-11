@@ -30,8 +30,10 @@ from dd_core.utils.object_types import LayoutType, Relationships, ObjectTypes
 
 from dd_core.datapoint.image import Image
 from dd_core.datapoint.view import Page
-from dd_core.datapoint.annotation import BoundingBox
+from dd_core.datapoint.box import BoundingBox
 from dd_core.datapoint.annotation import ImageAnnotation
+from dd_core.utils.file_utils import pytorch_available
+
 
 
 def make_ann(category: ObjectTypes, box, score=0.9) -> ImageAnnotation:
@@ -39,7 +41,7 @@ def make_ann(category: ObjectTypes, box, score=0.9) -> ImageAnnotation:
     assert ann.get_defining_attributes() == ["category_name", "bounding_box"]
     return ann
 
-
+@pytest.mark.skipif(not pytorch_available(), reason="Pytorch not installed")
 @pytest.mark.parametrize(
     "pairs,thresh,prio",
     [

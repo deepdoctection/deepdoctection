@@ -123,7 +123,7 @@ class TestImagePixelOperations:
         img.image = white_image.image
 
         assert img.image_id in img.embeddings
-        bbox = img.embeddings[img.image_id]
-        assert bbox.width == white_image.image.shape[1]
-        assert bbox.height == white_image.image.shape[0]
+        bbox = img.get_embedding(img.image_id)
+        assert bbox.width == 1.
+        assert bbox.height == 1.
 
