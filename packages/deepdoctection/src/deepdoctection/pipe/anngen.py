@@ -174,8 +174,8 @@ class DatapointManager:
                 if ann.image is None:
                     raise ValueError("image cannot be None")
                 ann.image.set_embedding(parent_ann.annotation_id,
-                                        ann.bounding_box.transform(image_width=ann.image.width,
-                                                                   image_height=ann.image.height))
+                                        ann.bounding_box.transform(image_width=parent_ann.image.width,
+                                                                   image_height=parent_ann.image.height))
                 ann.image.set_embedding(self.datapoint.image_id,
                                         ann_global_box.transform(image_width=self.datapoint.width,
                                                                  image_height=self.datapoint.height))

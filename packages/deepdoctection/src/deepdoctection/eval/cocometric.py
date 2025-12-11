@@ -21,13 +21,12 @@ Metrics that require the `COCOeval` class.
 from __future__ import annotations
 
 from copy import copy
-from typing import Optional, Union
+from typing import Optional, Union, TYPE_CHECKING
 
 import numpy as np
 from lazy_imports import try_import
 
 from dd_core.dataflow import DataFlow
-from dd_datasets.info import DatasetCategories
 from dd_core.mapper import re_assign_cat_ids
 from dd_core.mapper import image_to_coco
 from dd_core.utils.file_utils import Requirement, cocotools_available, get_cocotools_requirement
@@ -38,6 +37,10 @@ from .registry import metric_registry
 with try_import() as cc_import_guard:
     from pycocotools.coco import COCO
     from pycocotools.cocoeval import COCOeval
+
+if TYPE_CHECKING:
+    from dd_datasets.info import DatasetCategories
+
 
 __all__ = ["CocoMetric"]
 

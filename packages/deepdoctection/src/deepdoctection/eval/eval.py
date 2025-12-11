@@ -22,14 +22,14 @@ Module for `Evaluator`
 from __future__ import annotations
 
 from copy import deepcopy
-from typing import Any, Generator, Literal, Mapping, Optional, Type, Union, overload
+from typing import Any, Generator, Literal, Mapping, Optional, Type, Union, overload, TYPE_CHECKING
 
 import numpy as np
 from lazy_imports import try_import
 
 from dd_core.dataflow import CacheData, DataFlow, DataFromList, MapData
 from dd_core.datapoint.image import Image
-from dd_datasets.base import DatasetBase
+
 from dd_core.mapper import filter_cat, remove_cats
 from dd_core.mapper.wandbstruct import to_wandb_image
 from dd_core.mapper.misc import maybe_load_image, maybe_remove_image, maybe_remove_image_from_category
@@ -46,6 +46,9 @@ from .base import MetricBase
 with try_import() as wb_import_guard:
     import wandb  # pylint:disable=W0611
     from wandb import Artifact, Table
+
+if TYPE_CHECKING:
+    from dd_datasets.base import DatasetBase
 
 __all__ = ["Evaluator"]
 

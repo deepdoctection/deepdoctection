@@ -18,20 +18,23 @@ Tree distance similarity (TEDS) metric
 Taken from <https://github.com/ibm-aur-nlp/PubTabNet/blob/master/src/metric.py>
 """
 
+from __future__ import annotations
+
 import statistics
 from collections import defaultdict, deque
-from typing import Any, Callable, Optional
+from typing import Any, Callable, Optional, TYPE_CHECKING
 
 from lazy_imports import try_import
 
 from dd_core.dataflow import DataFlow, DataFromList, MapData, MultiThreadMapData
 from dd_core.datapoint.image import Image
 from dd_core.datapoint.view import Page
-from dd_datasets.base import DatasetCategories
+
 from dd_core.utils.file_utils import Requirement, get_apted_requirement, get_distance_requirement, get_lxml_requirement
 from dd_core.utils.logger import LoggingRecord, logger
 from dd_core.utils.object_types import LayoutType
 from dd_core.utils.types import MetricResults
+
 from .base import MetricBase
 from .registry import metric_registry
 
@@ -40,15 +43,14 @@ with try_import() as ap_import_guard:
     from apted.helpers import Tree  # type: ignore
 
 
-if not ap_import_guard.is_successful():
-    from ..utils.mocks import Config, Tree
-
-
 with try_import() as ds_import_guard:
     import distance  # type: ignore
 
 with try_import() as lx_import_guard:
     from lxml import etree
+
+if TYPE_CHECKING:
+    from dd_datasets.base import DatasetCategories
 
 
 class TableTree(Tree):

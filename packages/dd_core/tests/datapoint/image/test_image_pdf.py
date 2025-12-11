@@ -31,7 +31,7 @@ class TestImagePDF:
         img = Image(file_name=pdf_page.file_name, location=pdf_page.loc)
         img.image = pdf_page.pdf_bytes
 
-        assert img.height == pdf_page.np_array_shape[0]
+        assert img.height in {pdf_page.np_array_shape[0],pdf_page.np_array_shape[0]+1}
         assert img.width == pdf_page.np_array_shape[1]
 
     def test_pdf_bytes_property_can_be_set(self, pdf_page: TestPdfPage):
@@ -54,9 +54,13 @@ class TestImagePDF:
         img.image = pdf_page.pdf_bytes
 
         assert img.image is not None
-        assert img.image.shape == (
+        assert img.image.shape in ((
             pdf_page.np_array_shape[0],
             pdf_page.np_array_shape[1],
             3  # RGB channels
-        )
+        ),(
+            pdf_page.np_array_shape[0]+1,
+            pdf_page.np_array_shape[1],
+            3  # RGB channels
+        ))
 

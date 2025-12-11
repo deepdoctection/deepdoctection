@@ -19,9 +19,11 @@
 Accuracy metrics (micro, macro, F1 and per label) for classification tasks.
 """
 
+from __future__ import annotations
+
 from collections import Counter
 from typing import Counter as TypeCounter
-from typing import Mapping, Optional, Sequence, Union
+from typing import Mapping, Optional, Sequence, Union, TYPE_CHECKING
 
 import numpy as np
 from numpy import float32, int32
@@ -30,7 +32,7 @@ from tabulate import tabulate
 from termcolor import colored
 
 from dd_core.dataflow import DataFlow
-from dd_datasets.info import DatasetCategories
+
 from dd_core.mapper import image_to_cat_id
 from dd_core.utils.file_utils import Requirement
 from dd_core.utils.logger import LoggingRecord, logger
@@ -38,6 +40,9 @@ from dd_core.utils.object_types import ObjectTypes, TypeOrStr, get_type
 from dd_core.utils.types import MetricResults
 from .base import MetricBase
 from .registry import metric_registry
+
+if TYPE_CHECKING:
+    from dd_datasets.info import DatasetCategories
 
 __all__ = [
     "ClassificationMetric",

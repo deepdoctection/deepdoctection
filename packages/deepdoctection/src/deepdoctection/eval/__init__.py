@@ -21,9 +21,13 @@
 Contains metrics (customized for special tasks), evaluators and Tensorpack callback
 """
 
+from dd_core.utils.file_utils import apted_available
+
 from .accmetric import *
 from .base import *
 from .cocometric import *
 from .eval import *
 from .registry import *
-from .tedsmetric import *
+
+if apted_available():
+    from .tedsmetric import *
