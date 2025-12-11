@@ -28,15 +28,15 @@ from ..utils.logger import LoggingRecord, log_once, logger
 from ..utils.object_types import (
     CellType,
     LayoutType,
-    WordType,
     ObjectTypes,
     PageType,
     Relationships,
     TableType,
     TokenClasses,
+    WordType,
     get_type,
 )
-from ..utils.transform import box_to_point4, point4_to_box, ResizeTransform
+from ..utils.transform import ResizeTransform, box_to_point4, point4_to_box
 from ..utils.types import HTML, Chunks, ImageDict, PathLikeOrStr, PixelValues, csv
 from ..utils.viz import draw_boxes, interactive_imshow, viz_handler
 from .annotation import CategoryAnnotation, ContainerAnnotation, ImageAnnotation
@@ -920,13 +920,15 @@ class Page:
     def __init__(
         self,
         base_image: Image,
-        text_container: Optional[ObjectTypes] = None ,
+        text_container: Optional[ObjectTypes] = None,
         floating_text_block_categories: Optional[Sequence[ObjectTypes]] = None,
         residual_text_block_categories: Optional[Sequence[ObjectTypes]] = None,
         include_residual_text_container: bool = True,
     ) -> None:
         self._base_image = base_image
-        self.text_container: ObjectTypes = text_container if text_container is not None else IMAGE_DEFAULTS.TEXT_CONTAINER
+        self.text_container: ObjectTypes = (
+            text_container if text_container is not None else IMAGE_DEFAULTS.TEXT_CONTAINER
+        )
 
         ftb: tuple[ObjectTypes, ...] = (
             tuple(floating_text_block_categories)

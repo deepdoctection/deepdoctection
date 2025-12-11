@@ -30,7 +30,6 @@ Module for Pubtabnet dataset. Place the dataset as follows
 from __future__ import annotations
 
 import os
-
 from typing import Mapping, Union
 
 from dd_core.dataflow import DataFlow, MapData

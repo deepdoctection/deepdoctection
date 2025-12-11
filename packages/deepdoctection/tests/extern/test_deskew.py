@@ -19,15 +19,15 @@
 # File: deepdoctection/packages/deepdoctection/tests/extern/test_deskew.py
 
 import importlib.util
+
 import pytest
 from numpy.testing import assert_array_equal
 
 import shared_test_utils as stu
 from dd_core.utils.env_info import SETTINGS
-from dd_core.utils.fs import load_image_from_file
 from dd_core.utils.file_utils import jdeskew_available
+from dd_core.utils.fs import load_image_from_file
 from dd_core.utils.viz import viz_handler
-
 from deepdoctection.extern.deskew import Jdeskewer
 
 

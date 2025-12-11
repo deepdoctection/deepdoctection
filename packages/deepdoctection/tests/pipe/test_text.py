@@ -19,16 +19,15 @@
 Testing module pipe.text
 """
 from copy import deepcopy
-
 from typing import List
 from unittest.mock import MagicMock
 
 from pytest import mark, raises
 
 from dd_core.datapoint import BoundingBox, Image, ImageAnnotation
+from dd_core.utils.object_types import get_type
 from deepdoctection.extern.base import DetectionResult, ObjectDetector, PdfMiner
 from deepdoctection.pipe.text import TextExtractionService
-from dd_core.utils.object_types import get_type
 
 
 class TestTextExtractionService:
@@ -46,34 +45,31 @@ class TestTextExtractionService:
         self._text_extract_detector.model_id = "test_model"
         self.text_extraction_service = TextExtractionService(self._text_extract_detector)
 
-
-    def test_integration_pipeline_component(
-        self, dp_image_fully_segmented_fully_tiled: Image
-    ) -> None:
+    def test_integration_pipeline_component(self, dp_image_fully_segmented_fully_tiled: Image) -> None:
         """
         Integration test through calling `pass_datapoint` of pipeline component
         """
 
         word_detect_result = [
-        DetectionResult(
-            box=[10.0, 10.0, 24.0, 23.0],
-            score=0.8,
-            text="foo",
-            block="1",
-            line="2",
-            class_id=1,
-            class_name=get_type("word"),
-        ),
-        DetectionResult(
-            box=[30.0, 20.0, 38.0, 25.0],
-            score=0.2,
-            text="bak",
-            block="4",
-            line="5",
-            class_id=1,
-            class_name=get_type("word"),
-        ),
-    ]
+            DetectionResult(
+                box=[10.0, 10.0, 24.0, 23.0],
+                score=0.8,
+                text="foo",
+                block="1",
+                line="2",
+                class_id=1,
+                class_name=get_type("word"),
+            ),
+            DetectionResult(
+                box=[30.0, 20.0, 38.0, 25.0],
+                score=0.2,
+                text="bak",
+                block="4",
+                line="5",
+                class_id=1,
+                class_name=get_type("word"),
+            ),
+        ]
 
         self._text_extract_detector.predict = MagicMock(return_value=word_detect_result)
 
@@ -103,9 +99,7 @@ class TestTextExtractionServiceWithPdfPlumberDetector:
         self._text_extract_detector.model_id = "test_model"
         self.text_extraction_service = TextExtractionService(self._text_extract_detector)
 
-
-    def test_integration_pipeline_component(
-        self, dp_image_fully_segmented_fully_tiled: Image) -> None:
+    def test_integration_pipeline_component(self, dp_image_fully_segmented_fully_tiled: Image) -> None:
         """
         Integration test through calling `pass_datapoint` of pipeline component
         """
@@ -178,12 +172,7 @@ class TestTextExtractionServiceWithSubImage:
         )
 
     @mark.basic
-    def test_integration_pipeline_component(
-        self,
-        dp_image: Image,
-        layout_annotations
-
-    ) -> None:
+    def test_integration_pipeline_component(self, dp_image: Image, layout_annotations) -> None:
         """
         integration test through calling serve of pipeline component
         """
@@ -230,7 +219,7 @@ class TestTextExtractionServiceWithSubImage:
         word_anns = dp.get_annotation(category_names=get_type("word"))
         table_anns = dp.get_annotation(category_names=get_type("table"))
 
-        #assert len(word_anns) == 4
+        # assert len(word_anns) == 4
         assert len(table_anns) == 2
 
         assert isinstance(table_anns, list) and isinstance(word_anns, list)
@@ -244,8 +233,9 @@ class TestTextExtractionServiceWithSubImage:
         global_box_fta = first_word_ann.get_bounding_box(dp.image_id)
         assert global_box_fta == word_box_global[0]
         local_box_fta = first_word_ann.get_bounding_box(first_table_ann.annotation_id)
-        assert local_box_fta == first_word_ann.bounding_box.transform(first_table_ann.image.width,
-                                                                      first_table_ann.image.height)
+        assert local_box_fta == first_word_ann.bounding_box.transform(
+            first_table_ann.image.width, first_table_ann.image.height
+        )
         ft_text_ann = first_table_ann.image.get_annotation(annotation_ids=first_word_ann.annotation_id)[  # type: ignore
             0
         ]
@@ -255,8 +245,9 @@ class TestTextExtractionServiceWithSubImage:
         global_box_sta = second_word_ann.get_bounding_box(dp.image_id)
         assert global_box_sta == word_box_global[1]
         local_box_sta = second_word_ann.get_bounding_box(first_table_ann.annotation_id)
-        assert local_box_sta == second_word_ann.bounding_box.transform(first_table_ann.image.width,
-                                                                       first_table_ann.image.height)
+        assert local_box_sta == second_word_ann.bounding_box.transform(
+            first_table_ann.image.width, first_table_ann.image.height
+        )
         ft_text_ann = first_table_ann.image.get_annotation(  # type: ignore
             annotation_ids=second_word_ann.annotation_id
         )[0]
@@ -265,8 +256,9 @@ class TestTextExtractionServiceWithSubImage:
         global_box_tta = third_word_ann.get_bounding_box(dp.image_id)
         assert global_box_tta == word_box_global[2]
         local_box_tta = third_word_ann.get_bounding_box(second_table_ann.annotation_id)
-        assert local_box_tta == third_word_ann.bounding_box.transform(second_table_ann.image.width,
-                                                                      second_table_ann.image.height)
+        assert local_box_tta == third_word_ann.bounding_box.transform(
+            second_table_ann.image.width, second_table_ann.image.height
+        )
         st_text_ann = second_table_ann.image.get_annotation(  # type: ignore
             annotation_ids=third_word_ann.annotation_id
         )[0]
@@ -275,8 +267,9 @@ class TestTextExtractionServiceWithSubImage:
         global_box_fta = fourth_word_ann.get_bounding_box(dp.image_id)
         assert global_box_fta == word_box_global[3]
         local_box_fta = fourth_word_ann.get_bounding_box(second_table_ann.annotation_id)
-        assert local_box_fta == fourth_word_ann.bounding_box.transform(second_table_ann.image.width,
-                                                                       second_table_ann.image.height)
+        assert local_box_fta == fourth_word_ann.bounding_box.transform(
+            second_table_ann.image.width, second_table_ann.image.height
+        )
         st_text_ann = second_table_ann.image.get_annotation(  # type: ignore
             annotation_ids=fourth_word_ann.annotation_id
         )[0]

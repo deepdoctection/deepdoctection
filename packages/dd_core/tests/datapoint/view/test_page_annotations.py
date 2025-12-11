@@ -18,9 +18,9 @@ Testing Page class annotation retrieval and filtering
 """
 from dd_core.datapoint.view import Page
 
+
 class TestPageAnnotations:
     """Test Page annotation retrieval methods"""
-
 
     def test_get_annotation_returns_list(self, page: Page):
         """get_annotation() returns a list"""

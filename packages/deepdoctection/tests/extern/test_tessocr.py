@@ -23,9 +23,8 @@ import numpy as np
 import pytest
 
 from dd_core.utils.env_info import SETTINGS
-from dd_core.utils.object_types import LayoutType, Languages
+from dd_core.utils.object_types import Languages, LayoutType
 from deepdoctection.extern.tessocr import TesseractOcrDetector
-
 
 
 def test_tesseract_ocr_predict_words_basic(monkeypatch: pytest.MonkeyPatch, sample_np_img: np.ndarray) -> None:
@@ -102,7 +101,7 @@ def test_tesseract_ocr_set_language_mapping() -> None:
     det = TesseractOcrDetector(SETTINGS.CONF_TESSERACT_SRC)
     # Map pseudo language code to tess code via `_LANG_CODE_TO_TESS_LANG_CODE`
     det.set_language(Languages.GERMAN)  # uses `ObjectTypes` enum path; `nn` -> 'eng'
-    assert det.config.LANGUAGES=="deu"
+    assert det.config.LANGUAGES == "deu"
 
 
 def test_tesseract_ocr_get_requirements() -> None:
@@ -110,4 +109,3 @@ def test_tesseract_ocr_get_requirements() -> None:
     reqs = det.get_requirements()
     assert isinstance(reqs, list)
     assert len(reqs) >= 1
-

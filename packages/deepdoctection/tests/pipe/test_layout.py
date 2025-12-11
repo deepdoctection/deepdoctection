@@ -16,17 +16,15 @@
 # limitations under the License.
 
 
-import pytest
-from typing import cast, List
+from typing import List, cast
 from unittest.mock import create_autospec
+
+import pytest
 
 from dd_core.datapoint.view import Image
 from dd_core.utils.object_types import get_type
-
-from deepdoctection.pipe.layout import ImageLayoutService, skip_if_category_or_service_extracted
 from deepdoctection.extern.base import DetectionResult, ObjectDetector
-
-
+from deepdoctection.pipe.layout import ImageLayoutService, skip_if_category_or_service_extracted
 
 
 def test_skip_if_category_or_service_extracted_by_category(image: Image):
@@ -48,7 +46,7 @@ def test_image_layout_service_rebuilds_annotations(image_without_anns: Image, an
                 class_id=ann.category_id,
                 score=ann.score if ann.score is not None else 1.0,
                 class_name=ann.category_name.value,
-                absolute_coords=ann.bounding_box.absolute_coords
+                absolute_coords=ann.bounding_box.absolute_coords,
             )
         )
 

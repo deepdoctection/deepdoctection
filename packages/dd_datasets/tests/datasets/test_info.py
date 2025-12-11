@@ -18,19 +18,17 @@
 
 import pytest
 
-from dd_datasets.info import DatasetCategories, get_merged_categories
-from dd_datasets.instances import pubtabnet as pub_mod, xfund as xfund_mod
-
 from dd_core.utils.object_types import (
-    LayoutType,
-    WordType,
-    TokenClasses,
-    CellType,
-    TokenClassWithTag,
     BioTag,
+    CellType,
+    LayoutType,
+    TokenClasses,
+    TokenClassWithTag,
+    WordType,
 )
-
-
+from dd_datasets.info import DatasetCategories, get_merged_categories
+from dd_datasets.instances import pubtabnet as pub_mod
+from dd_datasets.instances import xfund as xfund_mod
 
 
 @pytest.fixture
@@ -173,7 +171,9 @@ def test_filtered_and_unfiltered_lengths(pubcat: DatasetCategories) -> None:
     assert filt_len == 1 and filt_len < all_len
 
 
-def test_get_merged_categories_union_and_sub_intersection(pubcat: DatasetCategories, xfundcat: DatasetCategories) -> None:
+def test_get_merged_categories_union_and_sub_intersection(
+    pubcat: DatasetCategories, xfundcat: DatasetCategories
+) -> None:
     merged = get_merged_categories(pubcat, xfundcat)
     cats = merged.get_categories(as_dict=False)
     assert LayoutType.WORD in cats and LayoutType.TABLE in cats
@@ -206,4 +206,6 @@ def test_values_as_list_not_dict_pub(pubcat: DatasetCategories) -> None:
 
 def test_invalid_init_sub_categories_type_raises() -> None:
     with pytest.raises(AssertionError):
-        DatasetCategories(init_categories=[LayoutType.WORD], init_sub_categories={LayoutType.WORD: [WordType.CHARACTERS]})
+        DatasetCategories(
+            init_categories=[LayoutType.WORD], init_sub_categories={LayoutType.WORD: [WordType.CHARACTERS]}
+        )

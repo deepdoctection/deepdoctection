@@ -21,19 +21,18 @@ from unittest.mock import MagicMock
 
 import numpy as np
 import pytest
+
 import shared_test_utils as stu
-
-from  dd_core.dataflow.custom_serialize import SerializerPdfDoc
-
+from dd_core.dataflow.custom_serialize import SerializerPdfDoc
+from dd_core.utils.object_types import get_type
+from dd_core.utils.transform import BaseTransform
+from dd_core.utils.types import PixelValues
 from deepdoctection.extern.base import (
+    DetectionResult,
+    DeterministicImageTransformer,
     ModelCategories,
     NerModelCategories,
-    DeterministicImageTransformer,
-    DetectionResult,
 )
-from dd_core.utils.object_types import get_type
-from dd_core.utils.types import PixelValues
-from dd_core.utils.transform import BaseTransform
 
 
 @pytest.fixture
@@ -108,14 +107,13 @@ def sample_np_img() -> PixelValues:
 @pytest.fixture
 def sample_pdf_bytes() -> bytes:
     # Load first page bytes of the two-page test PDF
-    df =  SerializerPdfDoc.load(stu.asset_path("pdf_file_two_pages"))
+    df = SerializerPdfDoc.load(stu.asset_path("pdf_file_two_pages"))
     df.reset_state()
     dp = next(iter(df))
     return dp["pdf_bytes"]
 
+
 @pytest.fixture
 def textract_json() -> dict:
-    with open(stu.asset_path("textract_sample"),"r") as f:
+    with open(stu.asset_path("textract_sample"), "r") as f:
         return json.load(f)
-
-

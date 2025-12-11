@@ -22,6 +22,7 @@ and validation error messages.
 """
 
 import pytest
+
 from dd_core.datapoint import BoundingBox
 from dd_core.utils.error import BoundingBoxError
 
@@ -59,7 +60,7 @@ class TestBBoxSetters:
 
         box.width = 50.5
         assert box.lrx == 0 + 51
-        
+
         box.width = 51.5
         assert box.lrx == 0 + 52
 
@@ -69,35 +70,35 @@ class TestBBoxSetters:
 
         box.height = 50.5
         assert box._lry == 0 + 51
-        
+
         box.height = 51.5
         assert box._lry == 0 + 52
 
     def test_set_width_zero_rejected_absolute(self):
         """Setting width to zero is rejected in absolute mode"""
         box = BoundingBox(absolute_coords=True, ulx=10, uly=20, width=100, height=50)
-        
+
         with pytest.raises(BoundingBoxError, match="width must be >0"):
             box.width = 0
 
     def test_set_height_zero_rejected_absolute(self):
         """Setting height to zero is rejected in absolute mode"""
         box = BoundingBox(absolute_coords=True, ulx=10, uly=20, width=100, height=50)
-        
+
         with pytest.raises(BoundingBoxError, match="height must be >0"):
             box.height = 0
 
     def test_set_width_negative_rejected_absolute(self):
         """Setting width to negative is rejected in absolute mode"""
         box = BoundingBox(absolute_coords=True, ulx=10, uly=20, width=100, height=50)
-        
+
         with pytest.raises(BoundingBoxError, match="width must be >0"):
             box.width = -10
 
     def test_set_height_negative_rejected_absolute(self):
         """Setting height to negative is rejected in absolute mode"""
         box = BoundingBox(absolute_coords=True, ulx=10, uly=20, width=100, height=50)
-        
+
         with pytest.raises(BoundingBoxError, match="height must be >0"):
             box.height = -10
 
@@ -108,11 +109,10 @@ class TestBBoxSetters:
         box.lrx = 200
         assert box.lrx == 200
         assert box.width == 150
-        
+
         # Invalid: lrx <= ulx
         with pytest.raises(BoundingBoxError, match="width must be >0"):
             box.lrx = 50  # Would make width = 0
-
 
     def test_set_lry_preserves_positive_height_absolute(self):
         """Setting lry must maintain lry > uly in absolute mode"""
@@ -121,11 +121,10 @@ class TestBBoxSetters:
         box.lry = 200
         assert box.lry == 200
         assert box.height == 150
-        
+
         # Invalid: lry <= uly
         with pytest.raises(BoundingBoxError, match="height must be >0"):
             box.lry = 50  # Would make height = 0
-
 
     def test_set_ulx_preserves_positive_width_absolute(self):
         """Setting ulx must maintain lrx > ulx in absolute mode"""
@@ -134,7 +133,7 @@ class TestBBoxSetters:
         box.ulx = 100
         assert box.ulx == 100
         assert box.width == 50
-        
+
         # Invalid: ulx >= lrx
         with pytest.raises(BoundingBoxError, match="width must be >0"):
             box.ulx = 160  # Would make width < 0
@@ -146,7 +145,7 @@ class TestBBoxSetters:
         box.uly = 100
         assert box.uly == 100
         assert box.height == 50
-        
+
         # Invalid: uly >= lry
         with pytest.raises(BoundingBoxError, match="height must be >0"):
             box.uly = 160
@@ -176,28 +175,28 @@ class TestBBoxSetters:
     def test_set_width_zero_rejected_relative(self):
         """Setting width to zero is rejected in relative mode"""
         box = BoundingBox(absolute_coords=False, ulx=0.1, uly=0.2, width=0.5, height=0.3)
-        
+
         with pytest.raises(BoundingBoxError, match="width must be >0"):
             box.width = 0.0
 
     def test_set_height_zero_rejected_relative(self):
         """Setting height to zero is rejected in relative mode"""
         box = BoundingBox(absolute_coords=False, ulx=0.1, uly=0.2, width=0.5, height=0.3)
-        
+
         with pytest.raises(BoundingBoxError, match="height must be >0"):
             box.height = 0.0
 
     def test_set_width_negative_rejected_relative(self):
         """Setting width to negative is rejected in relative mode"""
         box = BoundingBox(absolute_coords=False, ulx=0.1, uly=0.2, width=0.5, height=0.3)
-        
+
         with pytest.raises(BoundingBoxError, match="width must be >0"):
             box.width = -0.1
 
     def test_set_height_negative_rejected_relative(self):
         """Setting height to negative is rejected in relative mode"""
         box = BoundingBox(absolute_coords=False, ulx=0.1, uly=0.2, width=0.5, height=0.3)
-        
+
         with pytest.raises(BoundingBoxError, match="height must be >0"):
             box.height = -0.1
 
@@ -209,7 +208,7 @@ class TestBBoxSetters:
         assert abs(box.lrx - 0.9) < 1e-6
         assert box.width > 0
         assert abs(box.width - 0.7) < 1e-6
-        
+
         # Invalid: lrx <= ulx
         with pytest.raises(BoundingBoxError, match="width must be >0"):
             box.lrx = 0.2
@@ -222,7 +221,7 @@ class TestBBoxSetters:
         assert abs(box.lry - 0.9) < 1e-6
         assert box.height > 0
         assert abs(box.height - 0.7) < 1e-6
-        
+
         # Invalid: lry <= uly
         with pytest.raises(BoundingBoxError, match="height must be >0"):
             box.lry = 0.2
@@ -230,13 +229,13 @@ class TestBBoxSetters:
     def test_set_ulx_preserves_positive_width_relative(self):
         """Setting ulx must maintain lrx > ulx in relative mode"""
         box = BoundingBox(absolute_coords=False, ulx=0.2, uly=0.1, lrx=0.7, lry=0.4)
-        
+
         # Valid update
         box.ulx = 0.1
         assert abs(box.ulx - 0.1) < 1e-6
         assert box.width > 0
         assert abs(box.width - 0.6) < 1e-6
-        
+
         # Invalid: ulx >= lrx (would violate width > 0)
         with pytest.raises(BoundingBoxError, match="width must be >0"):
             box.ulx = 0.7
@@ -244,13 +243,13 @@ class TestBBoxSetters:
     def test_set_uly_preserves_positive_height_relative(self):
         """Setting uly must maintain lry > uly in relative mode"""
         box = BoundingBox(absolute_coords=False, ulx=0.1, uly=0.2, lrx=0.4, lry=0.7)
-        
+
         # Valid update
         box.uly = 0.1
         assert abs(box.uly - 0.1) < 1e-6
         assert box.height > 0
         assert abs(box.height - 0.6) < 1e-6
-        
+
         # Invalid: uly >= lry
         with pytest.raises(BoundingBoxError, match="height must be >0"):
             box.uly = 0.7  # Would make height = 0 (after rounding)
@@ -260,14 +259,14 @@ class TestBBoxSetters:
     def test_setter_error_messages_contain_coords(self):
         """Error messages should include coordinate values for debugging"""
         box = BoundingBox(absolute_coords=True, ulx=100, uly=200, width=50, height=50)
-        
+
         with pytest.raises(BoundingBoxError, match="lrx.*ulx"):
             box.lrx = 50  # lrx < ulx
 
     def test_multiple_setter_operations_maintain_invariants(self):
         """Multiple setter operations should maintain box validity"""
         box = BoundingBox(absolute_coords=True, ulx=10, uly=20, width=100, height=50)
-        
+
         # Chain of valid operations
         box.width = 200
         assert box.lrx == 210
@@ -284,4 +283,3 @@ class TestBBoxSetters:
         box.uly = 50
         assert box.uly == 50
         assert box.height == 70
-

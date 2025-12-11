@@ -20,15 +20,13 @@
 Testing module datasets.instances.pubtabnet
 """
 from pathlib import Path
-import numpy as np
-
 from unittest.mock import MagicMock, patch
 
+import numpy as np
 import pytest
 
-from dd_datasets import Pubtabnet
-
 import shared_test_utils as stu
+from dd_datasets import Pubtabnet
 
 
 def test_dataset_pubtabnet_returns_image(monkeypatch: pytest.MonkeyPatch, dataset_test_base_dir: str) -> None:
@@ -44,7 +42,7 @@ def test_dataset_pubtabnet_returns_image(monkeypatch: pytest.MonkeyPatch, datase
 
     # Arrange
     pubtabnet = Pubtabnet()
-    pubtabnet.dataflow.get_workdir=lambda: Path(dataset_test_base_dir) / pubtabnet.dataflow.location
+    pubtabnet.dataflow.get_workdir = lambda: Path(dataset_test_base_dir) / pubtabnet.dataflow.location
     df = pubtabnet.dataflow.build()
 
     # Act
@@ -52,7 +50,9 @@ def test_dataset_pubtabnet_returns_image(monkeypatch: pytest.MonkeyPatch, datase
     assert len(df_list) == 3
 
 
-def test_dataset_pubtabnet_with_load_image_returns_image(monkeypatch: pytest.MonkeyPatch,dataset_test_base_dir: str) -> None:
+def test_dataset_pubtabnet_with_load_image_returns_image(
+    monkeypatch: pytest.MonkeyPatch, dataset_test_base_dir: str
+) -> None:
     """
     test dataset publaynet returns image
     """

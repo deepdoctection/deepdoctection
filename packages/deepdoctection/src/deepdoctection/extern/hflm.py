@@ -29,9 +29,11 @@ from typing import TYPE_CHECKING, Any, Literal, Mapping, Optional, Sequence, Uni
 from lazy_imports import try_import
 from typing_extensions import TypeAlias
 
+from dd_core.utils import get_torch_device
 from dd_core.utils.file_utils import get_pytorch_requirement, get_transformers_requirement
 from dd_core.utils.object_types import TypeOrStr
 from dd_core.utils.types import JsonDict, PathLikeOrStr, Requirement
+
 from .base import (
     DetectionResult,
     LanguageDetector,
@@ -43,7 +45,6 @@ from .base import (
     TokenClassResult,
 )
 from .hflayoutlm import get_tokenizer_from_model_class
-from dd_core.utils import get_torch_device
 
 with try_import() as pt_import_guard:
     import torch

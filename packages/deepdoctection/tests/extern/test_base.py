@@ -23,16 +23,12 @@ import numpy as np
 import pytest
 
 from dd_core.utils.object_types import get_type
-
 from deepdoctection.extern.base import (
+    DetectionResult,
+    DeterministicImageTransformer,
     ModelCategories,
     NerModelCategories,
-    DeterministicImageTransformer,
-    DetectionResult,
 )
-
-
-
 
 
 def test_model_categories_get_categories_dict(model_categories):
@@ -122,7 +118,9 @@ def test_ner_model_categories_preserve_init(ner_semantics, ner_bio):
         categories_bio=ner_bio,
     )
     cats = nm.get_categories()
-    expected = MappingProxyType({1: get_type("B-answer"), 2: get_type("B-question"), 3:get_type("I-answer"), 4: get_type("I-question")})
+    expected = MappingProxyType(
+        {1: get_type("B-answer"), 2: get_type("B-question"), 3: get_type("I-answer"), 4: get_type("I-question")}
+    )
     assert cats == expected
 
 

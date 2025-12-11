@@ -90,17 +90,12 @@ class TestContainerAnnotation:
             container.set_type(None)
 
 
-
 class TestContainerAnnotationAdvanced:
     """Advanced tests for ContainerAnnotation"""
 
     def test_container_annotation_from_dict_with_value_field(self):
         """Test that ContainerAnnotation is correctly identified from dict with value field"""
-        data = {
-            "category_name": "test_cat_1",
-            "category_id": 1,
-            "value": "test_text"
-        }
+        data = {"category_name": "test_cat_1", "category_id": 1, "value": "test_text"}
         parent = CategoryAnnotation(category_name="test_cat_3", external_id="parent_id")
         parent.dump_sub_category(get_type("sub_cat_1"), ContainerAnnotation(**data))
         retrieved = parent.get_sub_category(get_type("sub_cat_1"))

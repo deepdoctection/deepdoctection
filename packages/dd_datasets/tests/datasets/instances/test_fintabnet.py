@@ -20,19 +20,17 @@ Testing module datasets.instances.fintabnet
 """
 
 
+from pathlib import Path
 from unittest.mock import MagicMock, patch
 
-import pytest
-from pathlib import Path
 import numpy as np
+import pytest
 
 import shared_test_utils as stu
-
 from dd_datasets import Fintabnet
 
-def test_dataset_fintabnet_returns_image(monkeypatch: pytest.MonkeyPatch,
-                                         dataset_test_base_dir: str) -> None:
 
+def test_dataset_fintabnet_returns_image(monkeypatch: pytest.MonkeyPatch, dataset_test_base_dir: str) -> None:
 
     monkeypatch.setattr("dd_core.mapper.pubstruct.load_bytes_from_pdf_file", lambda _fn: b"\x01\x02")
     monkeypatch.setattr(
@@ -41,15 +39,16 @@ def test_dataset_fintabnet_returns_image(monkeypatch: pytest.MonkeyPatch,
     )
 
     fintabnet = Fintabnet()
-    fintabnet.dataflow.get_workdir =lambda: Path(dataset_test_base_dir) / fintabnet.dataflow.location
+    fintabnet.dataflow.get_workdir = lambda: Path(dataset_test_base_dir) / fintabnet.dataflow.location
     df = fintabnet.dataflow.build()
 
     df_list = stu.collect_datapoint_from_dataflow(df)
     assert len(df_list) == 4
 
 
-def test_dataset_fintabnet_with_load_image_returns_image(monkeypatch: pytest.MonkeyPatch,
-                                                         dataset_test_base_dir: str) -> None:
+def test_dataset_fintabnet_with_load_image_returns_image(
+    monkeypatch: pytest.MonkeyPatch, dataset_test_base_dir: str
+) -> None:
 
     monkeypatch.setattr("dd_core.mapper.pubstruct.load_bytes_from_pdf_file", lambda _fn: b"\x01\x02")
     monkeypatch.setattr(

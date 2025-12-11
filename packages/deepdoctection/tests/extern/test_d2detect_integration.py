@@ -18,12 +18,10 @@
 
 import pytest
 
-from dd_core.utils.file_utils import pytorch_available, detectron2_available
-
-from deepdoctection.extern.model import ModelCatalog, ModelDownloadManager
-from deepdoctection.extern.d2detect import D2FrcnnDetector, D2FrcnnTracingDetector
 from dd_core.utils import get_torch_device
-
+from dd_core.utils.file_utils import detectron2_available, pytorch_available
+from deepdoctection.extern.d2detect import D2FrcnnDetector, D2FrcnnTracingDetector
+from deepdoctection.extern.model import ModelCatalog, ModelDownloadManager
 
 REQUIRES_PT_AND_D2 = pytest.mark.skipif(
     not (pytorch_available() and detectron2_available()),

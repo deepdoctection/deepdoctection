@@ -33,6 +33,7 @@ from dd_core.datapoint.image import Image, MetaAnnotation
 from dd_core.utils.context import timed_operation
 from dd_core.utils.tqdm import get_tqdm
 from dd_core.utils.types import QueueType, TqdmType
+
 from .base import PipelineComponent
 from .common import ImageParsingService, PageParsingService
 from .registry import pipeline_component_registry
@@ -160,9 +161,10 @@ class MultiThreadPipelineComponent(PipelineComponent):
         Returns:
             A list of `Image` objects.
         """
-        with ThreadPoolExecutor(
-            max_workers=len(self.pipe_components), thread_name_prefix="EvalWorker"
-        ) as executor, tqdm.tqdm(total=self.input_queue.qsize()) as pbar:
+        with (
+            ThreadPoolExecutor(max_workers=len(self.pipe_components), thread_name_prefix="EvalWorker") as executor,
+            tqdm.tqdm(total=self.input_queue.qsize()) as pbar,
+        ):
             futures = []
             for component in self.pipe_components:
                 futures.append(

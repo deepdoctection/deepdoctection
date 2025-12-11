@@ -30,7 +30,6 @@ from dd_core.utils.file_utils import transformers_available
 from dd_core.utils.object_types import DatasetType, WordType
 from dd_core.utils.types import JsonDict
 
-
 if transformers_available():
     from transformers import LayoutLMTokenizerFast
 
@@ -44,7 +43,7 @@ def test_image_to_raw_layoutlm_features_for_token_data(
     testing image_to_raw_layoutlm_features is mapping correctly for dataset type "TOKEN_CLASSIFICATION"
     using xfund_image fixture and xfund_raw_layoutlm_features as expected.
     """
-    # Mock image loader as in test_xfundstruct
+
     monkeypatch.setattr(
         "dd_core.mapper.xfundstruct.load_image_from_file",
         lambda fn: np.zeros((3508, 2480, 3), dtype=np.uint8),
@@ -103,9 +102,7 @@ def test_image_to_raw_layoutlm_features_for_inference(
 
 
 @pytest.mark.skipif(not transformers_available(), reason="Transformers is not installed")
-def test_raw_features_to_layoutlm_features(
-    xfund_image: Image, layoutlm_features: JsonDict
-) -> None:
+def test_raw_features_to_layoutlm_features(xfund_image: Image, layoutlm_features: JsonDict) -> None:
     """
     testing image_to_layoutlm_features is mapping correctly using xfund_image as input
     and layoutlm_features as expected output.
@@ -130,6 +127,3 @@ def test_raw_features_to_layoutlm_features(
     assert feature["bbox"] == layoutlm_features["bbox"]
     assert feature["tokens"] == layoutlm_features["tokens"]
     # pylint: enable=E1136
-
-
-

@@ -45,9 +45,8 @@ from typing import Mapping, Union
 from lazy_imports import try_import
 
 from dd_core.dataflow import DataFlow, MapData, SerializerFiles
+from dd_core.mapper import curry, xml_to_dict
 from dd_core.mapper.cats import filter_cat
-from dd_core.mapper import curry
-from dd_core.mapper import xml_to_dict
 from dd_core.mapper.pascalstruct import pascal_voc_dict_to_image
 from dd_core.utils.file_utils import lxml_available
 from dd_core.utils.object_types import CellType, DatasetType, LayoutType
@@ -163,7 +162,11 @@ class Pubtables1MBuilder(DataFlowBaseBuilder):
         df = MapData(df, load_xml(utf8_parser))  # pylint: disable=E1120
         xsl_path = os.path.join(os.path.dirname(__file__), "xsl", "pascal_voc.xsl")
 
-        with open(xsl_path,"r",encoding="utf-8",) as xsl_file:
+        with open(
+            xsl_path,
+            "r",
+            encoding="utf-8",
+        ) as xsl_file:
             xslt_file = xsl_file.read().encode("utf-8")
         xml_obj = etree.XML(xslt_file, parser=etree.XMLParser(encoding="utf-8"))
         xslt_obj = etree.XSLT(xml_obj)
@@ -278,7 +281,11 @@ class Pubtables1MBuilderStruct(DataFlowBaseBuilder):
 
         df = MapData(df, load_xml(utf8_parser))  # pylint: disable=E1120
         xsl_path = os.path.join(os.path.dirname(__file__), "xsl", "pascal_voc.xsl")
-        with open(xsl_path,"r",encoding="utf-8",) as xsl_file:
+        with open(
+            xsl_path,
+            "r",
+            encoding="utf-8",
+        ) as xsl_file:
             xslt_file = xsl_file.read().encode("utf-8")
         xml_obj = etree.XML(xslt_file, parser=etree.XMLParser(encoding="utf-8"))
         xslt_obj = etree.XSLT(xml_obj)

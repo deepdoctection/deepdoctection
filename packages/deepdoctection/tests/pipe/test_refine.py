@@ -18,11 +18,11 @@
 
 from typing import List, Set, Tuple
 
-from pytest import mark
+import pytest
 
-from dd_core.utils.object_types import CellType, LayoutType, TableType
 from dd_core.datapoint import ContainerAnnotation, Image
-
+from dd_core.utils.file_utils import networkx_available
+from dd_core.utils.object_types import CellType, LayoutType, TableType
 from deepdoctection.pipe.refine import (
     TableSegmentationRefinementService,
     _html_table,
@@ -32,10 +32,8 @@ from deepdoctection.pipe.refine import (
 )
 
 
-
-
-@mark.additional
-@mark.parametrize(
+@pytest.mark.skipif(not networkx_available(), reason="networkx not installed")
+@pytest.mark.parametrize(
     "tiles_to_cells,expected_rectangle_cells_list",
     [
         (
@@ -102,8 +100,7 @@ def test_rectangle_cell_tiling(
         assert el in expected_rectangle_cells_list
 
 
-@mark.additional
-@mark.parametrize(
+@pytest.mark.parametrize(
     "table_list,cells_ann_list,number_of_rows,number_of_cols,expected_html_list",
     [
         (
@@ -272,7 +269,7 @@ class TestTableSegmentationRefinementService:
             ],
         )
 
-    @mark.additional
+    @pytest.mark.skipif(not networkx_available(), reason="networkx not installed")
     def test_integration_pipeline_component(self, dp_image_fully_segmented_fully_tiled: Image) -> None:
         """
         Integration test for pipeline component

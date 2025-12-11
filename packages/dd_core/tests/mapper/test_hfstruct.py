@@ -18,8 +18,8 @@
 
 import numpy as np
 
-from dd_core.mapper.hfstruct import image_to_hf_detr_training
 from dd_core.datapoint.image import Image
+from dd_core.mapper.hfstruct import image_to_hf_detr_training
 
 
 def test_image_to_hf_detr_training_all_categories(image_with_layout_anns: Image) -> None:

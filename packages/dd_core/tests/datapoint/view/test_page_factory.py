@@ -21,8 +21,8 @@ Testing Page factory methods and initialization
 
 from pathlib import Path
 
-from dd_core.datapoint.view import Page
 from dd_core.datapoint.image import Image
+from dd_core.datapoint.view import Page
 
 
 class TestPageFactory:
@@ -32,7 +32,6 @@ class TestPageFactory:
         """Page.from_file() creates a Page instance"""
         page = Page.from_file(file_path=str(page_json_path))
         assert isinstance(page, Page)
-
 
     def test_from_image_creates_page(self, page_json_path: Path):
         """Page.from_image() creates a Page instance"""
@@ -52,4 +51,3 @@ class TestPageFactory:
         assert isinstance(page_copy, Page)
         assert page_copy is not page
         assert page_copy.image_id == page.image_id
-

@@ -25,8 +25,8 @@ from typing import Any
 from pytest import fixture
 
 import shared_test_utils as stu
-
 from dd_core.dataflow import DataFromList
+
 
 @fixture(name="simple_list")
 def ficture_simple_list() -> list[list[str]]:
@@ -43,12 +43,14 @@ def fixture_simple_list_dataflow(simple_list) -> DataFromList:
     """
     return DataFromList(simple_list, shuffle=False)
 
+
 @fixture(name="simple_dict_list")
 def ficture_simple_dict() -> list[dict[str, Any]]:
     """
     Simple list fixture
     """
     return [{"key1": "a", "key2": 1}, {"key1": "b", "key2": 2}, {"key1": "c", "key2": 3}]
+
 
 @fixture(name="simple_dict_dataflow")
 def fixture_simple_dict_dataflow(simple_dict_list) -> DataFromList:
@@ -65,6 +67,7 @@ def fixture_nested_list_dataflow() -> DataFromList:
     """
     data = [["item1", "item2"], ["item3", "item4"]]
     return DataFromList(data, shuffle=False)
+
 
 @fixture(name="coco_file_path")
 def fixture_coco_file_path() -> Path:
@@ -124,4 +127,3 @@ def fixture_expected_std_all_axes() -> float:
     Expected std along all axes for numerical_dataset
     """
     return 0.29462782549439476
-

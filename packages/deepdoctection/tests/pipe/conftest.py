@@ -16,20 +16,17 @@
 # limitations under the License.
 
 import os
-import numpy as np
 from copy import deepcopy
 
+import numpy as np
 import pytest
 
-from dd_core.utils.object_types import get_type
-
-from dd_core.datapoint.box import BoundingBox, local_to_global_coords
-from dd_core.datapoint.annotation import ImageAnnotation, CategoryAnnotation, ContainerAnnotation
-from dd_core.datapoint.image import Image
-from deepdoctection.extern.base import TokenClassResult, DetectionResult
-
 import shared_test_utils as stu
-
+from dd_core.datapoint.annotation import CategoryAnnotation, ContainerAnnotation, ImageAnnotation
+from dd_core.datapoint.box import BoundingBox, local_to_global_coords
+from dd_core.datapoint.image import Image
+from dd_core.utils.object_types import get_type
+from deepdoctection.extern.base import DetectionResult, TokenClassResult
 
 
 @pytest.fixture
@@ -74,7 +71,7 @@ def image_without_anns(image: Image, anns):
 
 
 @pytest.fixture
-def cell_detect_result():
+def cell_detect_results():
     return [
         [
             DetectionResult(box=[20.0, 20.0, 25.0, 30.0], score=0.8, class_id=1, class_name=get_type("column_header")),
@@ -96,14 +93,14 @@ def dp_image_item_stretched(dp_image_tab_cell_item: Image) -> Image:
     for row in rows:
         assert isinstance(row, ImageAnnotation)
         embedding_box = row.get_bounding_box(dp.image_id)
-        embedding_box.ulx = table_embedding_box.ulx + 1.0/dp.width
-        embedding_box.lrx = table_embedding_box.lrx - 1.0/dp.height
+        embedding_box.ulx = table_embedding_box.ulx + 1.0 / dp.width
+        embedding_box.lrx = table_embedding_box.lrx - 1.0 / dp.height
 
     for col in cols:
         assert isinstance(col, ImageAnnotation)
         embedding_box = col.get_bounding_box(dp.image_id)
-        embedding_box.uly = table_embedding_box.uly + 1.0/dp.width
-        embedding_box.lry = table_embedding_box.lry - 1.0/dp.height
+        embedding_box.uly = table_embedding_box.uly + 1.0 / dp.width
+        embedding_box.lry = table_embedding_box.lry - 1.0 / dp.height
 
     return deepcopy(dp)
 
@@ -142,6 +139,7 @@ def word_layout_annotations_for_ordering() -> list[ImageAnnotation]:
         ),
     ]
 
+
 @pytest.fixture
 def word_sub_cats_for_ordering() -> list[list[CategoryAnnotation]]:
     """fixture word_sub_cats_for_ordering"""
@@ -167,6 +165,7 @@ def word_sub_cats_for_ordering() -> list[list[CategoryAnnotation]]:
             CategoryAnnotation(category_name=get_type("text_line"), category_id=2),
         ],
     ]
+
 
 @pytest.fixture
 def words_annotations_with_sub_cats(
@@ -248,14 +247,14 @@ def dp_image_fully_segmented_fully_tiled(
     for row in rows:
         assert isinstance(row, ImageAnnotation)
         embedding_box = row.get_bounding_box(dp.image_id)
-        embedding_box.ulx = table_embedding_box.ulx + 1.0/dp.width
-        embedding_box.lrx = table_embedding_box.lrx - 1.0/dp.width
+        embedding_box.ulx = table_embedding_box.ulx + 1.0 / dp.width
+        embedding_box.lrx = table_embedding_box.lrx - 1.0 / dp.width
 
     for col in cols:
         assert isinstance(col, ImageAnnotation)
         embedding_box = col.get_bounding_box(dp.image_id)
-        embedding_box.uly = table_embedding_box.uly + 1.0/dp.height
-        embedding_box.lry = table_embedding_box.lry - 1.0/dp.height
+        embedding_box.uly = table_embedding_box.uly + 1.0 / dp.height
+        embedding_box.lry = table_embedding_box.lry - 1.0 / dp.height
 
     rows = dp.get_annotation(category_names=get_type("row"))
     cols = dp.get_annotation(category_names=get_type("column"))
@@ -305,6 +304,7 @@ def dp_image_fully_segmented_fully_tiled(
 
     return dp
 
+
 @pytest.fixture
 def token_class_result() -> list:
     uuids = [
@@ -320,10 +320,10 @@ def token_class_result() -> list:
     tokens = ["CLS", "hello", "world", "bye", "word", "SEP"]
     class_name = [
         get_type("O"),
-        get_type("b-header"),
-        get_type("b-header"),
-        get_type("i-header"),
-        get_type("i-header"),
+        get_type("B-header"),
+        get_type("B-header"),
+        get_type("I-header"),
+        get_type("I-header"),
         get_type("O"),
     ]
     semantic_name = [

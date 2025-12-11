@@ -21,8 +21,8 @@
 
 import pytest
 
-from dd_core.utils.file_utils import wandb_available
 from dd_core.mapper.wandbstruct import to_wandb_image
+from dd_core.utils.file_utils import wandb_available
 
 
 def _build_categories(anns):
@@ -41,5 +41,4 @@ def test_to_wandb_image_builds_boxes_with_stubbed_wandb(monkeypatch, annotations
     image_id, wb_image = to_wandb_image(categories)(dp)
 
     assert isinstance(wb_image, Image)
-    assert image_id =="6ea00afa-ba27-382a-8952-51f8e6ce16b7"
-
+    assert image_id == "6ea00afa-ba27-382a-8952-51f8e6ce16b7"

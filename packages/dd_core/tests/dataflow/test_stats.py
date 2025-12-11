@@ -73,9 +73,7 @@ def test_std_from_dataflow_along_one_dimension(
     assert_array_almost_equal(std, np.array(expected_std_axis_zero), decimal=4)
 
 
-def test_std_from_dataflow_along_all_dimensions(
-    numerical_dataflow: DataFromList, expected_std_all_axes: float
-) -> None:
+def test_std_from_dataflow_along_all_dimensions(numerical_dataflow: DataFromList, expected_std_all_axes: float) -> None:
     """
     Test StdFromDataFlow calculates standard deviation along all dimensions correctly
     """
@@ -87,4 +85,3 @@ def test_std_from_dataflow_along_all_dimensions(
 
     # Assert
     assert_array_almost_equal(std, np.array(expected_std_all_axes), decimal=4)
-

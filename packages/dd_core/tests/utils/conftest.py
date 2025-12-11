@@ -19,13 +19,11 @@
 from __future__ import annotations
 
 from pathlib import Path
-from pytest import fixture
 
 import numpy as np
+from pytest import fixture
 
 import shared_test_utils as stu
-
-
 
 
 @fixture(name="pdf_bytes")
@@ -36,20 +34,24 @@ def fixture_pdf_bytes(pdf_file_path_two_pages: Path) -> bytes:
             return f.read()
     return b""
 
+
 @fixture(name="coords")
 def fixture_coords() -> np.ndarray:
     """Sample coordinates"""
     return np.array([[10.0, 20.0, 50.0, 80.0], [30.0, 40.0, 90.0, 100.0]], dtype=np.float32)
+
 
 @fixture(name="np_image")
 def fixture_np_image() -> np.ndarray:
     """np_array image"""
     return np.ones([100, 150, 3], dtype=np.uint8) * 255
 
+
 @fixture(name="boxes")
 def fixture_boxes() -> np.ndarray:
     """Sample bounding boxes"""
     return np.array([[10.0, 20.0, 50.0, 80.0], [60.0, 30.0, 100.0, 90.0]], dtype=np.float32)
+
 
 @fixture(name="category_names")
 def fixture_category_names() -> list:

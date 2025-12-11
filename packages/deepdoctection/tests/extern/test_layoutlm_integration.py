@@ -1,9 +1,10 @@
 import os
-from typing import Any, Optional
 import uuid
+from typing import Any, Optional
+
 import pytest
 
-from dd_core.utils.file_utils import pytorch_available, transformers_available, detectron2_available
+from dd_core.utils.file_utils import detectron2_available, pytorch_available, transformers_available
 from dd_core.utils.types import PathLikeOrStr
 from deepdoctection.extern.hflayoutlm import (
     HFLayoutLmSequenceClassifier,
@@ -20,20 +21,17 @@ if pytorch_available() and transformers_available():
     import torch
     from transformers import (
         LayoutLMConfig,
+        LayoutLMForSequenceClassification,
         LayoutLMForTokenClassification,
         LayoutLMv2Config,
+        LayoutLMv2ForSequenceClassification,
         LayoutLMv2ForTokenClassification,
         LayoutLMv3Config,
+        LayoutLMv3ForSequenceClassification,
         LayoutLMv3ForTokenClassification,
         LiltConfig,
-        LiltForTokenClassification,
-        LayoutLMForSequenceClassification,
-        LayoutLMv2Config,
-        LayoutLMv2ForSequenceClassification,
-        LayoutLMv3Config,
-        LayoutLMv3ForSequenceClassification,
-        LiltConfig,
         LiltForSequenceClassification,
+        LiltForTokenClassification,
     )
 
 REQUIRES_PT_AND_TR = pytest.mark.skipif(
@@ -42,10 +40,10 @@ REQUIRES_PT_AND_TR = pytest.mark.skipif(
 )
 
 
-
 def _mk_dummy_tokenizer() -> Any:
     class DummyTokenizer:
         pass
+
     return DummyTokenizer()
 
 

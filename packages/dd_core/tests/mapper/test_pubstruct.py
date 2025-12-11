@@ -32,8 +32,10 @@ def categories_name_as_key() -> dict:
         LayoutType.WORD: 4,
     }
 
+
 def _count_cells_with_bbox(dp):
     return sum(1 for c in dp["html"]["cells"] if "bbox" in c)
+
 
 def test_pub_to_image_basic(monkeypatch: pytest.MonkeyPatch, pubtabnet_datapoint, categories_name_as_key):
     monkeypatch.setattr(
@@ -48,6 +50,7 @@ def test_pub_to_image_basic(monkeypatch: pytest.MonkeyPatch, pubtabnet_datapoint
     assert summary.get_sub_category(TableType.NUMBER_OF_ROWS).category_id == 14
     assert summary.get_sub_category(TableType.NUMBER_OF_COLUMNS).category_id == 9
 
+
 def test_pub_to_image_rows_cols_items(monkeypatch: pytest.MonkeyPatch, pubtabnet_datapoint, categories_name_as_key):
     monkeypatch.setattr(
         "dd_core.mapper.pubstruct.load_image_from_file",
@@ -61,6 +64,7 @@ def test_pub_to_image_rows_cols_items(monkeypatch: pytest.MonkeyPatch, pubtabnet
     n_cols = summary.get_sub_category(TableType.NUMBER_OF_COLUMNS).category_id
     items = img.get_annotation(category_names=TableType.ITEM)
     assert len(items) == n_rows + n_cols
+
 
 def test_pub_to_image_dd_pipe_like(monkeypatch: pytest.MonkeyPatch, pubtabnet_datapoint, categories_name_as_key):
     monkeypatch.setattr(

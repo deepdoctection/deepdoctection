@@ -37,7 +37,7 @@ from numpy import uint8
 from .context import save_tmp_file, timeout_manager
 from .env_info import ENV_VARS_TRUE
 from .error import DependencyError, FileExtensionError
-from .file_utils import pdf_to_cairo_available, pdf_to_ppm_available, qpdf_available, pypdf_available
+from .file_utils import pdf_to_cairo_available, pdf_to_ppm_available, pypdf_available, qpdf_available
 from .logger import LoggingRecord, logger
 from .types import B64, PathLikeOrStr, PixelValues
 from .utils import is_file_extension

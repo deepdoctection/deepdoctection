@@ -20,13 +20,14 @@ Testing Image hierarchy operations (image_ann_to_image, maybe_ann_to_sub_image, 
 """
 
 import numpy as np
-from numpy import ones, float32
+from numpy import float32, ones
 from pytest import mark, raises
 
 from dd_core.datapoint import BoundingBox, Image, ImageAnnotation
 from dd_core.utils.error import ImageError
 
 from ..conftest import WhiteImage
+
 
 class TestImageHierarchy:
     """Test Image hierarchical operations"""
@@ -179,11 +180,11 @@ class TestImageHierarchy:
         img = Image(file_name=white_image.file_name)
         ann1 = ImageAnnotation(
             category_name="test_cat_1",
-            bounding_box=BoundingBox(ulx=10, uly=10, width=20, height=20, absolute_coords=True)
+            bounding_box=BoundingBox(ulx=10, uly=10, width=20, height=20, absolute_coords=True),
         )
         ann2 = ImageAnnotation(
             category_name="test_cat_2",
-            bounding_box=BoundingBox(ulx=30, uly=30, width=20, height=20, absolute_coords=True)
+            bounding_box=BoundingBox(ulx=30, uly=30, width=20, height=20, absolute_coords=True),
         )
         img.dump(ann1)
         img.dump(ann2)
@@ -199,11 +200,11 @@ class TestImageHierarchy:
         img = Image(file_name=white_image.file_name)
         ann1 = ImageAnnotation(
             category_name="test_cat_1",
-            bounding_box=BoundingBox(ulx=10, uly=10, width=20, height=20, absolute_coords=True)
+            bounding_box=BoundingBox(ulx=10, uly=10, width=20, height=20, absolute_coords=True),
         )
         ann2 = ImageAnnotation(
             category_name="test_cat_2",
-            bounding_box=BoundingBox(ulx=30, uly=30, width=20, height=20, absolute_coords=True)
+            bounding_box=BoundingBox(ulx=30, uly=30, width=20, height=20, absolute_coords=True),
         )
         img.dump(ann1)
         img.dump(ann2)
@@ -213,4 +214,3 @@ class TestImageHierarchy:
 
         assert "test_cat_1" in categories
         assert "test_cat_2" not in categories
-

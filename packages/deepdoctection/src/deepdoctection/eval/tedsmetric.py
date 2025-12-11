@@ -22,14 +22,13 @@ from __future__ import annotations
 
 import statistics
 from collections import defaultdict, deque
-from typing import Any, Callable, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Callable, Optional
 
 from lazy_imports import try_import
 
 from dd_core.dataflow import DataFlow, DataFromList, MapData, MultiThreadMapData
 from dd_core.datapoint.image import Image
 from dd_core.datapoint.view import Page
-
 from dd_core.utils.file_utils import Requirement, get_apted_requirement, get_distance_requirement, get_lxml_requirement
 from dd_core.utils.logger import LoggingRecord, logger
 from dd_core.utils.object_types import LayoutType

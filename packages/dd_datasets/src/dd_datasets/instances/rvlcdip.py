@@ -38,8 +38,8 @@ from dd_core.dataflow import DataFlow, MapData
 from dd_core.dataflow.custom_serialize import SerializerTabsepFiles
 from dd_core.datapoint.annotation import CategoryAnnotation
 from dd_core.datapoint.image import Image
-from dd_core.mapper.cats import filter_summary
 from dd_core.mapper import curry
+from dd_core.mapper.cats import filter_summary
 from dd_core.utils.fs import load_image_from_file
 from dd_core.utils.object_types import DatasetType, DocumentType, PageType, SummaryType, TypeOrStr, WordType
 

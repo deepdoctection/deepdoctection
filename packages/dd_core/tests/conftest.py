@@ -4,15 +4,13 @@ Test utilities for dd_datapoint tests
 Minimal version to support standalone package tests
 """
 
-from pathlib import Path
 from dataclasses import dataclass, field
-import pytest
+from pathlib import Path
 
 import numpy as np
-
+import pytest
 
 import shared_test_utils as stu
-
 from dd_core.utils.object_types import ObjectTypes, object_types_registry, update_black_list
 from dd_core.utils.viz import viz_handler
 
@@ -48,8 +46,8 @@ class TestPdfPage:
     """
 
     pdf_bytes: bytes
-    loc: str =  "/testlocation/test"
-    file_name: str  = "test_image_0.pdf"
+    loc: str = "/testlocation/test"
+    file_name: str = "test_image_0.pdf"
     np_array_shape: tuple[int, int, int] = (3300, 2550, 3)
     np_array_shape_default: tuple[int, int, int] = (792, 612, 3)
 
@@ -68,6 +66,7 @@ class WhiteImage:
 @dataclass(frozen=True)
 class XFundSample:
     """Deterministic XFund sample datapoint for testing."""
+
     data: dict = field(default_factory=lambda: XFUND_SAMPLE["documents"][0])
     np_array_shape: tuple[int, int, int] = (3508, 2480, 3)
 

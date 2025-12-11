@@ -63,7 +63,16 @@ class TestPoint4ToBox:
             (np.array([[0.0, 0.0], [10.0, 0.0], [10.0, 10.0], [0.0, 10.0]], dtype=np.float32), (1, 4)),
             (
                 np.array(
-                    [[0.0, 0.0], [10.0, 0.0], [10.0, 10.0], [0.0, 10.0], [5.0, 5.0], [15.0, 5.0], [15.0, 15.0], [5.0, 15.0]],
+                    [
+                        [0.0, 0.0],
+                        [10.0, 0.0],
+                        [10.0, 10.0],
+                        [0.0, 10.0],
+                        [5.0, 5.0],
+                        [15.0, 5.0],
+                        [15.0, 15.0],
+                        [5.0, 15.0],
+                    ],
                     dtype=np.float32,
                 ),
                 (2, 4),
@@ -193,4 +202,3 @@ class TestRotationTransform:
         result = transform.apply_coords(coords.copy())
         assert result.shape == coords.shape
         assert not np.array_equal(result, coords)
-

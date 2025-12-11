@@ -617,7 +617,7 @@ class ContainerAnnotation(CategoryAnnotation):
 
     @model_validator(mode="after")
     def _coerce_or_infer_value(self) -> "ContainerAnnotation":
-        effective_type =  self.value_type
+        effective_type = self.value_type
         # No explicit type: infer once
         if effective_type is None:
             if self.value is None:
@@ -696,4 +696,3 @@ class ContainerAnnotation(CategoryAnnotation):
             f"category_id={self.category_id}, score={self.score}, sub_categories={self.sub_categories},"
             f" relationships={self.relationships})"
         )
-

@@ -22,7 +22,7 @@
 from __future__ import annotations
 
 from math import ceil, floor
-from typing import Optional, Sequence, TypedDict, Union, cast, ClassVar
+from typing import ClassVar, Optional, Sequence, TypedDict, Union, cast
 
 import numpy as np
 import numpy.typing as npt
@@ -177,9 +177,6 @@ def ioa(boxes1: npt.NDArray[float32], boxes2: npt.NDArray[float32]) -> npt.NDArr
     return intersect * inv_areas
 
 
-
-
-
 class BoxDict(TypedDict):
     absolute_coords: bool
     ulx: BoxCoordinate
@@ -190,6 +187,7 @@ class BoxDict(TypedDict):
 
 def _round_half_up(x: float) -> int:
     return int(floor(x + 0.5))
+
 
 def _round_half_down(x: float) -> int:
     f = floor(x)
@@ -227,7 +225,7 @@ class BoundingBox(BaseModel):
 
     """
 
-    RELATIVE_COORD_SCALE_FACTOR: ClassVar[int] = 10 ** 8
+    RELATIVE_COORD_SCALE_FACTOR: ClassVar[int] = 10**8
 
     model_config = {
         "arbitrary_types_allowed": True,
@@ -297,7 +295,7 @@ class BoundingBox(BaseModel):
         ):
             raise BoundingBoxError("coordinates must be between 0 and 1")
 
-    def _validate_width(self,lrx, ulx):
+    def _validate_width(self, lrx, ulx):
         if lrx - ulx <= 0:
             raise BoundingBoxError(f"width must be >0. Check coords: lrx: {self.lrx}, ulx: {self.ulx}")
 
@@ -360,7 +358,9 @@ class BoundingBox(BaseModel):
     @property
     def width(self) -> BoxCoordinate:
         return (
-            (self._lrx - self._ulx) / self.RELATIVE_COORD_SCALE_FACTOR if not self.absolute_coords else self._lrx - self._ulx
+            (self._lrx - self._ulx) / self.RELATIVE_COORD_SCALE_FACTOR
+            if not self.absolute_coords
+            else self._lrx - self._ulx
         )
 
     @width.setter
@@ -375,7 +375,9 @@ class BoundingBox(BaseModel):
     @property
     def height(self) -> BoxCoordinate:
         return (
-            (self._lry - self._uly) / self.RELATIVE_COORD_SCALE_FACTOR if not self.absolute_coords else self._lry - self._uly
+            (self._lry - self._uly) / self.RELATIVE_COORD_SCALE_FACTOR
+            if not self.absolute_coords
+            else self._lry - self._uly
         )
 
     @height.setter
@@ -422,9 +424,9 @@ class BoundingBox(BaseModel):
 
     __hash__ = None
 
-    def to_np_array(self, mode: Literal["xyxy","xywh","poly"],
-                    scale_x: float = 1.0,
-                    scale_y: float = 1.0) -> npt.NDArray[np.float32]:
+    def to_np_array(
+        self, mode: Literal["xyxy", "xywh", "poly"], scale_x: float = 1.0, scale_y: float = 1.0
+    ) -> npt.NDArray[np.float32]:
 
         if not self.absolute_coords and (scale_x > 1.0 or scale_y > 1.0):
             raise ValueError("Cannot scale up relative coordinates")
@@ -443,10 +445,9 @@ class BoundingBox(BaseModel):
             * np_poly_scale
         )
 
-
-    def to_list(self, mode: Literal["xyxy","xywh","poly"],
-                scale_x: float = 1.0,
-                scale_y: float = 1.0) -> list[BoxCoordinate]:
+    def to_list(
+        self, mode: Literal["xyxy", "xywh", "poly"], scale_x: float = 1.0, scale_y: float = 1.0
+    ) -> list[BoxCoordinate]:
 
         if not self.absolute_coords and (scale_x > 1.0 or scale_y > 1.0):
             raise ValueError("Cannot scale up relative coordinates")
@@ -636,8 +637,7 @@ def local_to_global_coords(local_box: BoundingBox, embedding_box: BoundingBox) -
     )
 
 
-def global_to_local_coords(global_box: BoundingBox,
-                           embedding_box: BoundingBox) -> BoundingBox:
+def global_to_local_coords(global_box: BoundingBox, embedding_box: BoundingBox) -> BoundingBox:
     """
     Transforming global bounding box coords into the coordinate system given by the embedding box. The transformation
     requires that the global bounding box coordinates lie completely within the rectangle of the embedding box.
@@ -660,14 +660,14 @@ def global_to_local_coords(global_box: BoundingBox,
 
     if not embedding_box.absolute_coords:
         return BoundingBox(
-        absolute_coords=False,
-        ulx=max(global_box.ulx - embedding_box.ulx, 0) / embedding_box.width ,
-        uly=max(global_box.uly - embedding_box.uly, 0) / embedding_box.height,
-        lrx=min(global_box.lrx - embedding_box.ulx, embedding_box.width) / embedding_box.width,
-        lry=min(global_box.lry - embedding_box.uly, embedding_box.height) / embedding_box.height,
-    )
+            absolute_coords=False,
+            ulx=max(global_box.ulx - embedding_box.ulx, 0) / embedding_box.width,
+            uly=max(global_box.uly - embedding_box.uly, 0) / embedding_box.height,
+            lrx=min(global_box.lrx - embedding_box.ulx, embedding_box.width) / embedding_box.width,
+            lry=min(global_box.lry - embedding_box.uly, embedding_box.height) / embedding_box.height,
+        )
 
-    return  BoundingBox(
+    return BoundingBox(
         absolute_coords=True,
         ulx=max(global_box.ulx - embedding_box.ulx, 0),
         uly=max(global_box.uly - embedding_box.uly, 0),

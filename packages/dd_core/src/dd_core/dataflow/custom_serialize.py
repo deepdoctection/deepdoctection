@@ -29,7 +29,6 @@ from pathlib import Path
 from typing import Any, DefaultDict, Dict, Iterator, List, Optional, Sequence, TextIO, Union
 
 from lazy_imports import try_import
-
 from tabulate import tabulate
 from termcolor import colored
 
@@ -47,8 +46,15 @@ from .custom import CacheData, CustomDataFromIterable, CustomDataFromList
 with try_import() as jsonlines_import_guard:
     from jsonlines import Reader, Writer
 
-__all__ = ["SerializerJsonlines", "SerializerFiles", "CocoParser",
-           "SerializerCoco", "SerializerPdfDoc", "SerializerTabsepFiles", "FileClosingIterator"]
+__all__ = [
+    "SerializerJsonlines",
+    "SerializerFiles",
+    "CocoParser",
+    "SerializerCoco",
+    "SerializerPdfDoc",
+    "SerializerTabsepFiles",
+    "FileClosingIterator",
+]
 
 
 def _reset_df_and_get_length(df: DataFlow) -> int:

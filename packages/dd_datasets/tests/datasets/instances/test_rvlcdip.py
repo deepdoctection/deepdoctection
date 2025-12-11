@@ -20,17 +20,15 @@ Testing module datasets.instances.rvlcdip
 """
 
 from pathlib import Path
+
 import numpy as np
 import pytest
 
 import shared_test_utils as stu
-
 from dd_datasets import Rvlcdip
 
 
-def test_dataset_rvlcdip_returns_image(
-    monkeypatch: pytest.MonkeyPatch, dataset_test_base_dir: str
-) -> None:
+def test_dataset_rvlcdip_returns_image(monkeypatch: pytest.MonkeyPatch, dataset_test_base_dir: str) -> None:
     # Patch image loader to return a white image
     monkeypatch.setattr(
         "dd_datasets.instances.rvlcdip.load_image_from_file",

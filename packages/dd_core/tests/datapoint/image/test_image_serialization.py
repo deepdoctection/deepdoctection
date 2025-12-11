@@ -25,15 +25,14 @@ from pathlib import Path
 import numpy as np
 from pytest import mark
 
+import shared_test_utils as stu
 from dd_core.datapoint import BoundingBox, Image, ImageAnnotation
 
-import shared_test_utils as stu
 from ..conftest import WhiteImage
 
 
 class TestImageSerialization:
     """Test Image serialization and deserialization"""
-
 
     @staticmethod
     def test_as_dict_contains_basic_fields(white_image: WhiteImage):
@@ -66,8 +65,9 @@ class TestImageSerialization:
     @staticmethod
     def test_roundtrip_as_dict_recreates_image(white_image: WhiteImage):
         """Image can be recreated from as_dict() output"""
-        img1 = Image(file_name=white_image.file_name, location=white_image.location,
-                     external_id=white_image.external_id)
+        img1 = Image(
+            file_name=white_image.file_name, location=white_image.location, external_id=white_image.external_id
+        )
         img1.image = white_image.image
 
         data = img1.as_dict()
@@ -82,10 +82,7 @@ class TestImageSerialization:
         """Annotations are preserved in roundtrip"""
         img1 = Image(file_name=white_image.file_name)
         box = BoundingBox(ulx=10, uly=10, width=20, height=20, absolute_coords=True)
-        ann = ImageAnnotation(
-            category_name="test_cat_1",
-            bounding_box= box
-        )
+        ann = ImageAnnotation(category_name="test_cat_1", bounding_box=box)
         img1.dump(ann)
 
         data = img1.as_dict()
@@ -106,7 +103,6 @@ class TestImageSerialization:
         assert result is not None
         assert Path(result).exists()
         assert Path(result).suffix == ".json"
-
 
     @staticmethod
     def test_save_without_image_to_json(white_image: WhiteImage, tmp_path: Path):
@@ -129,7 +125,6 @@ class TestImageSerialization:
 
         assert isinstance(img2, Image)
         assert img2.file_name == img1.file_name
-
 
     @staticmethod
     def test_roundtrip_preserves_embeddings(white_image: WhiteImage):
@@ -165,7 +160,7 @@ class TestImageSerialization:
 
         ann = ImageAnnotation(
             category_name="test_cat_1",
-            bounding_box=BoundingBox(ulx=10, uly=10, width=20, height=20, absolute_coords=True)
+            bounding_box=BoundingBox(ulx=10, uly=10, width=20, height=20, absolute_coords=True),
         )
         img.dump(ann)
         img.image_ann_to_image(annotation_id=ann.annotation_id, crop_image=True)
@@ -175,16 +170,15 @@ class TestImageSerialization:
         # Check that annotation image is removed
         assert result["annotations"][0]["image"] is None
 
-
     @staticmethod
     def test_roundtrip_with_multiple_annotations(white_image: WhiteImage):
         """Multiple annotations are preserved in roundtrip"""
         img1 = Image(file_name=white_image.file_name)
 
-        for i in range(1,3):
+        for i in range(1, 3):
             ann = ImageAnnotation(
                 category_name=f"test_cat_{i}",
-                bounding_box=BoundingBox(ulx=i*10, uly=i*10, width=20, height=20, absolute_coords=True)
+                bounding_box=BoundingBox(ulx=i * 10, uly=i * 10, width=20, height=20, absolute_coords=True),
             )
             img1.dump(ann)
 

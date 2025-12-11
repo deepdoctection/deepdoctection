@@ -22,7 +22,6 @@ Testing module datasets.instances.layouttest
 from pathlib import Path
 
 import shared_test_utils as stu
-
 from dd_datasets import LayoutTest
 
 

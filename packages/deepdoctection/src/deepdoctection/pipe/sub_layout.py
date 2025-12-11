@@ -29,10 +29,11 @@ import numpy as np
 from dd_core.datapoint.annotation import ImageAnnotation
 from dd_core.datapoint.box import crop_box_from_image
 from dd_core.datapoint.image import Image, MetaAnnotation
-from ..extern.base import DetectionResult, ObjectDetector, PdfMiner
 from dd_core.utils.object_types import ObjectTypes, Relationships, TypeOrStr, get_type
 from dd_core.utils.transform import PadTransform
 from dd_core.utils.types import PixelValues
+
+from ..extern.base import DetectionResult, ObjectDetector, PdfMiner
 from .base import PipelineComponent
 from .registry import pipeline_component_registry
 

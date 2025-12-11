@@ -21,17 +21,15 @@ Testing module datasets.instances.publaynet
 
 
 from pathlib import Path
+
 import numpy as np
 import pytest
 
 import shared_test_utils as stu
-
 from dd_datasets import Publaynet
 
 
-def test_dataset_publaynet_returns_image(
-    monkeypatch: pytest.MonkeyPatch, dataset_test_base_dir: str
-) -> None:
+def test_dataset_publaynet_returns_image(monkeypatch: pytest.MonkeyPatch, dataset_test_base_dir: str) -> None:
     publaynet = Publaynet()
     publaynet.dataflow.get_workdir = lambda: Path(dataset_test_base_dir) / publaynet.dataflow.location
     publaynet.dataflow.annotation_files = {"val": "publaynet.json"}
@@ -59,4 +57,3 @@ def test_dataset_publaynet_with_load_image_returns_image(
 
     assert len(df_list) == 6
     assert df_list[0].image is not None
-

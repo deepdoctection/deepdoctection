@@ -22,12 +22,12 @@ Module for matching detections according to various matching rules
 from typing import Any, Literal, Optional, Sequence, Union
 
 import numpy as np
+from lazy_imports import try_import
 from numpy.typing import NDArray
 
-from lazy_imports import try_import
-
 from ..datapoint.annotation import ImageAnnotation
-from ..datapoint.box import iou, ioa as np_ioa
+from ..datapoint.box import ioa as np_ioa
+from ..datapoint.box import iou
 from ..datapoint.image import Image
 from ..utils.object_types import TypeOrStr
 

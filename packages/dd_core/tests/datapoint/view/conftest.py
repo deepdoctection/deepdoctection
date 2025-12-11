@@ -20,6 +20,7 @@ Fixtures for view module testing
 """
 
 from pathlib import Path
+
 from pytest import fixture
 
 from dd_core.datapoint.view import Page

@@ -16,7 +16,7 @@
 
 from math import isclose
 
-from dd_core.mapper.prodigystruct import prodigy_to_image, image_to_prodigy
+from dd_core.mapper.prodigystruct import image_to_prodigy, prodigy_to_image
 from dd_core.utils.object_types import get_type
 
 
@@ -44,7 +44,6 @@ def test_prodigy_to_image_basic(prodigy_datapoint):
     assert isclose(bbox.lry, 29.0, rel_tol=1e-9)
 
 
-
 def test_prodigy_to_image_accept_only_filters(prodigy_datapoint):
     """
     When accept_only_answer=True and fixture has answer 'reject', mapper returns None.
@@ -52,7 +51,6 @@ def test_prodigy_to_image_accept_only_filters(prodigy_datapoint):
     categories = {get_type("table"): 1, get_type("title"): 2}
     image = prodigy_to_image(categories, True, False, accept_only_answer=True)(prodigy_datapoint)
     assert image is None
-
 
 
 def test_image_to_prodigy_roundtrip(prodigy_datapoint):
@@ -67,7 +65,6 @@ def test_image_to_prodigy_roundtrip(prodigy_datapoint):
     assert output["text"] == prodigy_datapoint["text"]
     assert output["meta"]["file_name"] == image.file_name
     assert len(output["spans"]) == len(prodigy_datapoint["spans"])
-
 
 
 def test_image_to_prodigy_points_and_labels(prodigy_datapoint):

@@ -16,25 +16,23 @@
 # limitations under the License.
 
 
-import numpy as np
-import pytest
 from typing import Any, Dict, List, Optional
 
-from dd_core.mapper.xfundstruct import xfund_to_image
+import numpy as np
+import pytest
+
 from dd_core.datapoint import Image
+from dd_core.mapper.xfundstruct import xfund_to_image
 from dd_core.utils.object_types import (
-    LayoutType,
-    WordType,
     BioTag,
+    LayoutType,
     TokenClasses,
+    WordType,
     token_class_tag_to_token_class_with_tag,
 )
 
 
-
-def test_xfund_to_image_load_image_fake_score(
-    monkeypatch: pytest.MonkeyPatch, xfund_datapoint: Dict[str, Any]
-) -> None:
+def test_xfund_to_image_load_image_fake_score(monkeypatch: pytest.MonkeyPatch, xfund_datapoint: Dict[str, Any]) -> None:
     """Map XFUND with image loading and fake scores; validate word-level annotations."""
 
     CATEGORIES_DICT_NAME_AS_KEY: Dict[LayoutType, int] = {LayoutType.TEXT: 1, LayoutType.WORD: 2}
@@ -106,10 +104,5 @@ def test_xfund_to_image_load_image_fake_score(
 
     for exp in expected:
         assert any(
-            o[0] == exp[0]
-            and o[1] == exp[1]
-            and o[2] == exp[2]
-            and o[3] == exp[3]
-            and o[4] == exp[4]
-            for o in observed
+            o[0] == exp[0] and o[1] == exp[1] and o[2] == exp[2] and o[3] == exp[3] and o[4] == exp[4] for o in observed
         ), f"Expected annotation {exp} not found. Got {observed}"

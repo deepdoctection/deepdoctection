@@ -21,7 +21,6 @@ Methods and classes that incorporate filesystem operations as well as file check
 
 from __future__ import annotations
 
-import errno
 import json
 import os
 from base64 import b64encode

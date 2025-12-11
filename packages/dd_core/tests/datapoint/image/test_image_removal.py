@@ -35,7 +35,7 @@ class TestImageRemoval:
         img = Image(file_name=white_image.file_name)
         ann = ImageAnnotation(
             category_name="test_cat_1",
-            bounding_box=BoundingBox(ulx=10, uly=10, width=20, height=20, absolute_coords=True)
+            bounding_box=BoundingBox(ulx=10, uly=10, width=20, height=20, absolute_coords=True),
         )
         img.dump(ann)
 
@@ -50,11 +50,11 @@ class TestImageRemoval:
         img = Image(file_name=white_image.file_name)
         ann1 = ImageAnnotation(
             category_name="test_cat_1",
-            bounding_box=BoundingBox(ulx=10, uly=10, width=20, height=20, absolute_coords=True)
+            bounding_box=BoundingBox(ulx=10, uly=10, width=20, height=20, absolute_coords=True),
         )
         ann2 = ImageAnnotation(
             category_name="test_cat_2",
-            bounding_box=BoundingBox(ulx=30, uly=30, width=20, height=20, absolute_coords=True)
+            bounding_box=BoundingBox(ulx=30, uly=30, width=20, height=20, absolute_coords=True),
         )
         img.dump(ann1)
         img.dump(ann2)
@@ -70,12 +70,12 @@ class TestImageRemoval:
         ann1 = ImageAnnotation(
             category_name="test_cat_1",
             bounding_box=BoundingBox(ulx=10, uly=10, width=20, height=20, absolute_coords=True),
-            service_id="service_a"
+            service_id="service_a",
         )
         ann2 = ImageAnnotation(
             category_name="test_cat_2",
             bounding_box=BoundingBox(ulx=30, uly=30, width=20, height=20, absolute_coords=True),
-            service_id="service_b"
+            service_id="service_b",
         )
         img.dump(ann1)
         img.dump(ann2)
@@ -93,17 +93,17 @@ class TestImageRemoval:
         ann1 = ImageAnnotation(
             category_name="test_cat_1",
             bounding_box=BoundingBox(ulx=10, uly=10, width=20, height=20, absolute_coords=True),
-            service_id="service_a"
+            service_id="service_a",
         )
         ann2 = ImageAnnotation(
             category_name="test_cat_2",
             bounding_box=BoundingBox(ulx=30, uly=30, width=20, height=20, absolute_coords=True),
-            service_id="service_b"
+            service_id="service_b",
         )
         ann3 = ImageAnnotation(
             category_name="test_cat_3",
             bounding_box=BoundingBox(ulx=50, uly=50, width=20, height=20, absolute_coords=True),
-            service_id="service_c"
+            service_id="service_c",
         )
         img.dump(ann1)
         img.dump(ann2)
@@ -121,7 +121,7 @@ class TestImageRemoval:
         img = Image(file_name=white_image.file_name)
         ann = ImageAnnotation(
             category_name="test_cat_1",
-            bounding_box=BoundingBox(ulx=10, uly=10, width=20, height=20, absolute_coords=True)
+            bounding_box=BoundingBox(ulx=10, uly=10, width=20, height=20, absolute_coords=True),
         )
         img.dump(ann)
         assert ann.annotation_id in img._annotation_ids
@@ -136,15 +136,15 @@ class TestImageRemoval:
         img = Image(file_name=white_image.file_name)
         ann1 = ImageAnnotation(
             category_name="test_cat_1",
-            bounding_box=BoundingBox(ulx=10, uly=10, width=20, height=20, absolute_coords=True)
+            bounding_box=BoundingBox(ulx=10, uly=10, width=20, height=20, absolute_coords=True),
         )
         ann2 = ImageAnnotation(
             category_name="test_cat_2",
-            bounding_box=BoundingBox(ulx=30, uly=30, width=20, height=20, absolute_coords=True)
+            bounding_box=BoundingBox(ulx=30, uly=30, width=20, height=20, absolute_coords=True),
         )
         ann3 = ImageAnnotation(
             category_name="test_cat_3",
-            bounding_box=BoundingBox(ulx=50, uly=50, width=20, height=20, absolute_coords=True)
+            bounding_box=BoundingBox(ulx=50, uly=50, width=20, height=20, absolute_coords=True),
         )
         img.dump(ann1)
         img.dump(ann2)
@@ -165,17 +165,17 @@ class TestImageRemoval:
         ann1 = ImageAnnotation(
             category_name="test_cat_1",
             bounding_box=BoundingBox(ulx=10, uly=10, width=20, height=20, absolute_coords=True),
-            service_id="service_a"
+            service_id="service_a",
         )
         ann2 = ImageAnnotation(
             category_name="test_cat_2",
             bounding_box=BoundingBox(ulx=30, uly=30, width=20, height=20, absolute_coords=True),
-            service_id="service_a"
+            service_id="service_a",
         )
         ann3 = ImageAnnotation(
             category_name="test_cat_3",
             bounding_box=BoundingBox(ulx=50, uly=50, width=20, height=20, absolute_coords=True),
-            service_id="service_b"
+            service_id="service_b",
         )
         img.dump(ann1)
         img.dump(ann2)
@@ -194,7 +194,7 @@ class TestImageRemoval:
         img = Image(file_name=white_image.file_name)
         ann = ImageAnnotation(
             category_name="test_cat_1",
-            bounding_box=BoundingBox(ulx=10, uly=10, width=20, height=20, absolute_coords=True)
+            bounding_box=BoundingBox(ulx=10, uly=10, width=20, height=20, absolute_coords=True),
         )
         img.dump(ann)
 
@@ -202,4 +202,3 @@ class TestImageRemoval:
 
         assert ann.annotation_id in maps
         assert len(maps[ann.annotation_id]) > 0
-

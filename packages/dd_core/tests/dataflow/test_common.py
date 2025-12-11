@@ -22,7 +22,7 @@ Testing the module dataflow.common
 from typing import Any, Dict
 
 import shared_test_utils as stu
-
+from dd_core.dataflow import DataFromList
 from dd_core.dataflow.common import (
     BatchData,
     ConcatData,
@@ -33,7 +33,6 @@ from dd_core.dataflow.common import (
     RepeatedData,
     TestDataSpeed,
 )
-from dd_core.dataflow import DataFromList
 
 
 def test_test_data_speed(simple_list_dataflow: DataFromList) -> None:
@@ -77,6 +76,7 @@ def test_map_data_adds_key_value(simple_dict_dataflow: DataFromList) -> None:
     """
     Test MapData applies a simple function that adds a key-value pair
     """
+
     # Arrange
     def add_new_key(dp: Dict[str, Any]) -> Dict[str, Any]:
         dp["new_key"] = "new_value"
@@ -99,6 +99,7 @@ def test_map_data_component_with_dict_index(simple_dict_dataflow: DataFromList) 
     """
     Test MapDataComponent modifies a specific component of dict datapoints using string index
     """
+
     # Arrange
     def multiply_by_10(val: int) -> int:
         return val * 10
@@ -120,6 +121,7 @@ def test_map_data_component_with_list_index(simple_list_dataflow: DataFromList) 
     """
     Test MapDataComponent modifies a specific component of list datapoints using int index
     """
+
     # Arrange
     def uppercase(val: str) -> str:
         return val.upper()
@@ -170,9 +172,7 @@ def test_repeated_data_infinite(simple_list_dataflow: DataFromList) -> None:
     assert output[6] == ["a", "b"]  # After cycling twice
 
 
-def test_concat_data_combines_dataflows(
-    simple_list_dataflow: DataFromList, simple_dict_dataflow: DataFromList
-) -> None:
+def test_concat_data_combines_dataflows(simple_list_dataflow: DataFromList, simple_dict_dataflow: DataFromList) -> None:
     """
     Test ConcatData concatenates multiple dataflows sequentially
     """
@@ -302,4 +302,3 @@ def test_batch_data_dict_elements() -> None:
     assert len(output) == 2
     assert output[0] == [{"id": 1}, {"id": 2}]
     assert output[1] == [{"id": 3}, {"id": 4}]
-

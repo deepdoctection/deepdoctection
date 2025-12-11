@@ -17,23 +17,24 @@
 
 from __future__ import annotations
 
-from typing import Any, List, Tuple, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, List, Tuple
 from unittest.mock import MagicMock
 
 from dd_core.dataflow import DataFlow
+from dd_core.utils.types import JsonDict
 from deepdoctection.eval import metric_registry
 from deepdoctection.eval.base import MetricBase
-from dd_core.utils.types import JsonDict
 
 if TYPE_CHECKING:
     from dd_datasets.info import DatasetCategories
+
 
 def test_metric_registry_has_all_build_in_metric_registered() -> None:
     """
     test metric registry has all metrics registered
     """
 
-    assert len(metric_registry.get_all()) == 9
+    assert len(metric_registry.get_all()) == 10
 
 
 def test_metric_registry_registered_new_metric() -> None:

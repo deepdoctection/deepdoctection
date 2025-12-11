@@ -23,16 +23,13 @@ from pathlib import Path
 
 import pytest
 
+import shared_test_utils as stu
 from dd_core.utils.file_utils import lxml_available
 from dd_datasets import IIITar13K
 
-import shared_test_utils as stu
-
 
 @pytest.mark.skipif(not lxml_available(), reason="lxml not installed")
-def test_dataset_iiitar13k_returns_image(
-    monkeypatch: pytest.MonkeyPatch, dataset_test_base_dir: str
-) -> None:
+def test_dataset_iiitar13k_returns_image(monkeypatch: pytest.MonkeyPatch, dataset_test_base_dir: str) -> None:
     """
     test dataset iiitar13k returns image
     """

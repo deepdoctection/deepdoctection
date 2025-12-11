@@ -16,26 +16,27 @@
 # limitations under the License.
 
 import json
-import numpy as np
-
 from pathlib import Path
+
+import numpy as np
 from pytest import fixture
 
 import shared_test_utils as stu
-
+from dd_core.dataflow.custom_serialize import SerializerCoco
 from dd_core.datapoint.annotation import ImageAnnotation
 from dd_core.datapoint.image import Image
-from dd_core.dataflow.custom_serialize import SerializerCoco
 from dd_core.mapper.cats import filter_cat
 from dd_core.mapper.xfundstruct import xfund_to_image
 
-from .data import XFUND_RAW_LAYOUTLM_FEATURES, XFUND_LAYOUTLM_FEATURES, PRODIGY_DATAPOINT, IIITAR13K_DATAPOINT
 from ..conftest import XFundSample
+from .data import IIITAR13K_DATAPOINT, PRODIGY_DATAPOINT, XFUND_LAYOUTLM_FEATURES, XFUND_RAW_LAYOUTLM_FEATURES
+
 
 @fixture(name="image")
 def fixture_page(page_json_path: Path) -> Image:
     """Provide a Page instance loaded from page_json fixture."""
     return Image.from_file(file_path=str(page_json_path))
+
 
 @fixture(name="image_with_layout_anns")
 def fixture_image_with_layout_anns(image: Image) -> Image:
@@ -81,35 +82,56 @@ def fixture_table_image(image: Image) -> Image:
 @fixture(name="coco_datapoint")
 def fixture_coco_datapoint() -> dict:
     """Provide a COCO datapoint dict loaded from coco_datapoint_json fixture."""
-    path =stu.asset_path("coco_like")
+    path = stu.asset_path("coco_like")
     df = SerializerCoco.load(path=path)
     df.reset_state()
     return next(iter(df))
+
 
 @fixture(name="xfund_datapoint")
 def fixture_xfund_datapoint() -> dict:
     xfund_dict = XFundSample().data
     return xfund_dict
 
+
 @fixture(name="xfund_image")
-def fixture_xfund_image(xfund_datapoint: dict) -> Image:
+def fixture_xfund_image(xfund_datapoint: dict, monkeypatch) -> Image:
+
+    def _fake_loader(_path: str):
+        return np.zeros((3508, 2480, 3), dtype=np.uint8)
+
+    # Patch the function used inside xfund_to_image
+    monkeypatch.setattr("dd_core.mapper.xfundstruct.load_image_from_file", _fake_loader)
+
     categories_dict = {"word": 1, "text": 2}
-    token_class_names_mapping= {
+    token_class_names_mapping = {
         "other": "other",
         "header": "header",
     }
-    ner_token_to_id_mapping= {"word": {"token_class": {"other": 1, "question": 2, "answer": 3, "header": 4},
-              "tag": {"I": 1, "O": 2, "B": 3},
-              "token_tag": {"B-answer": 1, "B-header": 2, "B-question": 3, "I-answer": 4, "I-header": 5,
-                            "I-question": 6, "O": 7}},
-     "text": {"token_class": {"other": 1, "question": 2, "answer": 3, "header": 4}}}
+    ner_token_to_id_mapping = {
+        "word": {
+            "token_class": {"other": 1, "question": 2, "answer": 3, "header": 4},
+            "tag": {"I": 1, "O": 2, "B": 3},
+            "token_tag": {
+                "B-answer": 1,
+                "B-header": 2,
+                "B-question": 3,
+                "I-answer": 4,
+                "I-header": 5,
+                "I-question": 6,
+                "O": 7,
+            },
+        },
+        "text": {"token_class": {"other": 1, "question": 2, "answer": 3, "header": 4}},
+    }
 
-    img: Image = xfund_to_image(load_image=False,
-                                fake_score=False,
-                                categories_dict_name_as_key=categories_dict,
-                                token_class_names_mapping=token_class_names_mapping,
-                                ner_token_to_id_mapping=ner_token_to_id_mapping)(xfund_datapoint)
-    img.image= np.zeros((3508, 2480, 3), dtype=np.uint8)
+    img: Image = xfund_to_image(
+        load_image=False,
+        fake_score=False,
+        categories_dict_name_as_key=categories_dict,
+        token_class_names_mapping=token_class_names_mapping,
+        ner_token_to_id_mapping=ner_token_to_id_mapping,
+    )(xfund_datapoint)
     return img
 
 
@@ -120,7 +142,7 @@ def fixture_xfund_raw_layoutlm_features() -> dict:
 
 @fixture(name="layoutlm_features")
 def fixture_layoutlm_features() -> dict:
-    return XFUND_LAYOUTLM_FEATURES
+    return XFUND_LAYOUTLM_FEATURES[0]
 
 
 @fixture(name="prodigy_datapoint")
@@ -135,9 +157,11 @@ def fixture_pubtabnet_datapoint() -> dict:
         pubtabnet_dict = json.load(f)
     return pubtabnet_dict
 
+
 @fixture(name="iiitar13k_datapoint")
 def fixture_iiitar13k_datapoint() -> dict:
     return IIITAR13K_DATAPOINT
+
 
 @fixture(name="dp_image")
 def fixture_dp_image() -> Image:
@@ -170,5 +194,3 @@ def fixture_annotations_dict(dp_image: Image):
         return dp_image
 
     return make_annotation
-
-

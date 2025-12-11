@@ -36,13 +36,11 @@ import os
 from pathlib import Path
 from typing import Mapping, Sequence, Union
 
-from dd_core.dataflow import DataFlow, MapData
-from dd_core.dataflow import FlattenData
+from dd_core.dataflow import DataFlow, FlattenData, MapData
 from dd_core.dataflow.custom_serialize import SerializerJsonlines
 from dd_core.datapoint.image import Image
+from dd_core.mapper import curry, image_ann_to_image, maybe_ann_to_sub_image
 from dd_core.mapper.cats import cat_to_sub_cat, filter_cat
-from dd_core.mapper import curry
-from dd_core.mapper import image_ann_to_image, maybe_ann_to_sub_image
 from dd_core.mapper.pubstruct import pub_to_image
 from dd_core.utils.logger import LoggingRecord, logger
 from dd_core.utils.object_types import CellType, DatasetType, LayoutType, ObjectTypes, TableType

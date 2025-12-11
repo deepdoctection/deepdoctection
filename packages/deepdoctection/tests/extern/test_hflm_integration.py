@@ -16,14 +16,15 @@
 # limitations under the License.
 
 import os
+
 import pytest
 
 from dd_core.utils.file_utils import pytorch_available, transformers_available
 from dd_core.utils.types import PathLikeOrStr
 from deepdoctection.extern.hflm import (
+    HFLmLanguageDetector,
     HFLmSequenceClassifier,
     HFLmTokenClassifier,
-    HFLmLanguageDetector,
 )
 
 if pytorch_available() and transformers_available():
@@ -45,10 +46,12 @@ def _dummy_tokenizer():
     class DummyTokenizer:
         def __call__(self, text, return_tensors="pt", padding=True, truncation=True, max_length=512):
             import torch
+
             return {
                 "input_ids": torch.tensor([[5, 6, 7]], dtype=torch.long),
                 "attention_mask": torch.tensor([[1, 1, 1]], dtype=torch.long),
             }
+
     return DummyTokenizer()
 
 
@@ -60,7 +63,7 @@ def test_hflm_sequence_slow_build_and_predict(tmp_path: PathLikeOrStr, monkeypat
     model.save_pretrained(tmp_path)
     cfg.save_pretrained(tmp_path)
 
-    categories = {1: "invoice", 2: "report"}
+    categories = {1: "invoice", 2: "financial_report"}
     clf = HFLmSequenceClassifier(
         path_config_json=os.fspath(tmp_path),
         path_weights=os.fspath(tmp_path),
@@ -87,7 +90,7 @@ def test_hflm_token_slow_build_and_predict(tmp_path: PathLikeOrStr, monkeypatch:
     model.save_pretrained(tmp_path)
     cfg.save_pretrained(tmp_path)
 
-    categories = {1: "B-head", 2: "I-head", 3: "O"}
+    categories = {1: "B-header", 2: "I-header", 3: "O"}
     clf = HFLmTokenClassifier(
         path_config_json=os.fspath(tmp_path),
         path_weights=os.fspath(tmp_path),
@@ -126,7 +129,7 @@ def test_hflm_language_slow_build_and_predict(tmp_path: PathLikeOrStr, monkeypat
         raising=True,
     )
 
-    categories = {1: "en", 2: "de", 3: "fr"}
+    categories = {1: "eng", 2: "deu", 3: "fre"}
     det = HFLmLanguageDetector(
         path_config_json=os.fspath(tmp_path),
         path_weights=os.fspath(tmp_path),

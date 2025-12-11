@@ -34,11 +34,19 @@ from typing import Mapping, Sequence, Union
 from dd_core.dataflow import DataFlow, MapData, MapDataComponent, SerializerCoco
 from dd_core.datapoint.annotation import CategoryAnnotation
 from dd_core.datapoint.image import Image
+from dd_core.mapper import curry
 from dd_core.mapper.cats import add_summary, cat_to_sub_cat, filter_cat, filter_summary
 from dd_core.mapper.cocostruct import coco_to_image
-from dd_core.mapper import curry
 from dd_core.utils.fs import load_image_from_file
-from dd_core.utils.object_types import DatasetType, DocumentType, LayoutType, ObjectTypes, PageType, SummaryType, TypeOrStr
+from dd_core.utils.object_types import (
+    DatasetType,
+    DocumentType,
+    LayoutType,
+    ObjectTypes,
+    PageType,
+    SummaryType,
+    TypeOrStr,
+)
 from dd_core.utils.types import CocoDatapointDict
 
 from ..base import DatasetBase

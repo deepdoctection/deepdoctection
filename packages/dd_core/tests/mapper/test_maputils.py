@@ -15,18 +15,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest
-import numpy as np
-from typing import Union
 from types import SimpleNamespace
+from typing import Union
+
+import numpy as np
+import pytest
 
 from dd_core.mapper import maputils
 from dd_core.mapper.maputils import (
-    MappingContextManager,
     DefaultMapper,
+    LabelSummarizer,
+    MappingContextManager,
     curry,
     maybe_get_fake_score,
-    LabelSummarizer,
 )
 from dd_core.utils.object_types import ObjectTypes
 
@@ -115,6 +116,7 @@ def test_label_summarizer_dump_get_summary_and_print(monkeypatch):
     # should not raise and should call logger.info with a LoggingRecord containing the table text
     summarizer.print_summary_histogram(dd_logic=True)
     assert "Ground-Truth category distribution" in str(captured["arg"])
+
 
 class TestLabelSummarizer:
     """
