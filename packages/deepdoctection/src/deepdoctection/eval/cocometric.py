@@ -21,16 +21,16 @@ Metrics that require the `COCOeval` class.
 from __future__ import annotations
 
 from copy import copy
-from typing import Optional, Union, TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional, Union
 
 import numpy as np
 from lazy_imports import try_import
 
 from dd_core.dataflow import DataFlow
-from dd_core.mapper import re_assign_cat_ids
-from dd_core.mapper import image_to_coco
+from dd_core.mapper import image_to_coco, re_assign_cat_ids
 from dd_core.utils.file_utils import Requirement, cocotools_available, get_cocotools_requirement
 from dd_core.utils.types import JsonDict, MetricResults
+
 from .base import MetricBase
 from .registry import metric_registry
 

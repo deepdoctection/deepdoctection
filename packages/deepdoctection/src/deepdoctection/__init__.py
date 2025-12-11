@@ -11,8 +11,8 @@ from typing import TYPE_CHECKING
 
 # Import from dd_core (utils and datapoint are now external dependencies)
 from dd_core.utils.env_info import collect_env_info
-from dd_core.utils.logger import LoggingRecord, logger
 from dd_core.utils.file_utils import _LazyModule, pytorch_available
+from dd_core.utils.logger import LoggingRecord, logger
 
 __version__ = "1.0"
 
@@ -150,4 +150,3 @@ else:
         module_spec=__spec__,
         extra_objects={"__version__": __version__},
     )
-

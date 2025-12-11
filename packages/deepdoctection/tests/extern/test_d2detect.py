@@ -18,15 +18,15 @@
 
 from __future__ import annotations
 
-from typing import Dict, List
 from types import SimpleNamespace
+from typing import Dict, List
+from unittest.mock import MagicMock
 
 import numpy as np
 import pytest
-from unittest.mock import MagicMock
 
-from dd_core.utils.file_utils import pytorch_available, detectron2_available
-from dd_core.utils.object_types import ObjectTypes, LayoutType
+from dd_core.utils.file_utils import detectron2_available, pytorch_available
+from dd_core.utils.object_types import LayoutType, ObjectTypes
 
 REQUIRES_PT_AND_D2 = pytest.mark.skipif(
     not (pytorch_available() and detectron2_available()),
@@ -98,7 +98,6 @@ def test_d2_frcnn_predict_basic_mapping(monkeypatch: pytest.MonkeyPatch) -> None
 
     assert len(results) == 2
 
-
     assert results[0].class_id == 1
     assert results[1].class_id == 2
     assert results[0].class_name == "figure"
@@ -148,4 +147,3 @@ def test_d2_frcnn_tracing_predict_basic_mapping(monkeypatch: pytest.MonkeyPatch)
     assert results[1].class_id == 2
     assert results[0].class_name == "figure"
     assert results[1].class_name == "list"
-

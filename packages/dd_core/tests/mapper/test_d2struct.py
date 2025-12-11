@@ -15,13 +15,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import numpy as np
 import pytest
 
-import numpy as np
-
-from dd_core.utils.file_utils import detectron2_available
-from dd_core.mapper.d2struct import image_to_d2_frcnn_training
 from dd_core.datapoint.image import Image
+from dd_core.mapper.d2struct import image_to_d2_frcnn_training
+from dd_core.utils.file_utils import detectron2_available
 
 
 @pytest.mark.skipif(not detectron2_available(), reason="Detectron2 is not installed")
@@ -45,4 +44,4 @@ def test_image_to_d2_frcnn_training_filtered_text(image_with_layout_anns: Image)
     output = image_to_d2_frcnn_training(category_names=["text"])(image_with_layout_anns)
     assert output is not None
     assert "annotations" in output
-    assert len(output["annotations"]) == 14
+    assert len(output["annotations"]) == 8

@@ -32,7 +32,7 @@ class TestPageMethods:
             layout = layouts[0]
             if layout.reading_order is not None:
                 context = page.get_layout_context(layout.annotation_id, context_size=1)
-                assert {context.reading_order for context in context} == {1,2}
+                assert {context.reading_order for context in context} == {1, 2}
 
     def test_get_layout_context_includes_target(self, page: Page):
         """get_layout_context() includes the target annotation"""

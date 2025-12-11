@@ -60,7 +60,6 @@ class TestCategoryAnnotationBasics:
         cat3 = CategoryAnnotation(category_id="")
         assert cat3.category_id == -1
 
-
     def test_as_dict(self):
         """Test converting annotation to dict"""
         cat = CategoryAnnotation(category_name="test_cat_1", category_id=1, score=0.9)
@@ -142,12 +141,7 @@ class TestSubCategories:
         data = {
             "category_name": "test_cat_1",
             "category_id": 1,
-            "sub_categories": {
-                "sub_cat_1": {
-                    "category_name": "test_cat_2",
-                    "category_id": 2
-                }
-            }
+            "sub_categories": {"sub_cat_1": {"category_name": "test_cat_2", "category_id": 2}},
         }
         cat = CategoryAnnotation(**data)
         assert get_type("sub_cat_1") in cat.sub_categories
@@ -194,7 +188,6 @@ class TestRelationships:
         relationships = cat.get_relationship(get_type("relationship_1"))
         assert len(relationships) == 1
 
-
     def test_remove_relationship_specific_id(self):
         """Test removing specific relationship id"""
         cat = CategoryAnnotation(category_name="test_cat_1")
@@ -222,12 +215,7 @@ class TestRelationships:
         """Test creating annotation with relationships from dict"""
         uuid1 = "c822f8c3-1148-30c4-90eb-cb4896b1ebe5"
         uuid2 = "d822f8c3-1148-30c4-90eb-cb4896b1ebe6"
-        data = {
-            "category_name": "test_cat_1",
-            "relationships": {
-                "relationship_1": [uuid1, uuid2]
-            }
-        }
+        data = {"category_name": "test_cat_1", "relationships": {"relationship_1": [uuid1, uuid2]}}
         cat = CategoryAnnotation(**data)
         relationships = cat.get_relationship(get_type("relationship_1"))
         assert uuid1 in relationships
@@ -236,12 +224,7 @@ class TestRelationships:
     def test_relationships_from_dict_deduplication(self):
         """Test that duplicate relationship ids are deduplicated from dict"""
         uuid = "c822f8c3-1148-30c4-90eb-cb4896b1ebe5"
-        data = {
-            "category_name": "test_cat_1",
-            "relationships": {
-                "relationship_1": [uuid, uuid]
-            }
-        }
+        data = {"category_name": "test_cat_1", "relationships": {"relationship_1": [uuid, uuid]}}
         cat = CategoryAnnotation(**data)
         relationships = cat.get_relationship(get_type("relationship_1"))
         assert len(relationships) == 1
@@ -253,10 +236,7 @@ class TestAnnotationEdgeCases:
     def test_service_and_model_id_fields(self):
         """Test that service_id, model_id, session_id fields work correctly"""
         cat = CategoryAnnotation(
-            category_name="test_cat_1",
-            service_id="text_detector",
-            model_id="model_v1",
-            session_id="session_123"
+            category_name="test_cat_1", service_id="text_detector", model_id="model_v1", session_id="session_123"
         )
         assert cat.service_id == "text_detector"
         assert cat.model_id == "model_v1"

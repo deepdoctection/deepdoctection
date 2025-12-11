@@ -18,8 +18,8 @@ Testing Table view class and its properties
 """
 from dd_core.datapoint.view import Page
 
-class TestTableViews:
 
+class TestTableViews:
     """Test Table class functionality"""
 
     def test_tables_have_cells_property(self, page: Page):
@@ -69,7 +69,6 @@ class TestTableViews:
         for table in tables:
             headers = table.column_header_cells
             assert isinstance(headers, list)
-
 
     def test_table_html_returns_string(self, page: Page):
         """Table.html returns a string"""
@@ -121,14 +120,13 @@ class TestTableViews:
             words = table.words
             assert isinstance(words, list)
 
-
     def test_table_kv_header_rows_returns_mapping(self, page: Page):
         """Table.kv_header_rows() returns a mapping"""
 
         tables = page.tables
         for table in tables:
             kv_map = table.kv_header_rows(1)
-            assert hasattr(kv_map, '__getitem__')
+            assert hasattr(kv_map, "__getitem__")
 
     def test_table_has_number_of_rows(self, page: Page):
         """Table has number_of_rows attribute"""

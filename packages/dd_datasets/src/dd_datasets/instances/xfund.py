@@ -34,10 +34,17 @@ import os
 from typing import Mapping, Sequence, Union
 
 from dd_core.dataflow import CustomDataFromList, DataFlow, MapData
-
 from dd_core.mapper.cats import cat_to_sub_cat, filter_cat
 from dd_core.mapper.xfundstruct import xfund_to_image
-from dd_core.utils.object_types import BioTag, DatasetType, LayoutType, ObjectTypes, TokenClasses, TokenClassWithTag, WordType
+from dd_core.utils.object_types import (
+    BioTag,
+    DatasetType,
+    LayoutType,
+    ObjectTypes,
+    TokenClasses,
+    TokenClassWithTag,
+    WordType,
+)
 from dd_core.utils.types import FunsdDict
 
 from ..base import _BuiltInDataset

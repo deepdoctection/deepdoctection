@@ -29,7 +29,6 @@ from numpy import uint8
 from dd_core.utils.viz import viz_handler
 
 
-
 class TestVizHandlerReadWrite:
     """Test VizPackageHandler read/write operations"""
 
@@ -134,4 +133,3 @@ class TestVizHandlerRotateImage:
         """Test rotating image"""
         result = viz_handler.rotate_image(np_image, angle)
         assert isinstance(result, np.ndarray)
-

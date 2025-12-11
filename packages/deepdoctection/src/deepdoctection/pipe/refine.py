@@ -32,11 +32,12 @@ from lazy_imports import try_import
 from dd_core.datapoint.annotation import ImageAnnotation
 from dd_core.datapoint.box import merge_boxes
 from dd_core.datapoint.image import Image, MetaAnnotation
-from ..extern.base import DetectionResult
 from dd_core.mapper.maputils import MappingContextManager
 from dd_core.utils.error import ImageError
 from dd_core.utils.file_utils import networkx_available
 from dd_core.utils.object_types import CellType, LayoutType, ObjectTypes, Relationships, TableType, get_type
+
+from ..extern.base import DetectionResult
 from .base import PipelineComponent
 from .registry import pipeline_component_registry
 
@@ -47,7 +48,9 @@ with try_import() as import_guard:
 __all__ = ["TableSegmentationRefinementService", "generate_html_string"]
 
 
-def tiles_to_cells(dp: Image, table: ImageAnnotation, cell_names: list[ObjectTypes]) -> list[tuple[tuple[int, int], str]]:
+def tiles_to_cells(
+    dp: Image, table: ImageAnnotation, cell_names: list[ObjectTypes]
+) -> list[tuple[tuple[int, int], str]]:
     """
     Creates a table parquet by dividing a table into a tile parquet with the number of rows x number of columns tiles.
     Each tile is assigned a list of cell ids that are occupied by the cell. No cells but one or more cells can be
@@ -63,16 +66,16 @@ def tiles_to_cells(dp: Image, table: ImageAnnotation, cell_names: list[ObjectTyp
     """
 
     cell_ann_ids = table.get_relationship(Relationships.CHILD)
-    cells = dp.get_annotation(
-        category_names=cell_names, annotation_ids=cell_ann_ids
-    )
+    cells = dp.get_annotation(category_names=cell_names, annotation_ids=cell_ann_ids)
     tile_to_cells = []
 
     for cell in cells:
-        if (CellType.ROW_NUMBER in cell.sub_categories and
-                CellType.COLUMN_NUMBER in cell.sub_categories and
-                CellType.ROW_SPAN in cell.sub_categories and
-                CellType.COLUMN_SPAN in cell.sub_categories):
+        if (
+            CellType.ROW_NUMBER in cell.sub_categories
+            and CellType.COLUMN_NUMBER in cell.sub_categories
+            and CellType.ROW_SPAN in cell.sub_categories
+            and CellType.COLUMN_SPAN in cell.sub_categories
+        ):
             row_number = cell.get_sub_category(CellType.ROW_NUMBER).category_id
             col_number = cell.get_sub_category(CellType.COLUMN_NUMBER).category_id
             rs = cell.get_sub_category(CellType.ROW_SPAN).category_id
@@ -86,7 +89,7 @@ def tiles_to_cells(dp: Image, table: ImageAnnotation, cell_names: list[ObjectTyp
 
 
 def connected_component_tiles(
-    tile_to_cell_list: list[tuple[tuple[int, int], str]]
+    tile_to_cell_list: list[tuple[tuple[int, int], str]],
 ) -> tuple[list[set[tuple[int, int]]], DefaultDict[tuple[int, int], list[str]]]:
     """
     Assigns bricks to their cell occupancy, inducing a graph with bricks as nodes and cell edges. Cells that lie on
@@ -478,7 +481,7 @@ class TableSegmentationRefinementService(PipelineComponent):
                         box=merged_box.to_list(mode="xyxy"),
                         class_id=cells[0].category_id,
                         class_name=get_type(cells[0].category_name),
-                        absolute_coords=False
+                        absolute_coords=False,
                     )
                     new_cell_ann_id = self.dp_manager.set_image_annotation(det_result, table.annotation_id)
                     if new_cell_ann_id is not None:

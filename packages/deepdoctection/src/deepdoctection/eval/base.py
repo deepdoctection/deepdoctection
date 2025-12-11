@@ -22,16 +22,16 @@ Base classes for evaluations and metrics
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Any, Callable, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Callable, Optional
 
 from dd_core.dataflow import DataFlow
-
 from dd_core.utils.error import DependencyError
 from dd_core.utils.file_utils import Requirement
 from dd_core.utils.types import MetricResults
 
 if TYPE_CHECKING:
     from dd_datasets.info import DatasetCategories
+
 
 class MetricBase(ABC):
     """

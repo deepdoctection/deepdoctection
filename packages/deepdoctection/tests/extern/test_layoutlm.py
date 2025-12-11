@@ -2,9 +2,9 @@
 # File: test_hflayoutlm.py
 
 from typing import Any
+from unittest.mock import MagicMock
 
 import pytest
-from unittest.mock import MagicMock
 
 from dd_core.utils.file_utils import pytorch_available, transformers_available
 from deepdoctection.extern.base import SequenceClassResult, TokenClassResult
@@ -31,6 +31,7 @@ REQUIRES_PT_AND_TR = pytest.mark.skipif(
 def _mk_dummy_tokenizer() -> Any:
     class DummyTokenizer:
         pass
+
     return DummyTokenizer()
 
 
@@ -48,9 +49,11 @@ def test_layoutlm_sequence_predict_basic(monkeypatch: pytest.MonkeyPatch) -> Non
         MagicMock(return_value=MagicMock()),
         raising=True,
     )
+
     # Mock prediction helper
     def _fake_seq_predict(input_ids, attention_mask, token_type_ids, boxes, model, images=None):
         return SequenceClassResult(class_id=1, score=0.99)
+
     monkeypatch.setattr(
         "deepdoctection.extern.hflayoutlm.predict_sequence_classes_from_layoutlm",
         MagicMock(side_effect=_fake_seq_predict),
@@ -83,8 +86,10 @@ def test_layoutlm_v2_sequence_predict_basic(monkeypatch: pytest.MonkeyPatch) -> 
         MagicMock(return_value=MagicMock()),
         raising=True,
     )
+
     def _fake_seq_predict(input_ids, attention_mask, token_type_ids, boxes, model, images=None):
         return SequenceClassResult(class_id=1, score=0.95)
+
     monkeypatch.setattr(
         "deepdoctection.extern.hflayoutlm.predict_sequence_classes_from_layoutlm",
         MagicMock(side_effect=_fake_seq_predict),
@@ -118,8 +123,10 @@ def test_layoutlm_v3_sequence_predict_basic(monkeypatch: pytest.MonkeyPatch) -> 
         MagicMock(return_value=MagicMock()),
         raising=True,
     )
+
     def _fake_seq_predict(input_ids, attention_mask, token_type_ids, boxes, model, images=None):
         return SequenceClassResult(class_id=1, score=0.93)
+
     monkeypatch.setattr(
         "deepdoctection.extern.hflayoutlm.predict_sequence_classes_from_layoutlm",
         MagicMock(side_effect=_fake_seq_predict),
@@ -153,11 +160,13 @@ def test_layoutlm_token_predict_basic(monkeypatch: pytest.MonkeyPatch) -> None:
         MagicMock(return_value=MagicMock()),
         raising=True,
     )
+
     def _fake_tok_predict(uuids, input_ids, attention_mask, token_type_ids, boxes, tokens, model, images=None):
         return [
             TokenClassResult(uuid="a", token_id=101, class_id=2, token="X", score=0.9),  # -> id 3 -> "O"
             TokenClassResult(uuid="b", token_id=102, class_id=0, token="Y", score=0.8),  # -> id 1 -> "B-header"
         ]
+
     monkeypatch.setattr(
         "deepdoctection.extern.hflayoutlm.predict_token_classes_from_layoutlm",
         MagicMock(side_effect=_fake_tok_predict),
@@ -195,11 +204,13 @@ def test_layoutlm_v2_token_predict_basic(monkeypatch: pytest.MonkeyPatch) -> Non
         MagicMock(return_value=MagicMock()),
         raising=True,
     )
+
     def _fake_tok_predict(uuids, input_ids, attention_mask, token_type_ids, boxes, tokens, model, images=None):
         return [
             TokenClassResult(uuid="a", token_id=11, class_id=1, token="X", score=0.7),
             TokenClassResult(uuid="b", token_id=12, class_id=2, token="Y", score=0.6),
         ]
+
     monkeypatch.setattr(
         "deepdoctection.extern.hflayoutlm.predict_token_classes_from_layoutlm",
         MagicMock(side_effect=_fake_tok_predict),
@@ -237,12 +248,14 @@ def test_layoutlm_v3_token_predict_basic(monkeypatch: pytest.MonkeyPatch) -> Non
         MagicMock(return_value=MagicMock()),
         raising=True,
     )
+
     def _fake_tok_predict(uuids, input_ids, attention_mask, token_type_ids, boxes, tokens, model, images=None):
         return [
             TokenClassResult(uuid="u1", token_id=1, class_id=0, token="a", score=0.9),
             TokenClassResult(uuid="u2", token_id=2, class_id=2, token="b", score=0.8),
             TokenClassResult(uuid="u3", token_id=3, class_id=1, token="c", score=0.7),
         ]
+
     monkeypatch.setattr(
         "deepdoctection.extern.hflayoutlm.predict_token_classes_from_layoutlm",
         MagicMock(side_effect=_fake_tok_predict),
@@ -384,4 +397,3 @@ def test_token_validate_encodings_errors(monkeypatch: pytest.MonkeyPatch) -> Non
             attention_mask="not-a-tensor",
             token_type_ids="not-a-tensor",
         )
-

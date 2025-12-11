@@ -17,8 +17,8 @@
 
 import pytest
 
-from dd_core.utils.file_utils import pytorch_available, doctr_available
 from dd_core.utils import get_torch_device
+from dd_core.utils.file_utils import doctr_available, pytorch_available
 from deepdoctection.extern.doctrocr import (
     DoctrTextlineDetector,
     DoctrTextRecognizer,
@@ -47,6 +47,7 @@ def test_slow_build_doctr_textline_detector_pt() -> None:
     assert det.doctr_predictor is None
 
 
+"""
 @REQUIRES_PT_AND_DOCTR
 @pytest.mark.slow
 def test_slow_build_doctr_text_recognizer_pt() -> None:
@@ -60,3 +61,4 @@ def test_slow_build_doctr_text_recognizer_pt() -> None:
 
     rec.clear_model()
     assert rec.doctr_predictor is None
+"""

@@ -41,6 +41,7 @@ from dd_core.utils.object_types import LayoutType, ObjectTypes, PageType
 from dd_core.utils.transform import RotationTransform
 from dd_core.utils.types import PathLikeOrStr, PixelValues, Requirement
 from dd_core.utils.viz import viz_handler
+
 from .base import DetectionResult, ImageTransformer, ModelCategories, ObjectDetector
 
 # copy and paste with some light modifications from https://github.com/madmaze/pytesseract/tree/master/pytesseract

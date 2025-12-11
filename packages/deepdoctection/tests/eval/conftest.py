@@ -17,7 +17,7 @@
 
 from __future__ import annotations
 
-from typing import Mapping, Sequence, TYPE_CHECKING
+from typing import TYPE_CHECKING, Mapping, Sequence
 
 import pytest
 
@@ -30,7 +30,6 @@ except ImportError:
 
 if TYPE_CHECKING:
     from dd_datasets.info import DatasetCategories
-
 
 
 @pytest.fixture
@@ -50,6 +49,7 @@ def dataset_categories() -> DatasetCategories:
         },
     }
     return DatasetCategories(_categories, _sub_categories)
+
 
 @pytest.fixture
 def fixture_categories() -> dict[int, ObjectTypes]:

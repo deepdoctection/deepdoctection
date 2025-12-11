@@ -26,6 +26,12 @@ from typing import TYPE_CHECKING, Any, Literal, Mapping, Optional, Sequence, Uni
 
 from lazy_imports import try_import
 
+from dd_core.utils.env_info import SETTINGS
+from dd_core.utils.error import DependencyError
+from dd_core.utils.metacfg import AttrDict
+from dd_core.utils.object_types import CellType, LayoutType, ObjectTypes, Relationships
+from dd_core.utils.transform import PadTransform
+
 from ..extern.base import ImageTransformer, ObjectDetector, PdfMiner
 from ..extern.d2detect import D2FrcnnDetector, D2FrcnnTracingDetector
 from ..extern.doctrocr import DocTrRotationTransformer, DoctrTextlineDetector, DoctrTextRecognizer
@@ -64,11 +70,6 @@ from ..pipe.segment import PubtablesSegmentationService, TableSegmentationServic
 from ..pipe.sub_layout import DetectResultGenerator, SubImageLayoutService
 from ..pipe.text import TextExtractionService
 from ..pipe.transform import SimpleTransformService
-from dd_core.utils.error import DependencyError
-from dd_core.utils.env_info import SETTINGS
-from dd_core.utils.metacfg import AttrDict
-from dd_core.utils.object_types import CellType, LayoutType, ObjectTypes, Relationships
-from dd_core.utils.transform import PadTransform
 
 with try_import() as image_guard:
     from botocore.config import Config  # type: ignore
@@ -116,8 +117,9 @@ class ServiceFactory:
         if config.LIB is None:
             raise DependencyError("At least DD_USE_TORCH must be set.")
 
-        weights = getattr(config, mode).WEIGHTS if getattr(config.ENFORCE_WEIGHTS, mode)\
-            else getattr(config, mode).WEIGHTS_TS
+        weights = (
+            getattr(config, mode).WEIGHTS if getattr(config.ENFORCE_WEIGHTS, mode) else getattr(config, mode).WEIGHTS_TS
+        )
         filter_categories = getattr(getattr(config, mode), "FILTER")
         profile = ModelCatalog.get_profile(weights)
 
@@ -661,16 +663,22 @@ class ServiceFactory:
             "remove_iou_threshold_rows": config.SEGMENTATION.REMOVE_IOU_THRESHOLD_ROWS,
             "remove_iou_threshold_cols": config.SEGMENTATION.REMOVE_IOU_THRESHOLD_COLS,
             "table_name": config.SEGMENTATION.TABLE_NAME,
-            "cell_names": config.SEGMENTATION.PUBTABLES_CELL_NAMES
-            if detector_name in ("HFDetrDerivedDetector",)
-            else config.SEGMENTATION.CELL_NAMES,
+            "cell_names": (
+                config.SEGMENTATION.PUBTABLES_CELL_NAMES
+                if detector_name in ("HFDetrDerivedDetector",)
+                else config.SEGMENTATION.CELL_NAMES
+            ),
             "spanning_cell_names": config.SEGMENTATION.PUBTABLES_SPANNING_CELL_NAMES,
-            "item_names": config.SEGMENTATION.PUBTABLES_ITEM_NAMES
-            if detector_name in ("HFDetrDerivedDetector",)
-            else config.SEGMENTATION.ITEM_NAMES,
-            "sub_item_names": config.SEGMENTATION.PUBTABLES_SUB_ITEM_NAMES
-            if detector_name in ("HFDetrDerivedDetector",)
-            else config.SEGMENTATION.SUB_ITEM_NAMES,
+            "item_names": (
+                config.SEGMENTATION.PUBTABLES_ITEM_NAMES
+                if detector_name in ("HFDetrDerivedDetector",)
+                else config.SEGMENTATION.ITEM_NAMES
+            ),
+            "sub_item_names": (
+                config.SEGMENTATION.PUBTABLES_SUB_ITEM_NAMES
+                if detector_name in ("HFDetrDerivedDetector",)
+                else config.SEGMENTATION.SUB_ITEM_NAMES
+            ),
             "item_header_cell_names": config.SEGMENTATION.PUBTABLES_ITEM_HEADER_CELL_NAMES,
             "item_header_thresholds": config.SEGMENTATION.PUBTABLES_ITEM_HEADER_THRESHOLDS,
             "stretch_rule": config.SEGMENTATION.STRETCH_RULE,

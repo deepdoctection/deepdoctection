@@ -28,6 +28,7 @@ from dd_core.utils.error import ImageError
 
 from ..conftest import WhiteImage
 
+
 class TestImagePixelOperations:
     """Test Image pixel data handling"""
 
@@ -124,6 +125,5 @@ class TestImagePixelOperations:
 
         assert img.image_id in img.embeddings
         bbox = img.get_embedding(img.image_id)
-        assert bbox.width == 1.
-        assert bbox.height == 1.
-
+        assert bbox.width == 1.0
+        assert bbox.height == 1.0

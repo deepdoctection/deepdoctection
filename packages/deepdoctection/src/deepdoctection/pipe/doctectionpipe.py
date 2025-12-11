@@ -23,8 +23,7 @@ import os
 from pathlib import Path
 from typing import List, Mapping, Optional, Sequence, Tuple, Union
 
-from dd_core.dataflow import CustomDataFromIterable, DataFlow, DataFromList, MapData
-from dd_core.dataflow import SerializerFiles, SerializerPdfDoc
+from dd_core.dataflow import CustomDataFromIterable, DataFlow, DataFromList, MapData, SerializerFiles, SerializerPdfDoc
 from dd_core.datapoint.image import Image
 from dd_core.datapoint.view import IMAGE_DEFAULTS
 from dd_core.mapper.maputils import curry
@@ -35,12 +34,13 @@ from dd_core.utils.logger import LoggingRecord, logger
 from dd_core.utils.pdf_utils import PDFStreamer
 from dd_core.utils.types import PathLikeOrStr
 from dd_core.utils.utils import is_file_extension
+
 from .base import Pipeline, PipelineComponent
 from .common import PageParsingService
 
 
 def _collect_from_kwargs(
-    **kwargs: Union[Optional[str], bytes, DataFlow, bool, int, PathLikeOrStr, Union[str, List[str]]]
+    **kwargs: Union[Optional[str], bytes, DataFlow, bool, int, PathLikeOrStr, Union[str, List[str]]],
 ) -> Tuple[Optional[str], Union[str, Sequence[str]], bool, int, str, DataFlow, Optional[bytes]]:
     """
     Collects and validates keyword arguments for dataflow construction.

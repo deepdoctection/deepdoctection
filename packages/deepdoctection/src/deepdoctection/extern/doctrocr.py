@@ -29,6 +29,7 @@ from typing import Any, Literal, Mapping, Optional, Sequence, Union
 import numpy as np
 from lazy_imports import try_import
 
+from dd_core.utils import get_torch_device
 from dd_core.utils.env_info import ENV_VARS_TRUE
 from dd_core.utils.file_utils import (
     get_doctr_requirement,
@@ -39,8 +40,8 @@ from dd_core.utils.object_types import LayoutType, ObjectTypes, PageType, TypeOr
 from dd_core.utils.transform import RotationTransform
 from dd_core.utils.types import PathLikeOrStr, PixelValues, Requirement
 from dd_core.utils.viz import viz_handler
+
 from .base import DetectionResult, ImageTransformer, ModelCategories, ObjectDetector, TextRecognizer
-from dd_core.utils import get_torch_device
 
 with try_import() as pt_import_guard:
     import torch
@@ -74,8 +75,7 @@ def _load_model(
     doctr_predictor.to(device)  # type: ignore
 
 
-def doctr_predict_text_lines(
-    np_img: PixelValues, predictor: DetectionPredictor) -> list[DetectionResult]:
+def doctr_predict_text_lines(np_img: PixelValues, predictor: DetectionPredictor) -> list[DetectionResult]:
     """
     Generating text line `DetectionResult` based on DocTr `DetectionPredictor`.
 
@@ -224,9 +224,7 @@ class DoctrTextlineDetector(DoctrTextlineDetectorMixin):
         return _get_doctr_requirements()
 
     def clone(self) -> DoctrTextlineDetector:
-        return self.__class__(
-            self.architecture, self.path_weights, self.categories.get_categories(), self.device
-        )
+        return self.__class__(self.architecture, self.path_weights, self.categories.get_categories(), self.device)
 
     @staticmethod
     def load_model(
@@ -238,9 +236,7 @@ class DoctrTextlineDetector(DoctrTextlineDetectorMixin):
         _load_model(path_weights, doctr_predictor, device)
 
     @staticmethod
-    def get_wrapped_model(
-        architecture: str, path_weights: PathLikeOrStr, device: torch.device
-    ) -> Any:
+    def get_wrapped_model(architecture: str, path_weights: PathLikeOrStr, device: torch.device) -> Any:
         """
         Get the inner (wrapped) model.
 
@@ -361,9 +357,7 @@ class DoctrTextRecognizer(TextRecognizer):
         _load_model(path_weights, doctr_predictor, device)
 
     @staticmethod
-    def build_model(
-        architecture: str, path_config_json: Optional[PathLikeOrStr] = None
-    ) -> RecognitionPredictor:
+    def build_model(architecture: str, path_config_json: Optional[PathLikeOrStr] = None) -> RecognitionPredictor:
         """Building the model"""
 
         # inspired and adapted from https://github.com/mindee/doctr/blob/main/doctr/models/recognition/zoo.py
@@ -438,7 +432,6 @@ class DoctrTextRecognizer(TextRecognizer):
             The name of the model as string
         """
         return f"doctr_{architecture}" + "_".join(Path(path_weights).parts[-2:])
-
 
     def clear_model(self) -> None:
         self.doctr_predictor = None  # type: ignore

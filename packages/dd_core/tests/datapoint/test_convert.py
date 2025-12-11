@@ -33,9 +33,7 @@ try:
 except ImportError:
     PDFIUM_AVAILABLE = False
 
-POPLER_AVAILABLE = bool(
-    fu.pdf_to_ppm_available() or fu.pdf_to_cairo_available() or fu.get_poppler_version()
-)
+POPLER_AVAILABLE = bool(fu.pdf_to_ppm_available() or fu.pdf_to_cairo_available() or fu.get_poppler_version())
 
 
 def test_importerror_when_pypdf_missing(monkeypatch: pytest.MonkeyPatch, pdf_page: TestPdfPage) -> None:
@@ -74,7 +72,9 @@ def test_pdfium_with_dpi_and_size_falls_back_to_dpi(monkeypatch: pytest.MonkeyPa
 
 
 @pytest.mark.skipif(not PDFIUM_AVAILABLE, reason="pypdfium2 is not installed")
-def test_pdfium_without_dpi_but_only_size_raises_valueerror(monkeypatch: pytest.MonkeyPatch, pdf_page: TestPdfPage) -> None:
+def test_pdfium_without_dpi_but_only_size_raises_valueerror(
+    monkeypatch: pytest.MonkeyPatch, pdf_page: TestPdfPage
+) -> None:
     """
     Under PDFium, providing only width/height must raise ValueError('dpi must be provided.').
     """

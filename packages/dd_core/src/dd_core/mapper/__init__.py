@@ -21,7 +21,6 @@
 from typing import Callable
 
 from ..datapoint.image import Image
-
 from .cats import *
 from .cocostruct import *
 from .d2struct import *

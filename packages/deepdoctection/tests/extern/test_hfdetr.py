@@ -15,15 +15,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import numpy as np
-import pytest
 from types import SimpleNamespace
 from unittest.mock import MagicMock
 
+import numpy as np
+import pytest
+
+from dd_core.utils import get_torch_device
 from dd_core.utils.file_utils import pytorch_available, transformers_available
 from dd_core.utils.object_types import LayoutType
-from dd_core.utils import get_torch_device
-
 from deepdoctection.extern.base import DetectionResult
 from deepdoctection.extern.hfdetr import HFDetrDerivedDetector
 
@@ -113,6 +113,7 @@ def test_hfdetr_category_filtering(monkeypatch: pytest.MonkeyPatch) -> None:
         MagicMock(return_value=MagicMock()),
         raising=True,
     )
+
     # Return two detections with class_id=0 (will map to id 1) and one default type (None)
     def _fake_predict(np_img, predictor, feature_extractor, device, threshold, nms_threshold):
         return [

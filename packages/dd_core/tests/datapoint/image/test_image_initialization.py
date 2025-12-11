@@ -27,6 +27,7 @@ from dd_core.utils.error import ImageError
 
 from ..conftest import WhiteImage
 
+
 class TestImageInitialization:
     """Test Image initialization and basic properties"""
 
@@ -72,4 +73,3 @@ class TestImageInitialization:
 
         with raises(ImageError, match="image_id cannot be reassigned"):
             img.image_id = "new-uuid-value"
-

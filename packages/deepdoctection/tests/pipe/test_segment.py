@@ -18,7 +18,7 @@
 
 from typing import List, Sequence, Union
 
-from dd_core.datapoint import BoundingBox, CategoryAnnotation, Image, get_type, LayoutType, CellType
+from dd_core.datapoint import BoundingBox, CategoryAnnotation, CellType, Image, LayoutType, get_type
 from deepdoctection.extern.base import DetectionResult
 from deepdoctection.pipe.segment import (
     PubtablesSegmentationService,
@@ -28,7 +28,6 @@ from deepdoctection.pipe.segment import (
     stretch_items,
     tile_tables_with_items_per_table,
 )
-
 
 
 def test_stretch_items(dp_image_tab_cell_item: Image) -> None:
@@ -43,9 +42,11 @@ def test_stretch_items(dp_image_tab_cell_item: Image) -> None:
     rows = dp.get_annotation(category_names=item_names[0])
     cols = dp.get_annotation(category_names=item_names[1])
 
-    rows_expected = [BoundingBox(absolute_coords=False, ulx=0.16833334, uly=0.5, lrx=0.33083333, lry=0.625, width=0.16249999, height=0.125),
-                     BoundingBox(absolute_coords=False, ulx=0.16833334, uly=0.75, lrx=0.33083333, lry=0.85, width=0.16249999, height=0.1)]
-    cols_expected = [BoundingBox(absolute_coords=False, ulx=0.16833334, uly=0.375, lrx=0.33083333, lry=0.875, width=0.16249999, height=0.5)]
+    rows_expected = [
+        BoundingBox(absolute_coords=False, ulx=0.16833334, uly=0.5, lrx=0.33083333, lry=0.625),
+        BoundingBox(absolute_coords=False, ulx=0.16833334, uly=0.75, lrx=0.33083333, lry=0.85),
+    ]
+    cols_expected = [BoundingBox(absolute_coords=False, ulx=0.18333333, uly=0.25166667, lrx=0.2, lry=0.9975)]
 
     for row, row_expected in zip(rows, rows_expected):
         row_embedding = row.get_bounding_box(dp.image_id)
@@ -54,7 +55,6 @@ def test_stretch_items(dp_image_tab_cell_item: Image) -> None:
     for col, col_expected in zip(cols, cols_expected):
         col_embedding = col.get_bounding_box(dp.image_id)
         assert col_embedding == col_expected
-
 
 
 class TestTableSegmentationService:
@@ -166,17 +166,45 @@ def test_tile_tables_with_items_per_table(
     second_col_box = cols[1].get_bounding_box(dp.image_id)
 
     row_box_tiling_table = [
-        BoundingBox(absolute_coords=False, ulx=0.16833334, uly=0.2525, lrx=0.33083333,
-                    lry=0.625, width=0.16249999, height=0.3725),
-        BoundingBox(absolute_coords=False, ulx=0.16833334, uly=0.625, lrx=0.33083333, lry=0.9975, width=0.16249999,
-                    height=0.3725),
+        BoundingBox(
+            absolute_coords=False,
+            ulx=0.16833334,
+            uly=0.2525,
+            lrx=0.33083333,
+            lry=0.625,
+            width=0.16249999,
+            height=0.3725,
+        ),
+        BoundingBox(
+            absolute_coords=False,
+            ulx=0.16833334,
+            uly=0.625,
+            lrx=0.33083333,
+            lry=0.9975,
+            width=0.16249999,
+            height=0.3725,
+        ),
     ]
 
     col_box_tiling_table = [
-        BoundingBox(absolute_coords=False, ulx=0.16833334, uly=0.25166667, lrx=0.2, lry=0.9975,
-                    width=0.03166666, height=0.74583333),
-        BoundingBox(absolute_coords=False, ulx=0.2, uly=0.25166667, lrx=0.33166666, lry=0.9975,
-                    width=0.13166666, height=0.74583333),
+        BoundingBox(
+            absolute_coords=False,
+            ulx=0.16833334,
+            uly=0.25166667,
+            lrx=0.2,
+            lry=0.9975,
+            width=0.03166666,
+            height=0.74583333,
+        ),
+        BoundingBox(
+            absolute_coords=False,
+            ulx=0.2,
+            uly=0.25166667,
+            lrx=0.33166666,
+            lry=0.9975,
+            width=0.13166666,
+            height=0.74583333,
+        ),
     ]
 
     assert first_row_box == row_box_tiling_table[0]
@@ -233,12 +261,16 @@ class TestTableSegmentationServiceWhenTableFullyTiled:
         assert len(cells) == len(cells_expected)
 
         for cell, cell_expected in zip(cells, cells_expected):
-            assert cell.get_sub_category(get_type("row_number")) == cell_expected.get_sub_category(get_type("row_number"))
+            assert cell.get_sub_category(get_type("row_number")) == cell_expected.get_sub_category(
+                get_type("row_number")
+            )
             assert cell.get_sub_category(get_type("column_number")) == cell_expected.get_sub_category(
                 get_type("column_number")
             )
             assert cell.get_sub_category(get_type("row_span")) == cell_expected.get_sub_category(get_type("row_span"))
-            assert cell.get_sub_category(get_type("column_span")) == cell_expected.get_sub_category(get_type("column_span"))
+            assert cell.get_sub_category(get_type("column_span")) == cell_expected.get_sub_category(
+                get_type("column_span")
+            )
 
 
 def test_create_intersection_cells(dp_image_tab_cell_item: Image) -> None:
@@ -265,20 +297,25 @@ def test_create_intersection_cells(dp_image_tab_cell_item: Image) -> None:
         rows, cols, table_ann_id, [get_type("row_number"), get_type("column_number")]
     )
     expected_detect_result = [
-        DetectionResult(box=[0.15, 0.33333333, 0.2, 0.5], absolute_coords=False, class_id=None,
-                        class_name=get_type("cell")),
-        DetectionResult(box=[0.4, 0.33333333, 0.5, 0.5], absolute_coords=False, class_id=None,
-                        class_name=get_type("cell")),
-        DetectionResult(box=[0.15, 0.66666667, 0.2, 0.8], absolute_coords=False, class_id=None,
-                        class_name=get_type("cell")),
-        DetectionResult(box=[0.4, 0.66666667, 0.5, 0.8], absolute_coords=False,  class_id=None,
-                        class_name=get_type("cell")),
+        DetectionResult(
+            box=[0.15, 0.33333333, 0.2, 0.5], absolute_coords=False, class_id=None, class_name=get_type("cell")
+        ),
+        DetectionResult(
+            box=[0.4, 0.33333333, 0.5, 0.5], absolute_coords=False, class_id=None, class_name=get_type("cell")
+        ),
+        DetectionResult(
+            box=[0.15, 0.66666667, 0.2, 0.8], absolute_coords=False, class_id=None, class_name=get_type("cell")
+        ),
+        DetectionResult(
+            box=[0.4, 0.66666667, 0.5, 0.8], absolute_coords=False, class_id=None, class_name=get_type("cell")
+        ),
     ]
-    expected_segment_result =[SegmentationResult(annotation_id='', row_num=1, col_num=1, rs=1, cs=1),
-     SegmentationResult(annotation_id='', row_num=1, col_num=2, rs=1, cs=1),
-     SegmentationResult(annotation_id='', row_num=2, col_num=1, rs=1, cs=1),
-     SegmentationResult(annotation_id='', row_num=2, col_num=2, rs=1, cs=1)]
-
+    expected_segment_result = [
+        SegmentationResult(annotation_id="", row_num=1, col_num=1, rs=1, cs=1),
+        SegmentationResult(annotation_id="", row_num=1, col_num=2, rs=1, cs=1),
+        SegmentationResult(annotation_id="", row_num=2, col_num=1, rs=1, cs=1),
+        SegmentationResult(annotation_id="", row_num=2, col_num=2, rs=1, cs=1),
+    ]
 
     assert len(detect_result_cells) == 4
     assert detect_result_cells == expected_detect_result

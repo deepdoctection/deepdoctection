@@ -15,19 +15,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import numpy as np
-import pytest
 from unittest.mock import MagicMock
 
-from dd_core.utils.file_utils import pytorch_available, doctr_available
+import numpy as np
+import pytest
+
+from dd_core.utils.file_utils import doctr_available, pytorch_available
 from dd_core.utils.object_types import LayoutType
 from deepdoctection.extern.base import DetectionResult
 from deepdoctection.extern.doctrocr import (
+    DocTrRotationTransformer,
     DoctrTextlineDetector,
     DoctrTextRecognizer,
-    DocTrRotationTransformer,
 )
-
 
 REQUIRES_PT_AND_DOCTR = pytest.mark.skipif(
     not (pytorch_available() and doctr_available()),
@@ -43,12 +43,14 @@ def test_doctr_textline_detector_predict_basic(monkeypatch: pytest.MonkeyPatch) 
         MagicMock(return_value=MagicMock()),
         raising=True,
     )
+
     # Mock prediction helper
     def _fake_predict(np_img, predictor):
         return [
             DetectionResult(box=[0, 0, 10, 10], class_id=1, score=0.9, class_name=LayoutType.WORD),
             DetectionResult(box=[20, 20, 40, 40], class_id=1, score=0.8, class_name=LayoutType.WORD),
         ]
+
     monkeypatch.setattr(
         "deepdoctection.extern.doctrocr.doctr_predict_text_lines",
         MagicMock(side_effect=_fake_predict),
@@ -78,6 +80,7 @@ def test_doctr_text_recognizer_predict_basic(monkeypatch: pytest.MonkeyPatch) ->
             DetectionResult(score=0.7, text="Foo", uuid=inputs[0][0]),
             DetectionResult(score=0.8, text="Bar", uuid=inputs[1][0]),
         ]
+
     monkeypatch.setattr(
         "deepdoctection.extern.doctrocr.doctr_predict_text",
         MagicMock(side_effect=_fake_recognize),
@@ -85,8 +88,10 @@ def test_doctr_text_recognizer_predict_basic(monkeypatch: pytest.MonkeyPatch) ->
     )
 
     rec = DoctrTextRecognizer("crnn_vgg16_bn", "dummy.pt", "cpu")
-    batch = [("id1", (np.random.rand(16, 64, 3) * 255).astype("uint8")),
-             ("id2", (np.random.rand(16, 64, 3) * 255).astype("uint8"))]
+    batch = [
+        ("id1", (np.random.rand(16, 64, 3) * 255).astype("uint8")),
+        ("id2", (np.random.rand(16, 64, 3) * 255).astype("uint8")),
+    ]
 
     results = rec.predict(batch)
     assert len(results) == 2
@@ -111,4 +116,3 @@ def test_doctr_rotation_transformer_predict_and_transform(monkeypatch: pytest.Mo
     # 90 degree rotation swaps dimensions
     assert rotated.shape[0] == np_image.shape[1]
     assert rotated.shape[1] == np_image.shape[0]
-

@@ -35,7 +35,7 @@ class TestImageAnnotations:
         img = Image(file_name=white_image.file_name)
         ann = ImageAnnotation(
             category_name="test_cat_1",
-            bounding_box=BoundingBox(ulx=10, uly=10, width=20, height=20, absolute_coords=True)
+            bounding_box=BoundingBox(ulx=10, uly=10, width=20, height=20, absolute_coords=True),
         )
 
         assert ann._annotation_id is None
@@ -47,7 +47,7 @@ class TestImageAnnotations:
         img = Image(file_name=white_image.file_name)
         ann = ImageAnnotation(
             category_name="test_cat_1",
-            bounding_box=BoundingBox(ulx=10, uly=10, width=20, height=20, absolute_coords=True)
+            bounding_box=BoundingBox(ulx=10, uly=10, width=20, height=20, absolute_coords=True),
         )
         img.dump(ann)
         assert ann.annotation_id in img._annotation_ids
@@ -57,7 +57,7 @@ class TestImageAnnotations:
         img = Image(file_name=white_image.file_name)
         ann = ImageAnnotation(
             category_name="test_cat_1",
-            bounding_box=BoundingBox(ulx=10, uly=10, width=20, height=20, absolute_coords=True)
+            bounding_box=BoundingBox(ulx=10, uly=10, width=20, height=20, absolute_coords=True),
         )
         img.dump(ann)
 
@@ -69,11 +69,11 @@ class TestImageAnnotations:
         img = Image(file_name=white_image.file_name)
         ann1 = ImageAnnotation(
             category_name="test_cat_1",
-            bounding_box=BoundingBox(ulx=10, uly=10, width=20, height=20, absolute_coords=True)
+            bounding_box=BoundingBox(ulx=10, uly=10, width=20, height=20, absolute_coords=True),
         )
         ann2 = ImageAnnotation(
             category_name="test_cat_2",
-            bounding_box=BoundingBox(ulx=50, uly=50, width=30, height=30, absolute_coords=True)
+            bounding_box=BoundingBox(ulx=50, uly=50, width=30, height=30, absolute_coords=True),
         )
         img.dump(ann1)
         img.dump(ann2)
@@ -86,11 +86,11 @@ class TestImageAnnotations:
         img = Image(file_name=white_image.file_name)
         ann1 = ImageAnnotation(
             category_name="test_cat_1",
-            bounding_box=BoundingBox(ulx=10, uly=10, width=20, height=20, absolute_coords=True)
+            bounding_box=BoundingBox(ulx=10, uly=10, width=20, height=20, absolute_coords=True),
         )
         ann2 = ImageAnnotation(
             category_name="test_cat_2",
-            bounding_box=BoundingBox(ulx=50, uly=50, width=30, height=30, absolute_coords=True)
+            bounding_box=BoundingBox(ulx=50, uly=50, width=30, height=30, absolute_coords=True),
         )
         img.dump(ann1)
         img.dump(ann2)
@@ -103,11 +103,11 @@ class TestImageAnnotations:
         img = Image(file_name=white_image.file_name)
         ann1 = ImageAnnotation(
             category_name="test_cat_1",
-            bounding_box=BoundingBox(ulx=10, uly=10, width=20, height=20, absolute_coords=True)
+            bounding_box=BoundingBox(ulx=10, uly=10, width=20, height=20, absolute_coords=True),
         )
         ann2 = ImageAnnotation(
             category_name="test_cat_2",
-            bounding_box=BoundingBox(ulx=50, uly=50, width=30, height=30, absolute_coords=True)
+            bounding_box=BoundingBox(ulx=50, uly=50, width=30, height=30, absolute_coords=True),
         )
 
         img.dump(ann1)
@@ -120,9 +120,18 @@ class TestImageAnnotations:
     def test_get_annotation_filters_by_multiple_category_names(self, white_image: WhiteImage):
         """get_annotation() filters by multiple category names"""
         img = Image(file_name=white_image.file_name)
-        ann1 = ImageAnnotation(category_name="test_cat_1", bounding_box=BoundingBox(ulx=10, uly=10, width=20, height=20, absolute_coords=True))
-        ann2 = ImageAnnotation(category_name="test_cat_2", bounding_box=BoundingBox(ulx=30, uly=30, width=20, height=20, absolute_coords=True))
-        ann3 = ImageAnnotation(category_name="test_cat_3", bounding_box=BoundingBox(ulx=50, uly=50, width=20, height=20, absolute_coords=True))
+        ann1 = ImageAnnotation(
+            category_name="test_cat_1",
+            bounding_box=BoundingBox(ulx=10, uly=10, width=20, height=20, absolute_coords=True),
+        )
+        ann2 = ImageAnnotation(
+            category_name="test_cat_2",
+            bounding_box=BoundingBox(ulx=30, uly=30, width=20, height=20, absolute_coords=True),
+        )
+        ann3 = ImageAnnotation(
+            category_name="test_cat_3",
+            bounding_box=BoundingBox(ulx=50, uly=50, width=20, height=20, absolute_coords=True),
+        )
 
         img.dump(ann1)
         img.dump(ann2)
@@ -134,8 +143,14 @@ class TestImageAnnotations:
     def test_get_annotation_filters_by_annotation_id(self, white_image: WhiteImage):
         """get_annotation() filters by annotation_id"""
         img = Image(file_name=white_image.file_name)
-        ann1 = ImageAnnotation(category_name="test_cat_1", bounding_box=BoundingBox(ulx=10, uly=10, width=20, height=20, absolute_coords=True))
-        ann2 = ImageAnnotation(category_name="test_cat_2", bounding_box=BoundingBox(ulx=50, uly=50, width=30, height=30, absolute_coords=True))
+        ann1 = ImageAnnotation(
+            category_name="test_cat_1",
+            bounding_box=BoundingBox(ulx=10, uly=10, width=20, height=20, absolute_coords=True),
+        )
+        ann2 = ImageAnnotation(
+            category_name="test_cat_2",
+            bounding_box=BoundingBox(ulx=50, uly=50, width=30, height=30, absolute_coords=True),
+        )
         img.dump(ann1)
         img.dump(ann2)
 
@@ -149,12 +164,12 @@ class TestImageAnnotations:
         ann1 = ImageAnnotation(
             category_name="test_cat_1",
             bounding_box=BoundingBox(ulx=10, uly=10, width=20, height=20, absolute_coords=True),
-            service_id="service_a"
+            service_id="service_a",
         )
         ann2 = ImageAnnotation(
             category_name="test_cat_2",
             bounding_box=BoundingBox(ulx=50, uly=50, width=30, height=30, absolute_coords=True),
-            service_id="service_b"
+            service_id="service_b",
         )
         img.dump(ann1)
         img.dump(ann2)
@@ -168,7 +183,7 @@ class TestImageAnnotations:
         img = Image(file_name=white_image.file_name)
         ann = ImageAnnotation(
             category_name="test_cat_1",
-            bounding_box=BoundingBox(ulx=10, uly=10, width=20, height=20, absolute_coords=True)
+            bounding_box=BoundingBox(ulx=10, uly=10, width=20, height=20, absolute_coords=True),
         )
         img.dump(ann)
         ann.deactivate()
@@ -181,7 +196,7 @@ class TestImageAnnotations:
         img = Image(file_name=white_image.file_name)
         ann = ImageAnnotation(
             category_name="test_cat_1",
-            bounding_box=BoundingBox(ulx=10, uly=10, width=20, height=20, absolute_coords=True)
+            bounding_box=BoundingBox(ulx=10, uly=10, width=20, height=20, absolute_coords=True),
         )
         img.dump(ann)
         ann.deactivate()
@@ -195,17 +210,17 @@ class TestImageAnnotations:
         ann1 = ImageAnnotation(
             category_name="test_cat_1",
             bounding_box=BoundingBox(ulx=10, uly=10, width=20, height=20, absolute_coords=True),
-            service_id="service_a"
+            service_id="service_a",
         )
         ann2 = ImageAnnotation(
             category_name="test_cat_1",
             bounding_box=BoundingBox(ulx=30, uly=30, width=20, height=20, absolute_coords=True),
-            service_id="service_b"
+            service_id="service_b",
         )
         ann3 = ImageAnnotation(
             category_name="test_cat_2",
             bounding_box=BoundingBox(ulx=50, uly=50, width=20, height=20, absolute_coords=True),
-            service_id="service_a"
+            service_id="service_a",
         )
         img.dump(ann1)
         img.dump(ann2)
@@ -224,11 +239,10 @@ class TestImageAnnotations:
         for i in range(5):
             ann = ImageAnnotation(
                 category_name="test_cat_1",
-                bounding_box=BoundingBox(ulx=i*10, uly=i*10, width=20, height=20, absolute_coords=True)
+                bounding_box=BoundingBox(ulx=i * 10, uly=i * 10, width=20, height=20, absolute_coords=True),
             )
             img.dump(ann)
             annotations.append(ann)
 
         annotation_ids = [ann.annotation_id for ann in annotations]
         assert len(set(annotation_ids)) == 5  # All IDs should be unique
-

@@ -15,16 +15,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest
 from unittest.mock import MagicMock
 
-from dd_core.utils.types import PixelValues, JsonDict
+import pytest
+
+from dd_core.utils.types import JsonDict, PixelValues
 from deepdoctection.extern.texocr import TextractOcrDetector
 
 
-def test_textract_ocr_predict_words_basic(monkeypatch: pytest.MonkeyPatch,
-                                          sample_np_img: PixelValues,
-                                          textract_json) -> None:
+def test_textract_ocr_predict_words_basic(
+    monkeypatch: pytest.MonkeyPatch, sample_np_img: PixelValues, textract_json
+) -> None:
     pytest.importorskip("boto3")
 
     monkeypatch.setattr("deepdoctection.extern.texocr.get_boto3_requirement", lambda: ("boto3", True, ""))
@@ -37,4 +38,3 @@ def test_textract_ocr_predict_words_basic(monkeypatch: pytest.MonkeyPatch,
     assert isinstance(results, list)
     assert len(results) == 12
     assert any("consolidated" in r.text.lower() for r in results if hasattr(r, "text"))
-

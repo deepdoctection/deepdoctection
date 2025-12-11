@@ -25,9 +25,10 @@ from copy import copy
 from typing import TYPE_CHECKING, Any, Callable, Literal, Optional, Sequence, Union
 
 from dd_core.datapoint.image import Image, MetaAnnotation
-from ..extern.base import SequenceClassResult
 from dd_core.mapper.laylmstruct import image_to_layoutlm_features, image_to_lm_features
 from dd_core.utils.object_types import BioTag, LayoutType, ObjectTypes, PageType, TokenClasses, WordType
+
+from ..extern.base import SequenceClassResult
 from .base import PipelineComponent
 from .registry import pipeline_component_registry
 
@@ -250,12 +251,16 @@ class LMTokenClassifierService(PipelineComponent):
             image_annotations=(),
             sub_categories={
                 LayoutType.WORD: {
-                    WordType.TOKEN_CLASS: set(self.language_model.categories.categories_semantics)  # type: ignore
-                    if self.language_model.categories.categories_semantics
-                    else [],
-                    WordType.TAG: set(self.language_model.categories.categories_bio)  # type: ignore
-                    if self.language_model.categories.categories_bio
-                    else [],
+                    WordType.TOKEN_CLASS: (
+                        set(self.language_model.categories.categories_semantics)  # type: ignore
+                        if self.language_model.categories.categories_semantics
+                        else []
+                    ),
+                    WordType.TAG: (
+                        set(self.language_model.categories.categories_bio)  # type: ignore
+                        if self.language_model.categories.categories_bio
+                        else []
+                    ),
                     WordType.TOKEN_TAG: set(self.language_model.categories.get_categories(as_dict=False)),
                 }
             },

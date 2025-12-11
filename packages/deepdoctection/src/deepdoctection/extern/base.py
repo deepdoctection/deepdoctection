@@ -79,18 +79,17 @@ class ModelCategories:
         self.categories = self._init_categories
 
     @overload
-    def get_categories(self, as_dict: Literal[False]) -> tuple[ObjectTypes, ...]:
-        ...
+    def get_categories(self, as_dict: Literal[False]) -> tuple[ObjectTypes, ...]: ...
 
     @overload
     def get_categories(
         self, as_dict: Literal[True] = ..., name_as_key: Literal[False] = False
-    ) -> MappingProxyType[int, ObjectTypes]:
-        ...
+    ) -> MappingProxyType[int, ObjectTypes]: ...
 
     @overload
-    def get_categories(self, as_dict: Literal[True], name_as_key: Literal[True]) -> MappingProxyType[ObjectTypes, int]:
-        ...
+    def get_categories(
+        self, as_dict: Literal[True], name_as_key: Literal[True]
+    ) -> MappingProxyType[ObjectTypes, int]: ...
 
     def get_categories(
         self, as_dict: bool = True, name_as_key: bool = False

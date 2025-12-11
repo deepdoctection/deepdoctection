@@ -24,7 +24,7 @@ Testing functions from datapoint.box that operate on numpy boxes
 import numpy as np
 import pytest
 
-from dd_core.datapoint.box import area, intersection, np_iou, ioa
+from dd_core.datapoint.box import area, intersection, ioa, np_iou
 
 
 @pytest.mark.parametrize(

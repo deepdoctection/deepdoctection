@@ -30,6 +30,7 @@ from dd_core.utils.file_utils import get_boto3_requirement
 from dd_core.utils.logger import LoggingRecord, logger
 from dd_core.utils.object_types import LayoutType, ObjectTypes
 from dd_core.utils.types import PixelValues, Requirement
+
 from .base import DetectionResult, ModelCategories, ObjectDetector, TextRecognizer
 
 with try_import() as import_guard:

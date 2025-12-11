@@ -16,19 +16,21 @@
 # limitations under the License.
 
 from copy import deepcopy
+
 import numpy as np
-from numpy.testing import assert_allclose
 import pytest
+from numpy.testing import assert_allclose
 
 from dd_core.dataflow import DataFromList
-from dd_core.utils.object_types import get_type
 from dd_core.datapoint import BoundingBox, ImageAnnotation
+from dd_core.utils.object_types import get_type
 from deepdoctection.eval.cocometric import CocoMetric
 
 try:
     from dd_datasets.base import DatasetCategories
 except ImportError:
     DatasetCategories = None
+
 
 @pytest.mark.skipif(DatasetCategories is None, reason="dd_datasets is not installed; DatasetCategories unavailable")
 class TestCocoMetric:
@@ -48,16 +50,12 @@ class TestCocoMetric:
         dp_list = [dp_image]
         self.dataflow_gt = DataFromList(dp_list)
         self.dataflow_pr = DataFromList(dp_list)
-        self.categories = DatasetCategories(
-            init_categories=[get_type("test_cat_1"), get_type("test_cat_2")]
-        )
-
+        self.categories = DatasetCategories(init_categories=[get_type("test_cat_1"), get_type("test_cat_2")])
 
     def test_coco_metric_returns_correct_distance(self) -> None:
         """
         when testing datapoint against itself, evaluation returns full score except when some areas do not exist
         """
-
 
         # Act
         output = CocoMetric.get_distance(self.dataflow_gt, self.dataflow_pr, self.categories)
@@ -71,7 +69,6 @@ class TestCocoMetric:
         expected_output = np.asarray([1, 1, 1, 1, -1, -1, 1, 1, 1, 1, -1, -1])
 
         assert_allclose(output, expected_output, atol=1e-10)  # type: ignore
-
 
     def test_when_params_change_coco_metric_returns_correct_distance(self) -> None:
         """
@@ -99,7 +96,6 @@ class TestCocoMetric:
 
         # Clean-up
         CocoMetric._params = {}  # pylint: disable=W0212
-
 
     def test_when_f1_score_coco_metric_returns_correct_distance(self) -> None:
         """

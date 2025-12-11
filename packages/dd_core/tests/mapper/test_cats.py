@@ -17,8 +17,14 @@
 
 
 from dd_core.datapoint.image import Image
-from dd_core.mapper.cats import (cat_to_sub_cat, re_assign_cat_ids, filter_cat,
-                                 filter_summary, image_to_cat_id, remove_cats)
+from dd_core.mapper.cats import (
+    cat_to_sub_cat,
+    filter_cat,
+    filter_summary,
+    image_to_cat_id,
+    re_assign_cat_ids,
+    remove_cats,
+)
 
 
 def test_cat_to_sub_word_to_characters_with_id_mapping(image: Image):
@@ -28,8 +34,7 @@ def test_cat_to_sub_word_to_characters_with_id_mapping(image: Image):
     categories_dict_names_as_key = {"characters": 2}
     cat_to_sub_cat_dict = {"word": "characters"}
     dp = cat_to_sub_cat(
-        categories_dict_names_as_key=categories_dict_names_as_key,
-        cat_to_sub_cat_dict=cat_to_sub_cat_dict
+        categories_dict_names_as_key=categories_dict_names_as_key, cat_to_sub_cat_dict=cat_to_sub_cat_dict
     )(image)
     anns = dp.get_annotation(category_names=["characters"])
     assert len(anns) > 0
@@ -57,7 +62,7 @@ def test_cat_to_sub_word_to_characters_no_category_id_change(image: Image):
     assert len(anns) > 0
     for ann in anns:
         assert ann.category_name == "characters"
-        assert ann.category_id == -1 # default value
+        assert ann.category_id == -1  # default value
 
 
 def test_re_assign_cat_ids(image: Image):
@@ -123,6 +128,7 @@ def test_filter_summary_rows_ids_none(table_image: Image) -> None:
     )(table_image)
     assert result is None
 
+
 def test_filter_summary_rows_ids_return(table_image: Image) -> None:
     """Should return image when number_of_rows id matches one of provided ids."""
     result = filter_summary(
@@ -132,6 +138,7 @@ def test_filter_summary_rows_ids_return(table_image: Image) -> None:
     assert result is not None
     assert result.image_id == table_image.image_id
 
+
 def test_filter_summary_columns_name_return(table_image: Image) -> None:
     """Should return image when number_of_columns name matches."""
     result = filter_summary(
@@ -140,6 +147,7 @@ def test_filter_summary_columns_name_return(table_image: Image) -> None:
     )(table_image)
     assert result is not None
     assert result.image_id == table_image.image_id
+
 
 def test_filter_summary_columns_name_none(table_image: Image) -> None:
     """Should return None when number_of_columns name does not match."""
@@ -152,9 +160,7 @@ def test_filter_summary_columns_name_none(table_image: Image) -> None:
 
 def test_image_to_cat_id_basic_categories(table_image: Image) -> None:
     """Extract ids for column, row, cell categories."""
-    result, img_id = image_to_cat_id(
-        category_names=["column", "row", "cell"]
-    )(table_image)
+    result, img_id = image_to_cat_id(category_names=["column", "row", "cell"])(table_image)
     assert result == {
         "column": [2] * 3,
         "row": [3] * 5,
@@ -170,7 +176,8 @@ def test_image_to_cat_id_subcategory_ids(table_image: Image) -> None:
         sub_categories={"column": "column_number"},
     )(table_image)
     assert result == {
-        "column": [2,2,2], "column_number": [3, 1, 2],
+        "column": [2, 2, 2],
+        "column_number": [3, 1, 2],
     }
     assert img_id == table_image.image_id
 
@@ -246,7 +253,7 @@ def test_remove_cats_relationships(image: Image) -> None:
     """Remove child relationship from text annotations."""
     dp = remove_cats(relationships={"text": "child"})(image)
     for ann in dp.get_annotation(category_names=["text"]):
-        assert len(ann.relationships["child"])==0
+        assert len(ann.relationships["child"]) == 0
 
 
 def test_remove_cats_category_and_sub_category(image: Image) -> None:
@@ -266,7 +273,7 @@ def test_remove_cats_sub_category_and_relationship(image: Image) -> None:
     dp = remove_cats(sub_categories={"text": "characters"}, relationships={"text": "child"})(image)
     for ann in dp.get_annotation(category_names=["text"]):
         assert "characters" not in ann.sub_categories
-        assert len(ann.relationships["child"])==0
+        assert len(ann.relationships["child"]) == 0
 
 
 def test_remove_cats_all(image: Image) -> None:
@@ -286,4 +293,3 @@ def test_remove_cats_summary_sub_categories(table_image: Image) -> None:
     assert "number_of_columns" not in dp.summary.sub_categories
     assert "max_row_span" in dp.summary.sub_categories
     assert "max_col_span" in dp.summary.sub_categories
-

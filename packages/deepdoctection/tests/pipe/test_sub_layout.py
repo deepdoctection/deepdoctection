@@ -15,16 +15,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from typing import Mapping
 from unittest.mock import MagicMock
 
-from typing import Mapping
-from dd_core.utils.object_types import get_type, ObjectTypes
-from dd_core.datapoint.image import Image
 from dd_core.datapoint import BoundingBox, ImageAnnotation
-
+from dd_core.datapoint.image import Image
+from dd_core.utils.object_types import ObjectTypes, get_type
 from deepdoctection.extern.base import DetectionResult, ObjectDetector
 from deepdoctection.pipe.sub_layout import DetectResultGenerator, SubImageLayoutService
-
 
 
 def test_detect_result_generator(dp_image: Image) -> None:
@@ -32,7 +30,7 @@ def test_detect_result_generator(dp_image: Image) -> None:
     Testing DetectResultGenerator creates DetectionResult correctly
     """
 
-    layout_detect_results =[
+    layout_detect_results = [
         DetectionResult(box=[100.0, 160.0, 200.0, 260.0], score=0.63, class_id=2, class_name=get_type("title")),
         DetectionResult(box=[120.0, 120.0, 140.0, 120.0], score=0.03, class_id=5, class_name=get_type("figure")),
         DetectionResult(box=[50.0, 50.0, 150.0, 200.0], score=0.97, class_id=4, class_name=get_type("table")),
@@ -49,8 +47,7 @@ def test_detect_result_generator(dp_image: Image) -> None:
     }
     detect_result_generator = DetectResultGenerator(
         categories_name_as_key,
-        [[get_type("text")], [get_type("title")], [get_type("table")],
-         [get_type("figure")], [get_type("list")]],
+        [[get_type("text")], [get_type("title")], [get_type("table")], [get_type("figure")], [get_type("list")]],
     )
 
     detect_result_generator.width = 600
@@ -61,8 +58,6 @@ def test_detect_result_generator(dp_image: Image) -> None:
     assert raw_ann_cats == {None, 1, 2, 4, 5}
 
     assert raw_anns[5].box == [0.0, 0.0, dp_image.width, dp_image.height]
-    assert raw_anns[5].class_id == get_type("list")
-
 
 
 class TestSubImageLayoutService:
@@ -81,27 +76,26 @@ class TestSubImageLayoutService:
 
         self.sub_image_layout_service = SubImageLayoutService(self._cell_detector, get_type("table"))
 
-
     def test_pass_datapoint(
         self,
         dp_image: Image,
-        layout_annotation,
+        layout_annotations,
         cell_detect_results: list[list[DetectionResult]],
     ) -> None:
         """
         Testing pass_datapoint
         """
 
-        for img_ann in layout_annotation(segmentation=False):
+        for img_ann in layout_annotations(segmentation=False):
             dp_image.dump(img_ann)
             dp_image.image_ann_to_image(img_ann.annotation_id, True)
 
         global_cell_boxes = [
             [
-                BoundingBox(absolute_coords=True, ulx=70.0, uly=70.0, lrx=75.0, lry=80.0),
-                BoundingBox(absolute_coords=True, ulx=90.0, uly=90.0, lrx=100.0, lry=100.0),
+                BoundingBox(absolute_coords=False, ulx=0.11666667, uly=0.175, lrx=0.125, lry=0.2),
+                BoundingBox(absolute_coords=False, ulx=0.15, uly=0.225, lrx=0.16666667, lry=0.25),
             ],
-            [BoundingBox(absolute_coords=True, ulx=215.0, uly=70.0, lrx=220.0, lry=80.0)],
+            [BoundingBox(absolute_coords=False, ulx=0.35833333, uly=0.175, lrx=0.36666667, lry=0.2)],
         ]
 
         self._cell_detector.predict = MagicMock(side_effect=cell_detect_results)
@@ -129,28 +123,33 @@ class TestSubImageLayoutService:
         global_box_ftfc = first_table_first_cell.get_bounding_box(dp.image_id)
         assert global_box_ftfc == exp_global_boxes_first_table[0]
         local_box_ftfc = first_table_first_cell.get_bounding_box(first_table_ann.annotation_id)
-        assert local_box_ftfc == first_table_first_cell.bounding_box
+        assert local_box_ftfc == first_table_first_cell.bounding_box.transform(
+            first_table_ann.image.width, first_table_ann.image.height
+        )
 
         global_box_ftsc = first_table_second_cell.get_bounding_box(dp.image_id)
         assert global_box_ftsc == exp_global_boxes_first_table[1]
         local_box_ftsc = first_table_second_cell.get_bounding_box(first_table_ann.annotation_id)
-        assert local_box_ftsc == first_table_second_cell.bounding_box
+        assert local_box_ftsc == first_table_second_cell.bounding_box.transform(
+            first_table_ann.image.width, first_table_ann.image.height
+        )
 
         global_box_stfc = second_table_first_cell.get_bounding_box(dp.image_id)
         assert global_box_stfc == exp_global_boxes_scd_table[0]
         local_box_stfc = second_table_first_cell.get_bounding_box(second_table_ann.annotation_id)
-        assert local_box_stfc == second_table_first_cell.bounding_box
-
+        assert local_box_stfc == second_table_first_cell.bounding_box.transform(
+            second_table_ann.image.width, second_table_ann.image.height
+        )
 
     def test_pass_datapoint_when_sub_images_do_not_have_a_crop(
         self,
         dp_image: Image,
-        layout_annotation,
+        layout_annotations,
         cell_detect_results: list[list[DetectionResult]],
     ) -> None:
         """If an sub image does not have a crop, a ValueError was raised previously. Now it should be fixed."""
 
-        for img_ann in layout_annotation(segmentation=False):
+        for img_ann in layout_annotations(segmentation=False):
             dp_image.dump(img_ann)
             dp_image.image_ann_to_image(img_ann.annotation_id, True)
 

@@ -16,18 +16,19 @@
 # limitations under the License.
 
 
+from typing import Any, Dict, List, Optional
+
 import numpy as np
 import pytest
-from typing import Dict, Any, List, Optional
 
-from dd_core.mapper.cocostruct import coco_to_image, image_to_coco
 from dd_core.datapoint.image import Image
+from dd_core.mapper.cocostruct import coco_to_image, image_to_coco
 
 # name -> id mapping (spec input)
 CATEGORIES_NAME_TO_ID: Dict[str, int] = {"text": 1, "title": 2, "list": 3, "table": 4, "figure": 5}
 # id -> name mapping required by coco_to_image(categories=...)
 CATEGORIES_ID_TO_NAME: Dict[int, str] = {v: k for k, v in CATEGORIES_NAME_TO_ID.items()}
-COARSE_MAPPING: Dict[int, int] = {1:1, 2: 1, 3: 1, 4: 1, 5: 1}
+COARSE_MAPPING: Dict[int, int] = {1: 1, 2: 1, 3: 1, 4: 1, 5: 1}
 
 
 def test_coco_to_image_no_load_no_fake_score(coco_datapoint: Dict[str, Any]) -> None:
@@ -65,9 +66,7 @@ def test_coco_to_image_no_load_fake_score(coco_datapoint: Dict[str, Any]) -> Non
         assert sub.category_id == 1
 
 
-def test_coco_to_image_load_no_fake_score(
-    monkeypatch: pytest.MonkeyPatch, coco_datapoint: Dict[str, Any]
-) -> None:
+def test_coco_to_image_load_no_fake_score(monkeypatch: pytest.MonkeyPatch, coco_datapoint: Dict[str, Any]) -> None:
     """Map COCO with image loading and no fake scores."""
     monkeypatch.setattr(
         "dd_core.mapper.cocostruct.load_image_from_file",
@@ -86,9 +85,7 @@ def test_coco_to_image_load_no_fake_score(
     assert all(ann.score is None for ann in anns)
 
 
-def test_coco_to_image_load_fake_score(
-    monkeypatch: pytest.MonkeyPatch, coco_datapoint: Dict[str, Any]
-) -> None:
+def test_coco_to_image_load_fake_score(monkeypatch: pytest.MonkeyPatch, coco_datapoint: Dict[str, Any]) -> None:
     """Map COCO with image loading, fake scores and coarse sub-category."""
     monkeypatch.setattr(
         "dd_core.mapper.cocostruct.load_image_from_file",
@@ -128,4 +125,3 @@ def test_image_to_coco_table_image(table_image: Image) -> None:
     assert len(anns) == 24
     assert sum(1 for a in anns if a["category_id"] == 2) == 3
     assert sum(1 for a in anns if a["category_id"] == 3) == 5
-

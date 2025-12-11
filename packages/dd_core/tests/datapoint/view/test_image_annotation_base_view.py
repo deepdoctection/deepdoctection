@@ -26,7 +26,6 @@ from dd_core.utils.error import AnnotationError
 class TestImageAnnotationBaseView:
     """Test ImageAnnotationBaseView functionality"""
 
-
     def test_category_name_property(self, page: Page):
         """Layout has category_name property"""
 
@@ -87,5 +86,3 @@ class TestImageAnnotationBaseView:
             except AnnotationError as e:
                 # Should raise some kind of error
                 assert True
-
-

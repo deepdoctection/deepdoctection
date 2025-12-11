@@ -16,7 +16,6 @@
 # limitations under the License.
 
 
-
 import pytest
 
 from dd_core.mapper import nms, pt_nms_image_annotations
@@ -50,13 +49,12 @@ def test_pt_nms_image_annotations_returns_expected_subset(monkeypatch, annotatio
     dp_image = annotations(True, True)
     anns = dp_image.get_annotation()
     output = pt_nms_image_annotations(anns, threshold=0.01)
-    assert '51fca38d-b181-3ea2-9c97-7e265febcc86' not in output
+    assert "51fca38d-b181-3ea2-9c97-7e265febcc86" not in output
 
 
 @pytest.mark.skipif(not pytorch_available(), reason="torch is not installed")
 def test_pt_nms_image_annotations_returns_expected_subset(monkeypatch, annotations):
     dp_image = annotations(True, True)
     anns = dp_image.get_annotation()
-    output = pt_nms_image_annotations(anns, threshold=0.01,prio="title")
-    assert '773eb5ea-1757-3f18-88f3-fdffebe771cc' not in output
-
+    output = pt_nms_image_annotations(anns, threshold=0.01, prio="title")
+    assert "773eb5ea-1757-3f18-88f3-fdffebe771cc" not in output

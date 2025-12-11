@@ -33,7 +33,7 @@ class TestImageAnnotation:
         img_ann = ImageAnnotation(
             category_name="test_cat_1",
             category_id=1,
-            bounding_box=BoundingBox(ulx=10, uly=20, width=30, height=40, absolute_coords=True)
+            bounding_box=BoundingBox(ulx=10, uly=20, width=30, height=40, absolute_coords=True),
         )
         assert img_ann.category_name == get_type("test_cat_1")
         assert img_ann.bounding_box is not None
@@ -42,13 +42,7 @@ class TestImageAnnotation:
         """Test creating ImageAnnotation with bounding_box from dict"""
         data = {
             "category_name": "test_cat_1",
-            "bounding_box": {
-                "ulx": 10,
-                "uly": 20,
-                "width": 30,
-                "height": 40,
-                "absolute_coords": True
-            }
+            "bounding_box": {"ulx": 10, "uly": 20, "width": 30, "height": 40, "absolute_coords": True},
         }
         img_ann = ImageAnnotation(**data)
         assert img_ann.bounding_box.ulx == 10
@@ -66,7 +60,6 @@ class TestImageAnnotation:
         img_ann = ImageAnnotation(category_name="test_cat_1", external_id="test")
         with pytest.raises(AnnotationError):
             img_ann.get_bounding_box()
-
 
     def test_image_annotation_annotation_id_determinism(self):
         """Test that ImageAnnotation annotation_id is deterministic based on bounding_box"""
@@ -92,20 +85,10 @@ class TestImageAnnotation:
 class TestBoundingBoxIntegration:
     """Tests for BoundingBox integration with ImageAnnotation"""
 
-
     def test_bounding_box_from_dict_coercion(self):
         """Test BoundingBox coercion from dict in ImageAnnotation"""
-        bbox_dict = {
-            "ulx": 5.0,
-            "uly": 10.0,
-            "width": 20.0,
-            "height": 30.0,
-            "absolute_coords": True
-        }
-        img_ann = ImageAnnotation(
-            category_name="test_cat_1",
-            bounding_box=bbox_dict
-        )
+        bbox_dict = {"ulx": 5.0, "uly": 10.0, "width": 20.0, "height": 30.0, "absolute_coords": True}
+        img_ann = ImageAnnotation(category_name="test_cat_1", bounding_box=bbox_dict)
         assert isinstance(img_ann.bounding_box, BoundingBox)
         assert img_ann.bounding_box.ulx == 5
         assert img_ann.bounding_box.uly == 10

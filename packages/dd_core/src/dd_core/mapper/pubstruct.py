@@ -27,9 +27,9 @@ import numpy as np
 from ..datapoint import BoundingBox, CategoryAnnotation, ContainerAnnotation, ImageAnnotation
 from ..datapoint.convert import convert_pdf_bytes_to_np_array_v2
 from ..datapoint.image import Image
-from ..utils.pdf_utils import load_bytes_from_pdf_file
 from ..utils.fs import load_image_from_file
 from ..utils.object_types import CellType, LayoutType, ObjectTypes, Relationships, SummaryType, TableType, WordType
+from ..utils.pdf_utils import load_bytes_from_pdf_file
 from ..utils.types import JsonDict, PubtabnetDict
 from ..utils.utils import is_file_extension
 from .maputils import MappingContextManager, curry, maybe_get_fake_score

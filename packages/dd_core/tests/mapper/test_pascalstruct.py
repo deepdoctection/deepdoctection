@@ -53,7 +53,9 @@ def test_pascal_voc_dict_to_image_maps_annotations(
         "dd_core.mapper.pascalstruct.load_image_from_file",
         lambda fn: np.zeros((1100, 850, 3), dtype=np.uint8),
     )
-    image = pascal_voc_dict_to_image(categories_name_as_keys, True, False, False, category_names_mapping)(iiitar13k_datapoint)
+    image = pascal_voc_dict_to_image(categories_name_as_keys, True, False, False, category_names_mapping)(
+        iiitar13k_datapoint
+    )
     assert image is not None
     assert image.image is not None
     annotations = image.get_annotation()

@@ -125,4 +125,3 @@ def pt_nms_image_annotations(
 
     # Combine priority annotations with surviving non-priority annotations
     return list(set(priority_ann_ids + kept_ids))
-

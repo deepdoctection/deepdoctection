@@ -19,12 +19,12 @@
 Testing module dataflow.parallel_map
 """
 from typing import Any, Dict, List
+
 import pytest
 
 import shared_test_utils as stu
-
-from dd_core.utils import file_utils as fu
 from dd_core.dataflow import DataFromList, MultiProcessMapData, MultiThreadMapData
+from dd_core.utils import file_utils as fu
 
 
 @pytest.mark.skipif(not fu.pyzmq_available(), reason="Pyzmq is not installed")
@@ -32,6 +32,7 @@ def test_multi_thread_map_data_applies_mapping_function(simple_dict_dataflow: Da
     """
     Test MultiThreadMapData applies a mapping function correctly across multiple threads in non-strict mode
     """
+
     # Arrange
     def double_key2(dp: Dict[str, Any]) -> Dict[str, Any]:
         dp["key2"] = dp["key2"] * 2
@@ -57,12 +58,12 @@ def test_multi_process_map_data_applies_mapping_function(simple_list_dataflow: D
     """
     Test MultiProcessMapData applies a mapping function correctly across multiple processes in strict mode
     """
+
     # Arrange
     def reverse_list(dp: List[str]) -> List[str]:
         return dp[::-1]
 
-    df = MultiProcessMapData(
-        simple_list_dataflow, num_proc=2, map_func=reverse_list, buffer_size=5, strict=True)
+    df = MultiProcessMapData(simple_list_dataflow, num_proc=2, map_func=reverse_list, buffer_size=5, strict=True)
 
     # Act
     output = stu.collect_datapoint_from_dataflow(df=df)
@@ -72,4 +73,3 @@ def test_multi_process_map_data_applies_mapping_function(simple_list_dataflow: D
     # Check that all lists have been reversed (order may vary due to parallelism)
     output_sorted = sorted(output)
     assert output_sorted == [["b", "a"], ["d", "c"], ["f", "e"]]
-

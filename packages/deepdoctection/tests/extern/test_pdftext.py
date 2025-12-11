@@ -19,8 +19,8 @@
 import pytest
 
 from deepdoctection.extern.pdftext import (
-    PdfPlumberTextDetector,
     Pdfmium2TextDetector,
+    PdfPlumberTextDetector,
 )
 
 

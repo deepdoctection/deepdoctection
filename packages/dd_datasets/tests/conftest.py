@@ -15,17 +15,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import numpy as np
-
-import jsonlines
 from pathlib import Path
 
+import jsonlines
+import numpy as np
 import pytest
 
 import shared_test_utils as stu
-
 from dd_core.mapper.prodigystruct import prodigy_to_image
 from dd_datasets import Fintabnet, Pubtabnet
+
 
 @pytest.fixture(name="test_layout")
 def fixture_test_layout():
@@ -41,7 +40,7 @@ def fixture_test_layout():
                 for dp in datapoints_raw:
                     images.append(
                         prodigy_to_image(
-                            categories_name_as_key={"text":1, "title":2, "list":3, "table":4, "figure":5},
+                            categories_name_as_key={"text": 1, "title": 2, "list": 3, "table": 4, "figure": 5},
                             load_image=True,
                             fake_score=False,
                         )(dp)
@@ -73,4 +72,3 @@ def pubtabnet(dataset_test_base_dir: str):
     ds = Pubtabnet()
     ds.dataflow.get_workdir = lambda: Path(dataset_test_base_dir) / ds.dataflow.location
     return ds
-

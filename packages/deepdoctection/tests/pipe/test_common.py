@@ -17,6 +17,12 @@
 
 import pytest
 
+from dd_core.datapoint.annotation import ImageAnnotation
+from dd_core.datapoint.box import BoundingBox
+from dd_core.datapoint.image import Image
+from dd_core.datapoint.view import Page
+from dd_core.utils.file_utils import pytorch_available
+from dd_core.utils.object_types import LayoutType, ObjectTypes, Relationships
 from deepdoctection.pipe.common import (
     AnnotationNmsService,
     FamilyCompound,
@@ -26,20 +32,12 @@ from deepdoctection.pipe.common import (
     PageParsingService,
 )
 
-from dd_core.utils.object_types import LayoutType, Relationships, ObjectTypes
-
-from dd_core.datapoint.image import Image
-from dd_core.datapoint.view import Page
-from dd_core.datapoint.box import BoundingBox
-from dd_core.datapoint.annotation import ImageAnnotation
-from dd_core.utils.file_utils import pytorch_available
-
-
 
 def make_ann(category: ObjectTypes, box, score=0.9) -> ImageAnnotation:
     ann = ImageAnnotation(category_name=category, score=score, bounding_box=BoundingBox(**box))
     assert ann.get_defining_attributes() == ["category_name", "bounding_box"]
     return ann
+
 
 @pytest.mark.skipif(not pytorch_available(), reason="Pytorch not installed")
 @pytest.mark.parametrize(
@@ -69,7 +67,9 @@ def test_annotation_nms_service_serves(dp_image, pairs, thresh, prio):
 def test_matching_service_child_relationships(dp_image):
     parent = make_ann(LayoutType.LIST, {"ulx": 50, "uly": 50, "width": 200, "height": 200, "absolute_coords": True})
     child1 = make_ann(LayoutType.LIST_ITEM, {"ulx": 60, "uly": 60, "width": 50, "height": 20, "absolute_coords": True})
-    child2 = make_ann(LayoutType.LIST_ITEM, {"ulx": 300, "uly": 300, "width": 50, "height": 20, "absolute_coords": True})  # outside
+    child2 = make_ann(
+        LayoutType.LIST_ITEM, {"ulx": 300, "uly": 300, "width": 50, "height": 20, "absolute_coords": True}
+    )  # outside
 
     dp_image.dump(parent)
     dp_image.dump(child1)
@@ -110,8 +110,9 @@ def test_matching_service_synthetic_parent_creation(dp_image):
 
     parents = out.get_annotation(category_names=[LayoutType.LIST])
     assert len(parents) >= 1
-    assert (child1.annotation_id in parents[0].get_relationship(Relationships.CHILD) and
-            child2.annotation_id in parents[1].get_relationship(Relationships.CHILD))
+    assert child1.annotation_id in parents[0].get_relationship(Relationships.CHILD) and child2.annotation_id in parents[
+        1
+    ].get_relationship(Relationships.CHILD)
 
 
 def test_neighbour_matcher_layout_link(dp_image):

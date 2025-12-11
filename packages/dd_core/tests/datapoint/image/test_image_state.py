@@ -37,7 +37,6 @@ class TestImageState:
 
         assert img1.state_id == img2.state_id
 
-
     @staticmethod
     def test_state_id_changes_when_annotation_added(white_image: WhiteImage):
         """state_id changes when annotation is added"""
@@ -46,7 +45,7 @@ class TestImageState:
 
         ann = ImageAnnotation(
             category_name="test_cat_1",
-            bounding_box=BoundingBox(ulx=10, uly=10, width=20, height=20, absolute_coords=True)
+            bounding_box=BoundingBox(ulx=10, uly=10, width=20, height=20, absolute_coords=True),
         )
         img.dump(ann)
 
@@ -94,17 +93,16 @@ class TestImageState:
         assert "_image" in attrs
         assert "_summary" in attrs
 
-
     @staticmethod
     def test_state_id_with_multiple_annotations(white_image: WhiteImage):
         """state_id changes with each annotation added"""
         img = Image(file_name=white_image.file_name)
         state_ids = [img.state_id]
 
-        for i in range(1,3):
+        for i in range(1, 3):
             ann = ImageAnnotation(
                 category_name=f"test_cat_{i}",
-                bounding_box=BoundingBox(ulx=i*10, uly=i*10, width=20, height=20, absolute_coords=True)
+                bounding_box=BoundingBox(ulx=i * 10, uly=i * 10, width=20, height=20, absolute_coords=True),
             )
             img.dump(ann)
             state_ids.append(img.state_id)
@@ -144,7 +142,6 @@ class TestImageState:
         assert state_id2 != state_id3
         assert state_id1 != state_id3
 
-
     @staticmethod
     def test_state_id_different_for_different_states():
         """Two images with different states have different state_ids"""
@@ -154,15 +151,14 @@ class TestImageState:
         # Add different annotations
         ann1 = ImageAnnotation(
             category_name="test_cat_1",
-            bounding_box=BoundingBox(ulx=10, uly=10, width=20, height=20, absolute_coords=True)
+            bounding_box=BoundingBox(ulx=10, uly=10, width=20, height=20, absolute_coords=True),
         )
         img1.dump(ann1)
 
         ann2 = ImageAnnotation(
             category_name="test_cat_2",
-            bounding_box=BoundingBox(ulx=30, uly=30, width=25, height=25, absolute_coords=True)
+            bounding_box=BoundingBox(ulx=30, uly=30, width=25, height=25, absolute_coords=True),
         )
         img2.dump(ann2)
 
         assert img1.state_id != img2.state_id
-

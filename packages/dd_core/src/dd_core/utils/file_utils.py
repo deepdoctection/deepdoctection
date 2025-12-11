@@ -711,6 +711,7 @@ def get_pypdfium2_requirement() -> Requirement:
     """
     return "pypdfium2", pypdfium2_available(), _PYPDFIUM2_ERR_MSG
 
+
 # Pypdf
 _PYPDF_AVAILABLE = importlib.util.find_spec("pypdf") is not None
 
@@ -775,6 +776,7 @@ def get_timm_requirement() -> Requirement:
         tuple: A tuple containing the package name, whether the requirement is satisfied, and an error message.
     """
     return "timm", timm_available(), _TIMM_ERR_MSG
+
 
 class _LazyModule(ModuleType):
     """

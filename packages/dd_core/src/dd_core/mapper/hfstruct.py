@@ -29,11 +29,11 @@ import numpy as np
 from lazy_imports import try_import
 
 from ..datapoint.image import Image
+from ..mapper.maputils import curry
+from ..mapper.misc import get_load_image_func
 from ..utils.object_types import TypeOrStr
 from ..utils.transform import PadTransform
 from ..utils.types import JsonDict
-from ..mapper.maputils import curry
-from ..mapper.misc import get_load_image_func
 
 with try_import() as tr_import_guard:
     from transformers import BatchFeature, DetrFeatureExtractor

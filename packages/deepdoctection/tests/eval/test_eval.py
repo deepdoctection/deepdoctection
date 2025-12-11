@@ -22,20 +22,18 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from dd_core.dataflow import DataFromList
-from dd_core.datapoint import Image, ImageAnnotation, BoundingBox
-
+from dd_core.datapoint import BoundingBox, Image, ImageAnnotation
+from dd_core.utils import DatasetType, get_type
 from deepdoctection.eval import CocoMetric, Evaluator
 from deepdoctection.extern.base import DetectionResult
 from deepdoctection.extern.hfdetr import HFDetrDerivedDetector
-
 from deepdoctection.pipe.layout import ImageLayoutService
-from dd_core.utils import DatasetType, get_type
-
 
 try:
     from dd_datasets.base import DatasetCategories
 except ImportError:
     DatasetCategories = None
+
 
 @pytest.mark.skipif(DatasetCategories is None, reason="dd_datasets is not installed; DatasetCategories unavailable")
 class TestEvaluator:
@@ -60,7 +58,7 @@ class TestEvaluator:
             DetectionResult(box=[10.0, 50.0, 20.0, 250.0], score=0.7, class_id=2, class_name=get_type("column")),
         ]
         categories = DatasetCategories(init_categories=[get_type("row"), get_type("column")])
-        detr_categories= {
+        detr_categories = {
             1: get_type("table"),
             2: get_type("column"),
             3: get_type("row"),

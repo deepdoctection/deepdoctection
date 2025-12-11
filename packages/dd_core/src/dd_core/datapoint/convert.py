@@ -43,7 +43,7 @@ __all__ = [
     "convert_np_array_to_b64_b",
     "convert_bytes_to_np_array",
     "convert_pdf_bytes_to_np_array_v2",
-    "convert_np_array_to_torch"
+    "convert_np_array_to_torch",
 ]
 
 

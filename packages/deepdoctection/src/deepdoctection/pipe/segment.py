@@ -28,13 +28,21 @@ from typing import Literal, Optional, Sequence, Union
 import numpy as np
 
 from dd_core.datapoint.annotation import ImageAnnotation
-from dd_core.datapoint.box import BoundingBox, global_to_local_coords, intersection_box, intersection_boxes, iou, merge_boxes
+from dd_core.datapoint.box import (
+    BoundingBox,
+    global_to_local_coords,
+    intersection_box,
+    intersection_boxes,
+    iou,
+    merge_boxes,
+)
 from dd_core.datapoint.image import Image, MetaAnnotation
-from ..extern.base import DetectionResult
 from dd_core.mapper.maputils import MappingContextManager
 from dd_core.mapper.match import match_anns_by_intersection
 from dd_core.utils.error import ImageError
 from dd_core.utils.object_types import CellType, LayoutType, ObjectTypes, Relationships, TableType, TypeOrStr, get_type
+
+from ..extern.base import DetectionResult
 from .base import PipelineComponent
 from .refine import generate_html_string
 from .registry import pipeline_component_registry
@@ -171,11 +179,13 @@ def stretch_item_per_table(
                 row_embedding_box.ulx = table_embedding_box.ulx + 1.0
                 row_embedding_box.lrx = table_embedding_box.lrx - 1.0
             else:
-                row_embedding_box.ulx = table_embedding_box.ulx + 1.0/dp.width
-                row_embedding_box.lrx = table_embedding_box.lrx - 1.0/dp.height
+                row_embedding_box.ulx = table_embedding_box.ulx + 1.0 / dp.width
+                row_embedding_box.lrx = table_embedding_box.lrx - 1.0 / dp.height
         else:
-            raise ValueError(f"Row box absolute coords {row_embedding_box.absolute_coords} and table box absolute coords "
-                             f"{table_embedding_box.absolute_coords} do not match.")
+            raise ValueError(
+                f"Row box absolute coords {row_embedding_box.absolute_coords} and table box absolute coords "
+                f"{table_embedding_box.absolute_coords} do not match."
+            )
 
         # updating all bounding boxes for rows
         local_row_box = global_to_local_coords(row_embedding_box, table_embedding_box)
@@ -194,11 +204,13 @@ def stretch_item_per_table(
                 col_embedding_box.uly = table_embedding_box.uly + 1.0
                 col_embedding_box.lry = table_embedding_box.lry - 1.0
             else:
-                col_embedding_box.uly = table_embedding_box.uly + 1.0/dp.width
-                col_embedding_box.lry = table_embedding_box.lry - 1.0/dp.height
+                col_embedding_box.uly = table_embedding_box.uly + 1.0 / dp.width
+                col_embedding_box.lry = table_embedding_box.lry - 1.0 / dp.height
         else:
-            raise ValueError(f"Row box absolute coords {col_embedding_box.absolute_coords} and table box absolute coords "
-                             f"{table_embedding_box.absolute_coords} do not match.")
+            raise ValueError(
+                f"Row box absolute coords {col_embedding_box.absolute_coords} and table box absolute coords "
+                f"{table_embedding_box.absolute_coords} do not match."
+            )
 
         # updating all bounding boxes for cols
         local_row_box = global_to_local_coords(col_embedding_box, table_embedding_box)
@@ -220,9 +232,12 @@ def _tile_by_stretching_rows_left_and_rightwise(
         tmp_item_xy = table_embedding_box.uly + 1.0 if item_name == LayoutType.ROW else table_embedding_box.ulx + 1.0
         tmp_item_table_xy = 1.0
     else:
-        tmp_item_xy = table_embedding_box.uly + 1.0/dp.height if item_name == LayoutType.ROW \
-            else table_embedding_box.ulx + 1.0/dp.width
-        tmp_item_table_xy = 1.0/dp.height if item_name == LayoutType.ROW else 1.0/dp.width
+        tmp_item_xy = (
+            table_embedding_box.uly + 1.0 / dp.height
+            if item_name == LayoutType.ROW
+            else table_embedding_box.ulx + 1.0 / dp.width
+        )
+        tmp_item_table_xy = 1.0 / dp.height if item_name == LayoutType.ROW else 1.0 / dp.width
 
     for idx, item in enumerate(items):
         with MappingContextManager(
@@ -248,8 +263,9 @@ def _tile_by_stretching_rows_left_and_rightwise(
                 )
             else:
                 tmp_next_item_xy = (
-                    table_embedding_box.lry - 1.0/dp.height if item_name == LayoutType.ROW else
-                    table_embedding_box.lrx - 1.0/dp.width
+                    table_embedding_box.lry - 1.0 / dp.height
+                    if item_name == LayoutType.ROW
+                    else table_embedding_box.lrx - 1.0 / dp.width
                 )
 
             new_embedding_box = BoundingBox(
@@ -272,8 +288,9 @@ def _tile_by_stretching_rows_left_and_rightwise(
                 )
             else:
                 tmp_table_next_item_xy = (
-                    table.image.height - 1.0/table.image.height if item_name == LayoutType.ROW else
-                    table.image.width - 1.0/table.image.width
+                    table.image.height - 1.0 / table.image.height
+                    if item_name == LayoutType.ROW
+                    else table.image.width - 1.0 / table.image.width
                 )
 
             new_table_embedding_box = BoundingBox(
@@ -298,9 +315,12 @@ def _tile_by_stretching_rows_leftwise_column_downwise(
         tmp_item_xy = table_embedding_box.uly + 1.0 if item_name == LayoutType.ROW else table_embedding_box.ulx + 1.0
         tmp_item_table_xy = 1.0
     else:
-        tmp_item_xy = table_embedding_box.uly + 1.0/dp.height if item_name == LayoutType.ROW \
-            else table_embedding_box.ulx + 1.0/dp.width
-        tmp_item_table_xy = 1.0/dp.height if item_name == LayoutType.ROW else 1.0/dp.width
+        tmp_item_xy = (
+            table_embedding_box.uly + 1.0 / dp.height
+            if item_name == LayoutType.ROW
+            else table_embedding_box.ulx + 1.0 / dp.width
+        )
+        tmp_item_table_xy = 1.0 / dp.height if item_name == LayoutType.ROW else 1.0 / dp.width
 
     for item in items:
         with MappingContextManager(
@@ -337,19 +357,23 @@ def _tile_by_stretching_rows_leftwise_column_downwise(
                 new_embedding_box = BoundingBox(
                     ulx=item_embedding_box.ulx if item_name == LayoutType.ROW else tmp_item_xy,
                     uly=tmp_item_xy if item_name == LayoutType.ROW else item_embedding_box.uly,
-                    lrx=item_embedding_box.lrx if item_name == LayoutType.ROW else
-                    table_embedding_box.lrx - 1.0/dp.width,
-                    lry=table_embedding_box.lry - 1.0/dp.height if item_name == LayoutType.ROW else
-                    item_embedding_box.lry,
+                    lrx=(
+                        item_embedding_box.lrx
+                        if item_name == LayoutType.ROW
+                        else table_embedding_box.lrx - 1.0 / dp.width
+                    ),
+                    lry=(
+                        table_embedding_box.lry - 1.0 / dp.height
+                        if item_name == LayoutType.ROW
+                        else item_embedding_box.lry
+                    ),
                     absolute_coords=False,
                 )
                 new_table_embedding_box = BoundingBox(
                     ulx=item_table_embedding_box.ulx if item_name == LayoutType.ROW else tmp_item_table_xy,
                     uly=tmp_item_table_xy if item_name == LayoutType.ROW else item_table_embedding_box.uly,
-                    lrx=item_table_embedding_box.lrx if item_name == LayoutType.ROW else
-                    1.0 - 1.0/table.image.width,
-                    lry=1.0 - 1.0/table.image.height if item_name == LayoutType.ROW else
-                    item_table_embedding_box.lry,
+                    lrx=item_table_embedding_box.lrx if item_name == LayoutType.ROW else 1.0 - 1.0 / table.image.width,
+                    lry=1.0 - 1.0 / table.image.height if item_name == LayoutType.ROW else item_table_embedding_box.lry,
                     absolute_coords=False,
                 )
 
@@ -1240,9 +1264,9 @@ class PubtablesSegmentationService(PipelineComponent):
                     continue
                 for rs in range(segment_result.rs):
                     for cs in range(segment_result.cs):
-                        cell_rn_cn_to_ann_id[
-                            (segment_result.row_num + rs, segment_result.col_num + cs)
-                        ] = segment_result.annotation_id
+                        cell_rn_cn_to_ann_id[(segment_result.row_num + rs, segment_result.col_num + cs)] = (
+                            segment_result.annotation_id
+                        )
 
             cells = []
             if table.image:

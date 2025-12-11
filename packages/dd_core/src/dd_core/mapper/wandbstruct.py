@@ -26,8 +26,8 @@ from lazy_imports import try_import
 
 from ..datapoint.annotation import DEFAULT_CATEGORY_ID, ImageAnnotation
 from ..datapoint.image import Image
-from ..utils.object_types import DefaultType, ObjectTypes, TypeOrStr, get_type
 from ..mapper.maputils import curry
+from ..utils.object_types import DefaultType, ObjectTypes, TypeOrStr, get_type
 
 with try_import() as wb_import_guard:
     from wandb import Classes  # type: ignore
@@ -116,4 +116,3 @@ def to_wandb_image(
     predictions = {"predictions": {"box_data": boxes, "class_labels": class_labels}}
 
     return dp.image_id, Wbimage(dp.image[:, :, ::-1], mode="RGB", boxes=predictions, classes=class_set)
-

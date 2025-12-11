@@ -96,9 +96,7 @@ class TestStateId:
     def test_state_id_generation_basic(self):
         """Test basic state_id generation"""
         cat = CategoryAnnotation(
-            category_name="test_cat_1",
-            category_id=1,
-            external_id="c822f8c3-1148-30c4-90eb-cb4896b1ebe5"
+            category_name="test_cat_1", category_id=1, external_id="c822f8c3-1148-30c4-90eb-cb4896b1ebe5"
         )
         state_id = cat.state_id
         assert is_uuid_like(state_id)
@@ -106,20 +104,14 @@ class TestStateId:
     def test_state_id_includes_sub_categories(self):
         """Test that state_id changes with sub-categories"""
         cat1 = CategoryAnnotation(
-            category_name="test_cat_1",
-            category_id=1,
-            external_id="c822f8c3-1148-30c4-90eb-cb4896b1ebe5"
+            category_name="test_cat_1", category_id=1, external_id="c822f8c3-1148-30c4-90eb-cb4896b1ebe5"
         )
         state_id_1 = cat1.state_id
         cat2 = CategoryAnnotation(
-            category_name="test_cat_1",
-            category_id=1,
-            external_id="c822f8c3-1148-30c4-90eb-cb4896b1ebe5"
+            category_name="test_cat_1", category_id=1, external_id="c822f8c3-1148-30c4-90eb-cb4896b1ebe5"
         )
         sub_cat = CategoryAnnotation(
-            category_name="test_cat_2",
-            category_id=2,
-            external_id="d822f8c3-1148-30c4-90eb-cb4896b1ebe6"
+            category_name="test_cat_2", category_id=2, external_id="d822f8c3-1148-30c4-90eb-cb4896b1ebe6"
         )
         cat2.dump_sub_category("sub_cat_1", sub_cat)
         state_id_2 = cat2.state_id
@@ -128,15 +120,11 @@ class TestStateId:
     def test_state_id_includes_active_status(self):
         """Test that state_id changes with active status"""
         cat1 = CategoryAnnotation(
-            category_name="test_cat_1",
-            category_id=1,
-            external_id="c822f8c3-1148-30c4-90eb-cb4896b1ebe5"
+            category_name="test_cat_1", category_id=1, external_id="c822f8c3-1148-30c4-90eb-cb4896b1ebe5"
         )
         state_id_1 = cat1.state_id
         cat2 = CategoryAnnotation(
-            category_name="test_cat_1",
-            category_id=1,
-            external_id="c822f8c3-1148-30c4-90eb-cb4896b1ebe5"
+            category_name="test_cat_1", category_id=1, external_id="c822f8c3-1148-30c4-90eb-cb4896b1ebe5"
         )
         cat2.deactivate()
         state_id_2 = cat2.state_id

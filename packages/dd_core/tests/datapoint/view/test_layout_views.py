@@ -23,7 +23,6 @@ from dd_core.datapoint.view import Page, Text_
 
 
 class TestLayoutViews:
-
     """Test Layout class functionality"""
 
     def test_layouts_have_words_property(self, page: Page):
@@ -81,7 +80,6 @@ class TestLayoutViews:
             layout = layouts[0]
             assert len(layout) == len(layout.text)
 
-
     def test_layout_bbox_returns_list(self, page: Page):
         """Layout.bbox returns a list of floats"""
 
@@ -91,5 +89,3 @@ class TestLayoutViews:
             assert isinstance(bbox, list)
             assert len(bbox) == 4
             assert all(isinstance(coord, (int, float)) for coord in bbox)
-
-

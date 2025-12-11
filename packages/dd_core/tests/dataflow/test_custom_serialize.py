@@ -19,30 +19,27 @@
 Testing the module dataflow.custom_serialize
 """
 
+import importlib
 import json
 import tempfile
-import importlib
-
 from pathlib import Path
 from typing import Any
-from lazy_imports import try_import
 
 import pytest
-
-
-from dd_core.utils import file_utils as fu
+from lazy_imports import try_import
 
 import shared_test_utils as stu
 from dd_core.dataflow import (
     CocoParser,
     CustomDataFromList,
+    FileClosingIterator,
     SerializerCoco,
     SerializerFiles,
     SerializerJsonlines,
     SerializerPdfDoc,
     SerializerTabsepFiles,
-    FileClosingIterator,
 )
+from dd_core.utils import file_utils as fu
 
 with try_import() as pt_import_guard:
     import jsonlines
@@ -66,13 +63,13 @@ def test_file_closing_iterator_closes_file(temp_dir: str, simple_dict_list: list
     with open(file_path, "w") as f:
         for item in simple_dict_list:
             f.write(json.dumps(item) + "\n")
-    
+
     file_obj = open(file_path, "r")
     iterator = FileClosingIterator(file_obj, iter(file_obj))
-    
+
     # Act - consume the iterator
     result = list(iterator)
-    
+
     # Assert
     assert len(result) == 3
     assert file_obj.closed
@@ -83,16 +80,16 @@ def test_serializer_jsonlines_load(temp_dir: str, simple_dict_list: list[dict[st
     """
     Test SerializerJsonlines loading from jsonlines file
     """
-    
+
     file_path = Path(temp_dir) / "test.jsonl"
     with jsonlines.open(file_path, "w") as writer:
         for item in simple_dict_list:
             writer.write(item)
-    
+
     # Act
     df = SerializerJsonlines.load(file_path)
     result = stu.collect_datapoint_from_dataflow(df)
-    
+
     # Assert
     assert len(result) == 3
     assert result[0]["key1"] == "a"
@@ -105,20 +102,20 @@ def test_serializer_jsonlines_save(temp_dir: str, simple_dict_list: list[dict[st
     """
     Test SerializerJsonlines saving to jsonlines file
     """
-    
+
     df = CustomDataFromList(simple_dict_list)
     file_name = "output.jsonl"
-    
+
     # Act
     SerializerJsonlines.save(df, temp_dir, file_name, max_datapoints=2)
-    
+
     # Assert
     output_path = Path(temp_dir) / file_name
     assert output_path.exists()
-    
+
     with jsonlines.open(output_path, "r") as reader:
         saved_data = list(reader)
-    
+
     assert len(saved_data) == 2
     assert saved_data[0]["key1"] == "a"
 
@@ -130,7 +127,7 @@ def test_serializer_tabsep_files_load(text_file: Path) -> None:
     # Act
     df = SerializerTabsepFiles.load(text_file)
     result = stu.collect_datapoint_from_dataflow(df)
-    
+
     # Assert
     assert len(result) == 5
     assert "imagesg/g/t/h/gth35e00/2024525661.tif" in result[0]
@@ -144,7 +141,7 @@ def test_serializer_tabsep_files_load_with_max_datapoints(text_file: Path) -> No
     # Act
     df = SerializerTabsepFiles.load(text_file, max_datapoints=3)
     result = stu.collect_datapoint_from_dataflow(df)
-    
+
     # Assert
     assert len(result) == 3
 
@@ -161,11 +158,11 @@ def test_serializer_files_load(temp_dir: str) -> None:
     sub_dir = test_dir / "subdir"
     sub_dir.mkdir()
     (sub_dir / "file4.pdf").touch()
-    
+
     # Act
     df = SerializerFiles.load(test_dir, file_type=".pdf", sort=True)
     result = stu.collect_datapoint_from_dataflow(df)
-    
+
     # Assert
     assert len(result) == 3
     # Verify all results are pdf files
@@ -179,12 +176,12 @@ def test_coco_parser_loads_annotations(coco_file_path: Path) -> None:
     """
     # Act
     parser = CocoParser(coco_file_path)
-    
+
     # Assert
     assert len(parser.imgs) > 0
     assert len(parser.anns) > 0
     assert len(parser.cats) > 0
-    
+
     # Test getting image ids
     img_ids = parser.get_image_ids()
     assert len(img_ids) == 20
@@ -197,7 +194,7 @@ def test_serializer_coco_load(coco_file_path: Path) -> None:
     # Act
     df = SerializerCoco.load(coco_file_path)
     result = stu.collect_datapoint_from_dataflow(df)
-    
+
     # Assert
     assert len(result) == 20
     # Check structure of first datapoint
@@ -214,10 +211,10 @@ def test_serializer_pdf_doc_load(pdf_file_path_two_pages: Path) -> None:
     # Act
     df = SerializerPdfDoc.load(pdf_file_path_two_pages)
     result = stu.collect_datapoint_from_dataflow(df)
-    
+
     # Assert
     assert len(result) == 2
-    
+
     # Check structure of first page
     first_page = result[0]
     assert "path" in first_page
@@ -237,9 +234,10 @@ def test_serializer_pdf_doc_with_max_datapoints(pdf_file_path_two_pages: Path) -
     # Act
     df = SerializerPdfDoc.load(pdf_file_path_two_pages, max_datapoints=1)
     result = stu.collect_datapoint_from_dataflow(df)
-    
+
     # Assert
     assert len(result) == 1
+
 
 @pytest.mark.skipif(not fu.pypdf_available(), reason="Pypdf is not installed")
 def test_serializer_pdf_doc_split(pdf_file_path_two_pages: Path, temp_dir: str) -> None:
@@ -248,12 +246,11 @@ def test_serializer_pdf_doc_split(pdf_file_path_two_pages: Path, temp_dir: str) 
     """
     # Act
     SerializerPdfDoc.split(pdf_file_path_two_pages, temp_dir, max_datapoint=2)
-    
+
     # Assert
     output_files = list(Path(temp_dir).glob("*.pdf"))
     assert len(output_files) == 2
-    
+
     # Verify files contain PDF data
     for pdf_file in output_files:
         assert pdf_file.stat().st_size > 0
-

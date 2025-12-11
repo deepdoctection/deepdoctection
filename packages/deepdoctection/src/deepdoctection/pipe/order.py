@@ -30,14 +30,17 @@ from typing import Any, Optional, Sequence, Union
 import numpy as np
 
 from dd_core.datapoint.annotation import ImageAnnotation
-from dd_core.datapoint.box import BoundingBox, merge_boxes, ioa as np_ioa
+from dd_core.datapoint.box import BoundingBox
+from dd_core.datapoint.box import ioa as np_ioa
+from dd_core.datapoint.box import merge_boxes
 from dd_core.datapoint.image import Image, MetaAnnotation
 from dd_core.datapoint.view import IMAGE_DEFAULTS
+from dd_core.utils.logger import LoggingRecord, logger
+from dd_core.utils.object_types import LayoutType, ObjectTypes, Relationships, TypeOrStr, get_type
+
 from ..extern.base import DetectionResult
 from ..pipe.base import PipelineComponent
 from ..pipe.registry import pipeline_component_registry
-from dd_core.utils.logger import LoggingRecord, logger
-from dd_core.utils.object_types import LayoutType, ObjectTypes, Relationships, TypeOrStr, get_type
 
 
 class OrderGenerator:

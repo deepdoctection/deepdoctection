@@ -18,8 +18,8 @@ Testing Page class text extraction methods
 """
 from dd_core.datapoint.view import Page, Text_
 
-class TestPageText:
 
+class TestPageText:
     """Test Page text extraction"""
 
     def test_text_returns_string(self, page: Page):
@@ -58,8 +58,14 @@ class TestPageText:
         text_ = page.text_
         as_dict = text_.as_dict()
         expected_keys = {
-            "text", "words", "ann_ids", "token_classes", 
-            "token_class_ann_ids", "token_tags", "token_tag_ann_ids",
-            "token_class_ids", "token_tag_ids"
+            "text",
+            "words",
+            "ann_ids",
+            "token_classes",
+            "token_class_ann_ids",
+            "token_tags",
+            "token_tag_ann_ids",
+            "token_class_ids",
+            "token_tag_ids",
         }
         assert expected_keys.issubset(as_dict.keys())

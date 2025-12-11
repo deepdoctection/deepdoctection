@@ -24,9 +24,8 @@ from __future__ import annotations
 
 from pytest import fixture
 
+from ..conftest import TestPdfPage, WhiteImage
 from ..data import PDF_BYTES
-from ..conftest import WhiteImage, TestPdfPage
-
 
 
 @fixture(name="white_image")
@@ -38,11 +37,4 @@ def fixture_image() -> WhiteImage:
 @fixture(name="pdf_page")
 def fixture_pdf_page() -> TestPdfPage:
     """Provide a deterministic 1-page PDF for rendering tests."""
-    return TestPdfPage(
-        pdf_bytes=PDF_BYTES
-    )
-
-
-
-
-
+    return TestPdfPage(pdf_bytes=PDF_BYTES)

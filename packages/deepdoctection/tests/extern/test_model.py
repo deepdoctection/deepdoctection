@@ -16,22 +16,21 @@
 # limitations under the License.
 
 
+import os
+import tempfile
 from pathlib import Path
 from typing import Any
 
-import os
-import tempfile
-
 import pytest
 
-from deepdoctection.extern.model import (
-    ModelCatalog,
-    ModelProfile,
-    ModelDownloadManager,
-    print_model_infos,
-)
 from dd_core.utils.env_info import SETTINGS
 from dd_core.utils.object_types import get_type
+from deepdoctection.extern.model import (
+    ModelCatalog,
+    ModelDownloadManager,
+    ModelProfile,
+    print_model_infos,
+)
 
 
 class TestModelCatalogExtended:
@@ -62,7 +61,6 @@ class TestModelCatalogExtended:
         if "test_model/test_model.pt" not in ModelCatalog.CATALOG:
             ModelCatalog.register("test_model/test_model.pt", self.profile)
 
-
     def test_profile_as_dict_contains_fields(self) -> None:
         """
         ModelProfile.as_dict returns a dict with expected keys.
@@ -71,14 +69,12 @@ class TestModelCatalogExtended:
         assert d["name"] == "test_model/test_model.pt"
         assert d["hf_model_name"] == "weights.pt"
 
-
     def test_model_catalog_get_model_list_contains_registered(self) -> None:
         """
         ModelCatalog.get_model_list returns absolute paths of registered models.
         """
         models = ModelCatalog.get_model_list()
         assert (SETTINGS.MODEL_DIR / "test_model/test_model.pt").as_posix() in models
-
 
     def test_model_catalog_get_profile_list_contains_key(self) -> None:
         """
@@ -87,14 +83,12 @@ class TestModelCatalogExtended:
         keys = ModelCatalog.get_profile_list()
         assert "test_model/test_model.pt" in keys
 
-
     def test_model_catalog_is_registered_true_and_false(self) -> None:
         """
         ModelCatalog.is_registered returns True only for registered.
         """
         assert ModelCatalog.is_registered("test_model/test_model.pt") is True
         assert ModelCatalog.is_registered("unregistered_model") is False
-
 
     def test_model_catalog_full_paths(self) -> None:
         """
@@ -108,7 +102,6 @@ class TestModelCatalogExtended:
             ModelCatalog.get_full_path_configs("test_model/test_model.pt")
             == (SETTINGS.CONFIGS_DIR / "test_path/dd/conf_frcnn_cell.yaml").as_posix()
         )
-
 
     def test_print_model_infos_runs(self, capsys: Any) -> None:
         """
@@ -125,7 +118,6 @@ class TestModelDownloadManager:
     """
     Tests for ModelDownloadManager with monkeypatches for external IO.
     """
-
 
     def test_maybe_download_weights_and_configs_hf(self, monkeypatch: pytest.MonkeyPatch) -> None:
         """
@@ -164,9 +156,14 @@ class TestModelDownloadManager:
             os.makedirs(os.path.dirname(weights_abs), exist_ok=True)
             os.makedirs(os.path.dirname(configs_abs), exist_ok=True)
 
-
-            def _fake_hf_hub_download(repo_id: str, file_name: str, local_dir: str, force_filename: str,
-                                      force_download: bool, token: str | None):
+            def _fake_hf_hub_download(
+                repo_id: str,
+                file_name: str,
+                local_dir: str,
+                force_filename: str,
+                force_download: bool,
+                token: str | None,
+            ):
                 target = os.path.join(local_dir, force_filename)
                 os.makedirs(local_dir, exist_ok=True)
                 with open(target, "wb") as f:
@@ -234,7 +231,6 @@ class TestModelDownloadManager:
 
             out = ModelDownloadManager.maybe_download_weights_and_configs(name)
             assert out == weights_abs
-
 
     def test_maybe_download_no_sources_returns_path(self) -> None:
         """

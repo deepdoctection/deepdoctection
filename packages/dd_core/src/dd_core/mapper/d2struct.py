@@ -26,14 +26,12 @@ from typing import Optional, Sequence, Union
 from lazy_imports import try_import
 
 from ..datapoint.image import Image
+from ..mapper.maputils import curry
 from ..utils.object_types import TypeOrStr
 from ..utils.types import Detectron2Dict
-from ..mapper.maputils import curry
-
 
 with try_import() as d2_import_guard:
     from detectron2.structures import BoxMode
-
 
 
 @curry
@@ -94,4 +92,3 @@ def image_to_d2_frcnn_training(
     output["annotations"] = annotations
 
     return output
-

@@ -69,13 +69,12 @@ can store an (absolute) path to a `.jsonl` file.
 from __future__ import annotations
 
 import importlib
-from importlib.resources import files as pkg_files
-
 import os
 import re
 import subprocess
 import sys
 from collections import defaultdict
+from importlib.resources import files as pkg_files
 from pathlib import Path
 from typing import Any, Optional
 
@@ -237,7 +236,8 @@ class EnvSettings(BaseSettings):
             filename="profiles.jsonl",
             env_keys=("PROFILES_SRC", "DD_PROFILES_SRC"),
             pkg_subdirs=(("dd_core", "configs"), ("deepdoctection", "configs")),
-        ))
+        )
+    )
     CONF_DD_ONE_SRC: Path = Field(
         default_factory=lambda: resolve_config_source(
             filename="conf_dd_one.yaml",

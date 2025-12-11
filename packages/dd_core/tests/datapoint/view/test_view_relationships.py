@@ -30,28 +30,28 @@ class TestViewRelationships:
         layouts = page.layouts
         for layout in layouts:
             words = layout.words
-            assert len(words)>=1
+            assert len(words) >= 1
 
     def test_table_cells_relationship(self, page: Page):
         """Table.cells accesses child cells through relationships"""
         tables = page.tables
         for table in tables:
             cells = table.cells
-            assert len(cells)>=1
+            assert len(cells) >= 1
 
     def test_table_rows_relationship(self, page: Page):
         """Table.rows accesses child rows through relationships"""
         tables = page.tables
         for table in tables:
             rows = table.rows
-            assert len(rows)>=1
+            assert len(rows) >= 1
 
     def test_table_columns_relationship(self, page: Page):
         """Table.columns accesses child columns through relationships"""
         tables = page.tables
         for table in tables:
             columns = table.columns
-            assert len(columns)>=1
+            assert len(columns) >= 1
 
     def test_relationships_are_resolved_through_base_page(self, page: Page):
         """Relationships are resolved through base_page reference"""

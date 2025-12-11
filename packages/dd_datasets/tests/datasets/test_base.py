@@ -16,14 +16,14 @@
 # limitations under the License.
 
 
-import numpy as np
-import pytest
 from pathlib import Path
 
-import shared_test_utils as stu
-from dd_datasets.base import SplitDataFlow
-from dd_datasets import MergeDataset
+import numpy as np
+import pytest
 
+import shared_test_utils as stu
+from dd_datasets import MergeDataset
+from dd_datasets.base import SplitDataFlow
 
 
 def test_splitdataflow_default_train_split(test_layout):
@@ -61,15 +61,17 @@ def test_merge_dataset_build_concatenates_datapoints(fintabnet, pubtabnet):
 def test_merge_dataset_categories_union(fintabnet, pubtabnet):
     merge = MergeDataset(fintabnet, pubtabnet)
     cats = merge.dataflow.categories.get_categories(as_dict=False, init=True)
-    assert 'table' in cats
-    assert 'cell' in cats
-    assert 'item' in cats
-    assert 'word' in cats
+    assert "table" in cats
+    assert "cell" in cats
+    assert "item" in cats
+    assert "word" in cats
 
 
 def test_merge_dataset_explicit_dataflows(fintabnet, pubtabnet):
     df_fn = fintabnet.dataflow.build(split="val", max_datapoints=2)
-    df_pt = pubtabnet.dataflow.build(split="train", max_datapoints=1) # there is no train split in for this test setting
+    df_pt = pubtabnet.dataflow.build(
+        split="train", max_datapoints=1
+    )  # there is no train split in for this test setting
     merge = MergeDataset(fintabnet, pubtabnet)
     merge.explicit_dataflows(df_fn, df_pt)
     df = merge.dataflow.build()
@@ -82,7 +84,7 @@ def test_merge_dataset_buffer_and_split_datasets(monkeypatch: pytest.MonkeyPatch
     monkeypatch.setattr(
         np.random,
         "binomial",
-        lambda n, p, size: np.array([0, 0, 0, 0, 1, 1, 0])  # 7 samples: zeros->train, ones->val/test
+        lambda n, p, size: np.array([0, 0, 0, 0, 1, 1, 0]),  # 7 samples: zeros->train, ones->val/test
     )
     merge = MergeDataset(fintabnet, pubtabnet)
     merge.buffer_datasets(split="val")
@@ -94,11 +96,7 @@ def test_merge_dataset_buffer_and_split_datasets(monkeypatch: pytest.MonkeyPatch
 
 
 def test_merge_dataset_create_split_by_id_reproduces(monkeypatch: pytest.MonkeyPatch, fintabnet, pubtabnet):
-    monkeypatch.setattr(
-        np.random,
-        "binomial",
-        lambda n, p, size: np.array([0, 0, 0, 0, 1, 1, 0])
-    )
+    monkeypatch.setattr(np.random, "binomial", lambda n, p, size: np.array([0, 0, 0, 0, 1, 1, 0]))
     merge = MergeDataset(fintabnet, pubtabnet)
     merge.buffer_datasets(split="val")
     merge.split_datasets(ratio=0.3, add_test=True)
@@ -121,4 +119,3 @@ def test_merge_dataset_explicit_dataflows_warning(fintabnet, pubtabnet, caplog):
     _ = stu.collect_datapoint_from_dataflow(merge.dataflow.build())
     # Expect info log about using explicit dataflows
     assert any("explicitly passed configuration" in rec.getMessage() for rec in caplog.records)
-

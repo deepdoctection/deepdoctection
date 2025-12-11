@@ -16,20 +16,18 @@
 # limitations under the License.
 
 
-import numpy as np
 from typing import cast
-from unittest.mock import create_autospec, Mock
+from unittest.mock import Mock, create_autospec
 
-import shared_test_utils as stu
+import numpy as np
 import pytest
 
+import shared_test_utils as stu
 from dd_core.datapoint.view import Image
 from dd_core.utils.object_types import PageType, get_type
-
-from deepdoctection.extern.hflm import LanguageDetector
 from deepdoctection.extern.base import DetectionResult
+from deepdoctection.extern.hflm import LanguageDetector
 from deepdoctection.pipe.language import LanguageDetectionService
-
 
 
 def test_language_detection_service_sets_summary(image: Image):

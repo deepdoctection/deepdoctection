@@ -22,25 +22,25 @@ Module for `Evaluator`
 from __future__ import annotations
 
 from copy import deepcopy
-from typing import Any, Generator, Literal, Mapping, Optional, Type, Union, overload, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Generator, Literal, Mapping, Optional, Type, Union, overload
 
 import numpy as np
 from lazy_imports import try_import
 
 from dd_core.dataflow import CacheData, DataFlow, DataFromList, MapData
 from dd_core.datapoint.image import Image
-
 from dd_core.mapper import filter_cat, remove_cats
-from dd_core.mapper.wandbstruct import to_wandb_image
 from dd_core.mapper.misc import maybe_load_image, maybe_remove_image, maybe_remove_image_from_category
-from ..pipe.base import PipelineComponent
-from ..pipe.common import PageParsingService
-from ..pipe.concurrency import MultiThreadPipelineComponent
-from ..pipe.doctectionpipe import DoctectionPipe
+from dd_core.mapper.wandbstruct import to_wandb_image
 from dd_core.utils.logger import LoggingRecord, logger
 from dd_core.utils.object_types import DatasetType, LayoutType, TypeOrStr, get_type
 from dd_core.utils.types import PixelValues
 from dd_core.utils.viz import interactive_imshow
+
+from ..pipe.base import PipelineComponent
+from ..pipe.common import PageParsingService
+from ..pipe.concurrency import MultiThreadPipelineComponent
+from ..pipe.doctectionpipe import DoctectionPipe
 from .base import MetricBase
 
 with try_import() as wb_import_guard:
@@ -184,12 +184,10 @@ class Evaluator:
     @overload
     def run(
         self, output_as_dict: Literal[False] = False, **dataflow_build_kwargs: Union[str, int]
-    ) -> list[dict[str, float]]:
-        ...
+    ) -> list[dict[str, float]]: ...
 
     @overload
-    def run(self, output_as_dict: Literal[True], **dataflow_build_kwargs: Union[str, int]) -> dict[str, float]:
-        ...
+    def run(self, output_as_dict: Literal[True], **dataflow_build_kwargs: Union[str, int]) -> dict[str, float]: ...
 
     def run(
         self, output_as_dict: bool = False, **dataflow_build_kwargs: Union[str, int]

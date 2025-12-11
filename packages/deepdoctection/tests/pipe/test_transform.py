@@ -1,5 +1,3 @@
-
-
 from unittest.mock import MagicMock
 
 import numpy as np
@@ -8,10 +6,8 @@ from numpy.testing import assert_array_equal
 from dd_core.datapoint.image import Image
 from dd_core.utils.identifier import get_uuid_from_str
 from dd_core.utils.object_types import PageType
-
 from deepdoctection.extern.base import DetectionResult, ImageTransformer
 from deepdoctection.pipe.transform import SimpleTransformService
-
 
 
 class TestSimpleTransformService:
@@ -33,7 +29,6 @@ class TestSimpleTransformService:
         detect_result.new_w = 596  # type: ignore
         self._transform_predictor.predict = MagicMock(return_value=detect_result)
         self.simple_transform = SimpleTransformService(self._transform_predictor)
-
 
     def test_pass_datapoint(self, dp_image: Image) -> None:
         """

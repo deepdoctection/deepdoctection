@@ -15,24 +15,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest
 import numpy as np
+import pytest
 
-from dd_core.utils.object_types import get_type, Relationships
 from dd_core.datapoint import Image
+from dd_core.utils.object_types import Relationships, get_type
 from deepdoctection.extern.base import DetectionResult
 from deepdoctection.pipe.anngen import DatapointManager
 
 
-
 def _detection_result(box, name="text", cid=1, score=0.9):
-    return DetectionResult(
-        box=box,
-        class_name=get_type(name),
-        class_id=cid,
-        score=score,
-        absolute_coords=True
-    )
+    return DetectionResult(box=box, class_name=get_type(name), class_id=cid, score=score, absolute_coords=True)
 
 
 def test_set_image_annotation_and_cache(dp_image: Image):
@@ -120,12 +113,6 @@ def test_errors_assert_and_type():
     # Proper setup
     img = Image(file_name="dummy.jpg")
     mgr.datapoint = img
-    bad_dr = DetectionResult(
-        box=("not", "a", "list"),
-        class_name="x",
-        class_id=1,
-        score=0.1,
-        absolute_coords=True
-    )
+    bad_dr = DetectionResult(box=("not", "a", "list"), class_name="x", class_id=1, score=0.1, absolute_coords=True)
     with pytest.raises(TypeError, match="must be of type list or np.ndarray"):
         mgr.set_image_annotation(bad_dr)

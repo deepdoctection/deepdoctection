@@ -18,9 +18,10 @@
 from __future__ import annotations
 
 import pytest
+
 from dd_core.dataflow import DataFromList
 from dd_core.datapoint.image import Image
-
+from dd_core.utils.object_types import CellType
 from deepdoctection.eval.accmetric import (
     AccuracyMetric,
     ConfusionMetric,
@@ -31,8 +32,6 @@ from deepdoctection.eval.accmetric import (
     RecallMetric,
     RecallMetricMicro,
 )
-
-from dd_core.utils.object_types import CellType
 
 try:
     from dd_datasets.info import DatasetCategories
@@ -121,6 +120,7 @@ class TestAccuracyMetric:
         # Assert
         assert output == {"column_span/num_samples/5": 1.0, "row_number/num_samples/5": 1.0}
 
+
 @pytest.mark.skipif(DatasetCategories is None, reason="dd_datasets is not installed; DatasetCategories unavailable")
 class TestConfusionMetric:
     """
@@ -175,6 +175,7 @@ class TestConfusionMetric:
             "num_samples": 2,
         }
 
+
 @pytest.mark.skipif(DatasetCategories is None, reason="dd_datasets is not installed; DatasetCategories unavailable")
 class TestPrecisionMetric:
     """
@@ -204,6 +205,7 @@ class TestPrecisionMetric:
         assert output[4] == {"key": "cell", "category_id": 3, "val": 1.0, "num_samples": 5}
         assert output[10] == {"key": "row", "category_id": 6, "val": 1.0, "num_samples": 2}
         assert output[17] == {"key": "column", "category_id": 7, "val": 1.0, "num_samples": 2}
+
 
 @pytest.mark.skipif(DatasetCategories is None, reason="dd_datasets is not installed; DatasetCategories unavailable")
 class TestRecallMetric:
@@ -235,6 +237,7 @@ class TestRecallMetric:
         assert output[10] == {"key": "row", "category_id": 6, "val": 1.0, "num_samples": 2}
         assert output[17] == {"key": "column", "category_id": 7, "val": 1.0, "num_samples": 2}
 
+
 @pytest.mark.skipif(DatasetCategories is None, reason="dd_datasets is not installed; DatasetCategories unavailable")
 class TestF1Metric:
     """
@@ -264,6 +267,7 @@ class TestF1Metric:
         assert output[4] == {"key": "cell", "category_id": 3, "val": 1.0, "num_samples": 5}
         assert output[10] == {"key": "row", "category_id": 6, "val": 1.0, "num_samples": 2}
         assert output[17] == {"key": "column", "category_id": 7, "val": 1.0, "num_samples": 2}
+
 
 @pytest.mark.skipif(DatasetCategories is None, reason="dd_datasets is not installed; DatasetCategories unavailable")
 class TestPrecisionMetricMicro:
@@ -295,6 +299,7 @@ class TestPrecisionMetricMicro:
         assert output[2] == {"key": "row", "val": 1.0, "num_samples": 2}
         assert output[3] == {"key": "column", "val": 1.0, "num_samples": 2}
 
+
 @pytest.mark.skipif(DatasetCategories is None, reason="dd_datasets is not installed; DatasetCategories unavailable")
 class TestRecallMetricMicro:
     """
@@ -324,6 +329,7 @@ class TestRecallMetricMicro:
         assert output[1] == {"key": "cell", "val": 1.0, "num_samples": 5}
         assert output[2] == {"key": "row", "val": 1.0, "num_samples": 2}
         assert output[3] == {"key": "column", "val": 1.0, "num_samples": 2}
+
 
 @pytest.mark.skipif(DatasetCategories is None, reason="dd_datasets is not installed; DatasetCategories unavailable")
 class TestF1MetricMicro:

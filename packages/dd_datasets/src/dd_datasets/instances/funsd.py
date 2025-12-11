@@ -38,11 +38,18 @@ import os
 from typing import Dict, List, Mapping, Union
 
 from dd_core.dataflow import DataFlow, MapData, SerializerFiles
-
 from dd_core.mapper.cats import cat_to_sub_cat, filter_cat
 from dd_core.mapper.xfundstruct import xfund_to_image
 from dd_core.utils.fs import load_json
-from dd_core.utils.object_types import BioTag, DatasetType, LayoutType, ObjectTypes, TokenClasses, TokenClassWithTag, WordType
+from dd_core.utils.object_types import (
+    BioTag,
+    DatasetType,
+    LayoutType,
+    ObjectTypes,
+    TokenClasses,
+    TokenClassWithTag,
+    WordType,
+)
 from dd_core.utils.types import FunsdDict, PathLikeOrStr
 
 from ..base import _BuiltInDataset

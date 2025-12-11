@@ -15,16 +15,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest
-from unittest.mock import MagicMock
 from typing import Any
+from unittest.mock import MagicMock
+
+import pytest
 
 from dd_core.utils.file_utils import pytorch_available, transformers_available
 from deepdoctection.extern.base import SequenceClassResult, TokenClassResult
 from deepdoctection.extern.hflm import (
-    HFLmTokenClassifier,
-    HFLmSequenceClassifier,
     HFLmLanguageDetector,
+    HFLmSequenceClassifier,
+    HFLmTokenClassifier,
 )
 
 if pytorch_available():
@@ -45,6 +46,7 @@ def _mk_dummy_tokenizer() -> Any:
                 "attention_mask": torch.tensor([[1, 1, 1]], dtype=torch.long),
                 # No token_type_ids for XLM-R; model code will create zeros_like if absent
             }
+
     return DummyTokenizer()
 
 
@@ -62,9 +64,11 @@ def test_hflm_sequence_predict_basic(monkeypatch: pytest.MonkeyPatch) -> None:
         MagicMock(return_value=MagicMock()),
         raising=True,
     )
+
     # Mock prediction helper
     def _fake_seq_predict(input_ids, attention_mask, token_type_ids, model):
         return SequenceClassResult(class_id=0, score=0.92)
+
     monkeypatch.setattr(
         "deepdoctection.extern.hflm.predict_sequence_classes_from_lm",
         MagicMock(side_effect=_fake_seq_predict),
@@ -143,7 +147,9 @@ def _mk_dummy_fast_tokenizer() -> Any:
                 "attention_mask": torch.tensor([[1, 1, 1]], dtype=torch.long),
                 # No token_type_ids for XLM-R; code will create zeros_like if absent
             }
+
     return DummyTokenizer()
+
 
 @REQUIRES_PT_AND_TR
 def test_hflm_language_predict_basic(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -158,8 +164,10 @@ def test_hflm_language_predict_basic(monkeypatch: pytest.MonkeyPatch) -> None:
     class _StubLangModel:
         def to(self, device):
             return self
+
         def eval(self):
             pass
+
         def __call__(self, input_ids=None, attention_mask=None, token_type_ids=None):
             # Highest score at index 1 -> class_id becomes 2 -> "deu"
             return type("Out", (), {"logits": torch.tensor([[0.1, 2.0, 0.5]], dtype=torch.float32)})

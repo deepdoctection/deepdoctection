@@ -21,20 +21,20 @@ Testing module datasets.instances.pubtables1m
 
 
 from pathlib import Path
+
 import numpy as np
 import pytest
 
 import shared_test_utils as stu
-
 from dd_core.utils.file_utils import lxml_available
 from dd_datasets import Pubtables1MDet, Pubtables1MStruct
+
 
 @pytest.mark.skipif(not lxml_available(), reason="lxml not installed")
 def test_dataset_pubtables1m_det_returns_image(dataset_test_base_dir: str) -> None:
 
     pubtables = Pubtables1MDet()
     pubtables.dataflow.get_workdir = lambda: Path(dataset_test_base_dir) / pubtables.dataflow.location
-
 
     df = pubtables.dataflow.build()
     df_list = stu.collect_datapoint_from_dataflow(df)
@@ -90,4 +90,3 @@ def test_dataset_pubtables1m_struct_with_load_image_returns_image(
 
     assert len(df_list) == 1
     assert df_list[0].image is not None
-

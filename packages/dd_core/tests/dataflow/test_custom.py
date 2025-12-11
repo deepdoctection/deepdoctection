@@ -26,7 +26,6 @@ import shared_test_utils as stu
 from dd_core.dataflow import CacheData, CustomDataFromIterable, CustomDataFromList
 
 
-
 def rebalance_remove_first(lst: list[Any]) -> list[Any]:
     """
     Helper function to remove first element from list
@@ -40,11 +39,11 @@ def test_cache_data_caches_dataflow(simple_list_dataflow: Any) -> None:
     """
     # Arrange
     df = CacheData(simple_list_dataflow)
-    
+
     # Act
     first_pass = stu.collect_datapoint_from_dataflow(df)
     second_pass = stu.collect_datapoint_from_dataflow(df)
-    
+
     # Assert
     assert first_pass == second_pass
     assert len(first_pass) == 3
@@ -57,10 +56,10 @@ def test_cache_data_get_cache(simple_dict_dataflow: Any) -> None:
     """
     # Arrange
     df = CacheData(simple_dict_dataflow)
-    
+
     # Act
     cached_list = df.get_cache()
-    
+
     # Assert
     assert len(cached_list) == 3
     assert cached_list[0] == {"key1": "a", "key2": 1}
@@ -74,10 +73,10 @@ def test_cache_data_with_shuffle(simple_list_dataflow: Any) -> None:
     """
     # Arrange
     df = CacheData(simple_list_dataflow, shuffle=True)
-    
+
     # Act
     first_pass = stu.collect_datapoint_from_dataflow(df)
-    
+
     # Assert - check all elements are present (order may vary)
     assert len(first_pass) == 3
     assert set(map(tuple, first_pass)) == {("a", "b"), ("c", "d"), ("e", "f")}
@@ -89,10 +88,10 @@ def test_custom_data_from_list_with_max_datapoints(simple_list: list[str]) -> No
     """
     # Arrange
     df = CustomDataFromList(simple_list, max_datapoints=3)
-    
+
     # Act
     result = stu.collect_datapoint_from_dataflow(df)
-    
+
     # Assert
     assert len(result) == 3
     assert result == [["a", "b"], ["c", "d"], ["e", "f"]]
@@ -105,10 +104,10 @@ def test_custom_data_from_list_with_rebalance_func(simple_dict_list: list[dict[s
     """
     # Arrange
     df = CustomDataFromList(simple_dict_list, rebalance_func=rebalance_remove_first)
-    
+
     # Act
     result = stu.collect_datapoint_from_dataflow(df)
-    
+
     # Assert
     assert len(result) == 2
     assert result[0]["key2"] == 2
@@ -122,10 +121,10 @@ def test_custom_data_from_iterable(simple_list: list[str]) -> None:
     # Arrange
     iterable = iter(simple_list)
     df = CustomDataFromIterable(iterable, max_datapoints=2)
-    
+
     # Act
     result = stu.collect_datapoint_from_dataflow(df)
-    
+
     # Assert
     assert len(result) == 2
-    assert result == [['a', 'b'], ['c', 'd']]
+    assert result == [["a", "b"], ["c", "d"]]

@@ -17,8 +17,8 @@
 
 import pytest
 
-from dd_core.utils.file_utils import pytorch_available, transformers_available, timm_available
 from dd_core.utils import get_torch_device
+from dd_core.utils.file_utils import pytorch_available, timm_available, transformers_available
 from deepdoctection.extern.hfdetr import HFDetrDerivedDetector
 from deepdoctection.extern.model import ModelCatalog, ModelDownloadManager
 

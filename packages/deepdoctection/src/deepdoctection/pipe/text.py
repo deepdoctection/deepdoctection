@@ -26,11 +26,12 @@ from typing import Optional, Sequence, Union
 
 from dd_core.datapoint.annotation import ImageAnnotation
 from dd_core.datapoint.image import Image, MetaAnnotation
-from ..extern.base import ObjectDetector, PdfMiner, TextRecognizer
-from ..extern.tessocr import TesseractOcrDetector
 from dd_core.utils.error import ImageError
 from dd_core.utils.object_types import ObjectTypes, PageType, TypeOrStr, WordType, get_type
 from dd_core.utils.types import PixelValues
+
+from ..extern.base import ObjectDetector, PdfMiner, TextRecognizer
+from ..extern.tessocr import TesseractOcrDetector
 from .base import PipelineComponent
 from .registry import pipeline_component_registry
 
@@ -224,9 +225,9 @@ class TextExtractionService(PipelineComponent):
                 for category in self.predictor.get_category_names()
             }
         return MetaAnnotation(
-            image_annotations=self.predictor.get_category_names()
-            if isinstance(self.predictor, (ObjectDetector, PdfMiner))
-            else (),
+            image_annotations=(
+                self.predictor.get_category_names() if isinstance(self.predictor, (ObjectDetector, PdfMiner)) else ()
+            ),
             sub_categories=sub_cat_dict,
             relationships={},
             summaries=(),

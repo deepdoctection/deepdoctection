@@ -33,10 +33,8 @@ from dd_core.utils.pdf_utils import (
     pdf_to_np_array_poppler,
 )
 
+POPPLER_AVAILABLE = bool(fu.pdf_to_ppm_available() or fu.pdf_to_cairo_available() or fu.get_poppler_version())
 
-POPPLER_AVAILABLE = bool(
-    fu.pdf_to_ppm_available() or fu.pdf_to_cairo_available() or fu.get_poppler_version()
-)
 
 class TestGetPdfFileReader:
     """Test get_pdf_file_reader"""
@@ -56,7 +54,6 @@ class TestGetPdfFileReader:
         if pdf_bytes:
             reader = get_pdf_file_reader(pdf_bytes)
             assert reader is not None
-
 
 
 class TestPDFStreamer:
@@ -123,4 +120,3 @@ class TestLoadBytesFromPdfFile:
         pdf_bytes = load_bytes_from_pdf_file(pdf_file_path_two_pages, page_number=page_number)
         assert isinstance(pdf_bytes, bytes)
         assert len(pdf_bytes) > 0
-
