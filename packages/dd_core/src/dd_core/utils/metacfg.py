@@ -24,6 +24,7 @@ from __future__ import annotations
 import pprint
 from typing import Any
 
+import ast
 import yaml
 
 from .types import PathLikeOrStr
@@ -105,7 +106,7 @@ class AttrDict:
             k: v.to_dict() if isinstance(v, AttrDict) else v for k, v in self.__dict__.items() if not k.startswith("_")
         }
 
-    def from_dict(self, d: dict[str, Any]) -> None:  # pylint: disable=C0103
+    def from_dict(self, d: dict[str, Any]) -> None:
         """
         Generate an instance from a dict.
 
@@ -114,7 +115,7 @@ class AttrDict:
         """
         if isinstance(d, dict):
             self.freeze(False)
-            for k, v in d.items():  # pylint: disable=C0103
+            for k, v in d.items():
                 self_v = getattr(self, k)
                 if isinstance(v, dict):
                     self_v.from_dict(v)
@@ -129,7 +130,7 @@ class AttrDict:
             args: A list of command line arguments in the form `key1.key2=val`.
         """
         for cfg in args:
-            keys, v = cfg.split("=", maxsplit=1)  # pylint: disable=C0103
+            keys, v = cfg.split("=", maxsplit=1)
             key_list = keys.split(".")
 
             dic = self
@@ -140,7 +141,10 @@ class AttrDict:
 
             old_v = getattr(dic, key)
             if not isinstance(old_v, str):
-                v = eval(v)  # pylint: disable=C0103, W0123
+                try:
+                    v = ast.literal_eval(v)
+                except (ValueError, SyntaxError):
+                    pass
             setattr(dic, key, v)
 
     def overwrite_config(self, other_config: AttrDict) -> None:
@@ -165,7 +169,7 @@ class AttrDict:
             freezed: Whether to freeze the instance.
         """
         self._freezed = freezed
-        for v in self.__dict__.values():  # pylint: disable=C0103
+        for v in self.__dict__.values():
             if isinstance(v, AttrDict):
                 v.freeze(freezed)
 

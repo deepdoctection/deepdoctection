@@ -74,7 +74,6 @@ import re
 import subprocess
 import sys
 from collections import defaultdict
-from importlib.resources import files as pkg_files
 from pathlib import Path
 from typing import Any, Optional
 
@@ -158,6 +157,25 @@ def resolve_config_source(
     env_keys: tuple[str, ...],
     pkg_subdirs: tuple[tuple[str, str], ...],
 ) -> Path:
+    """
+    Resolve a configuration file path.
+
+    The lookup order is:
+    1. For each environment variable in `env_keys`, if set and points to an existing file,
+       that path is returned.
+    2. Walk up the parents of the current module and for each `(pkg, subdir)` in `pkg_subdirs`
+       check `parent / pkg / "src" / pkg / subdir / filename` and return the first existing file.
+    3. Check the legacy location `here.parents[1] / "configs" / filename` and return it if it exists.
+    4. If nothing is found, return the legacy location as a fallback (it may not exist).
+
+    Args:
+        filename: The basename of the configuration file to locate.
+        env_keys: Tuple of environment variable names to consult for explicit paths.
+        pkg_subdirs: Tuple of `(package_name, subdirectory)` pairs to search under repository parents.
+
+    Returns:
+        A `Path` pointing to the resolved configuration file or a fallback legacy path.
+    """
     for key in env_keys:
         val = os.environ.get(key)
         if val:
@@ -343,7 +361,7 @@ class EnvSettings(BaseSettings):
             except ImportError:
                 pass
 
-            for mod in self.CUSTOM_OBJECT_TYPES_MODULES:
+            for mod in self.CUSTOM_OBJECT_TYPES_MODULES:  # pylint: disable=E1133
                 if not mod:
                     continue
                 try:
@@ -420,11 +438,11 @@ class EnvSettings(BaseSettings):
         conf_tesseract_target = self.CONFIGS_DIR / "dd" / self.CONF_TESSERACT_TARGET_NAME
 
         # Copy (idempotent unless force_copy) - only if source exists (for dd_datapoint package)
-        if self.PROFILES_SRC.exists():
+        if self.PROFILES_SRC.exists(): # pylint: disable=E1101
             copy_file_to_target(self.PROFILES_SRC, profiles_target, force_copy=force_copy)
-        if self.CONF_DD_ONE_SRC.exists():
+        if self.CONF_DD_ONE_SRC.exists(): # pylint: disable=E1101
             copy_file_to_target(self.CONF_DD_ONE_SRC, conf_dd_one_target, force_copy=force_copy)
-        if self.CONF_TESSERACT_SRC.exists():
+        if self.CONF_TESSERACT_SRC.exists(): # pylint: disable=E1101
             copy_file_to_target(self.CONF_TESSERACT_SRC, conf_tesseract_target, force_copy=force_copy)
 
 
@@ -642,8 +660,8 @@ def pt_info(data: KeyValEnvInfos) -> KeyValEnvInfos:
     if not SETTINGS.PYTORCH_AVAILABLE:
         data.append(("PyTorch", "None"))
         return []
-    else:
-        import torch
+
+    import torch
 
     has_gpu = torch.cuda.is_available()  # true for both CUDA & ROCM
     has_mps = torch.backends.mps.is_available()
@@ -761,7 +779,7 @@ def collect_env_info() -> str:
     try:
         import prctl  # type: ignore
 
-        _ = prctl.set_pdeathsig  # pylint: disable=E1101
+        _ = prctl.set_pdeathsig
     except ModuleNotFoundError:
         has_prctl = False
     data.append(("python-prctl", str(has_prctl)))

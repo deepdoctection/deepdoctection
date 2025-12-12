@@ -272,7 +272,7 @@ def set_tesseract_path(tesseract_path: PathLikeOrStr) -> None:
 
     tesseract_flag = which(tesseract_path)
 
-    _TESS_AVAILABLE = False if tesseract_flag is not None else True  # pylint: disable=W0603,R1719
+    _TESS_AVAILABLE = tesseract_flag is not None
 
     _TESS_PATH = tesseract_path
 
@@ -891,7 +891,8 @@ def copy_file_to_target(
       Otherwise, a `ValueError` is raised.
     - If the target is an existing or implied directory (no suffix), the file is copied inside it. If the target
       is a file path, the file is written there; `file_name` overrides the basename.
-    - Parent directories are created as needed. If `force_copy` is False and the destination exists, the copy is skipped.
+    - Parent directories are created as needed. If `force_copy` is False and the destination exists, the copy is
+      skipped.
 
     Args:
         path_to_source_dir_or_file: Path to a source file or a directory containing the source file.

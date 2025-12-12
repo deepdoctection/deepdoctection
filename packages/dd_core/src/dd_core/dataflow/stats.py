@@ -116,6 +116,8 @@ class MeanFromDataFlow(ProxyDataFlow):
 
         with get_tqdm(total=len_df) as status_bar:
             n = None
+            val_0_ndim = None
+
             for n, dp in enumerate(itr, 1):
                 if isinstance(dp, dict):
                     assert isinstance(self.key, str), self.key
@@ -237,6 +239,8 @@ class StdFromDataFlow(ProxyDataFlow):
         if len_df is not None and self.max_datapoints is not None:
             len_df = min(len_df, self.max_datapoints)
         n = None
+        val_0_ndim = None
+        k = None
         with get_tqdm(total=len_df) as status_bar:
             for n, dp in enumerate(itr, 1):
                 if isinstance(dp, dict):

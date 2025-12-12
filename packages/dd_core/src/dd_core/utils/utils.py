@@ -142,7 +142,7 @@ def call_only_once(func: Callable[..., Any]) -> Callable[..., Any]:
         if not hasattr(self, "_CALL_ONLY_ONCE_CACHE"):
             cache = self._CALL_ONLY_ONCE_CACHE = set()
         else:
-            cache = self._CALL_ONLY_ONCE_CACHE  # pylint: disable=W0212
+            cache = self._CALL_ONLY_ONCE_CACHE
 
         cls = type(self)
         # cannot use ismethod(), because decorated method becomes a function

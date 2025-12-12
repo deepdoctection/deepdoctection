@@ -21,7 +21,7 @@
 
 from __future__ import annotations
 
-from math import ceil, floor
+from math import floor
 from typing import ClassVar, Literal, Optional, Sequence, TypedDict, Union, cast, Any
 
 import numpy as np
@@ -189,6 +189,7 @@ def ioa(boxes1: npt.NDArray[float32], boxes2: npt.NDArray[float32]) -> npt.NDArr
 
 
 class BoxDict(TypedDict):
+    """Bounding box dict: `absolute_coords` flag and coordinates `ulx`, `uly`, `lrx`, `lry`."""
     absolute_coords: bool
     ulx: BoxCoordinate
     uly: BoxCoordinate
@@ -316,10 +317,12 @@ class BoundingBox(BaseModel):
 
     @property
     def ulx(self) -> BoxCoordinate:
+        """ulx property"""
         return self._ulx / self.RELATIVE_COORD_SCALE_FACTOR if not self.absolute_coords else self._ulx
 
     @ulx.setter
     def ulx(self, value: BoxCoordinate) -> None:
+        """ulx setter"""
         if self.absolute_coords:
             new_val = _round_half_down(float(value))
         else:
@@ -329,10 +332,12 @@ class BoundingBox(BaseModel):
 
     @property
     def uly(self) -> BoxCoordinate:
+        """uly property"""
         return self._uly / self.RELATIVE_COORD_SCALE_FACTOR if not self.absolute_coords else self._uly
 
     @uly.setter
     def uly(self, value: BoxCoordinate) -> None:
+        """uly setter"""
         if self.absolute_coords:
             new_val = _round_half_down(float(value))
         else:
@@ -342,10 +347,12 @@ class BoundingBox(BaseModel):
 
     @property
     def lrx(self) -> BoxCoordinate:
+        """lrx property"""
         return self._lrx / self.RELATIVE_COORD_SCALE_FACTOR if not self.absolute_coords else self._lrx
 
     @lrx.setter
     def lrx(self, value: BoxCoordinate) -> None:
+        """lrx setter"""
         if self.absolute_coords:
             new_val = _round_half_up(float(value))
         else:
@@ -355,10 +362,12 @@ class BoundingBox(BaseModel):
 
     @property
     def lry(self) -> BoxCoordinate:
+        """lry property"""
         return self._lry / self.RELATIVE_COORD_SCALE_FACTOR if not self.absolute_coords else self._lry
 
     @lry.setter
     def lry(self, value: BoxCoordinate) -> None:
+        """lry setter"""
         if self.absolute_coords:
             new_val = _round_half_up(float(value))
         else:
@@ -368,6 +377,7 @@ class BoundingBox(BaseModel):
 
     @property
     def width(self) -> BoxCoordinate:
+        """width property"""
         return (
             (self._lrx - self._ulx) / self.RELATIVE_COORD_SCALE_FACTOR
             if not self.absolute_coords
@@ -376,6 +386,7 @@ class BoundingBox(BaseModel):
 
     @width.setter
     def width(self, value: BoxCoordinate) -> None:
+        """width setter"""
         if not self.absolute_coords:
             new_lrx = self._ulx + round(value * self.RELATIVE_COORD_SCALE_FACTOR)
         else:
@@ -385,6 +396,7 @@ class BoundingBox(BaseModel):
 
     @property
     def height(self) -> BoxCoordinate:
+        """height property"""
         return (
             (self._lry - self._uly) / self.RELATIVE_COORD_SCALE_FACTOR
             if not self.absolute_coords
@@ -393,6 +405,7 @@ class BoundingBox(BaseModel):
 
     @height.setter
     def height(self, value: BoxCoordinate) -> None:
+        """height setter"""
         if not self.absolute_coords:
             new_lry = self._uly + round(value * self.RELATIVE_COORD_SCALE_FACTOR)
         else:
@@ -402,22 +415,26 @@ class BoundingBox(BaseModel):
 
     @property
     def cx(self) -> BoxCoordinate:
+        """cx property"""
         if self.absolute_coords:
             return _round_half_up(float(self.ulx + 0.5 * self.width))
         return self.ulx + 0.5 * self.width
 
     @property
     def cy(self) -> BoxCoordinate:
+        """cy property"""
         if self.absolute_coords:
             return _round_half_up(float(self.uly + 0.5 * self.height))
         return self.uly + 0.5 * self.height
 
     @property
     def center(self) -> tuple[BoxCoordinate, BoxCoordinate]:
+        """center property"""
         return (self.cx, self.cy)
 
     @property
     def area(self) -> Union[int, float]:
+        """area property"""
         if self.absolute_coords:
             return self.width * self.height
         raise ValueError("Cannot calculate area, when bounding box coords are relative")
@@ -438,7 +455,22 @@ class BoundingBox(BaseModel):
     def to_np_array(
         self, mode: Literal["xyxy", "xywh", "poly"], scale_x: float = 1.0, scale_y: float = 1.0
     ) -> npt.NDArray[np.float32]:
+        """
+        Returns the coordinates as numpy array.
 
+        Args:
+            mode: Mode for coordinate arrangement:
+                     `xyxy` for upper left/lower right point representation,
+                     `xywh` for upper left and width/height representation or
+                     `poly` for full eight coordinate polygon representation. `x,y` coordinates will be
+                      returned in counter-clockwise order.
+
+            scale_x: rescale the `x` coordinate. Defaults to `1`
+            scale_y: rescale the `y` coordinate. Defaults to `1`
+
+        Returns:
+            box coordinates
+        """
         if not self.absolute_coords and (scale_x > 1.0 or scale_y > 1.0):
             raise ValueError("Cannot scale up relative coordinates")
 
@@ -459,7 +491,22 @@ class BoundingBox(BaseModel):
     def to_list(
         self, mode: Literal["xyxy", "xywh", "poly"], scale_x: float = 1.0, scale_y: float = 1.0
     ) -> list[BoxCoordinate]:
+        """
+        Returns the coordinates as list
 
+        Args:
+            mode:  Mode for coordinate arrangement:
+                     `xyxy` for upper left/lower right point representation,
+                     `xywh` for upper left and width/height representation or
+                     `poly` for full eight coordinate polygon representation. `x,y` coordinates will be
+                      returned in counter-clockwise order.
+
+            scale_x: rescale the x coordinate. Defaults to 1
+            scale_y: rescale the y coordinate. Defaults to 1
+
+        Returns:
+            box coordinates
+        """
         if not self.absolute_coords and (scale_x > 1.0 or scale_y > 1.0):
             raise ValueError("Cannot scale up relative coordinates")
 
@@ -472,8 +519,7 @@ class BoundingBox(BaseModel):
                     _round_half_up(self.lrx * scale_x),
                     _round_half_up(self.lry * scale_y),
                 ]
-            else:
-                return [self.ulx * scale_x, self.uly * scale_y, self.lrx * scale_x, self.lry * scale_y]
+            return [self.ulx * scale_x, self.uly * scale_y, self.lrx * scale_x, self.lry * scale_y]
 
         if mode == "xywh":
             if self.absolute_coords:
@@ -483,8 +529,7 @@ class BoundingBox(BaseModel):
                     _round_half_up(self.width * scale_x),
                     _round_half_up(self.height * scale_y),
                 ]
-            else:
-                return [self.ulx * scale_x, self.uly * scale_y, self.width * scale_x, self.height * scale_y]
+            return [self.ulx * scale_x, self.uly * scale_y, self.width * scale_x, self.height * scale_y]
 
         # mode == "poly"
         if self.absolute_coords:
@@ -498,19 +543,30 @@ class BoundingBox(BaseModel):
                 _round_half_down(self.ulx * scale_x),
                 _round_half_up(self.lry * scale_y),
             ]
-        else:
-            return [
-                self.ulx * scale_x,
-                self.uly * scale_y,
-                self.lrx * scale_x,
-                self.uly * scale_y,
-                self.lrx * scale_x,
-                self.lry * scale_y,
-                self.ulx * scale_x,
-                self.lry * scale_y,
-            ]
+        return [
+            self.ulx * scale_x,
+            self.uly * scale_y,
+            self.lrx * scale_x,
+            self.uly * scale_y,
+            self.lrx * scale_x,
+            self.lry * scale_y,
+            self.ulx * scale_x,
+            self.lry * scale_y,
+        ]
 
     def transform(self, image_width: float, image_height: float, absolute_coords: bool = False) -> BoundingBox:
+        """
+        Transforms bounding box coordinates into absolute or relative coords. Internally, a new bounding box will be
+        created. Changing coordinates requires width and height of the whole image.
+
+        Args:
+            image_width: The horizontal image size
+            image_height: The vertical image size
+            absolute_coords: Whether to recalculate into absolute coordinates.
+
+        Returns:
+            Either a `list` or `np.array`.
+        """
         if absolute_coords != self.absolute_coords:
             if self.absolute_coords:
                 return BoundingBox(
@@ -520,14 +576,13 @@ class BoundingBox(BaseModel):
                     lrx=max(min(self.lrx / image_width, 1.0), 0.0),
                     lry=max(min(self.lry / image_height, 1.0), 0.0),
                 )
-            else:
-                return BoundingBox(
-                    absolute_coords=not self.absolute_coords,
-                    ulx=self.ulx * image_width,
-                    uly=self.uly * image_height,
-                    lrx=self.lrx * image_width,
-                    lry=self.lry * image_height,
-                )
+            return BoundingBox(
+                absolute_coords=not self.absolute_coords,
+                ulx=self.ulx * image_width,
+                uly=self.uly * image_height,
+                lrx=self.lrx * image_width,
+                lry=self.lry * image_height,
+            )
         return self
 
     def __str__(self) -> str:
@@ -544,6 +599,12 @@ class BoundingBox(BaseModel):
         return f"Bounding Box ulx: {self.ulx}, uly: {self.uly}, lrx: {self.lrx}, lry: {self.lry}"
 
     def as_dict(self) -> BoxDict:
+        """
+        Return a dictionary representation of this bounding box.
+
+        Returns:
+             BoxDict: Dictionary with keys `absolute_coords`, `ulx`, `uly`, `lrx`, `lry`.
+        """
         return cast(BoxDict, self.model_dump(by_alias=True, exclude_none=False))
 
 

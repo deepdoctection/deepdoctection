@@ -67,8 +67,6 @@ class DataFlowResetStateNotCalledError(BaseException):
 class DuplicateObjectTypeError(ValueError):
     """Raised when two different enum members share the same string value."""
 
-    pass
-
 
 class MalformedData(BaseException):
     """

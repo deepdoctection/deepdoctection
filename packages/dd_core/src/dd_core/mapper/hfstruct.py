@@ -138,7 +138,7 @@ class DetrDataCollator:
                 images_input.append(feature["image"])
             else:
                 images_input.append(maybe_image)
-        image_features = self.feature_extractor(  # pylint: disable=E1102
+        image_features = self.feature_extractor(
             images_input, annotations=raw_features, return_tensors=self.return_tensors
         )
 

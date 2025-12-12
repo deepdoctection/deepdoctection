@@ -51,8 +51,8 @@ T = TypeVar("T")
 
 # Some type hints that must be distinguished when running mypy and linters
 if TYPE_CHECKING:
-    QueueType = queue.Queue[Any]  # pylint: disable=E1136
-    TqdmType = tqdm.tqdm[Any]  # pylint: disable=E1136
+    QueueType = queue.Queue[Any]
+    TqdmType = tqdm.tqdm[Any]
     BaseExceptionType = Type[BaseException]
 
 else:
