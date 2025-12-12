@@ -71,8 +71,8 @@ def _load_model(
     state_dict = torch.load(os.fspath(path_weights), map_location=device)
     for key in list(state_dict.keys()):
         state_dict["model." + key] = state_dict.pop(key)
-    doctr_predictor.load_state_dict(state_dict)  # type: ignore
-    doctr_predictor.to(device)  # type: ignore
+    doctr_predictor.load_state_dict(state_dict)
+    doctr_predictor.to(device)
 
 
 def doctr_predict_text_lines(np_img: PixelValues, predictor: DetectionPredictor) -> list[DetectionResult]:
@@ -93,7 +93,7 @@ def doctr_predict_text_lines(np_img: PixelValues, predictor: DetectionPredictor)
         DetectionResult(
             box=box[:4].tolist(), class_id=1, score=box[4], absolute_coords=False, class_name=LayoutType.WORD
         )
-        for box in raw_output[0]["words"]  # type: ignore
+        for box in raw_output[0]["words"]
     ]
     return detection_results
 
@@ -434,7 +434,7 @@ class DoctrTextRecognizer(TextRecognizer):
         return f"doctr_{architecture}" + "_".join(Path(path_weights).parts[-2:])
 
     def clear_model(self) -> None:
-        self.doctr_predictor = None  # type: ignore
+        self.doctr_predictor = None
 
 
 class DocTrRotationTransformer(ImageTransformer):

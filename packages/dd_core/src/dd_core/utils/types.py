@@ -99,4 +99,4 @@ KeyValEnvInfos: TypeAlias = list[tuple[str, str]]
 
 
 # mainly used in eval
-MetricResults: TypeAlias = dict[str, Union[int, float]]
+MetricResults: TypeAlias = dict[str, Any]

@@ -506,8 +506,8 @@ class ServiceFactory:
             use_textract = True
             if SETTINGS.AWS_REGION and SETTINGS.AWS_ACCESS_KEY_ID and SETTINGS.AWS_SECRET_ACCESS_KEY:
                 credentials_kwargs = {
-                    "aws_access_key_id": SETTINGS.AWS_ACCESS_KEY,
-                    "aws_secret_access_key": SETTINGS.AWS_SECRET_KEY,
+                    "aws_access_key_id": SETTINGS.AWS_ACCESS_KEY_ID ,
+                    "aws_secret_access_key": SETTINGS.AWS_SECRET_ACCESS_KEY,
                     "config": Config(region_name=SETTINGS.AWS_REGION),
                 }
 

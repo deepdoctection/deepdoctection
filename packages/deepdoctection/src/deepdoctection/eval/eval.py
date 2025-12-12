@@ -29,6 +29,7 @@ from lazy_imports import try_import
 
 from dd_core.dataflow import CacheData, DataFlow, DataFromList, MapData
 from dd_core.datapoint.image import Image
+from dd_core.datapoint.view import Page
 from dd_core.mapper import filter_cat, remove_cats
 from dd_core.mapper.misc import maybe_load_image, maybe_remove_image, maybe_remove_image_from_category
 from dd_core.mapper.wandbstruct import to_wandb_image
@@ -131,8 +132,8 @@ class Evaluator:
 
             self.pipe_component = MultiThreadPipelineComponent(
                 pipeline_components=pipeline_components,
-                pre_proc_func=maybe_load_image,
-                post_proc_func=maybe_remove_image,
+                pre_proc_func=maybe_load_image,  # type:ignore
+                post_proc_func=maybe_remove_image,  # type:ignore
             )
         else:
             self.pipe = component_or_pipeline
@@ -407,7 +408,7 @@ class WandbTableAgent:
         self._table_rows: list[Any] = []
         self._table_ref = None
 
-    def dump(self, dp: Image) -> Image:
+    def dump(self, dp: Union[Image, Page]) -> Image:
         """
         Dump image to a table. Add this while iterating over samples. After `num_samples` it will stop appending samples
         to the table
@@ -418,6 +419,8 @@ class WandbTableAgent:
         Returns:
             `Image` instance
         """
+        if isinstance(dp, Page):
+            dp = dp.base_image
         if self.num_samples > self._counter:
             dp = maybe_load_image(dp)
             self._table_rows.append(
@@ -461,4 +464,4 @@ class WandbTableAgent:
         eval_art.add(self._build_table(), self.dataset_name)
         self._run.use_artifact(eval_art)
         eval_art.wait()
-        self._table_ref = eval_art.get(self.dataset_name).data  # type: ignore
+        self._table_ref = eval_art.get(self.dataset_name).data

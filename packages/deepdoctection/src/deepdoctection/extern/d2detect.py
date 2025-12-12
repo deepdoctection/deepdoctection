@@ -525,4 +525,4 @@ class D2FrcnnTracingDetector(D2FrcnnDetectorMixin):
         return torch.jit.load(buffer)
 
     def clear_model(self) -> None:
-        self.d2_predictor = None  # type: ignore
+        self.d2_predictor = None

@@ -49,7 +49,7 @@ __all__ = ["TableSegmentationRefinementService", "generate_html_string"]
 
 
 def tiles_to_cells(
-    dp: Image, table: ImageAnnotation, cell_names: list[ObjectTypes]
+    dp: Image, table: ImageAnnotation, cell_names: Sequence[ObjectTypes]
 ) -> list[tuple[tuple[int, int], str]]:
     """
     Creates a table parquet by dividing a table into a tile parquet with the number of rows x number of columns tiles.

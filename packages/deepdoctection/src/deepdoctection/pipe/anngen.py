@@ -165,18 +165,18 @@ class DatapointManager:
                 parent_ann.image.dump(ann)
                 parent_ann.image.image_ann_to_image(ann.annotation_id)
                 ann_global_box = local_to_global_coords(
-                    ann.bounding_box.transform(
+                    ann.bounding_box.transform( # type:ignore
                         image_width=parent_ann.image.width, image_height=parent_ann.image.height, absolute_coords=True
                     ),
                     parent_ann.get_bounding_box(self.datapoint.image_id).transform(
                         image_width=self.datapoint.width, image_height=self.datapoint.height, absolute_coords=True
-                    ),  # type: ignore
+                    ),
                 )
                 if ann.image is None:
                     raise ValueError("image cannot be None")
                 ann.image.set_embedding(
                     parent_ann.annotation_id,
-                    ann.bounding_box.transform(
+                    ann.bounding_box.transform(  # type:ignore
                         image_width=parent_ann.image.width, image_height=parent_ann.image.height
                     ),
                 )

@@ -225,7 +225,7 @@ class Pdfmium2TextDetector(PdfMiner):
         self._page = pdf.get_page(0)
         self._pdf_bytes = pdf_bytes
         if self._page is not None:
-            return self._page.get_width(), self._page.get_height()  # type: ignore
+            return self._page.get_width(), self._page.get_height()
         raise ValueError("Page not found")
 
     def get_category_names(self) -> tuple[ObjectTypes, ...]:

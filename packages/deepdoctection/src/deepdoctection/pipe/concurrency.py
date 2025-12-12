@@ -30,6 +30,7 @@ import tqdm
 
 from dd_core.dataflow import DataFlow, MapData
 from dd_core.datapoint.image import Image, MetaAnnotation
+from dd_core.datapoint.view import Page
 from dd_core.utils.context import timed_operation
 from dd_core.utils.tqdm import get_tqdm
 from dd_core.utils.types import QueueType, TqdmType
@@ -114,8 +115,8 @@ class MultiThreadPipelineComponent(PipelineComponent):
     def __init__(
         self,
         pipeline_components: Sequence[Union[PipelineComponent, ImageParsingService]],
-        pre_proc_func: Optional[Callable[[Image], Image]] = None,
-        post_proc_func: Optional[Callable[[Image], Image]] = None,
+        pre_proc_func: Optional[Callable[[Union[Image, Page]], Union[Image, Page]]] = None,
+        post_proc_func: Optional[Callable[[Union[Image, Page]], Union[Image, Page]]] = None,
         max_datapoints: Optional[int] = None,
     ) -> None:
         """
@@ -149,7 +150,7 @@ class MultiThreadPipelineComponent(PipelineComponent):
 
         self._put_datapoints_to_queue(df)
 
-    def start(self) -> list[Image]:
+    def start(self) -> list[Union[Image,Page]]:
         """
         Creates a worker for each component and starts processing the datapoints of the queue.
 
@@ -185,9 +186,9 @@ class MultiThreadPipelineComponent(PipelineComponent):
         input_queue: QueueType,
         component: Union[PipelineComponent, PageParsingService, ImageParsingService],
         tqdm_bar: Optional[TqdmType] = None,
-        pre_proc_func: Optional[Callable[[Image], Image]] = None,
-        post_proc_func: Optional[Callable[[Image], Image]] = None,
-    ) -> list[Image]:
+        pre_proc_func: Optional[Callable[[Union[Image, Page]], Union[Image, Page]]] = None,
+        post_proc_func: Optional[Callable[[Union[Image, Page]], Union[Image, Page]]] = None,
+    ) -> list[Union[Image,Page]]:
         outputs = []
 
         with ExitStack() as stack:
@@ -215,7 +216,7 @@ class MultiThreadPipelineComponent(PipelineComponent):
                     break
             self.input_queue.put(dp)
 
-    def pass_datapoints(self, dpts: list[Image]) -> list[Image]:
+    def pass_datapoints(self, dpts: list[Union[Image,Page]]) -> list[Union[Image,Page]]:
         """
         Put the list of datapoints into a thread-safe queue and start a separate thread for each pipeline component.
 

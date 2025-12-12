@@ -98,7 +98,7 @@ module = ["cv2"]
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
-module = ["torch"]
+module = ["torch.*"]
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
@@ -107,6 +107,10 @@ ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
 module = ["torch.utils.*"]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = ["timm.*"]
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]

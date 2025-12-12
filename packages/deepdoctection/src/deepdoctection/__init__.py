@@ -138,8 +138,8 @@ logger.debug(LoggingRecord(msg=env_info))
 if TYPE_CHECKING:
     from .analyzer import *
     from .eval import *
-    from .extern import *  # type: ignore
-    from .pipe import *  # type: ignore
+    from .extern import *
+    from .pipe import *
     from .train import *
 
 else:

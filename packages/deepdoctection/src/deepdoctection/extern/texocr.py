@@ -29,7 +29,7 @@ from dd_core.datapoint.convert import convert_np_array_to_b64_b
 from dd_core.utils.file_utils import get_boto3_requirement
 from dd_core.utils.logger import LoggingRecord, logger
 from dd_core.utils.object_types import LayoutType, ObjectTypes
-from dd_core.utils.types import PixelValues, Requirement
+from dd_core.utils.types import PixelValues, Requirement, JsonDict
 
 from .base import DetectionResult, ModelCategories, ObjectDetector, TextRecognizer
 
