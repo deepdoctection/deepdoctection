@@ -134,8 +134,8 @@ def convert_pdf_bytes_to_np_array_v2(
             with BytesIO(pdf_bytes) as pdf_file:
                 try:
                     pdf = PdfReader(pdf_file).pages[0]
-                except NameError:
-                    raise ImportError("pypdf is not installed.")
+                except NameError as exc:
+                    raise ImportError("pypdf is not installed.") from exc
             shape = pdf.mediabox  # pylint: disable=E1101
             height = shape[3] - shape[1]
             width = shape[2] - shape[0]

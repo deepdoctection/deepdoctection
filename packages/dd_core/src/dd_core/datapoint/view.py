@@ -15,6 +15,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""
+Dataclass `Page`, `ImageAnnotationBaseView` and derived classes
+"""
 
 from __future__ import annotations
 
@@ -122,46 +125,86 @@ class ImageAnnotationBaseView:
     # Pass-through properties for filtering and inspection
     @property
     def category_name(self) -> str | ObjectTypes:
+        """property category_name"""
         return self._image_annotation.category_name
 
     @property
     def annotation_id(self) -> str:
+        """property annotation_id"""
         return self._image_annotation.annotation_id
 
     @property
     def service_id(self) -> Optional[str]:
+        """property service_id"""
         return self._image_annotation.service_id
 
     @property
     def model_id(self) -> Optional[str]:
+        """property model_id"""
         return self._image_annotation.model_id
 
     @property
     def session_id(self) -> Optional[str]:
+        """property session_id"""
         return self._image_annotation.session_id
 
     @property
     def active(self) -> bool:
+        """property active"""
         return self._image_annotation.active
 
     @property
     def sub_categories(self) -> dict[ObjectTypes, CategoryAnnotation]:
+        """property sub_categories"""
         return self._image_annotation.sub_categories
 
     @property
     def relationships(self) -> dict[ObjectTypes, list[str]]:
+        """property relationships"""
         return self._image_annotation.relationships
 
     def get_bounding_box(self, image_id: str) -> BoundingBox:
+        """Get bounding box for this annotation on a specific image.
+
+        Args:
+            image_id (str): ID of the image for which to retrieve the bounding box.
+
+        Returns:
+            BoundingBox: The bounding box for this annotation on the specified image.
+        """
         return self._image_annotation.get_bounding_box(image_id)
 
     def get_sub_category(self, key: ObjectTypes) -> CategoryAnnotation:
+        """Retrieve a sub-category annotation by key.
+
+        Args:
+            key (ObjectTypes): The sub-category key to retrieve.
+
+        Returns:
+            CategoryAnnotation: The requested sub-category annotation.
+        """
         return self._image_annotation.get_sub_category(key)
 
     def get_relationship(self, key: ObjectTypes) -> list[str]:
+        """Get related annotation ids for a relationship key.
+
+        Args:
+            key (ObjectTypes): The relationship key to query.
+
+        Returns:
+            list[str]: A list of related annotation ids.
+        """
         return self._image_annotation.get_relationship(key)
 
     def get_summary(self, key: ObjectTypes) -> CategoryAnnotation:
+        """Retrieve a summary sub-category annotation by key.
+
+        Args:
+            key (ObjectTypes): The summary sub-category key to retrieve.
+
+        Returns:
+            CategoryAnnotation: The requested summary sub-category annotation.
+        """
         return self._image_annotation.get_summary(key)
 
     # Convenience/consumer methods below
@@ -388,11 +431,15 @@ class Layout(ImageAnnotationBaseView):
             characters = [str(w.characters) for w in words]
             ann_ids = [str(w.annotation_id) for w in words]
             token_classes = [str(w.token_class) for w in words if getattr(w, "token_class", None) is not None]
-            token_class_ann_ids = [str(w.get_sub_category(WordType.TOKEN_CLASS).annotation_id) if WordType.TOKEN_CLASS in w.sub_categories else None for w in words]
+            token_class_ann_ids = [str(w.get_sub_category(WordType.TOKEN_CLASS).annotation_id) if
+                                   WordType.TOKEN_CLASS in w.sub_categories else None for w in words]
             token_tags = [str(w.token_tag) for w in words if getattr(w, "token_tag", None) is not None]
-            token_tag_ann_ids = [str(w.get_sub_category(WordType.TOKEN_TAG).annotation_id) if WordType.TOKEN_TAG in w.sub_categories else None for w in words]
-            token_classes_ids = [str(w.get_sub_category(WordType.TOKEN_CLASS).category_id) if WordType.TOKEN_CLASS in w.sub_categories else None for w in words]
-            token_tag_ids = [str(w.get_sub_category(WordType.TOKEN_TAG).category_id) if WordType.TOKEN_TAG in w.sub_categories else None for w in words]
+            token_tag_ann_ids = [str(w.get_sub_category(WordType.TOKEN_TAG).annotation_id) if
+                                 WordType.TOKEN_TAG in w.sub_categories else None for w in words]
+            token_classes_ids = [str(w.get_sub_category(WordType.TOKEN_CLASS).category_id) if
+                                 WordType.TOKEN_CLASS in w.sub_categories else None for w in words]
+            token_tag_ids = [str(w.get_sub_category(WordType.TOKEN_TAG).category_id) if
+                             WordType.TOKEN_TAG in w.sub_categories else None for w in words]
         else:
             characters, ann_ids = [], []
             token_classes, token_class_ann_ids = [], []
@@ -587,7 +634,7 @@ class Table(Layout):
                     header.column_number <= cell.column_number # type: ignore
                     and cell.column_number <= header.column_number + header.column_span - 1  # type: ignore
                 ):
-                    kv_dict[(header.column_number, header.text).__str__()] = cell.text  # type: ignore
+                    kv_dict[str((header.column_number, header.text))] = cell.text  # type: ignore
         return kv_dict
 
     @property
@@ -958,42 +1005,52 @@ class Page:
     # Proxies to wrapped Image (read-only)
     @property
     def image_id(self) -> str:
+        """property image_id"""
         return self._base_image.image_id
 
     @property
     def width(self) -> int:
+        """property width"""
         return int(self._base_image.width)
 
     @property
     def height(self) -> int:
+        """property height"""
         return int(self._base_image.height)
 
     @property
     def image(self) -> Optional[PixelValues]:
+        """property image"""
         return self._base_image.image
 
     @property
     def file_name(self) -> str:
+        """property file_name"""
         return self._base_image.file_name
 
     @property
     def location(self) -> str:
+        """property location"""
         return self._base_image.location
 
     @property
     def document_id(self) -> str:
+        """property document_id"""
         return self._base_image.document_id
 
     @property
     def page_number(self) -> int:
+        """property page_number"""
         return self._base_image.page_number
 
     @property
     def summary(self) -> CategoryAnnotation:
+        """property summary"""
         return self._base_image.summary
 
     @property
     def base_image(self) -> Image:
+        """property base_image"""
         return self._base_image
 
     def get_annotation(

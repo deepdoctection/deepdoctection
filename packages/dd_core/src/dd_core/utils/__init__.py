@@ -32,7 +32,7 @@ def _global_import(
 ):
     prefix_default = prefix is None
     suffix_default = suffix is None
-    p = __import__(name, globals(), None, level=1)  # pylint: disable=C0103
+    p = __import__(name, globals(), None, level=1)
     lst = p.__all__ if "__all__" in dir(p) else dir(p)
     for k in lst:
         if not k.startswith("__"):

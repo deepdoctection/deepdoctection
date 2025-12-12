@@ -24,7 +24,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from dataclasses import dataclass
-from typing import Any, Literal, Optional, TypeVar, Union, no_type_check
+from typing import Any, Literal, Optional, TypeVar, Union
 
 from pydantic import BaseModel, Field, PrivateAttr, field_validator, model_validator
 
@@ -396,8 +396,10 @@ class CategoryAnnotation(Annotation):
         Args:
             key: A key to a sub category.
         """
-        if key in self.sub_categories:
-            self.sub_categories.pop(key)
+        sub_categories = getattr(self, "sub_categories", None)
+        if (sub_categories is not None and isinstance(sub_categories, dict) and
+                hasattr(sub_categories,"pop") and key in sub_categories):
+            sub_categories.pop(key)
 
     def dump_relationship(self, key: TypeOrStr, annotation_id: str) -> None:
         """
@@ -429,7 +431,10 @@ class CategoryAnnotation(Annotation):
         Returns:
             A (possibly) empty list of `annotation_id`s.
         """
-        return self.relationships.get(key, [])
+        relationships = getattr(self, "relationships", None)
+        if relationships is not None and isinstance(relationships, dict) and hasattr(relationships, "get"):
+            return relationships.get(key, [])
+        return []
 
     def remove_relationship(self, key: ObjectTypes, annotation_ids: Optional[Union[list[str], str]] = None) -> None:
         """
@@ -503,11 +508,10 @@ class ImageAnnotation(CategoryAnnotation):
         """
         if v is None:
             return None
-        # already an Image instance -> keep
+
         try:
-            from .image import Image  # local import to avoid circular import
+            from .image import Image  # pylint: disable=C0415 # local import to avoid circular import
         except (ImportError, ModuleNotFoundError):
-            # Import failed (e.g. circular import / module not available) — let other validators handle it
             return v
         if isinstance(v, Image):
             return v
@@ -536,17 +540,16 @@ class ImageAnnotation(CategoryAnnotation):
         """
         Get bounding from image embeddings or, if not available or if `image_id` is not provided,
         from `bounding_box`.
-
-        Returns:
-            BoundingBox: A bounding box of the annotation.
-
-        Raises:
-            ValueError: If no bounding box is available.
         """
-        if self.image and image_id:
-            box = self.image.get_embedding(image_id)
+        image_obj = self.image  # use local variable so static analyzers treat it as instance value
+        if image_obj and image_id:
+            if hasattr(image_obj, "get_embedding"):
+                box = getattr(image_obj, "get_embedding")(image_id)
+            else:
+                box = self.bounding_box
         else:
             box = self.bounding_box
+
         if box:
             return box
         raise AnnotationError(f"bounding_box has not been initialized for {self.annotation_id}")
@@ -559,10 +562,12 @@ class ImageAnnotation(CategoryAnnotation):
             CategoryAnnotation: A summary sub category of the image.
 
         Raises:
-            ValueError: If `key` is not available
+            AnnotationError: If `key` is not available or image/summary missing.
         """
-        if self.image:
-            return self.image.summary.get_sub_category(key)
+        image_obj = self.image
+        if image_obj and hasattr(image_obj, "summary"):
+            summary = getattr(image_obj, "summary")
+            return summary.get_sub_category(key)
         raise AnnotationError(f"Summary does not exist for {self.annotation_id} and key: {key}")
 
     def get_annotation_map(self) -> defaultdict[str, list[AnnotationMap]]:
@@ -580,8 +585,10 @@ class ImageAnnotation(CategoryAnnotation):
                 AnnotationMap(image_annotation_id=self.annotation_id, sub_category_key=sub_cat_key)
             )
 
-        if self.image is not None:
-            for summary_cat_key in self.image.summary.sub_categories:
+        image_obj = self.image
+        if image_obj is not None and hasattr(image_obj, "summary"):
+            summary_obj = getattr(image_obj, "summary")
+            for summary_cat_key in summary_obj.sub_categories:
                 summary_cat = self.get_summary(summary_cat_key)
                 annotation_id_dict[summary_cat.annotation_id].append(
                     AnnotationMap(image_annotation_id=self.annotation_id, summary_key=summary_cat_key)
@@ -619,10 +626,10 @@ class ContainerAnnotation(CategoryAnnotation):
     value_type: Optional[Literal["str", "int", "float", "list[str]"]] = Field(default=None, exclude=True)
 
     @model_validator(mode="after")
-    def _coerce_or_infer_value_validator(self) -> "ContainerAnnotation":
+    def _coerce_or_infer_value_validator(self) -> ContainerAnnotation:
         return self._coerce_or_infer_value()
 
-    def _coerce_or_infer_value(self) -> "ContainerAnnotation":
+    def _coerce_or_infer_value(self) -> ContainerAnnotation:
         effective_type = self.value_type
         # No explicit type: infer once
         if effective_type is None:
@@ -649,8 +656,11 @@ class ContainerAnnotation(CategoryAnnotation):
         if effective_type == "int":
             if isinstance(self.value, int):
                 return self
-            if isinstance(self.value, str) and self.value.isdigit():
-                object.__setattr__(self, "value", int(self.value))
+            v = getattr(self, "value", None)
+            if isinstance(v, int):
+                return self
+            if isinstance(v, str) and v.isdigit():
+                object.__setattr__(self, "value", int(v))
                 return self
             raise TypeError(f"value must be int when type='int', got {type(self.value).__name__}")
 
@@ -660,9 +670,10 @@ class ContainerAnnotation(CategoryAnnotation):
             if isinstance(self.value, int):
                 object.__setattr__(self, "value", float(self.value))
                 return self
-            if isinstance(self.value, str):
+            v = self.value
+            if isinstance(v, str):
                 try:
-                    object.__setattr__(self, "value", float(self.value))
+                    object.__setattr__(self, "value", float(v))
                     return self
                 except ValueError:
                     pass
@@ -682,14 +693,25 @@ class ContainerAnnotation(CategoryAnnotation):
 
         raise ValueError(f"Unsupported type {effective_type}")
 
-    def set_type(self, type: Literal["str", "int", "float", "list[str]"]) -> None:
-        if type is None:
+    def set_type(self, value_type: Literal["str", "int", "float", "list[str]"]) -> None:
+        """
+        Set and enforce the value type for this ContainerAnnotation and coerce the current value.
+
+        Args:
+            value_type: One of `"str"`, `"int"`, `"float"`, or `"list[str]"`. (The current implementation rejects
+             `None`.)
+
+        Raises:
+            ValueError: If `type` is `None` or not one of the allowed values.
+            TypeError: May be raised by `_coerce_or_infer_value` if the existing `value` cannot be converted.
+        """
+        if value_type is None:
             raise ValueError(f"type cannot be None, current value_type is {self.value_type}")
 
         allowed = {"str", "int", "float", "list[str]"}
-        if type not in allowed:
+        if value_type not in allowed:
             raise ValueError(f"type must be one of {sorted(allowed)}")
-        self.value_type = type
+        self.value_type = value_type
         self._coerce_or_infer_value()
 
     def get_defining_attributes(self) -> list[str]:

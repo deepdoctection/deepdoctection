@@ -147,7 +147,7 @@ def timed_operation(message: str, log_start: bool = False) -> Generator[Any, Non
     Yields:
         None
     """
-    from .logger import LoggingRecord, logger
+    from .logger import LoggingRecord, logger  # pylint: disable=C0415
 
     if log_start:
         logger.info(LoggingRecord(f"start task: {message} ..."))

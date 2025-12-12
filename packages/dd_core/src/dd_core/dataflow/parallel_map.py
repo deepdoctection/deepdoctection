@@ -35,7 +35,7 @@ from .common import RepeatedData
 from .serialize import PickleSerializer
 
 with try_import() as import_guard:
-    import zmq
+    import zmq  # pylint: disable=E0401
 
 
 @no_type_check

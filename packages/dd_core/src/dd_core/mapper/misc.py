@@ -35,7 +35,7 @@ from ..utils.utils import is_file_extension
 from .maputils import MappingContextManager, curry
 
 with try_import() as import_guard:
-    from lxml import etree  # pylint: disable=W0611
+    from lxml import etree
 
 
 def to_image(

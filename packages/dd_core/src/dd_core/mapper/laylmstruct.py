@@ -42,7 +42,7 @@ with try_import() as import_guard:
     import torch
 
 with try_import() as tr_import_guard:
-    from transformers import BatchEncoding, PreTrainedTokenizerFast  # pylint: disable=W0611
+    from transformers import BatchEncoding, PreTrainedTokenizerFast
 
 __all__ = [
     "image_to_raw_layoutlm_features",

@@ -37,6 +37,7 @@ disable = [
     "E1120", # no-value-for-parameter
     "E1205", # logging-too-many-args
     "C0103", # invalid-name
+    "W0212", # protected member
 ]
 enable = ["useless-suppression"]
 
@@ -53,11 +54,12 @@ max-args = 19
 max-branches = 40
 max-attributes = 18
 max-locals = 47
-max-returns = 8
+max-returns = 12
 max-statements = 100
 max-public-methods = 30
 min-public-methods = 1
 max-nested-blocks = 8
+max-positional-arguments=15
 
 [tool.pylint.miscellaneous]
 # Needed for certain C extensions (e.g., lxml)

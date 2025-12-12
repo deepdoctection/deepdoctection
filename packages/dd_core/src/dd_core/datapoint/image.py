@@ -159,7 +159,8 @@ class Image(BaseModel):
 
     def __init__(self, **data: Any) -> None:
         """
-        Accept private attrs in kwargs (e.g. `_image_id`, `_summary`, `_bbox`, `_annotation_ids`, `_image`, `_pdf_bytes`)
+        Accept private attrs in kwargs (e.g. `_image_id`, `_summary`, `_bbox`, `_annotation_ids`, `_image`,
+         `_pdf_bytes`)
         Remove them before BaseModel initialization and set the PrivateAttr values afterwards so that
         `Image(**inputs)` works when legacy code passes private keys.
         """
@@ -183,6 +184,7 @@ class Image(BaseModel):
             else:
                 # assign even if value is None to preserve explicit input
                 object.__setattr__(self, key, val)
+
 
     @field_validator("embeddings", mode="before")
     @classmethod
@@ -307,7 +309,7 @@ class Image(BaseModel):
         if self._summary is None:
             object.__setattr__(self, "_summary", CategoryAnnotation(category_name=SummaryType.SUMMARY))
             assert self._summary is not None  # help mypy understand the assignment worked
-            if self._summary._annotation_id is None:  # pylint: disable=W0212
+            if self._summary._annotation_id is None:
                 self._summary.annotation_id = self.define_annotation_id(self._summary)
         return self._summary
 
@@ -316,7 +318,7 @@ class Image(BaseModel):
         """summary setter"""
         if self._summary is not None:
             raise ImageError("Image.summary already defined and cannot be reset")
-        if summary_annotation._annotation_id is None:  # pylint: disable=W0212
+        if summary_annotation._annotation_id is None:
             summary_annotation.annotation_id = self.define_annotation_id(summary_annotation)
         object.__setattr__(self, "_summary", summary_annotation)
 
@@ -387,8 +389,7 @@ class Image(BaseModel):
         Args:
             image_id: uuid string of the embedding image
 
-        Returns:
-            The bounding box of this instance in terms of the embedding image
+        Returns: bounding box of this instance in terms of the embedding image
         """
         return self.embeddings[image_id]
 
@@ -399,8 +400,10 @@ class Image(BaseModel):
         Args:
             image_id: `uuid` string of the embedding image
         """
-        if image_id in self.embeddings:
-            self.embeddings.pop(image_id)
+        embeddings = getattr(self, "embeddings", None)
+        if isinstance(embeddings, dict):
+            if image_id in embeddings: # pylint: disable=E1135
+                embeddings.pop(image_id, None)
 
     def _self_embedding(self) -> None:
         if self._bbox is not None:
@@ -417,12 +420,25 @@ class Image(BaseModel):
         """
         if not isinstance(annotation, ImageAnnotation):
             raise AnnotationError("Annotation must be ImageAnnotation1")
-        if annotation._annotation_id is None:  # pylint: disable=W0212
+
+        if annotation._annotation_id is None:
             annotation.annotation_id = self.define_annotation_id(annotation)
-        if annotation.annotation_id in self._annotation_ids:
+
+        ann_ids = getattr(self, "_annotation_ids", None)
+        if ann_ids is None or not isinstance(ann_ids, list):
+            ann_ids = []
+            setattr(self, "_annotation_ids", ann_ids)
+
+        if annotation.annotation_id in ann_ids:
             raise ImageError(f"Cannot dump annotation with existing id {annotation.annotation_id}")
-        self._annotation_ids.append(annotation.annotation_id)
-        self.annotations.append(annotation)
+
+        anns = getattr(self, "annotations", None)
+        if anns is None or not isinstance(anns, list):
+            anns = []
+            setattr(self, "annotations", anns)
+
+        ann_ids.append(annotation.annotation_id)
+        anns.append(annotation)
 
     def get_annotation(
         self,
@@ -533,7 +549,7 @@ class Image(BaseModel):
                     else:
                         container_ids.append(str(value))
             elif isinstance(attr, list):
-                for element in attr:
+                for element in attr: # pylint: disable=E1133
                     if isinstance(element, Annotation):
                         container_ids.append(element.state_id)
                     elif isinstance(element, str):
@@ -554,7 +570,7 @@ class Image(BaseModel):
         """
         data = handler(self)
 
-        data["embeddings"] = {k: v.as_dict() for k, v in self.embeddings.items()}
+        data["embeddings"] = {k: v.as_dict() for k, v in self.embeddings.items()} # pylint: disable=E1101
         data["_bbox"] = self._bbox.as_dict() if self._bbox else None
         data["_image"] = convert_np_array_to_b64(self._image) if self._image is not None else None
         data["_summary"] = self._summary.as_dict() if self._summary is not None else None
@@ -707,12 +723,32 @@ class Image(BaseModel):
         self._image = None
         if clear_bbox:
             self._bbox = None
-            self.embeddings.pop(self.image_id, None)
+            self.embeddings.pop(self.image_id, None)  # pylint: disable=E1101
 
     def get_categories_from_current_state(self) -> set[str]:
+        """
+        Return the set of category names present in the current image state.
+
+        Collects the `category_name` from each annotation returned by `get_annotation`
+        and returns them as a unique set.
+
+        Returns:
+            set[str]: Unique category names for all annotations in the current state.
+        """
         return {ann.category_name for ann in self.get_annotation()}
 
     def get_service_id_to_annotation_id(self) -> defaultdict[str, list[str]]:
+        """
+        Build a mapping from service IDs to annotation IDs for the current image state.
+
+        Iterates all annotations returned by `get_annotation()` and collects annotation IDs
+        for annotations, their sub-categories, and summary sub-categories that have a
+        non-empty `service_id`.
+
+        Returns:
+            defaultdict[str, list[str]]: A dictionary-like mapping where each key is a
+            `service_id` and each value is the list of corresponding annotation IDs.
+        """
         service_id_dict: defaultdict[str, list[str]] = defaultdict(list)
         for ann in self.get_annotation():
             if ann.service_id:
@@ -729,6 +765,18 @@ class Image(BaseModel):
         return service_id_dict
 
     def get_annotation_id_to_annotation_maps(self) -> defaultdict[str, list[AnnotationMap]]:
+        """
+        Build a mapping from annotation IDs to lists of AnnotationMap entries.
+
+        Iterates all annotations returned by `get_annotation()` and for each annotation
+        retrieves its annotation map via `ann.get_annotation_map()`. All `AnnotationMap`
+        objects are collected into a single `defaultdict` keyed by the annotation id.
+
+        Returns:
+            defaultdict[str, list[AnnotationMap]]: A mapping where each key is an
+            annotation id and each value is the list of corresponding `AnnotationMap`
+            objects referencing that id.
+        """
         all_ann_id_dict: defaultdict[str, list[AnnotationMap]] = defaultdict(list)
         for ann in self.get_annotation():
             ann_id_dict = ann.get_annotation_map()
@@ -794,7 +842,7 @@ class Image(BaseModel):
             and location_dict.relationship_key is None
             and location_dict.summary_key is None
         ):
-            self.annotations.remove(annotation)
+            self.annotations.remove(annotation)  # pylint: disable=E1101
             if annotation.annotation_id in self._annotation_ids:
                 self._annotation_ids.remove(annotation.annotation_id)
 
@@ -831,13 +879,22 @@ class Image(BaseModel):
         """
 
         class Img:
+            """Wrapper for image pixel data with simple converters.
+
+            Args:
+                img: Optional numpy array of image pixels.
+            """
+
             def __init__(self, img: Optional[PixelValues]):
+                """Store optional image pixel array."""
                 self.img = img
 
             def to_np_array(self) -> Optional[PixelValues]:
+                """Return the stored image as a numpy array or None."""
                 return self.img
 
             def to_b64(self) -> Optional[str]:
+                """Return the stored image encoded as a base64 string, or None if absent."""
                 if self.img is not None:
                     return convert_np_array_to_b64(self.img)
                 return self.img

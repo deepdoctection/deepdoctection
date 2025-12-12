@@ -102,7 +102,6 @@ _TYPES_INDEX_LOCK = threading.RLock()
 _ALL_TYPES_DICT: dict[str, ObjectTypes] = {}
 
 
-# pylint: disable=invalid-name
 @object_types_registry.register("DefaultType")
 class DefaultType(ObjectTypes):
     """Type for default member"""
