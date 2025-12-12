@@ -71,10 +71,10 @@ def _mask_some_gt_and_pr_labels(
 
 
 def _confusion(np_label_gt: NDArray[int32], np_label_pr: NDArray[int32]) -> NDArray[int32]:
-    number_classes = max(len(np.unique(np_label_gt)), np.amax(np_label_gt))  # type: ignore
-    confusion_matrix = np.zeros((number_classes, number_classes), dtype=np.int32)  # type: ignore
+    number_classes: int = int(max(len(np.unique(np_label_gt)), int(np.amax(np_label_gt))))
+    confusion_matrix = np.zeros((number_classes, number_classes), dtype=np.int32)
     for i, gt_val in enumerate(np_label_gt):
-        confusion_matrix[gt_val - 1][np_label_pr[i] - 1] += 1
+        confusion_matrix[int(gt_val) - 1][int(np_label_pr[i]) - 1] += 1
     return confusion_matrix
 
 

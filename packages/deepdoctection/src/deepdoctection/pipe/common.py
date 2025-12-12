@@ -336,7 +336,7 @@ class MatchingService(PipelineComponent):
                         self.dp_manager.set_relationship_annotation(
                             family_compound.relationship_key,
                             annotation_id,
-                            detect_result.relationships.get(family_compound.relationship_key, None),
+                            detect_result.relationships.get(family_compound.relationship_key, None),  # type: ignore
                         )
 
     def clone(self) -> PipelineComponent:
@@ -407,7 +407,7 @@ class PageParsingService(PipelineComponent):
     def serve(self, dp: Image) -> None:
         raise NotImplementedError("PageParsingService is not meant to be used in serve method")
 
-    def pass_datapoint(self, dp: Image) -> Page:
+    def pass_datapoint(self, dp: Image) -> Page:  # type:ignore
         """
         Converts `Image` to `Page`.
 
@@ -424,6 +424,7 @@ class PageParsingService(PipelineComponent):
             residual_text_block_categories=self.residual_text_block_categories,
             include_residual_text_container=self.include_residual_text_container,
         )
+
 
     def _init_sanity_checks(self) -> None:
         assert self.text_container in (

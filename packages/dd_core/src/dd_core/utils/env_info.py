@@ -259,8 +259,8 @@ class EnvSettings(BaseSettings):
     CONF_TESSERACT_TARGET_NAME: str = "conf_tesseract.yaml"
 
     # AWS settings
-    AWS_ACCESS_KEY: Optional[SecretStr] = None
-    AWS_SECRET_KEY: Optional[SecretStr] = None
+    AWS_ACCESS_KEY_ID: Optional[SecretStr] = None
+    AWS_SECRET_ACCESS_KEY: Optional[SecretStr] = None
     AWS_REGION: Optional[str] = None
 
     # Pydantic Settings config

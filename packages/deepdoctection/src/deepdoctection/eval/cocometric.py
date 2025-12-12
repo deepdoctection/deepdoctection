@@ -152,7 +152,7 @@ class CocoMetric(MetricBase):
     """
 
     name = "mAP and mAR"
-    metric = COCOeval if cocotools_available() else None
+    metric = COCOeval if cocotools_available() else None # type: ignore
     mapper = image_to_coco
     _f1_score = None
     _f1_iou = None
@@ -198,7 +198,8 @@ class CocoMetric(MetricBase):
         cls, dataflow_gt: DataFlow, dataflow_predictions: DataFlow, categories: DatasetCategories
     ) -> list[MetricResults]:
         coco_gt, coco_predictions = cls.dump(dataflow_gt, dataflow_predictions, categories)
-
+        if cls.metric is None:
+            raise ImportError("pycocotools is not installed.")
         metric = cls.metric(coco_gt, coco_predictions, iouType="bbox")
         if cls._params:
             for key, value in cls._params.items():

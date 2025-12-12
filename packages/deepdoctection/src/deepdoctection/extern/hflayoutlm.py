@@ -237,7 +237,7 @@ def predict_sequence_classes_from_layoutlm(
     score = torch.max(F.softmax(outputs.logits)).tolist()
     sequence_class_predictions = outputs.logits.argmax(-1).squeeze().tolist()
 
-    return SequenceClassResult(class_id=sequence_class_predictions, score=float(score))  # type: ignore
+    return SequenceClassResult(class_id=sequence_class_predictions, score=float(score))
 
 
 class HFLayoutLmTokenClassifierBase(LMTokenClassifier, ABC):

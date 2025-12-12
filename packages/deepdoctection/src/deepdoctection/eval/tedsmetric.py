@@ -237,7 +237,7 @@ class TedsMetric(MetricBase):
     Metric induced by `TEDS`
     """
 
-    metric = teds_metric  # type: ignore
+    metric = teds_metric
     mapper: Callable[[Image, LayoutType, list[LayoutType]], Page] = Page.from_image
     text_container: LayoutType = LayoutType.WORD
     floating_text_block_categories = [LayoutType.TABLE]
@@ -277,7 +277,7 @@ class TedsMetric(MetricBase):
     ) -> list[MetricResults]:
         html_gt_list, html_pr_list = cls.dump(dataflow_gt, dataflow_predictions, categories)
 
-        score, num_samples = cls.metric(html_gt_list, html_pr_list, cls.structure_only)  # type: ignore
+        score, num_samples = cls.metric(html_gt_list, html_pr_list, cls.structure_only)
         return [{"teds_score": score, "num_samples": num_samples}]
 
     @classmethod
