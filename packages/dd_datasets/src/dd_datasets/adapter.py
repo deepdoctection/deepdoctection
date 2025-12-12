@@ -39,7 +39,7 @@ with try_import() as import_guard:
     from torch.utils.data import IterableDataset
 
 
-class DatasetAdapter(IterableDataset):  # type: ignore
+class DatasetAdapter(IterableDataset):
     """
     A helper class derived from `torch.utils.data.IterableDataset` to process datasets within
     pytorch frameworks (e.g. Detectron2). It wraps the dataset and defines the compulsory
