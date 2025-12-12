@@ -65,13 +65,13 @@ class Text_:
     words: list[str] = field(default_factory=list)
     ann_ids: list[str] = field(default_factory=list)
     token_classes: list[str] = field(default_factory=list)
-    token_class_ann_ids: list[str] = field(default_factory=list)
+    token_class_ann_ids: list[str | None] = field(default_factory=list)
     token_tags: list[str] = field(default_factory=list)
-    token_tag_ann_ids: list[str] = field(default_factory=list)
-    token_class_ids: list[str] = field(default_factory=list)
-    token_tag_ids: list[str] = field(default_factory=list)
+    token_tag_ann_ids: list[str | None] = field(default_factory=list)
+    token_class_ids: list[str | None] = field(default_factory=list)
+    token_tag_ids: list[str | None] = field(default_factory=list)
 
-    def as_dict(self) -> dict[str, Union[list[str], str]]:
+    def as_dict(self) -> dict[str, Union[list[str | None], str, list[str]]]:
         """
         Returns the Text_ as a dictionary.
 
@@ -121,7 +121,7 @@ class ImageAnnotationBaseView:
 
     # Pass-through properties for filtering and inspection
     @property
-    def category_name(self) -> ObjectTypes:
+    def category_name(self) -> str | ObjectTypes:
         return self._image_annotation.category_name
 
     @property
@@ -208,7 +208,7 @@ class ImageAnnotationBaseView:
             return np_image
         raise AnnotationError(f"base_page.image is None for {self.annotation_id}")
 
-    def __getattr__(self, item: str) -> Optional[Union[str, int, list[str], list["ImageAnnotationBaseView"]]]:
+    def __getattr__(self, item: str) -> Optional[Union[str, int, float, list[str], list["ImageAnnotationBaseView"]]]:
         """
         Get attributes defined by registered `self.get_attribute_names()` in a multi-step process:
 
@@ -385,30 +385,32 @@ class Layout(ImageAnnotationBaseView):
         """
         words = self.get_ordered_words()
         if words:
-            characters = [w.characters for w in words]  # type: ignore
-            ann_ids = [w.annotation_id for w in words]
-            token_classes = [w.token_class for w in words if getattr(w, "token_class", None) is not None]  # type: ignore
-            token_class_ann_ids = [w.get_sub_category(WordType.TOKEN_CLASS).annotation_id if WordType.TOKEN_CLASS in w.sub_categories else None for w in words]  # type: ignore
-            token_tags = [w.token_tag for w in words if getattr(w, "token_tag", None) is not None]  # type: ignore
-            token_tag_ann_ids = [w.get_sub_category(WordType.TOKEN_TAG).annotation_id if WordType.TOKEN_TAG in w.sub_categories else None for w in words]  # type: ignore
-            token_classes_ids = [w.get_sub_category(WordType.TOKEN_CLASS).category_id if WordType.TOKEN_CLASS in w.sub_categories else None for w in words]  # type: ignore
-            token_tag_ids = [w.get_sub_category(WordType.TOKEN_TAG).category_id if WordType.TOKEN_TAG in w.sub_categories else None for w in words]  # type: ignore
+            characters = [str(w.characters) for w in words]
+            ann_ids = [str(w.annotation_id) for w in words]
+            token_classes = [str(w.token_class) for w in words if getattr(w, "token_class", None) is not None]
+            token_class_ann_ids = [str(w.get_sub_category(WordType.TOKEN_CLASS).annotation_id) if WordType.TOKEN_CLASS in w.sub_categories else None for w in words]
+            token_tags = [str(w.token_tag) for w in words if getattr(w, "token_tag", None) is not None]
+            token_tag_ann_ids = [str(w.get_sub_category(WordType.TOKEN_TAG).annotation_id) if WordType.TOKEN_TAG in w.sub_categories else None for w in words]
+            token_classes_ids = [str(w.get_sub_category(WordType.TOKEN_CLASS).category_id) if WordType.TOKEN_CLASS in w.sub_categories else None for w in words]
+            token_tag_ids = [str(w.get_sub_category(WordType.TOKEN_TAG).category_id) if WordType.TOKEN_TAG in w.sub_categories else None for w in words]
         else:
             characters, ann_ids = [], []
             token_classes, token_class_ann_ids = [], []
             token_tags, token_tag_ann_ids = [], []
             token_classes_ids, token_tag_ids = [], []
 
+        characters_str = [str(c) for c in characters if c is not None]
+
         return Text_(
-            text=" ".join(characters),  # type: ignore
-            words=characters,  # type: ignore
-            ann_ids=ann_ids,  # type: ignore
-            token_classes=token_classes,  # type: ignore
-            token_class_ann_ids=token_class_ann_ids,  # type: ignore
-            token_tags=token_tags,  # type: ignore
-            token_tag_ann_ids=token_tag_ann_ids,  # type: ignore
-            token_class_ids=token_classes_ids,  # type: ignore
-            token_tag_ids=token_tag_ids,  # type: ignore
+            text=" ".join(characters_str),
+            words=characters,
+            ann_ids=ann_ids,
+            token_classes=token_classes,
+            token_class_ann_ids=token_class_ann_ids,
+            token_tags=token_tags,
+            token_tag_ann_ids=token_tag_ann_ids,
+            token_class_ids=token_classes_ids,
+            token_tag_ids=token_tag_ids,
         )
 
     def get_attribute_names(self) -> set[str]:
@@ -572,7 +574,7 @@ class Table(Layout):
         all_cells = self.base_page.get_annotation(
             category_names=[LayoutType.CELL, CellType.SPANNING], annotation_ids=all_relation_ids
         )
-        row_cells = list(
+        row_cells: list[ImageAnnotationBaseView] = list(
             filter(lambda c: c.row_number <= row_number <= c.row_number + c.row_span - 1, all_cells)  # type: ignore
         )
         row_cells.sort(key=lambda c: c.column_number)  # type: ignore
@@ -582,7 +584,7 @@ class Table(Layout):
         for cell in row_cells:
             for header in column_header_cells:
                 if (
-                    header.column_number <= cell.column_number
+                    header.column_number <= cell.column_number # type: ignore
                     and cell.column_number <= header.column_number + header.column_span - 1  # type: ignore
                 ):
                     kv_dict[(header.column_number, header.text).__str__()] = cell.text  # type: ignore
@@ -619,11 +621,11 @@ class Table(Layout):
         all_cells = self.base_page.get_annotation(
             category_names=[LayoutType.CELL, CellType.SPANNING], annotation_ids=all_relation_ids
         )
-        row_cells = list(
+        row_cells: list[ImageAnnotationBaseView] = list(
             filter(lambda c: row_number in (c.row_number, c.row_number + c.row_span - 1), all_cells)  # type: ignore
         )
         row_cells.sort(key=lambda c: c.column_number)  # type: ignore
-        return row_cells  # type: ignore
+        return row_cells
 
     def column(self, column_number: int) -> list[ImageAnnotationBaseView]:
         """
@@ -636,14 +638,14 @@ class Table(Layout):
         all_cells = self.base_page.get_annotation(
             category_names=[LayoutType.CELL, CellType.SPANNING], annotation_ids=all_relation_ids
         )
-        column_cells = list(
+        column_cells: list[ImageAnnotationBaseView] = list(
             filter(
                 lambda c: column_number in (c.column_number, c.column_number + c.column_span - 1),  # type: ignore
                 all_cells,
             )
         )
         column_cells.sort(key=lambda c: c.row_number)  # type: ignore
-        return column_cells  # type: ignore
+        return column_cells
 
     @property
     def html(self) -> HTML:
@@ -740,11 +742,11 @@ class Table(Layout):
         words: list[str] = []
         ann_ids: list[str] = []
         token_classes: list[str] = []
-        token_class_ann_ids: list[str] = []
+        token_class_ann_ids: list[str | None] = []
         token_tags: list[str] = []
-        token_tag_ann_ids: list[str] = []
-        token_class_ids: list[str] = []
-        token_tag_ids: list[str] = []
+        token_tag_ann_ids: list[str | None] = []
+        token_class_ids: list[str | None] = []
+        token_tag_ids: list[str | None] = []
         for cell in cells:
             text_ = cell.text_
             text.append(text_.text)
@@ -876,8 +878,8 @@ def ann_obj_view_factory(
     if annotation.category_name == text_container:
         layout_class = IMAGE_DEFAULTS.IMAGE_ANNOTATION_TO_LAYOUTS[LayoutType.WORD]
     else:
-        layout_class = IMAGE_DEFAULTS.IMAGE_ANNOTATION_TO_LAYOUTS[annotation.category_name]
-    return layout_class(image_annotation=annotation, base_page=base_page, text_container=text_container)  # type: ignore
+        layout_class = IMAGE_DEFAULTS.IMAGE_ANNOTATION_TO_LAYOUTS[annotation.category_name]  # type: ignore
+    return layout_class(image_annotation=annotation, base_page=base_page, text_container=text_container)
 
 
 class Page:
@@ -994,7 +996,7 @@ class Page:
     def base_image(self) -> Image:
         return self._base_image
 
-    def get_annotation(  # type: ignore
+    def get_annotation(
         self,
         category_names: Optional[Union[str, ObjectTypes, Sequence[Union[str, ObjectTypes]]]] = None,
         annotation_ids: Optional[Union[str, Sequence[str]]] = None,
@@ -1192,11 +1194,11 @@ class Page:
         words: list[str] = []
         ann_ids: list[str] = []
         token_classes: list[str] = []
-        token_class_ann_ids: list[str] = []
+        token_class_ann_ids: list[str | None] = []
         token_tags: list[str] = []
-        token_tag_ann_ids: list[str] = []
-        token_class_ids: list[str] = []
-        token_tag_ids: list[str] = []
+        token_tag_ann_ids: list[str | None] = []
+        token_class_ids: list[str | None] = []
+        token_tag_ids: list[str | None] = []
         for block in block_with_order:
             text_ = block.text_
             text.append(text_.text)  # type: ignore
@@ -1581,7 +1583,7 @@ class Page:
             include_residual_text_container=include_residual_text_container,
         )
 
-    def get_entities(self) -> list[Mapping[str, str]]:
+    def get_entities(self) -> list[Mapping[str, str | None]]:
         """
         Returns:
              A list of dicts with the following structure:

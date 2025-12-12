@@ -22,11 +22,10 @@
 from __future__ import annotations
 
 from math import ceil, floor
-from typing import ClassVar, Optional, Sequence, TypedDict, Union, cast
+from typing import ClassVar, Literal, Optional, Sequence, TypedDict, Union, cast, Any
 
 import numpy as np
 import numpy.typing as npt
-from dotenv.variables import Literal
 from lazy_imports import try_import
 from numpy import float32
 from pydantic import BaseModel, PrivateAttr, model_serializer
@@ -39,6 +38,18 @@ from ..utils.types import BoxCoordinate, PixelValues
 with try_import() as import_guard:
     import pycocotools.mask as coco_mask
 
+
+__all__ = [
+    "BoundingBox",
+    "coco_iou",
+    "iou",
+    "intersection",
+    "area",
+    "ioa",
+    "global_to_local_coords",
+    "local_to_global_coords",
+    "crop_box_from_image",
+]
 
 # taken from https://github.com/tensorpack/tensorpack/blob/master/examples/FasterRCNN/common.py
 
@@ -276,7 +287,7 @@ class BoundingBox(BaseModel):
         self._validate()
 
     @model_serializer(mode="plain")
-    def _serialize(self):
+    def _serialize(self) -> dict[str, Any]:
         return {
             "absolute_coords": self.absolute_coords,
             "ulx": self.ulx,
@@ -295,11 +306,11 @@ class BoundingBox(BaseModel):
         ):
             raise BoundingBoxError("coordinates must be between 0 and 1")
 
-    def _validate_width(self, lrx, ulx):
+    def _validate_width(self, lrx: float, ulx: float) -> None:
         if lrx - ulx <= 0:
             raise BoundingBoxError(f"width must be >0. Check coords: lrx: {self.lrx}, ulx: {self.ulx}")
 
-    def _validate_height(self, lry, uly):
+    def _validate_height(self, lry: float, uly: float) -> None:
         if lry - uly <= 0:
             raise BoundingBoxError(f"height must be >0. Check coords: lry: {self.lry}, uly: {self.uly}")
 
@@ -422,7 +433,7 @@ class BoundingBox(BaseModel):
             return NotImplemented
         return self._key() == other._key()
 
-    __hash__ = None
+    __hash__ = None  # type: ignore[assignment]
 
     def to_np_array(
         self, mode: Literal["xyxy", "xywh", "poly"], scale_x: float = 1.0, scale_y: float = 1.0
@@ -601,8 +612,8 @@ def crop_box_from_image(
     assert isinstance(absolute_coord_box, BoundingBox)
     np_max_y, np_max_x = np_image.shape[0:2]
     return np_image[
-        absolute_coord_box.uly : min(absolute_coord_box.lry, np_max_y),
-        absolute_coord_box.ulx : min(absolute_coord_box.lrx, np_max_x),
+        int(absolute_coord_box.uly) : int(min(absolute_coord_box.lry, np_max_y)),
+        int(absolute_coord_box.ulx) : int(min(absolute_coord_box.lrx, np_max_x)),
     ]
 
 

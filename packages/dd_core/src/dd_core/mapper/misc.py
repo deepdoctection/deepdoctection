@@ -87,7 +87,9 @@ def to_image(
             dp_image.document_id = document_id
         if file_name is not None:
             if is_file_extension(file_name, ".pdf") and isinstance(dp, dict):
-                dp_image.pdf_bytes = dp.get("pdf_bytes")
+                pdf_bytes_from_dict = dp.get("pdf_bytes")
+                if pdf_bytes_from_dict is not None and isinstance(pdf_bytes_from_dict, bytes):
+                    dp_image.pdf_bytes = pdf_bytes_from_dict
                 if dp_image.pdf_bytes is not None:
                     if isinstance(dp_image.pdf_bytes, bytes):
                         dp_image.image = convert_pdf_bytes_to_np_array_v2(
@@ -118,7 +120,7 @@ def maybe_load_image(dp: Image) -> Image:
     if dp.image is None:
         assert dp.location is not None, "cannot load image, no location provided"
         loader = get_load_image_func(dp.location)
-        dp.image = loader(dp.location)  # type: ignore
+        dp.image = loader(dp.location)
     return dp
 
 

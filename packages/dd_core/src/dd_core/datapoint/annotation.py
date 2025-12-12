@@ -155,13 +155,16 @@ class Annotation(BaseModel, ABC):
         Returns:
             A uuid that uniquely characterizes the annotation.
         """
+        filtered_context = []
         for container_id in container_id_context:
             if container_id is not None:
                 assert is_uuid_like(container_id), f"{container_id} is not a uuid"
+                filtered_context.append(container_id)
 
         attributes = annotation.get_defining_attributes()
         attributes_values = [str(getattr(annotation, attribute)) for attribute in attributes]
-        return get_uuid(*attributes_values, *container_id_context)
+
+        return get_uuid(*attributes_values, *filtered_context)
 
     def as_dict(self) -> AnnotationDict:
         """Return the model as dict."""
@@ -319,12 +322,12 @@ class CategoryAnnotation(Annotation):
     # python
     @field_validator("relationships", mode="before")
     @classmethod
-    def _coerce_relationships(cls, v: Any) -> dict:
+    def _coerce_relationships(cls, v: Any) -> dict[ObjectTypes, list[str]]:
         if v is None:
             return {}
         if not isinstance(v, dict):
             raise TypeError("relationships must be a dict")
-        new: dict = {}
+        new: dict[ObjectTypes, list[str]] = {}
         for key, val in v.items():
             key_type = get_type(key) if isinstance(key, str) else key
             if not isinstance(val, list):
@@ -616,6 +619,9 @@ class ContainerAnnotation(CategoryAnnotation):
     value_type: Optional[Literal["str", "int", "float", "list[str]"]] = Field(default=None, exclude=True)
 
     @model_validator(mode="after")
+    def _coerce_or_infer_value_validator(self) -> "ContainerAnnotation":
+        return self._coerce_or_infer_value()
+
     def _coerce_or_infer_value(self) -> "ContainerAnnotation":
         effective_type = self.value_type
         # No explicit type: infer once
@@ -684,7 +690,6 @@ class ContainerAnnotation(CategoryAnnotation):
         if type not in allowed:
             raise ValueError(f"type must be one of {sorted(allowed)}")
         self.value_type = type
-        # Re-run validator logic for conversion/enforcement
         self._coerce_or_infer_value()
 
     def get_defining_attributes(self) -> list[str]:

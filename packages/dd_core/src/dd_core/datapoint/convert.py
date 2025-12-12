@@ -133,13 +133,13 @@ def convert_pdf_bytes_to_np_array_v2(
         if width is None or height is None:
             with BytesIO(pdf_bytes) as pdf_file:
                 try:
-                    pdf = PdfReader(pdf_file).pages[0]  # type: ignore
+                    pdf = PdfReader(pdf_file).pages[0]
                 except NameError:
                     raise ImportError("pypdf is not installed.")
             shape = pdf.mediabox  # pylint: disable=E1101
             height = shape[3] - shape[1]
             width = shape[2] - shape[0]
-        return pdf_to_np_array(pdf_bytes, size=(int(width), int(height)))  # type: ignore
+        return pdf_to_np_array(pdf_bytes, size=(int(width), int(height)))
     return pdf_to_np_array(pdf_bytes, dpi=dpi)
 
 

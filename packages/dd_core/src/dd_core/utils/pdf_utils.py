@@ -143,7 +143,7 @@ def get_pdf_file_reader(path_or_bytes: Union[PathLikeOrStr, bytes]) -> PdfReader
     if isinstance(path_or_bytes, bytes):
         try:
             reader = PdfReader(BytesIO(path_or_bytes))
-        except (pypdf_errors.PdfReadError, AttributeError):  # type: ignore
+        except (pypdf_errors.PdfReadError, AttributeError):
             decrypted_bytes = decrypt_pdf_document_from_bytes(path_or_bytes)
             reader = PdfReader(BytesIO(decrypted_bytes))
         return reader
@@ -158,7 +158,7 @@ def get_pdf_file_reader(path_or_bytes: Union[PathLikeOrStr, bytes]) -> PdfReader
         qpdf_called = False
         try:
             reader = PdfReader(file)
-        except (pypdf_errors.PdfReadError, AttributeError):  # type: ignore
+        except (pypdf_errors.PdfReadError, AttributeError):
             _ = decrypt_pdf_document(path_or_bytes)
             qpdf_called = True
 

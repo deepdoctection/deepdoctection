@@ -75,7 +75,10 @@ disallow_incomplete_defs = true
 warn_redundant_casts = true
 warn_unused_ignores = true
 no_implicit_reexport = false
-plugins = ["numpy.typing.mypy_plugin", "pydantic.mypy"]
+plugins = ["pydantic.mypy"]
+explicit_package_bases = true
+namespace_packages = true
+mypy_path = "$MYPY_CONFIG_FILE_DIR/dd_core/src:$MYPY_CONFIG_FILE_DIR/dd_datasets/src:$MYPY_CONFIG_FILE_DIR/deepdoctection/src"
 
 [[tool.mypy.overrides]]
 module = ["sentry_sdk.*"]
@@ -96,6 +99,22 @@ ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
 module = ["torch"]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = ["torch.__config__"]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = ["torch.utils.*"]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = ["zmq"]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = ["pypdf"]
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]

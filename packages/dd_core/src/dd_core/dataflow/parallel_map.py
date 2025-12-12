@@ -423,9 +423,11 @@ class MultiProcessMapData(_ParallelMapData, _MultiProcessZMQDataFlow):
         _ParallelMapData.reset_state(self)
         self._guard = DataFlowReentrantGuard()
 
-        self.context = zmq.Context()  # type: ignore
-        self.socket = self.context.socket(zmq.DEALER)  # type: ignore
-        self.socket.set_hwm(self._buffer_size * 2)  # type: ignore
+        self.context = zmq.Context()
+        if self.context is None:
+            raise RuntimeError("Failed to create zmq context.")
+        self.socket = self.context.socket(zmq.DEALER)
+        self.socket.set_hwm(self._buffer_size * 2)
         pipename = _get_pipe_name("dataflow-map")
         _bind_guard(self.socket, pipename)
 

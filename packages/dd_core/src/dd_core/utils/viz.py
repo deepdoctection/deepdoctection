@@ -305,7 +305,7 @@ class VizPackageHandler:
             image = Image.fromarray(np.uint8(np.ones((1, 1, 3))))
             self.font = ImageDraw.ImageDraw(image).getfont()
         else:
-            self.font = cv2.FONT_HERSHEY_SIMPLEX  # type: ignore
+            self.font = cv2.FONT_HERSHEY_SIMPLEX
 
     def refresh(self) -> None:
         """
@@ -338,7 +338,7 @@ class VizPackageHandler:
 
     @staticmethod
     def _cv2_read_image(path: PathLikeOrStr) -> PixelValues:
-        return cv2.imread(os.fspath(path), cv2.IMREAD_COLOR).astype(np.uint8)  # type: ignore
+        return cv2.imread(os.fspath(path), cv2.IMREAD_COLOR).astype(np.uint8)
 
     @staticmethod
     def _pillow_read_image(path: PathLikeOrStr) -> PixelValues:
@@ -408,7 +408,7 @@ class VizPackageHandler:
     @staticmethod
     def _cv2_convert_np_to_b64(image: PixelValues) -> str:
         np_encode = cv2.imencode(".png", image)
-        return base64.b64encode(np_encode[1]).decode("utf-8")  # type: ignore
+        return base64.b64encode(np_encode[1]).decode("utf-8")
 
     @staticmethod
     def _pillow_convert_np_to_b64(np_image: PixelValues) -> str:
@@ -431,9 +431,10 @@ class VizPackageHandler:
 
     @staticmethod
     def _cv2_convert_b64_to_np(image: B64Str) -> PixelValues:
-        np_array = np.fromstring(base64.b64decode(image), np.uint8)  # type: ignore
-        np_array = cv2.imdecode(np_array, cv2.IMREAD_COLOR).astype(np.float32)  # type: ignore
-        return np_array.astype(uint8)
+        data=base64.b64decode(image)
+        np_array = np.frombuffer(data, dtype=np.uint8)
+        np_image = cv2.imdecode(np_array, cv2.IMREAD_COLOR).astype(np.float32)
+        return np_image.astype(uint8)
 
     @staticmethod
     def _pillow_convert_b64_to_np(image: B64Str) -> PixelValues:
@@ -456,9 +457,10 @@ class VizPackageHandler:
 
     @staticmethod
     def _cv2_convert_bytes_to_np(image_bytes: bytes) -> PixelValues:
-        np_array = np.frombuffer(image_bytes, np.uint8)
+        data = base64.b64decode(image_bytes)
+        np_array = np.frombuffer(data, np.uint8)
         np_image = cv2.imdecode(np_array, cv2.IMREAD_COLOR)
-        return np_image  # type: ignore
+        return np_image.astype(uint8)
 
     @staticmethod
     def _pillow_convert_bytes_to_np(image_bytes: bytes) -> PixelValues:
@@ -526,7 +528,7 @@ class VizPackageHandler:
         return getattr(self, self.pkg_func_dict["get_text_size"])(text, font_scale)
 
     def _cv2_get_text_size(self, text: str, font_scale: float) -> tuple[int, int]:
-        ((width, height), _) = cv2.getTextSize(text, self.font, font_scale, 1)  # type: ignore
+        ((width, height), _) = cv2.getTextSize(text, self.font, font_scale, 1)
         return width, height
 
     def _pillow_get_text_size(self, text: str, font_scale: float) -> tuple[int, int]:  # pylint: disable=W0613
@@ -559,11 +561,11 @@ class VizPackageHandler:
 
     @staticmethod
     def _pillow_draw_rectangle(
-        np_image: PixelValues, box: tuple[Any, Any, Any, Any], color: Sequence[int], thickness: int
+        np_image: PixelValues, box: tuple[Any, Any, Any, Any], color: tuple[int, int, int], thickness: int
     ) -> PixelValues:
         pil_image = Image.fromarray(np.uint8(np_image[:, :, ::-1]))
         draw = ImageDraw.Draw(pil_image)
-        draw.rectangle(box, outline=color, width=thickness)  # type: ignore
+        draw.rectangle(box, outline=color, width=thickness)
         np_image = np.array(pil_image)[:, :, ::-1]
         return np_image
 
@@ -662,7 +664,7 @@ class VizPackageHandler:
         key = cv2.waitKey(-1)
         while key >= 128:
             key = cv2.waitKey(-1)
-        key = chr(key & 0xFF)  # type: ignore
+        key = chr(key & 0xFF)
 
         if key == "q":
             cv2.destroyWindow(name)

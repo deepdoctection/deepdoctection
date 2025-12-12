@@ -81,7 +81,7 @@ Detectron2Dict: TypeAlias = dict[str, Any]
 
 
 # A path to a file, directory etc. can be given as a string or Path object
-PathLikeOrStr: TypeAlias = Union[str, os.PathLike]
+PathLikeOrStr: TypeAlias = Union[str, os.PathLike[str]]
 
 # mainly used in utils
 # Type for requirements. A requirement is a Tuple of string and a callable that returns True if the requirement is
