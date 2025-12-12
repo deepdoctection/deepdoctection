@@ -40,7 +40,7 @@ from dd_core.utils.object_types import (
     token_class_tag_to_token_class_with_tag,
     token_class_with_tag_to_token_class_and_tag,
 )
-from dd_core.utils.transform import BaseTransform, box_to_point4, point4_to_box
+from dd_core.utils.transform import BaseTransform
 from dd_core.utils.types import JsonDict, PixelValues, Requirement
 
 if TYPE_CHECKING:

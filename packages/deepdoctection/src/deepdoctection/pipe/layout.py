@@ -30,7 +30,7 @@ from dd_core.utils.error import ImageError
 from dd_core.utils.object_types import ObjectTypes
 from dd_core.utils.transform import PadTransform
 
-from ..extern.base import DetectionResult, ObjectDetector, PdfMiner
+from ..extern.base import ObjectDetector, PdfMiner
 from .base import PipelineComponent
 from .registry import pipeline_component_registry
 

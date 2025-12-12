@@ -152,7 +152,7 @@ class CocoMetric(MetricBase):
     """
 
     name = "mAP and mAR"
-    metric = COCOeval if cocotools_available() else None # type: ignore
+    metric = COCOeval if cocotools_available() else None  # type: ignore
     mapper = image_to_coco
     _f1_score = None
     _f1_iou = None

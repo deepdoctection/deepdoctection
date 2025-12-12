@@ -59,7 +59,7 @@ max-statements = 100
 max-public-methods = 30
 min-public-methods = 1
 max-nested-blocks = 8
-max-positional-arguments=15
+max-positional-arguments=18
 
 [tool.pylint.miscellaneous]
 # Needed for certain C extensions (e.g., lxml)
@@ -88,7 +88,7 @@ ignore_missing_imports = true
 follow_imports = "skip"
 
 [[tool.mypy.overrides]]
-module = ["tensorpack.*"]
+module = ["fvcore.*"]
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]

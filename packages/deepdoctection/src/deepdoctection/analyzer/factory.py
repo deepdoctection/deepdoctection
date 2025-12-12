@@ -21,7 +21,6 @@
 
 from __future__ import annotations
 
-from os import environ
 from typing import TYPE_CHECKING, Any, Literal, Mapping, Optional, Sequence, Union
 
 from lazy_imports import try_import
@@ -506,7 +505,7 @@ class ServiceFactory:
             use_textract = True
             if SETTINGS.AWS_REGION and SETTINGS.AWS_ACCESS_KEY_ID and SETTINGS.AWS_SECRET_ACCESS_KEY:
                 credentials_kwargs = {
-                    "aws_access_key_id": SETTINGS.AWS_ACCESS_KEY_ID ,
+                    "aws_access_key_id": SETTINGS.AWS_ACCESS_KEY_ID,
                     "aws_secret_access_key": SETTINGS.AWS_SECRET_ACCESS_KEY,
                     "config": Config(region_name=SETTINGS.AWS_REGION),
                 }

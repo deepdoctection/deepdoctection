@@ -36,11 +36,11 @@ from dd_core.utils.types import PathLikeOrStr, PixelValues, Requirement
 from .base import DetectionResult, ModelCategories, ObjectDetector
 
 with try_import() as pt_import_guard:
-    import torch  # pylint: disable=W0611
+    import torch
     from torchvision.ops import boxes as box_ops  # type: ignore
 
 with try_import() as tr_import_guard:
-    from transformers import (  # pylint: disable=W0611
+    from transformers import (
         DeformableDetrForObjectDetection,
         DeformableDetrImageProcessorFast,
         DetrImageProcessorFast,

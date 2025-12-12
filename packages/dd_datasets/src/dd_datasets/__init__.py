@@ -15,6 +15,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""
+Dataset base classes, dataflows, adapters etc.
+"""
+
 from dd_core.utils.file_utils import pytorch_available
 
 from .base import *

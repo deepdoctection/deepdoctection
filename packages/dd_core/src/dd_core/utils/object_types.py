@@ -22,7 +22,7 @@ from __future__ import annotations
 
 import threading
 from enum import Enum
-from typing import Any, Iterable, Optional, Type, Union, Callable
+from typing import Any, Callable, Iterable, Optional, Type, Union
 
 import catalogue  # type: ignore
 

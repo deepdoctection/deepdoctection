@@ -45,7 +45,7 @@ from ..pipe.doctectionpipe import DoctectionPipe
 from .base import MetricBase
 
 with try_import() as wb_import_guard:
-    import wandb  # pylint:disable=W0611
+    import wandb
     from wandb import Artifact, Table
 
 if TYPE_CHECKING:

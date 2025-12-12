@@ -48,10 +48,10 @@ with try_import() as pt_import_guard:
 
 with try_import() as doctr_import_guard:
     from doctr.models._utils import estimate_orientation
-    from doctr.models.detection.predictor import DetectionPredictor  # pylint: disable=W0611
+    from doctr.models.detection.predictor import DetectionPredictor
     from doctr.models.detection.zoo import detection_predictor
     from doctr.models.preprocessor import PreProcessor
-    from doctr.models.recognition.predictor import RecognitionPredictor  # pylint: disable=W0611
+    from doctr.models.recognition.predictor import RecognitionPredictor
     from doctr.models.recognition.zoo import ARCHS, recognition
 
 

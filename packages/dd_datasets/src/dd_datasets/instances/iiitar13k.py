@@ -37,7 +37,6 @@ Module for IIITar13K dataset. Install the dataset following the folder structure
 """
 from __future__ import annotations
 
-import os
 from pathlib import Path
 from typing import Mapping, Union
 
@@ -46,7 +45,6 @@ from lazy_imports import try_import
 from dd_core.dataflow import DataFlow, MapData, SerializerFiles
 from dd_core.mapper import curry, xml_to_dict
 from dd_core.mapper.pascalstruct import pascal_voc_dict_to_image
-from dd_core.utils.env_info import SETTINGS
 from dd_core.utils.file_utils import lxml_available
 from dd_core.utils.object_types import DatasetType, LayoutType
 from dd_core.utils.types import JsonDict
