@@ -22,7 +22,7 @@ from __future__ import annotations
 
 import threading
 from enum import Enum
-from typing import Any, Iterable, Optional, Type, Union
+from typing import Any, Iterable, Optional, Type, Union, Callable
 
 import catalogue  # type: ignore
 
@@ -86,7 +86,7 @@ def _rebuild_types_index() -> None:
             _index_enum(enum_cls)
 
 
-def _wrapped_register(name: str, func: Optional[Any] = None):
+def _wrapped_register(name: str, func: Optional[Any] = None) -> Callable[[Type[ObjectTypes]], Type[ObjectTypes]]:
     def _decorator(cls: Type[ObjectTypes]) -> Type[ObjectTypes]:
         registered_cls = _orig_register(name, func=func)(cls)
         _index_enum(registered_cls)

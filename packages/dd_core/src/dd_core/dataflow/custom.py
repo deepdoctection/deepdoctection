@@ -160,18 +160,16 @@ class CustomDataFromList(DataFromList):
             for idx, k in enumerate(idxs):
                 if self.max_datapoints is not None:
                     if idx < self.max_datapoints:
-                        yield lst_tmp[k]
+                        yield lst_tmp[int(k)]
                     else:
                         break
                 else:
-                    yield lst_tmp[k]
+                    yield lst_tmp[int(k)]
         else:
             if self.max_datapoints is not None:
-                for k, _ in enumerate(lst_tmp):
-                    if k < self.max_datapoints:
-                        yield lst_tmp[k]
-                    else:
-                        break
+                max_dp = int(self.max_datapoints)
+                for i in range(min(max_dp, len(lst_tmp))):
+                    yield lst_tmp[i]
             else:
                 yield from lst_tmp
 
@@ -191,7 +189,7 @@ class CustomDataFromIterable(DataFromIterable):
         super().__init__(iterable)
         self.max_datapoints = max_datapoints
         if self.max_datapoints is not None:
-            self._len = self.max_datapoints
+            self._len = int(self.max_datapoints)
 
     def __iter__(self) -> Any:
         if self.max_datapoints is not None:

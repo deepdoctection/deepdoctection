@@ -231,7 +231,7 @@ class LabelSummarizer:
         self.categories = categories
         cat_numbers = len(self.categories.keys())
         self.hist_bins = np.arange(1, cat_numbers + 2)
-        self.summary = np.zeros(cat_numbers)
+        self.summary = np.zeros(cat_numbers, dtype=np.int64)
 
     def dump(self, item: Union[Sequence[Union[str, int]], str, int]) -> None:
         """

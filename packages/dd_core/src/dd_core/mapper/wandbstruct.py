@@ -30,7 +30,7 @@ from ..mapper.maputils import curry
 from ..utils.object_types import DefaultType, ObjectTypes, TypeOrStr, get_type
 
 with try_import() as wb_import_guard:
-    from wandb import Classes  # type: ignore
+    from wandb import Classes
     from wandb import Image as Wbimage
 
 

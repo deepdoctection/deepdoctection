@@ -443,12 +443,12 @@ def pub_to_image_uncur(  # pylint: disable=R0914
                 )
                 cell_ann.dump_sub_category(
                     CellType.ROW_SPAN,
-                    CategoryAnnotation(category_name=CellType.ROW_SPAN, category_id=row_span),  # type: ignore
+                    CategoryAnnotation(category_name=CellType.ROW_SPAN, category_id=row_span),
                     image.image_id,
                 )
                 cell_ann.dump_sub_category(
                     CellType.COLUMN_SPAN,
-                    CategoryAnnotation(category_name=CellType.COLUMN_SPAN, category_id=col_span),  # type: ignore
+                    CategoryAnnotation(category_name=CellType.COLUMN_SPAN, category_id=col_span),
                     image.image_id,
                 )
                 if (

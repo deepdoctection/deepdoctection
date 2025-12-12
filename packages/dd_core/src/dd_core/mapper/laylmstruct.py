@@ -380,7 +380,7 @@ def _tokenize_with_sliding_window(
                 all_attention_mask,
                 all_word_ids,
                 all_tokens,
-            ) = zip(
+            ) = zip(  #type:ignore
                 *random.sample(
                     list(
                         zip(
@@ -403,7 +403,7 @@ def _tokenize_with_sliding_window(
         slided_tokenized_inputs["token_type_ids"] = torch.tensor(all_token_type_ids)
         slided_tokenized_inputs["attention_mask"] = torch.tensor(all_attention_mask)
     else:
-        slided_tokenized_inputs["overflow_to_sample_mapping"] = overflow_to_sample_mapping  # type: ignore
+        slided_tokenized_inputs["overflow_to_sample_mapping"] = overflow_to_sample_mapping
         slided_tokenized_inputs["input_ids"] = all_input_ids
         slided_tokenized_inputs["token_type_ids"] = all_token_type_ids
         slided_tokenized_inputs["attention_mask"] = all_attention_mask
@@ -764,7 +764,7 @@ def image_to_raw_lm_features(
     dp: Image,
     dataset_type: Optional[Literal["sequence_classification", "token_classification"]] = None,
     use_token_tag: bool = True,
-    text_container: Optional[LayoutType] = LayoutType.WORD,
+    text_container: Optional[LayoutType] = None,
     floating_text_block_categories: Optional[Sequence[LayoutType]] = None,
     include_residual_text_container: bool = False,
 ) -> Optional[RawLMFeatures]:
@@ -790,6 +790,8 @@ def image_to_raw_lm_features(
     """
 
     raw_features: RawLMFeatures = RawLMFeatures({})
+    if text_container is None:
+        text_container = LayoutType.WORD
 
     # We do not need to configure residual_text_block_categories here, because text_ does ignore these layout sections
     # anyway

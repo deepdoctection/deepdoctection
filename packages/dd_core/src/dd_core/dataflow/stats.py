@@ -276,6 +276,7 @@ class StdFromDataFlow(ProxyDataFlow):
                     if n == self.max_datapoints:
                         break
 
+            assert n is not None, "No datapoints found in dataflow"
             var = (ex2 - (ex * ex) / n) / (n - 1)
             self.std = np.sqrt(var)
 

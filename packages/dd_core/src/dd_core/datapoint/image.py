@@ -25,7 +25,7 @@ from collections import defaultdict
 from dataclasses import dataclass, field
 from os import environ, fspath
 from pathlib import Path
-from typing import Any, Optional, Sequence, TypedDict, Union
+from typing import Any, Optional, Sequence, TypedDict, Union, Callable
 
 import numpy as np
 from numpy import uint8
@@ -232,7 +232,8 @@ class Image(BaseModel):
                 object.__setattr__(self, "_image_id", get_uuid(str(self.location), self.file_name))
 
         if not self.document_id:
-            self.document_id = self._image_id  # bind document_id if not provided
+            # bind document_id if not provided
+            self.document_id = self._image_id if self._image_id is not None else ""
         return self
 
     @property
@@ -279,13 +280,13 @@ class Image(BaseModel):
         """
         if isinstance(image, str):
             self._image = convert_b64_to_np_array(image)
-            self.set_width_height(self._image.shape[1], self._image.shape[0])  # type: ignore
+            self.set_width_height(self._image.shape[1], self._image.shape[0])
             self._self_embedding()
             return
 
         if isinstance(image, bytes):
             self._image = convert_pdf_bytes_to_np_array_v2(image, dpi=int(environ["DPI"]))
-            self.set_width_height(self._image.shape[1], self._image.shape[0])  # type: ignore
+            self.set_width_height(self._image.shape[1], self._image.shape[0])
             self._self_embedding()
             return
 
@@ -305,6 +306,7 @@ class Image(BaseModel):
         """summary"""
         if self._summary is None:
             object.__setattr__(self, "_summary", CategoryAnnotation(category_name=SummaryType.SUMMARY))
+            assert self._summary is not None  # help mypy understand the assignment worked
             if self._summary._annotation_id is None:  # pylint: disable=W0212
                 self._summary.annotation_id = self.define_annotation_id(self._summary)
         return self._summary
@@ -545,7 +547,7 @@ class Image(BaseModel):
         return get_uuid(self.image_id, *container_ids)
 
     @model_serializer(mode="wrap")
-    def _serialize(self, handler):
+    def _serialize(self, handler: Callable[[Any], Any]) -> Any:
         """
         Use Pydantic core serializer as base, then inject legacy/private-derived keys.
         Ensures fast JSON via model_dump_json while keeping original export shape.
@@ -863,7 +865,7 @@ class Image(BaseModel):
         :return: optional dict
         """
 
-        def set_image_keys_to_none(d):  # type: ignore
+        def set_image_keys_to_none(d: Any) -> None:
             if isinstance(d, dict):
                 for key, value in d.items():
                     if key == "_image":

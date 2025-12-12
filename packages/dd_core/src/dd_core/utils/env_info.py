@@ -150,7 +150,7 @@ def _import_custom_object_types_module(mod: str) -> None:
 
     module = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = module
-    spec.loader.exec_module(module)  # type: ignore[union-attr]
+    spec.loader.exec_module(module)
 
 
 def resolve_config_source(
@@ -278,7 +278,7 @@ class EnvSettings(BaseSettings):
         """
         Apply availability and rule-based overrides, but only when user did not explicitly set the variable.
         """
-        fields_set = getattr(self, "__fields_set__", set())
+        fields_set: set[str] = getattr(self, "__fields_set__", set())
 
         # 0) Derive dirs from DEEPDOCTECTION_CACHE unless explicitly set by user/.env
         if "MODEL_DIR" not in fields_set:
@@ -358,7 +358,7 @@ class EnvSettings(BaseSettings):
         Export effective settings into `os.environ`, so legacy modules keep working without refactors.
         """
 
-        def _set(k: str, v) -> None:
+        def _set(k: str, v: Any) -> None:
             if isinstance(v, bool):
                 os.environ[k] = "True" if v else "False"
             elif v is None:
@@ -613,12 +613,12 @@ def detect_compute_compatibility(cuda_home: Optional[PathLikeOrStr], so_file: Op
     try:
         cuobjdump = os.path.join(cuda_home, "bin", "cuobjdump")  # type: ignore
         if os.path.isfile(cuobjdump):
-            output = subprocess.check_output(f"'{cuobjdump}' --list-elf '{so_file}'", shell=True)
-            output = output.decode("utf-8").strip().split("\n")  # type: ignore
+            output_b = subprocess.check_output(f"'{cuobjdump}' --list-elf '{so_file}'", shell=True)
+            output = output_b.decode("utf-8").strip().split("\n")
             arch = []
             for line in output:
-                line = re.findall(r"\.sm_([0-9]*)\.", line)[0]  # type: ignore
-                arch.append(".".join(line))  # type: ignore
+                line_o = re.findall(r"\.sm_([0-9]*)\.", line)[0]
+                arch.append(".".join(line_o))
             arch = sorted(set(arch))
             return ", ".join(arch)
         return str(so_file) + "; cannot find cuobjdump"
