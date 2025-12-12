@@ -397,8 +397,12 @@ class CategoryAnnotation(Annotation):
             key: A key to a sub category.
         """
         sub_categories = getattr(self, "sub_categories", None)
-        if (sub_categories is not None and isinstance(sub_categories, dict) and
-                hasattr(sub_categories,"pop") and key in sub_categories):
+        if (
+            sub_categories is not None
+            and isinstance(sub_categories, dict)
+            and hasattr(sub_categories, "pop")
+            and key in sub_categories
+        ):
             sub_categories.pop(key)
 
     def dump_relationship(self, key: TypeOrStr, annotation_id: str) -> None:

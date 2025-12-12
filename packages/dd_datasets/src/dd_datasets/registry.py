@@ -81,10 +81,10 @@ def print_dataset_infos(add_license: bool = True, add_info: bool = True) -> None
             ds = dataset[1]()
         info.append(ds.dataset_info.type)
         if add_license:
-            info.append(ds.dataset_info.license)  # pylint: disable=W0212
+            info.append(ds.dataset_info.license)
         if add_info:
-            info.append(ds.dataset_info.short_description)  # pylint: disable=W0212
-        if ds.dataflow.categories is not None:  # pylint: disable=W0212
+            info.append(ds.dataset_info.short_description)
+        if ds.dataflow.categories is not None:
             categories = "\n".join(ds.dataflow.categories.init_categories)  # Format categories as multi-line string
             sub_categories = "\n".join(
                 f"{key}: {', '.join(values)}" for key, values in ds.dataflow.categories.init_sub_categories.items()

@@ -431,15 +431,39 @@ class Layout(ImageAnnotationBaseView):
             characters = [str(w.characters) for w in words]
             ann_ids = [str(w.annotation_id) for w in words]
             token_classes = [str(w.token_class) for w in words if getattr(w, "token_class", None) is not None]
-            token_class_ann_ids = [str(w.get_sub_category(WordType.TOKEN_CLASS).annotation_id) if
-                                   WordType.TOKEN_CLASS in w.sub_categories else None for w in words]
+            token_class_ann_ids = [
+                (
+                    str(w.get_sub_category(WordType.TOKEN_CLASS).annotation_id)
+                    if WordType.TOKEN_CLASS in w.sub_categories
+                    else None
+                )
+                for w in words
+            ]
             token_tags = [str(w.token_tag) for w in words if getattr(w, "token_tag", None) is not None]
-            token_tag_ann_ids = [str(w.get_sub_category(WordType.TOKEN_TAG).annotation_id) if
-                                 WordType.TOKEN_TAG in w.sub_categories else None for w in words]
-            token_classes_ids = [str(w.get_sub_category(WordType.TOKEN_CLASS).category_id) if
-                                 WordType.TOKEN_CLASS in w.sub_categories else None for w in words]
-            token_tag_ids = [str(w.get_sub_category(WordType.TOKEN_TAG).category_id) if
-                             WordType.TOKEN_TAG in w.sub_categories else None for w in words]
+            token_tag_ann_ids = [
+                (
+                    str(w.get_sub_category(WordType.TOKEN_TAG).annotation_id)
+                    if WordType.TOKEN_TAG in w.sub_categories
+                    else None
+                )
+                for w in words
+            ]
+            token_classes_ids = [
+                (
+                    str(w.get_sub_category(WordType.TOKEN_CLASS).category_id)
+                    if WordType.TOKEN_CLASS in w.sub_categories
+                    else None
+                )
+                for w in words
+            ]
+            token_tag_ids = [
+                (
+                    str(w.get_sub_category(WordType.TOKEN_TAG).category_id)
+                    if WordType.TOKEN_TAG in w.sub_categories
+                    else None
+                )
+                for w in words
+            ]
         else:
             characters, ann_ids = [], []
             token_classes, token_class_ann_ids = [], []
@@ -631,7 +655,7 @@ class Table(Layout):
         for cell in row_cells:
             for header in column_header_cells:
                 if (
-                    header.column_number <= cell.column_number # type: ignore
+                    header.column_number <= cell.column_number  # type: ignore
                     and cell.column_number <= header.column_number + header.column_span - 1  # type: ignore
                 ):
                     kv_dict[str((header.column_number, header.text))] = cell.text  # type: ignore

@@ -44,13 +44,13 @@ from .base import DetectionResult, ModelCategories, ObjectDetector
 with try_import() as pt_import_guard:
     import torch
     import torch.cuda
-    from torch import nn  # pylint: disable=W0611
+    from torch import nn
 
 with try_import() as d2_import_guard:
     from detectron2.checkpoint import DetectionCheckpointer
-    from detectron2.config import CfgNode, get_cfg  # pylint: disable=W0611
-    from detectron2.modeling import GeneralizedRCNN, build_model  # pylint: disable=W0611
-    from detectron2.structures import Instances  # pylint: disable=W0611
+    from detectron2.config import CfgNode, get_cfg
+    from detectron2.modeling import GeneralizedRCNN, build_model
+    from detectron2.structures import Instances
 
 
 def _d2_post_processing(predictions: dict[str, Instances], nms_thresh_class_agnostic: float) -> dict[str, Instances]:

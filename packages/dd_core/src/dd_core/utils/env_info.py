@@ -438,11 +438,11 @@ class EnvSettings(BaseSettings):
         conf_tesseract_target = self.CONFIGS_DIR / "dd" / self.CONF_TESSERACT_TARGET_NAME
 
         # Copy (idempotent unless force_copy) - only if source exists (for dd_datapoint package)
-        if self.PROFILES_SRC.exists(): # pylint: disable=E1101
+        if self.PROFILES_SRC.exists():  # pylint: disable=E1101
             copy_file_to_target(self.PROFILES_SRC, profiles_target, force_copy=force_copy)
-        if self.CONF_DD_ONE_SRC.exists(): # pylint: disable=E1101
+        if self.CONF_DD_ONE_SRC.exists():  # pylint: disable=E1101
             copy_file_to_target(self.CONF_DD_ONE_SRC, conf_dd_one_target, force_copy=force_copy)
-        if self.CONF_TESSERACT_SRC.exists(): # pylint: disable=E1101
+        if self.CONF_TESSERACT_SRC.exists():  # pylint: disable=E1101
             copy_file_to_target(self.CONF_TESSERACT_SRC, conf_tesseract_target, force_copy=force_copy)
 
 

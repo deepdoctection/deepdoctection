@@ -20,7 +20,6 @@ Module for common pipeline components
 """
 from __future__ import annotations
 
-import os
 from copy import deepcopy
 from dataclasses import dataclass, field
 from typing import Literal, Mapping, Optional, Sequence, Union
@@ -424,7 +423,6 @@ class PageParsingService(PipelineComponent):
             residual_text_block_categories=self.residual_text_block_categories,
             include_residual_text_container=self.include_residual_text_container,
         )
-
 
     def _init_sanity_checks(self) -> None:
         assert self.text_container in (

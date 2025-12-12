@@ -472,6 +472,8 @@ class TextLineGenerator:
                 )
                 detection_result_list.append(detection_result)
             else:
+                sub_line = []
+                sub_line_ann_ids = []
                 for idx, ann in enumerate(anns_per_row):
                     if idx == 0:
                         sub_line = [ann]

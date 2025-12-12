@@ -22,7 +22,7 @@
 from __future__ import annotations
 
 from math import floor
-from typing import ClassVar, Literal, Optional, Sequence, TypedDict, Union, cast, Any
+from typing import Any, ClassVar, Literal, Optional, Sequence, TypedDict, Union, cast
 
 import numpy as np
 import numpy.typing as npt
@@ -190,6 +190,7 @@ def ioa(boxes1: npt.NDArray[float32], boxes2: npt.NDArray[float32]) -> npt.NDArr
 
 class BoxDict(TypedDict):
     """Bounding box dict: `absolute_coords` flag and coordinates `ulx`, `uly`, `lrx`, `lry`."""
+
     absolute_coords: bool
     ulx: BoxCoordinate
     uly: BoxCoordinate

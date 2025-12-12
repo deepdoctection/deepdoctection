@@ -51,7 +51,7 @@ with try_import() as d2_import_guard:
     from detectron2.engine import DefaultTrainer, HookBase, default_writers, hooks
     from detectron2.utils import comm
     from detectron2.utils.events import EventWriter, get_event_storage
-    from fvcore.nn.precise_bn import get_bn_modules  # type: ignore
+    from fvcore.nn.precise_bn import get_bn_modules  # type: ignore # pylint: disable=E0401
 
 with try_import() as pt_import_guard:
     from torch import cuda
@@ -126,6 +126,7 @@ class WandbWriter(EventWriter):
         self._run._label(repo=repo)
 
     def write(self) -> None:
+        """Write all scalars to wandb."""
         storage = get_event_storage()
 
         log_dict = {}
@@ -135,6 +136,7 @@ class WandbWriter(EventWriter):
         self._run.log(log_dict)
 
     def close(self) -> None:
+        """Close wandb run."""
         self._run.finish()
 
 
@@ -177,12 +179,12 @@ class D2Trainer(DefaultTrainer):
                 hooks.PreciseBN(
                     # Run at the same freq as (but before) evaluation.
                     cfg.TEST.EVAL_PERIOD,
-                    self.model,  # pylint: disable=E1101
+                    self.model,
                     # Build a new data loader to not affect training
                     self.build_train_loader(cfg),
                     cfg.TEST.PRECISE_BN.NUM_ITER,
                 )
-                if cfg.TEST.PRECISE_BN.ENABLED and get_bn_modules(self.model)  # pylint: disable=E1101
+                if cfg.TEST.PRECISE_BN.ENABLED and get_bn_modules(self.model)
                 else None
             ),
         ]
@@ -200,7 +202,7 @@ class D2Trainer(DefaultTrainer):
             ret.append(
                 hooks.EvalHook(
                     cfg.TEST.EVAL_PERIOD,
-                    lambda: self.eval_with_dd_evaluator(**self.build_val_dict),  # pylint: disable=W0108
+                    lambda: self.eval_with_dd_evaluator(**self.build_val_dict),
                 )
             )
 
@@ -231,7 +233,7 @@ class D2Trainer(DefaultTrainer):
             writers_list.append(WandbWriter(self.cfg.WANDB.PROJECT, self.cfg.WANDB.REPO, self.cfg))
         return writers_list
 
-    def build_train_loader(self, cfg: CfgNode) -> DataLoader[Any]:  # pylint: disable=W0221
+    def build_train_loader(self, cfg: CfgNode) -> DataLoader[Any]:
         """
         Builds the data loader for training.
 
@@ -258,7 +260,7 @@ class D2Trainer(DefaultTrainer):
         assert self.evaluator is not None
         assert self.evaluator.pipe_component is not None
         for comp in self.evaluator.pipe_component.pipe_components:
-            comp.predictor.d2_predictor = copy.deepcopy(self.model).eval()  # type: ignore # pylint: disable=E1101
+            comp.predictor.d2_predictor = copy.deepcopy(self.model).eval()  # type: ignore
         scores = self.evaluator.run(True, **build_eval_kwargs)
         return scores
 
@@ -300,6 +302,7 @@ class D2Trainer(DefaultTrainer):
 
     @classmethod
     def build_evaluator(cls, cfg, dataset_name):  # type: ignore
+        """Build evaluator."""
         raise NotImplementedError()
 
 

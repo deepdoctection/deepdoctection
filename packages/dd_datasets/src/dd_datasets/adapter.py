@@ -118,6 +118,8 @@ class DatasetAdapter(IterableDataset):
                 max_datapoints = None
 
             datapoints = []
+            cat_ids = []
+
             with get_tqdm(total=max_datapoints) as status_bar:
                 for dp in df:
                     if dp.image is not None:

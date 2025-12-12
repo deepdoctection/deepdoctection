@@ -150,7 +150,7 @@ class MultiThreadPipelineComponent(PipelineComponent):
 
         self._put_datapoints_to_queue(df)
 
-    def start(self) -> list[Union[Image,Page]]:
+    def start(self) -> list[Union[Image, Page]]:
         """
         Creates a worker for each component and starts processing the datapoints of the queue.
 
@@ -188,7 +188,7 @@ class MultiThreadPipelineComponent(PipelineComponent):
         tqdm_bar: Optional[TqdmType] = None,
         pre_proc_func: Optional[Callable[[Union[Image, Page]], Union[Image, Page]]] = None,
         post_proc_func: Optional[Callable[[Union[Image, Page]], Union[Image, Page]]] = None,
-    ) -> list[Union[Image,Page]]:
+    ) -> list[Union[Image, Page]]:
         outputs = []
 
         with ExitStack() as stack:
@@ -216,7 +216,7 @@ class MultiThreadPipelineComponent(PipelineComponent):
                     break
             self.input_queue.put(dp)
 
-    def pass_datapoints(self, dpts: list[Union[Image,Page]]) -> list[Union[Image,Page]]:
+    def pass_datapoints(self, dpts: list[Union[Image, Page]]) -> list[Union[Image, Page]]:
         """
         Put the list of datapoints into a thread-safe queue and start a separate thread for each pipeline component.
 

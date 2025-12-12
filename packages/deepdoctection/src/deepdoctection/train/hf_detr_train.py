@@ -264,7 +264,7 @@ def train_hf_detr(
         if not wandb_available():
             raise DependencyError("WandB must be installed separately")
         run = wandb.init(project=wandb_project, config=conf_dict)
-        run._label(repo=wandb_repo)  # pylint: disable=W0212
+        run._label(repo=wandb_repo)
         os.environ["WANDB_DISABLED"] = "False"
         os.environ["WANDB_WATCH"] = "True"
         os.environ["WANDB_PROJECT"] = wandb_project
@@ -279,7 +279,7 @@ def train_hf_detr(
             )
         )
 
-    arguments = TrainingArguments(**conf_dict)  # pylint: disable=E1123
+    arguments = TrainingArguments(**conf_dict)
     logger.info(LoggingRecord(f"Config: \n {arguments.to_dict()}", arguments.to_dict()))
 
     id2label = {int(k) - 1: v for v, k in categories_dict_name_as_key.items()}

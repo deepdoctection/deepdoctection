@@ -431,7 +431,7 @@ class VizPackageHandler:
 
     @staticmethod
     def _cv2_convert_b64_to_np(image: B64Str) -> PixelValues:
-        data=base64.b64decode(image)
+        data = base64.b64decode(image)
         np_array = np.frombuffer(data, dtype=np.uint8)
         np_image = cv2.imdecode(np_array, cv2.IMREAD_COLOR).astype(np.float32)
         return np_image.astype(uint8)

@@ -222,9 +222,9 @@ class LayoutLMTrainer(Trainer):
 
     def evaluate(
         self,
-        eval_dataset: Optional[Dataset[Any]] = None,  # pylint: disable=W0613
-        ignore_keys: Optional[list[str]] = None,  # pylint: disable=W0613
-        metric_key_prefix: str = "eval",  # pylint: disable=W0613
+        eval_dataset: Optional[Dataset[Any]] = None,
+        ignore_keys: Optional[list[str]] = None,
+        metric_key_prefix: str = "eval",
     ) -> dict[str, float]:
         """
         Overwritten method from `Trainer`. Arguments will not be used.
@@ -481,7 +481,7 @@ def train_hf_layoutlm(
         if not wandb_available():
             raise DependencyError("WandB must be installed separately")
         run = wandb.init(project=wandb_project, config=conf_dict)
-        run._label(repo=wandb_repo)  # pylint: disable=W0212
+        run._label(repo=wandb_repo)
     else:
         os.environ["WANDB_DISABLED"] = "True"
 

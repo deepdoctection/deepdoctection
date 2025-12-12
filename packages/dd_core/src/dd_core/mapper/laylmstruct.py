@@ -380,7 +380,7 @@ def _tokenize_with_sliding_window(
                 all_attention_mask,
                 all_word_ids,
                 all_tokens,
-            ) = zip(  #type:ignore
+            ) = zip(  # type:ignore
                 *random.sample(
                     list(
                         zip(

@@ -313,7 +313,7 @@ def embedding_in_image(dp: Image, html: list[str], categories_name_as_key: dict[
     for ann in dp.get_annotation():
         image.dump(ann)
         assert table_ann.image
-        table_ann.image.dump(ann)  #pylint:disable=E1101
+        table_ann.image.dump(ann)  # pylint:disable=E1101
         table_ann.dump_relationship(Relationships.CHILD, ann.annotation_id)
 
     return image

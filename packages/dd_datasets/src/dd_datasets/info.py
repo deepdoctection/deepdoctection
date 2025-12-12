@@ -240,7 +240,7 @@ class DatasetCategories:
 
         sub_cat: dict[ObjectTypes, Union[ObjectTypes, list[ObjectTypes]]] = {}
         for cat in _categories:
-            assert cat in self.get_categories(  # pylint: disable=E1135
+            assert cat in self.get_categories(
                 as_dict=False, filtered=True
             ), f"{cat} not in categories. Maybe it has been replaced with sub category"
             sub_cat_dict = self.init_sub_categories.get(cat)
@@ -320,7 +320,7 @@ class DatasetCategories:
         categories = self.get_categories(name_as_key=True)
         cats_or_sub_cats = [
             self.init_sub_categories.get(cat, {cat: [cat]}).get(_cat_to_sub_cat.get(cat, cat), [cat])
-            for cat in categories  # pylint: disable=E1133
+            for cat in categories
         ]
         self._cat_to_sub_cat = _cat_to_sub_cat
         _categories_update_list = list(chain(*cats_or_sub_cats))

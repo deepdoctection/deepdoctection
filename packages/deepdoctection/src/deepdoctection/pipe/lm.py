@@ -218,7 +218,7 @@ class LMTokenClassifierService(PipelineComponent):
                 if WordType.TOKEN_CLASS not in word.sub_categories:
                     self.dp_manager.set_category_annotation(
                         TokenClasses.OTHER,
-                        self.other_name_as_key[self.default_key], # type: ignore
+                        self.other_name_as_key[self.default_key],  # type: ignore
                         WordType.TOKEN_CLASS,
                         word.annotation_id,
                     )
@@ -227,7 +227,7 @@ class LMTokenClassifierService(PipelineComponent):
                 if WordType.TOKEN_TAG not in word.sub_categories:
                     self.dp_manager.set_category_annotation(
                         self.default_key,
-                        self.other_name_as_key[self.default_key], # type: ignore
+                        self.other_name_as_key[self.default_key],  # type: ignore
                         WordType.TOKEN_TAG,
                         word.annotation_id,
                     )

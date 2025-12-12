@@ -25,7 +25,7 @@ from collections import defaultdict
 from dataclasses import dataclass, field
 from os import environ, fspath
 from pathlib import Path
-from typing import Any, Optional, Sequence, TypedDict, Union, Callable
+from typing import Any, Callable, Optional, Sequence, TypedDict, Union
 
 import numpy as np
 from numpy import uint8
@@ -184,7 +184,6 @@ class Image(BaseModel):
             else:
                 # assign even if value is None to preserve explicit input
                 object.__setattr__(self, key, val)
-
 
     @field_validator("embeddings", mode="before")
     @classmethod
@@ -402,7 +401,7 @@ class Image(BaseModel):
         """
         embeddings = getattr(self, "embeddings", None)
         if isinstance(embeddings, dict):
-            if image_id in embeddings: # pylint: disable=E1135
+            if image_id in embeddings:  # pylint: disable=E1135
                 embeddings.pop(image_id, None)
 
     def _self_embedding(self) -> None:
@@ -549,7 +548,7 @@ class Image(BaseModel):
                     else:
                         container_ids.append(str(value))
             elif isinstance(attr, list):
-                for element in attr: # pylint: disable=E1133
+                for element in attr:  # pylint: disable=E1133
                     if isinstance(element, Annotation):
                         container_ids.append(element.state_id)
                     elif isinstance(element, str):
@@ -570,7 +569,7 @@ class Image(BaseModel):
         """
         data = handler(self)
 
-        data["embeddings"] = {k: v.as_dict() for k, v in self.embeddings.items()} # pylint: disable=E1101
+        data["embeddings"] = {k: v.as_dict() for k, v in self.embeddings.items()}  # pylint: disable=E1101
         data["_bbox"] = self._bbox.as_dict() if self._bbox else None
         data["_image"] = convert_np_array_to_b64(self._image) if self._image is not None else None
         data["_summary"] = self._summary.as_dict() if self._summary is not None else None

@@ -21,10 +21,10 @@ Class `AttrDict` for maintaining configs and some functions for generating and s
 """
 from __future__ import annotations
 
+import ast
 import pprint
 from typing import Any
 
-import ast
 import yaml
 
 from .types import PathLikeOrStr
