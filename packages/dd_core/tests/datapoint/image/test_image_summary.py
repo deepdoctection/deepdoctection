@@ -27,7 +27,7 @@ class TestImageSummary:
     """Test Image summary property"""
 
     @staticmethod
-    def test_summary_created_on_first_access():
+    def test_summary_created_on_first_access() -> None:
         """Summary is created on first access"""
         img = Image(file_name="test.png")
 
@@ -37,7 +37,7 @@ class TestImageSummary:
         assert isinstance(summary, CategoryAnnotation)
 
     @staticmethod
-    def test_summary_has_correct_category():
+    def test_summary_has_correct_category() -> None:
         """Summary has SUMMARY category"""
         img = Image(file_name="test.png")
 
@@ -46,7 +46,7 @@ class TestImageSummary:
         assert summary.category_name == SummaryType.SUMMARY
 
     @staticmethod
-    def test_summary_has_annotation_id():
+    def test_summary_has_annotation_id() -> None:
         """Summary gets annotation_id on creation"""
         img = Image(file_name="test.png")
 

@@ -26,7 +26,7 @@ if pytorch_available():
 
 
 @pytest.mark.skipif(not pytorch_available(), reason="torch is not installed")
-def test_batched_nms_uses_box_ops():
+def test_batched_nms_uses_box_ops()->None:
 
     boxes = torch.tensor(
         [
@@ -45,7 +45,7 @@ def test_batched_nms_uses_box_ops():
 
 
 @pytest.mark.skipif(not pytorch_available(), reason="torch is not installed")
-def test_pt_nms_image_annotations_returns_expected_subset(monkeypatch, annotations):
+def test_pt_nms_image_annotations_returns_expected_subset(annotations)->None: # type: ignore
     dp_image = annotations(True, True)
     anns = dp_image.get_annotation()
     output = pt_nms_image_annotations(anns, threshold=0.01)
@@ -53,7 +53,7 @@ def test_pt_nms_image_annotations_returns_expected_subset(monkeypatch, annotatio
 
 
 @pytest.mark.skipif(not pytorch_available(), reason="torch is not installed")
-def test_pt_nms_image_annotations_returns_expected_subset(monkeypatch, annotations):
+def test_pt_nms_image_annotations_returns_expected_subset_with_prio(annotations)->None: # type: ignore
     dp_image = annotations(True, True)
     anns = dp_image.get_annotation()
     output = pt_nms_image_annotations(anns, threshold=0.01, prio="title")

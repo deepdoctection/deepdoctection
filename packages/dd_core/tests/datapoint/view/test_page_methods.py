@@ -25,7 +25,7 @@ from dd_core.datapoint.view import Page
 class TestPageMethods:
     """Test Page class methods"""
 
-    def test_get_layout_context_returns_list(self, page: Page):
+    def test_get_layout_context_returns_list(self, page: Page) -> None:
         """get_layout_context() returns a list"""
         layouts = page.layouts
         if layouts and len(layouts) > 0:
@@ -34,7 +34,7 @@ class TestPageMethods:
                 context = page.get_layout_context(layout.annotation_id, context_size=1)
                 assert {context.reading_order for context in context} == {1, 2}
 
-    def test_get_layout_context_includes_target(self, page: Page):
+    def test_get_layout_context_includes_target(self, page: Page) -> None:
         """get_layout_context() includes the target annotation"""
         layouts = page.layouts
         ordered = [l for l in layouts if l.reading_order is not None]
@@ -44,7 +44,7 @@ class TestPageMethods:
             ann_ids = [c.annotation_id for c in context]
             assert layout.annotation_id in ann_ids
 
-    def test_get_layout_context_respects_context_size(self, page: Page):
+    def test_get_layout_context_respects_context_size(self, page: Page) -> None:
         """get_layout_context() respects context_size parameter"""
         layouts = page.layouts
         ordered = [l for l in layouts if l.reading_order is not None]
@@ -56,7 +56,7 @@ class TestPageMethods:
             # Should return at most 3 items (1 before, target, 1 after)
             assert len(context) <= 3
 
-    def test_save_returns_dict_when_dry(self, page: Page):
+    def test_save_returns_dict_when_dry(self, page: Page) -> None:
         """save() returns dict when dry=True"""
         result = page.save(dry=True)
         assert isinstance(result, dict)

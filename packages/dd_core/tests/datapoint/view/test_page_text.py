@@ -22,38 +22,38 @@ from dd_core.datapoint.view import Page, Text_
 class TestPageText:
     """Test Page text extraction"""
 
-    def test_text_returns_string(self, page: Page):
+    def test_text_returns_string(self, page: Page) -> None:
         """text property returns a string"""
         text = page.text
         assert isinstance(text, str)
 
-    def test_text_underscore_returns_text_dataclass(self, page: Page):
+    def test_text_underscore_returns_text_dataclass(self, page: Page) -> None:
         """text_ property returns Text_ dataclass"""
         text_ = page.text_
         assert isinstance(text_, Text_)
 
-    def test_text_underscore_has_text_field(self, page: Page):
+    def test_text_underscore_has_text_field(self, page: Page) -> None:
         """text_ has text field"""
         text_ = page.text_
         assert isinstance(text_.text, str)
 
-    def test_text_underscore_has_words_field(self, page: Page):
+    def test_text_underscore_has_words_field(self, page: Page) -> None:
         """text_ has words field"""
         text_ = page.text_
         assert isinstance(text_.words, list)
 
-    def test_text_underscore_has_ann_ids_field(self, page: Page):
+    def test_text_underscore_has_ann_ids_field(self, page: Page) -> None:
         """text_ has ann_ids field"""
         text_ = page.text_
         assert isinstance(text_.ann_ids, list)
 
-    def test_text_underscore_as_dict_returns_dict(self, page: Page):
+    def test_text_underscore_as_dict_returns_dict(self, page: Page) -> None:
         """text_.as_dict() returns a dictionary"""
         text_ = page.text_
         as_dict = text_.as_dict()
         assert isinstance(as_dict, dict)
 
-    def test_text_underscore_as_dict_has_required_keys(self, page: Page):
+    def test_text_underscore_as_dict_has_required_keys(self, page: Page) -> None:
         """text_.as_dict() has required keys"""
         text_ = page.text_
         as_dict = text_.as_dict()

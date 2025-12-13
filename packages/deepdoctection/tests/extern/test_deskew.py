@@ -43,10 +43,10 @@ def test_jdeskew_predict_and_transform_opencv(monkeypatch: pytest.MonkeyPatch) -
     img_gt = load_image_from_file(stu.asset_path("deskewed_gt_opencv"))
 
     skewer = Jdeskewer()
-    det = skewer.predict(img_in)
+    det = skewer.predict(img_in)  # type: ignore
     assert det.angle == 4.5326
 
-    img_out = skewer.transform_image(img_in, det)
+    img_out = skewer.transform_image(img_in, det) # type: ignore
     assert_array_equal(img_gt, img_out)
 
 
@@ -61,8 +61,8 @@ def test_jdeskew_predict_and_transform_pillow(monkeypatch: pytest.MonkeyPatch) -
     img_gt = load_image_from_file(stu.asset_path("deskewed_gt_pil"))
 
     skewer = Jdeskewer()
-    det = skewer.predict(img_in)
+    det = skewer.predict(img_in) # type: ignore
     assert det.angle == 4.5326
 
-    img_out = skewer.transform_image(img_in, det)
+    img_out = skewer.transform_image(img_in, det) # type: ignore
     assert_array_equal(img_gt, img_out)

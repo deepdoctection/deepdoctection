@@ -51,7 +51,7 @@ def test_layoutlm_sequence_predict_basic(monkeypatch: pytest.MonkeyPatch) -> Non
     )
 
     # Mock prediction helper
-    def _fake_seq_predict(input_ids, attention_mask, token_type_ids, boxes, model, images=None):
+    def _fake_seq_predict(input_ids: Any, attention_mask: Any, token_type_ids: Any, boxes: Any, model: Any, images: Any = None) -> SequenceClassResult:
         return SequenceClassResult(class_id=1, score=0.99)
 
     monkeypatch.setattr(
@@ -87,7 +87,7 @@ def test_layoutlm_v2_sequence_predict_basic(monkeypatch: pytest.MonkeyPatch) -> 
         raising=True,
     )
 
-    def _fake_seq_predict(input_ids, attention_mask, token_type_ids, boxes, model, images=None):
+    def _fake_seq_predict(input_ids: Any, attention_mask: Any, token_type_ids: Any, boxes: Any, model: Any, images: Any = None) -> SequenceClassResult:
         return SequenceClassResult(class_id=1, score=0.95)
 
     monkeypatch.setattr(
@@ -124,7 +124,7 @@ def test_layoutlm_v3_sequence_predict_basic(monkeypatch: pytest.MonkeyPatch) -> 
         raising=True,
     )
 
-    def _fake_seq_predict(input_ids, attention_mask, token_type_ids, boxes, model, images=None):
+    def _fake_seq_predict(input_ids: Any, attention_mask: Any, token_type_ids: Any, boxes: Any, model: Any, images: Any = None) -> SequenceClassResult:
         return SequenceClassResult(class_id=1, score=0.93)
 
     monkeypatch.setattr(
@@ -161,7 +161,7 @@ def test_layoutlm_token_predict_basic(monkeypatch: pytest.MonkeyPatch) -> None:
         raising=True,
     )
 
-    def _fake_tok_predict(uuids, input_ids, attention_mask, token_type_ids, boxes, tokens, model, images=None):
+    def _fake_tok_predict(uuids: Any, input_ids: Any, attention_mask: Any, token_type_ids: Any, boxes: Any, tokens: Any, model: Any, images: Any = None) -> list[TokenClassResult]:
         return [
             TokenClassResult(uuid="a", token_id=101, class_id=2, token="X", score=0.9),  # -> id 3 -> "O"
             TokenClassResult(uuid="b", token_id=102, class_id=0, token="Y", score=0.8),  # -> id 1 -> "B-header"
@@ -205,7 +205,7 @@ def test_layoutlm_v2_token_predict_basic(monkeypatch: pytest.MonkeyPatch) -> Non
         raising=True,
     )
 
-    def _fake_tok_predict(uuids, input_ids, attention_mask, token_type_ids, boxes, tokens, model, images=None):
+    def _fake_tok_predict(uuids: Any, input_ids: Any, attention_mask: Any, token_type_ids: Any, boxes: Any, tokens: Any, model: Any, images: Any = None) -> list[TokenClassResult]:
         return [
             TokenClassResult(uuid="a", token_id=11, class_id=1, token="X", score=0.7),
             TokenClassResult(uuid="b", token_id=12, class_id=2, token="Y", score=0.6),
@@ -249,7 +249,7 @@ def test_layoutlm_v3_token_predict_basic(monkeypatch: pytest.MonkeyPatch) -> Non
         raising=True,
     )
 
-    def _fake_tok_predict(uuids, input_ids, attention_mask, token_type_ids, boxes, tokens, model, images=None):
+    def _fake_tok_predict(uuids: Any, input_ids: Any, attention_mask: Any, token_type_ids: Any, boxes: Any, tokens: Any, model: Any, images: Any = None) -> list[TokenClassResult]:
         return [
             TokenClassResult(uuid="u1", token_id=1, class_id=0, token="a", score=0.9),
             TokenClassResult(uuid="u2", token_id=2, class_id=2, token="b", score=0.8),
@@ -299,13 +299,13 @@ def test_lilt_token_and_sequence_predict_basic(monkeypatch: pytest.MonkeyPatch) 
         raising=True,
     )
 
-    def _fake_tok_predict(uuids, input_ids, attention_mask, token_type_ids, boxes, tokens, model, images=None):
+    def _fake_tok_predict(uuids: Any, input_ids: Any, attention_mask: Any, token_type_ids: Any, boxes: Any, tokens: Any, model: Any, images: Any = None) -> list[TokenClassResult]:
         return [
             TokenClassResult(uuid="t1", token_id=5, class_id=0, token="foo", score=0.5),
             TokenClassResult(uuid="t2", token_id=6, class_id=2, token="bar", score=0.6),
         ]
 
-    def _fake_seq_predict(input_ids, attention_mask, token_type_ids, boxes, model, images=None):
+    def _fake_seq_predict(input_ids: Any, attention_mask: Any, token_type_ids: Any, boxes: Any, model: Any, images: Any = None) -> SequenceClassResult:
         return SequenceClassResult(class_id=0, score=0.8)
 
     monkeypatch.setattr(

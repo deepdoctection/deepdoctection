@@ -117,7 +117,7 @@ def test_d2_frcnn_tracing_predict_basic_mapping(monkeypatch: pytest.MonkeyPatch)
     )
 
     # Fake TorchScript callable returning (boxes, classes, scores, _)
-    def _fake_ts_forward(_image: torch.Tensor):
+    def _fake_ts_forward(_image: torch.Tensor)-> tuple[torch.Tensor, torch.Tensor, torch.Tensor, None]:
         boxes = torch.tensor([[2.0, 2.0, 6.0, 6.0], [12.0, 12.0, 16.0, 16.0]], dtype=torch.float32)
         classes = torch.tensor([0, 1], dtype=torch.int64)
         scores = torch.tensor([0.95, 0.7], dtype=torch.float32)

@@ -40,7 +40,7 @@ def dp_image() -> Image:
 
 
 @pytest.fixture
-def layout_annotations():
+def layout_annotations(): # type: ignore
 
     def layout_ann(segmentation: bool = False) -> list[ImageAnnotation]:
         if segmentation:
@@ -174,31 +174,32 @@ def layout_annotations():
 
 
 @pytest.fixture
-def dp_image_tab_cell_item(dp_image: Image, layout_annotations) -> Image:
+def dp_image_tab_cell_item(dp_image: Image, layout_annotations) -> Image:  # type: ignore
     """fixture dp_image_tab_cell_item"""
     dp_image = deepcopy(dp_image)
     for ann in layout_annotations(segmentation=True):
         dp_image.dump(ann)
 
     table = dp_image.get_annotation(category_names=get_type("table"))[0]
+    assert table.image is not None
     dp_image.image_ann_to_image(table.annotation_id, True)
     table_anns = dp_image.get_annotation(category_names=[get_type("cell"), get_type("row"), get_type("column")])
     for ann in table_anns:
         table.image.dump(ann)
         table.image.image_ann_to_image(ann.annotation_id)
         ann_global_box = local_to_global_coords(
-            ann.bounding_box,
+            ann.bounding_box,     # type: ignore
             table.get_bounding_box(dp_image.image_id).transform(
                 image_width=dp_image.width, image_height=dp_image.height, absolute_coords=True
-            ),  # type: ignore
+            ),
         )
-
+        assert ann.image is not None
         ann.image.set_embedding(
             table.annotation_id,
-            ann.bounding_box.transform(
+            ann.bounding_box.transform( # type: ignore
                 image_width=table.image.width, image_height=table.image.height, absolute_coords=False
             ),
-        )  # type: ignore
+        )
         ann.image.set_embedding(
             dp_image.image_id,
             ann_global_box.transform(image_width=dp_image.width, image_height=dp_image.height, absolute_coords=False),

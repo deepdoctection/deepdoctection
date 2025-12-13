@@ -20,7 +20,7 @@ Property-based testing for Image class using hypothesis
 """
 
 import numpy as np
-from hypothesis import assume, given
+from hypothesis import assume, given # type: ignore
 from hypothesis import strategies as st
 
 from dd_core.datapoint import BoundingBox, Image
@@ -34,7 +34,7 @@ class TestImageProperties:
     @given(
         file_name=st.text(min_size=1, max_size=100).filter(lambda x: len(x.strip()) > 0), location=st.text(max_size=200)
     )
-    def test_image_id_deterministic(file_name: str, location: str):
+    def test_image_id_deterministic(file_name: str, location: str) -> None:
         """image_id is deterministic for same file_name and location"""
         img1 = Image(file_name=file_name, location=location)
         img2 = Image(file_name=file_name, location=location)
@@ -46,7 +46,7 @@ class TestImageProperties:
         file_name=st.text(min_size=1, max_size=100).filter(lambda x: len(x.strip()) > 0),
         external_id=st.text(min_size=1, max_size=100),
     )
-    def test_external_id_generates_consistent_image_id(file_name: str, external_id: str):
+    def test_external_id_generates_consistent_image_id(file_name: str, external_id: str) -> None:
         """external_id generates consistent image_id"""
         img1 = Image(file_name=file_name, external_id=external_id)
         img2 = Image(file_name=file_name, external_id=external_id)
@@ -60,7 +60,7 @@ class TestImageProperties:
         height=st.integers(min_value=1, max_value=1000),
         channels=st.just(3),
     )
-    def test_image_dimensions_preserved(width: int, height: int, channels: int):
+    def test_image_dimensions_preserved(width: int, height: int, channels: int) -> None:
         """Image dimensions are correctly preserved"""
         img = Image(file_name="test.png")
         arr = np.ones([height, width, channels], dtype=np.uint8)
@@ -76,7 +76,7 @@ class TestImageProperties:
         width=st.floats(min_value=10, max_value=5000, allow_nan=False, allow_infinity=False),
         height=st.floats(min_value=10, max_value=5000, allow_nan=False, allow_infinity=False),
     )
-    def test_set_width_height_accepts_various_values(width: float, height: float):
+    def test_set_width_height_accepts_various_values(width: float, height: float) -> None:
         """set_width_height accepts various numeric values"""
         img = Image(file_name="test.png")
 
@@ -87,7 +87,7 @@ class TestImageProperties:
 
     @staticmethod
     @given(page_number=st.integers(min_value=0, max_value=10000))
-    def test_page_number_stored_correctly(page_number: int):
+    def test_page_number_stored_correctly(page_number: int) -> None:
         """page_number is stored correctly"""
         img = Image(file_name="test.png", page_number=page_number)
 
@@ -95,7 +95,7 @@ class TestImageProperties:
 
     @staticmethod
     @given(n_embeddings=st.integers(min_value=1, max_value=20))
-    def test_multiple_embeddings_stored(n_embeddings: int):
+    def test_multiple_embeddings_stored(n_embeddings: int) -> None:
         """Multiple embeddings can be stored"""
         img = Image(file_name="test.png")
 
@@ -112,7 +112,7 @@ class TestImageProperties:
         width=st.floats(min_value=1, max_value=100, allow_nan=False, allow_infinity=False),
         height=st.floats(min_value=1, max_value=100, allow_nan=False, allow_infinity=False),
     )
-    def test_embedding_bbox_values_preserved(ulx: float, uly: float, width: float, height: float):
+    def test_embedding_bbox_values_preserved(ulx: float, uly: float, width: float, height: float) -> None:
         """Embedding bounding box values are preserved"""
         img = Image(file_name="test.png")
         bbox = BoundingBox(ulx=ulx, uly=uly, width=width, height=height, absolute_coords=True)

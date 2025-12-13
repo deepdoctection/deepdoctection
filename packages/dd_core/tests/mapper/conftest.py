@@ -19,7 +19,9 @@ import json
 from pathlib import Path
 
 import numpy as np
+import pytest
 from pytest import fixture
+from typing import Any
 
 import shared_test_utils as stu
 from dd_core.dataflow.custom_serialize import SerializerCoco
@@ -80,7 +82,7 @@ def fixture_table_image(image: Image) -> Image:
 
 
 @fixture(name="coco_datapoint")
-def fixture_coco_datapoint() -> dict:
+def fixture_coco_datapoint() -> dict[str, Any]:
     """Provide a COCO datapoint dict loaded from coco_datapoint_json fixture."""
     path = stu.asset_path("coco_like")
     df = SerializerCoco.load(path=path)
@@ -89,13 +91,13 @@ def fixture_coco_datapoint() -> dict:
 
 
 @fixture(name="xfund_datapoint")
-def fixture_xfund_datapoint() -> dict:
+def fixture_xfund_datapoint() -> dict[str, Any]:
     xfund_dict = XFundSample().data
     return xfund_dict
 
 
 @fixture(name="xfund_image")
-def fixture_xfund_image(xfund_datapoint: dict, monkeypatch) -> Image:
+def fixture_xfund_image(xfund_datapoint: dict[str, Any], monkeypatch: pytest.MonkeyPatch) -> Image:
 
     def _fake_loader(_path: str):
         return np.zeros((3508, 2480, 3), dtype=np.uint8)
@@ -136,22 +138,22 @@ def fixture_xfund_image(xfund_datapoint: dict, monkeypatch) -> Image:
 
 
 @fixture(name="xfund_raw_layoutlm_features")
-def fixture_xfund_raw_layoutlm_features() -> dict:
+def fixture_xfund_raw_layoutlm_features() -> dict[str, Any]:
     return XFUND_RAW_LAYOUTLM_FEATURES
 
 
 @fixture(name="layoutlm_features")
-def fixture_layoutlm_features() -> dict:
+def fixture_layoutlm_features() ->  dict[str, Any]:
     return XFUND_LAYOUTLM_FEATURES[0]
 
 
 @fixture(name="prodigy_datapoint")
-def fixture_prodigy_datapoint() -> dict:
+def fixture_prodigy_datapoint() -> dict[str, Any]:
     return PRODIGY_DATAPOINT
 
 
 @fixture(name="pubtabnet_datapoint")
-def fixture_pubtabnet_datapoint() -> dict:
+def fixture_pubtabnet_datapoint() -> dict[str, Any]:
     path = stu.asset_path("pubtabnet_like")
     with open(path, "r") as f:
         pubtabnet_dict = json.load(f)
@@ -159,7 +161,7 @@ def fixture_pubtabnet_datapoint() -> dict:
 
 
 @fixture(name="iiitar13k_datapoint")
-def fixture_iiitar13k_datapoint() -> dict:
+def fixture_iiitar13k_datapoint() -> dict[str, Any]:
     return IIITAR13K_DATAPOINT
 
 
@@ -172,7 +174,7 @@ def fixture_dp_image() -> Image:
 
 
 @fixture(name="annotations")
-def fixture_annotations_dict(dp_image: Image):
+def fixture_annotations_dict(dp_image: Image): # type: ignore
     path = stu.asset_path("annotations")
     with open(path, "r") as f:
         annotations_dict = json.load(f)

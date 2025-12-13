@@ -15,13 +15,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from types import SimpleNamespace
 from typing import Union
 
 import numpy as np
 import pytest
 
-from dd_core.mapper import maputils
 from dd_core.mapper.maputils import (
     DefaultMapper,
     LabelSummarizer,
@@ -29,13 +27,13 @@ from dd_core.mapper.maputils import (
     curry,
     maybe_get_fake_score,
 )
-from dd_core.utils.object_types import ObjectTypes
+from dd_core.utils.object_types import ObjectTypes, get_type
 
 
-def test_mapping_context_manager_suppresses_known_exception_and_logs(monkeypatch):
+def test_mapping_context_manager_suppresses_known_exception_and_logs(monkeypatch)-> None: # type: ignore
     recorded = {}
 
-    def fake_warning(arg):
+    def fake_warning(arg): # type: ignore
         # capture the logging record passed
         recorded["arg"] = arg
 
@@ -49,13 +47,13 @@ def test_mapping_context_manager_suppresses_known_exception_and_logs(monkeypatch
     assert "MappingContextManager error" in str(recorded["arg"])
 
 
-def test_mapping_context_manager_propagates_unknown_exception():
+def test_mapping_context_manager_propagates_unknown_exception()-> None:
     with pytest.raises(RuntimeError):
         with MappingContextManager():
             raise RuntimeError("boom")
 
 
-def test_mapping_context_manager_no_exception_sets_flag_false():
+def test_mapping_context_manager_no_exception_sets_flag_false()-> None:
     with MappingContextManager():
         pass
     m = MappingContextManager()
@@ -64,15 +62,15 @@ def test_mapping_context_manager_no_exception_sets_flag_false():
     assert m.context_error is False
 
 
-def test_default_mapper_and_curry_behavior():
-    def my_map(dp, a, b=0):
+def test_default_mapper_and_curry_behavior()-> None:
+    def my_map(dp, a, b=0): # type: ignore
         return (dp, a, b)
 
     dm = DefaultMapper(my_map, 2, b=3)
     assert dm("datum") == ("datum", 2, 3)
 
     @curry
-    def decorated(dp, x, y):
+    def decorated(dp, x, y): # type: ignore
         return (dp, x, y)
 
     wrapped = decorated(5, 6)
@@ -80,7 +78,7 @@ def test_default_mapper_and_curry_behavior():
     assert wrapped("Z") == ("Z", 5, 6)
 
 
-def test_maybe_get_fake_score_mocked(monkeypatch):
+def test_maybe_get_fake_score_mocked(monkeypatch)-> None:  # type: ignore
     # monkeypatch the RNG in the module to return a known value
     monkeypatch.setattr("dd_core.mapper.maputils.np.random.uniform", lambda a, b, c: np.array([0.123456]))
     val = maybe_get_fake_score(True)
@@ -90,11 +88,11 @@ def test_maybe_get_fake_score_mocked(monkeypatch):
     assert maybe_get_fake_score(False) is None
 
 
-def test_label_summarizer_dump_get_summary_and_print(monkeypatch):
+def test_label_summarizer_dump_get_summary_and_print(monkeypatch)-> None:  # type: ignore
     # simple category objects with .value attribute expected by LabelSummarizer
     categories = {
-        1: SimpleNamespace(value="cat_1"),
-        2: SimpleNamespace(value="cat_2"),
+        1: get_type("test_cat_1"),
+        2: get_type("test_cat_2"),
     }
     summarizer = LabelSummarizer(categories)
 
@@ -108,7 +106,7 @@ def test_label_summarizer_dump_get_summary_and_print(monkeypatch):
     # capture logger.info called by print_summary_histogram
     captured = {}
 
-    def fake_info(arg):
+    def fake_info(arg): # type: ignore
         captured["arg"] = arg
 
     monkeypatch.setattr("dd_core.mapper.maputils.logger.info", fake_info)

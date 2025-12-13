@@ -28,24 +28,24 @@ from dd_core.datapoint.view import Page
 class TestPageFactory:
     """Test Page factory methods"""
 
-    def test_from_file_creates_page(self, page_json_path: Path):
+    def test_from_file_creates_page(self, page_json_path: Path) -> None:
         """Page.from_file() creates a Page instance"""
         page = Page.from_file(file_path=str(page_json_path))
         assert isinstance(page, Page)
 
-    def test_from_image_creates_page(self, page_json_path: Path):
+    def test_from_image_creates_page(self, page_json_path: Path) -> None:
         """Page.from_image() creates a Page instance"""
         image = Image.from_file(str(page_json_path))
         page = Page.from_image(image)
         assert isinstance(page, Page)
 
-    def test_page_init_creates_instance(self, page_json_path: Path):
+    def test_page_init_creates_instance(self, page_json_path: Path) -> None:
         """Page() constructor creates instance"""
         image = Image.from_file(str(page_json_path))
         page = Page(base_image=image)
         assert isinstance(page, Page)
 
-    def test_page_copy_creates_new_instance(self, page: Page):
+    def test_page_copy_creates_new_instance(self, page: Page) -> None:
         """Page.__copy__() creates a new Page instance"""
         page_copy = page.__copy__()
         assert isinstance(page_copy, Page)

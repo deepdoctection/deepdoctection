@@ -51,7 +51,7 @@ with try_import() as d2_import_guard:
     from detectron2.engine import DefaultTrainer, HookBase, default_writers, hooks
     from detectron2.utils import comm
     from detectron2.utils.events import EventWriter, get_event_storage
-    from fvcore.nn.precise_bn import get_bn_modules  # type: ignore # pylint: disable=E0401
+    from fvcore.nn.precise_bn import get_bn_modules  # pylint: disable=E0401
 
 with try_import() as pt_import_guard:
     from torch import cuda

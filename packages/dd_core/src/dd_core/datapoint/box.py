@@ -44,11 +44,15 @@ __all__ = [
     "coco_iou",
     "iou",
     "intersection",
+    "intersection_box",
+    "intersection_boxes",
     "area",
     "ioa",
     "global_to_local_coords",
     "local_to_global_coords",
     "crop_box_from_image",
+    "merge_boxes",
+    "rescale_coords"
 ]
 
 # taken from https://github.com/tensorpack/tensorpack/blob/master/examples/FasterRCNN/common.py

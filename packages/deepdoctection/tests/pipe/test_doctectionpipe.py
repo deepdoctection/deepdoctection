@@ -22,55 +22,56 @@ import shared_test_utils as stu
 from dd_core.dataflow import DataFromList
 from dd_core.datapoint.image import Image
 from dd_core.datapoint.view import Page
+from dd_core.utils.types import PathLikeOrStr
 from deepdoctection.pipe.doctectionpipe import DoctectionPipe
 
 
 @pytest.fixture(autouse=True)
-def _set_env_dpi(monkeypatch):
+def _set_env_dpi(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("DPI", "72")
     monkeypatch.delenv("IMAGE_WIDTH", raising=False)
     monkeypatch.delenv("IMAGE_HEIGHT", raising=False)
 
 
-def test_analyze_path_pdf_pages(pdf_path):
+def test_analyze_path_pdf_pages(pdf_path: PathLikeOrStr) -> None:
     identity_pipe = DoctectionPipe(pipeline_component_list=[])
     df = identity_pipe.analyze(path=pdf_path, output="page")
-    items = stu.collect_datapoint_from_dataflow(df)
+    items: list[Image] = stu.collect_datapoint_from_dataflow(df)
     assert len(items) >= 1
     assert all(isinstance(p, Page) for p in items)
 
 
-def test_analyze_path_dir_png_identity_image(image_dir_and_file):
+def test_analyze_path_dir_png_identity_image(image_dir_and_file: tuple[str, PathLikeOrStr]) -> None:
     img_dir, _ = image_dir_and_file
     identity_pipe = DoctectionPipe(pipeline_component_list=[])
     df = identity_pipe.analyze(path=img_dir, file_type=".png", output="image")
-    items = stu.collect_datapoint_from_dataflow(df)
+    items: list[Image] = stu.collect_datapoint_from_dataflow(df)
     assert len(items) == 1
     assert all(isinstance(img, Image) for img in items)
 
 
-def test_analyze_bytes_single_image(image_dir_and_file, image_bytes):
+def test_analyze_bytes_single_image(image_dir_and_file: tuple[str, PathLikeOrStr], image_bytes: bytes) -> None:
     identity_pipe = DoctectionPipe(pipeline_component_list=[])
     _, img_path = image_dir_and_file
     df = identity_pipe.analyze(path=img_path, bytes=image_bytes, file_type=".png", output="image")
-    items = stu.collect_datapoint_from_dataflow(df)
+    items: list[Image] = stu.collect_datapoint_from_dataflow(df)
     assert len(items) == 1
     assert isinstance(items[0], Image)
 
 
-def test_analyze_dataset_dataflow_image(dp_image):
+def test_analyze_dataset_dataflow_image(dp_image: Image) -> None:
     identity_pipe = DoctectionPipe(pipeline_component_list=[])
     dp_list = [dp_image]
     dataset_df = DataFromList(lst=dp_list)
     df = identity_pipe.analyze(dataset_dataflow=dataset_df, output="image")
-    items = stu.collect_datapoint_from_dataflow(df)
+    items: list[Image] = stu.collect_datapoint_from_dataflow(df)
     assert len(items) == 1
     assert isinstance(items[0], Image)
 
 
-def test_analyze_path_pdf_dict(pdf_path):
+def test_analyze_path_pdf_dict(pdf_path: PathLikeOrStr) -> None:
     identity_pipe = DoctectionPipe(pipeline_component_list=[])
     df = identity_pipe.analyze(path=pdf_path, output="dict")
-    items = stu.collect_datapoint_from_dataflow(df)
+    items: list[Image] = stu.collect_datapoint_from_dataflow(df)
     assert len(items) >= 1
     assert all(isinstance(d, dict) for d in items)

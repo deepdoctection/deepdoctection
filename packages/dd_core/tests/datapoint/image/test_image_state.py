@@ -30,7 +30,7 @@ class TestImageState:
     """Test Image state_id and state management"""
 
     @staticmethod
-    def test_state_id_is_deterministic():
+    def test_state_id_is_deterministic() -> None:
         """state_id is deterministic for same image state"""
         img1 = Image(file_name="test.png", location="/path")
         img2 = Image(file_name="test.png", location="/path")
@@ -38,7 +38,7 @@ class TestImageState:
         assert img1.state_id == img2.state_id
 
     @staticmethod
-    def test_state_id_changes_when_annotation_added(white_image: WhiteImage):
+    def test_state_id_changes_when_annotation_added(white_image: WhiteImage) -> None:
         """state_id changes when annotation is added"""
         img = Image(file_name=white_image.file_name, location=white_image.location)
         initial_state_id = img.state_id
@@ -52,7 +52,7 @@ class TestImageState:
         assert img.state_id != initial_state_id
 
     @staticmethod
-    def test_state_id_changes_when_image_added(white_image: WhiteImage):
+    def test_state_id_changes_when_image_added(white_image: WhiteImage) -> None:
         """state_id changes when image pixels are set"""
         img = Image(file_name=white_image.file_name)
         initial_state_id = img.state_id
@@ -62,7 +62,7 @@ class TestImageState:
         assert img.state_id != initial_state_id
 
     @staticmethod
-    def test_state_id_changes_when_embedding_added():
+    def test_state_id_changes_when_embedding_added() -> None:
         """state_id changes when embedding is added"""
         img = Image(file_name="test.png")
         img.set_width_height(100, 100)
@@ -74,7 +74,7 @@ class TestImageState:
         assert img.state_id != initial_state_id
 
     @staticmethod
-    def test_state_id_changes_when_summary_accessed():
+    def test_state_id_changes_when_summary_accessed() -> None:
         """state_id changes when summary is accessed (and created)"""
         img = Image(file_name="test.png")
         initial_state_id = img.state_id
@@ -84,7 +84,7 @@ class TestImageState:
         assert img.state_id != initial_state_id
 
     @staticmethod
-    def test_state_attributes_list():
+    def test_state_attributes_list() -> None:
         """get_state_attributes returns correct attributes"""
         attrs = Image.get_state_attributes()
 
@@ -94,7 +94,7 @@ class TestImageState:
         assert "_summary" in attrs
 
     @staticmethod
-    def test_state_id_with_multiple_annotations(white_image: WhiteImage):
+    def test_state_id_with_multiple_annotations(white_image: WhiteImage) -> None:
         """state_id changes with each annotation added"""
         img = Image(file_name=white_image.file_name)
         state_ids = [img.state_id]
@@ -111,7 +111,7 @@ class TestImageState:
         assert len(set(state_ids)) == len(state_ids)
 
     @staticmethod
-    def test_state_id_includes_image_content(white_image: WhiteImage):
+    def test_state_id_includes_image_content(white_image: WhiteImage) -> None:
         """state_id reflects image content changes"""
         img = Image(file_name=white_image.file_name)
 
@@ -124,7 +124,7 @@ class TestImageState:
         assert state_id1 != state_id2
 
     @staticmethod
-    def test_state_id_reflects_embedding_changes():
+    def test_state_id_reflects_embedding_changes() -> None:
         """state_id changes when embeddings are modified"""
         img = Image(file_name="test.png")
         img.set_width_height(100, 100)
@@ -143,7 +143,7 @@ class TestImageState:
         assert state_id1 != state_id3
 
     @staticmethod
-    def test_state_id_different_for_different_states():
+    def test_state_id_different_for_different_states() -> None:
         """Two images with different states have different state_ids"""
         img1 = Image(file_name="test.png", location="/path")
         img2 = Image(file_name="test.png", location="/path")

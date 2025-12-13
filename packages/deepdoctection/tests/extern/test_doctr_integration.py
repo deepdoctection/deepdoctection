@@ -38,7 +38,7 @@ def test_slow_build_doctr_textline_detector_pt() -> None:
     weights_path = ModelDownloadManager.maybe_download_weights_and_configs(weights)
     profile = ModelCatalog.get_profile(weights)
     device = get_torch_device()
-    det = DoctrTextlineDetector(profile.architecture, weights_path, profile.categories, device)
+    det = DoctrTextlineDetector(profile.architecture, weights_path, profile.categories, device) # type: ignore
 
     assert det.doctr_predictor is not None
     assert len(det.get_category_names()) > 0

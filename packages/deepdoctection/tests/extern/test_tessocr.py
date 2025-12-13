@@ -19,15 +19,18 @@
 # python
 # File: 'deepdoctection/packages/deepdoctection/tests/extern/test_tessocr.py'
 
+from typing import Any
+
 import numpy as np
 import pytest
+from numpy.typing import NDArray
 
 from dd_core.utils.env_info import SETTINGS
 from dd_core.utils.object_types import Languages, LayoutType
 from deepdoctection.extern.tessocr import TesseractOcrDetector
 
 
-def test_tesseract_ocr_predict_words_basic(monkeypatch: pytest.MonkeyPatch, sample_np_img: np.ndarray) -> None:
+def test_tesseract_ocr_predict_words_basic(monkeypatch: pytest.MonkeyPatch, sample_np_img: NDArray[Any]) -> None:
     # Mock the Tesseract data extraction to avoid any subprocess calls
     fake_rows = {
         "left": [1, 10],
@@ -50,11 +53,11 @@ def test_tesseract_ocr_predict_words_basic(monkeypatch: pytest.MonkeyPatch, samp
 
     assert len(results) == 2
     assert all(r.class_name == LayoutType.WORD for r in results)
-    texts = [r.text.lower() for r in results]
+    texts = [r.text.lower() for r in results if r.text is not None]
     assert any("pdf" in t for t in texts) or any("hello" in t for t in texts)
 
 
-def test_tesseract_ocr_predict_lines_enabled(monkeypatch: pytest.MonkeyPatch, sample_np_img: np.ndarray) -> None:
+def test_tesseract_ocr_predict_lines_enabled(monkeypatch: pytest.MonkeyPatch, sample_np_img: NDArray[Any]) -> None:
     # Provide multiple words on two lines so line grouping can be formed
     fake_rows = {
         "left": [1, 12, 5, 15],
@@ -83,7 +86,7 @@ def test_tesseract_ocr_predict_lines_enabled(monkeypatch: pytest.MonkeyPatch, sa
     # Expect original words plus 2 aggregated lines
     assert len(results) >= 4
     assert any(r.class_name == LayoutType.LINE for r in results)
-    line_texts = [r.text.lower() for r in results if r.class_name == LayoutType.LINE]
+    line_texts = [r.text.lower() for r in results if r.class_name == LayoutType.LINE and r.text is not None]
     assert any("a simple" in lt for lt in line_texts) or any("pdf file" in lt for lt in line_texts)
 
 

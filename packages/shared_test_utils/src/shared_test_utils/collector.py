@@ -16,7 +16,7 @@
 # limitations under the License.
 
 
-from typing import Iterator, Optional, TypeVar, Protocol, runtime_checkable, overload, List
+from typing import Iterator, Optional, TypeVar, Protocol, runtime_checkable, Any, List
 from itertools import islice
 
 T = TypeVar("T")
@@ -28,13 +28,8 @@ class SupportsResetState(Protocol):
 class ResettableIterator(SupportsResetState, Iterator[T], Protocol):
     pass
 
-@overload
-def collect_datapoint_from_dataflow(df: ResettableIterator[T], max_datapoints: Optional[int] = ...) -> List[T]: ...
-@overload
-def collect_datapoint_from_dataflow(df: Iterator[T], max_datapoints: Optional[int] = ...) -> List[T]: ...
-
 def collect_datapoint_from_dataflow(
-    df: Iterator[T],
+    df: Any,
     max_datapoints: Optional[int] = None
 ) -> List[T]:
     """

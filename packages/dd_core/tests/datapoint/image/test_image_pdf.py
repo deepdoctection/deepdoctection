@@ -27,7 +27,7 @@ from ..conftest import TestPdfPage
 class TestImagePDF:
     """Test Image with PDF inputs"""
 
-    def test_image_stores_pdf_bytes(self, pdf_page: TestPdfPage):
+    def test_image_stores_pdf_bytes(self, pdf_page: TestPdfPage) -> None:
         """Image can store PDF bytes"""
         img = Image(file_name=pdf_page.file_name, location=pdf_page.loc)
         img.image = pdf_page.pdf_bytes
@@ -35,7 +35,7 @@ class TestImagePDF:
         assert img.height in {pdf_page.np_array_shape[0], pdf_page.np_array_shape[0] + 1}
         assert img.width == pdf_page.np_array_shape[1]
 
-    def test_pdf_bytes_property_can_be_set(self, pdf_page: TestPdfPage):
+    def test_pdf_bytes_property_can_be_set(self, pdf_page: TestPdfPage) -> None:
         """pdf_bytes property can be set"""
         img = Image(file_name=pdf_page.file_name)
         img.pdf_bytes = pdf_page.pdf_bytes
@@ -43,13 +43,13 @@ class TestImagePDF:
         assert img.pdf_bytes is not None
         assert isinstance(img.pdf_bytes, bytes)
 
-    def test_pdf_bytes_initially_none(self):
+    def test_pdf_bytes_initially_none(self) -> None:
         """pdf_bytes is initially None"""
         img = Image(file_name="test.pdf")
 
         assert img.pdf_bytes is None
 
-    def test_image_from_pdf_creates_numpy_array(self, pdf_page: TestPdfPage):
+    def test_image_from_pdf_creates_numpy_array(self, pdf_page: TestPdfPage) -> None:
         """Setting image from PDF bytes creates numpy array"""
         img = Image(file_name=pdf_page.file_name)
         img.image = pdf_page.pdf_bytes

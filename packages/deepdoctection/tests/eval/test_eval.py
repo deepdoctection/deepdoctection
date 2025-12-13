@@ -32,7 +32,7 @@ from deepdoctection.pipe.layout import ImageLayoutService
 try:
     from dd_datasets.base import DatasetCategories
 except ImportError:
-    DatasetCategories = None
+    DatasetCategories = None # type: ignore
 
 
 @pytest.mark.skipif(DatasetCategories is None, reason="dd_datasets is not installed; DatasetCategories unavailable")

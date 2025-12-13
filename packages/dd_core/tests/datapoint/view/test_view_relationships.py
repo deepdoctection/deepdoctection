@@ -25,35 +25,35 @@ from dd_core.datapoint.view import Page
 class TestViewRelationships:
     """Test view relationship handling"""
 
-    def test_layout_words_relationship(self, page: Page):
+    def test_layout_words_relationship(self, page: Page) -> None:
         """Layout.words accesses child words through relationships"""
         layouts = page.layouts
         for layout in layouts:
             words = layout.words
-            assert len(words) >= 1
+            assert len(words) >= 1 # type: ignore
 
-    def test_table_cells_relationship(self, page: Page):
+    def test_table_cells_relationship(self, page: Page) -> None:
         """Table.cells accesses child cells through relationships"""
         tables = page.tables
         for table in tables:
             cells = table.cells
-            assert len(cells) >= 1
+            assert len(cells) >= 1 # type: ignore
 
-    def test_table_rows_relationship(self, page: Page):
+    def test_table_rows_relationship(self, page: Page) -> None:
         """Table.rows accesses child rows through relationships"""
         tables = page.tables
         for table in tables:
             rows = table.rows
-            assert len(rows) >= 1
+            assert len(rows) >= 1 # type: ignore
 
-    def test_table_columns_relationship(self, page: Page):
+    def test_table_columns_relationship(self, page: Page) -> None:
         """Table.columns accesses child columns through relationships"""
         tables = page.tables
         for table in tables:
             columns = table.columns
-            assert len(columns) >= 1
+            assert len(columns) >= 1 # type: ignore
 
-    def test_relationships_are_resolved_through_base_page(self, page: Page):
+    def test_relationships_are_resolved_through_base_page(self, page: Page) -> None:
         """Relationships are resolved through base_page reference"""
         layouts = page.layouts
         for layout in layouts:

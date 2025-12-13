@@ -27,7 +27,7 @@ from dd_core.mapper.cats import (
 )
 
 
-def test_cat_to_sub_word_to_characters_with_id_mapping(image: Image):
+def test_cat_to_sub_word_to_characters_with_id_mapping(image: Image)-> None:
     """
     test func: cat_to_sub_cat replaces categories with sub categories correctly
     """
@@ -50,7 +50,7 @@ def test_cat_to_sub_word_to_characters_with_id_mapping(image: Image):
             assert ann.category_id == 9
 
 
-def test_cat_to_sub_word_to_characters_no_category_id_change(image: Image):
+def test_cat_to_sub_word_to_characters_no_category_id_change(image: Image)-> None:
     """
     test func: cat_to_sub_cat replaces categories with sub categories correctly
     """
@@ -65,7 +65,7 @@ def test_cat_to_sub_word_to_characters_no_category_id_change(image: Image):
         assert ann.category_id == -1  # default value
 
 
-def test_re_assign_cat_ids(image: Image):
+def test_re_assign_cat_ids(image: Image)-> None:
     """Test re_assign_cat_ids keeps only word and text with correct ids."""
     categories_dict_name_as_key = {"word": 1, "text": 2}
 
@@ -253,7 +253,7 @@ def test_remove_cats_relationships(image: Image) -> None:
     """Remove child relationship from text annotations."""
     dp = remove_cats(relationships={"text": "child"})(image)
     for ann in dp.get_annotation(category_names=["text"]):
-        assert len(ann.relationships["child"]) == 0
+        assert len(ann.relationships["child"]) == 0 # type: ignore
 
 
 def test_remove_cats_category_and_sub_category(image: Image) -> None:
@@ -273,7 +273,7 @@ def test_remove_cats_sub_category_and_relationship(image: Image) -> None:
     dp = remove_cats(sub_categories={"text": "characters"}, relationships={"text": "child"})(image)
     for ann in dp.get_annotation(category_names=["text"]):
         assert "characters" not in ann.sub_categories
-        assert len(ann.relationships["child"]) == 0
+        assert len(ann.relationships["child"]) == 0 # type: ignore
 
 
 def test_remove_cats_all(image: Image) -> None:

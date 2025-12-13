@@ -30,14 +30,14 @@ class TestBBoxEquality:
 
     # ==================== Basic Equality ====================
 
-    def test_same_object_equals_self(self):
+    def test_same_object_equals_self(self) -> None:
         """A BoundingBox equals itself"""
         box = BoundingBox(absolute_coords=True, ulx=10, uly=20, width=100, height=50)
 
         assert box == box
         assert not (box != box)
 
-    def test_identical_absolute_boxes_are_equal(self):
+    def test_identical_absolute_boxes_are_equal(self) ->None:
         """Two absolute boxes with identical coordinates are equal"""
         box1 = BoundingBox(absolute_coords=True, ulx=10, uly=20, lrx=110, lry=70)
         box2 = BoundingBox(absolute_coords=True, ulx=10, uly=20, lrx=110, lry=70)
@@ -45,7 +45,7 @@ class TestBBoxEquality:
         assert box1 == box2
         assert box2 == box1
 
-    def test_identical_relative_boxes_are_equal(self):
+    def test_identical_relative_boxes_are_equal(self) ->None:
         """Two relative boxes with identical coordinates are equal"""
         box1 = BoundingBox(absolute_coords=False, ulx=0.1, uly=0.2, lrx=0.6, lry=0.7)
         box2 = BoundingBox(absolute_coords=False, ulx=0.1, uly=0.2, lrx=0.6, lry=0.7)
@@ -53,21 +53,21 @@ class TestBBoxEquality:
         assert box1 == box2
         assert box2 == box1
 
-    def test_different_absolute_boxes_not_equal(self):
+    def test_different_absolute_boxes_not_equal(self) ->None:
         """Absolute boxes with different coordinates are not equal"""
         box1 = BoundingBox(absolute_coords=True, ulx=10, uly=20, width=100, height=50)
         box2 = BoundingBox(absolute_coords=True, ulx=10, uly=20, width=100, height=51)
 
         assert box1 != box2
 
-    def test_different_relative_boxes_not_equal(self):
+    def test_different_relative_boxes_not_equal(self) ->None:
         """Relative boxes with different coordinates are not equal"""
         box1 = BoundingBox(absolute_coords=False, ulx=0.1, uly=0.2, width=0.5, height=0.3)
         box2 = BoundingBox(absolute_coords=False, ulx=0.1, uly=0.2, width=0.5, height=0.4)
 
         assert box1 != box2
 
-    def test_absolute_vs_relative_not_equal(self):
+    def test_absolute_vs_relative_not_equal(self) ->None:
         """Absolute and relative boxes are never equal (even if coords look similar)"""
         box_abs = BoundingBox(absolute_coords=True, ulx=10, uly=20, width=100, height=50)
         box_rel = BoundingBox(absolute_coords=False, ulx=0.1, uly=0.2, width=0.5, height=0.3)
@@ -75,7 +75,7 @@ class TestBBoxEquality:
         assert box_abs != box_rel
         assert box_rel != box_abs
 
-    def test_relative_boxes_equal_if_internal_ints_match(self):
+    def test_relative_boxes_equal_if_internal_ints_match(self) ->None:
         """Two relative boxes are equal if internal int storage matches (not raw floats)"""
         # These two float values should round to the same internal int
         # after scaling by RELATIVE_COORD_SCALE_FACTOR
@@ -92,7 +92,7 @@ class TestBBoxEquality:
         if box1._ulx == box2._ulx:
             assert box1 == box2
 
-    def test_relative_boxes_not_equal_if_internal_ints_differ(self):
+    def test_relative_boxes_not_equal_if_internal_ints_differ(self) ->None:
         """Two relative boxes are not equal if internal int storage differs"""
         scale = 10**8
 
@@ -107,7 +107,7 @@ class TestBBoxEquality:
         if box1._ulx != box2._ulx:
             assert box1 != box2
 
-    def test_equality_compares_internal_key(self):
+    def test_equality_compares_internal_key(self) ->None:
         """Equality uses _key() which compares internal ints and flag"""
         box1 = BoundingBox(absolute_coords=True, ulx=10, uly=20, lrx=110, lry=70)
         box2 = BoundingBox(absolute_coords=True, ulx=10, uly=20, lrx=110, lry=70)
@@ -116,7 +116,7 @@ class TestBBoxEquality:
         assert box1._key() == box2._key()
         assert box1 == box2
 
-    def test_different_keys_means_not_equal(self):
+    def test_different_keys_means_not_equal(self) ->None:
         """Different _key() means boxes are not equal"""
         box1 = BoundingBox(absolute_coords=True, ulx=10, uly=20, lrx=110, lry=70)
         box2 = BoundingBox(absolute_coords=True, ulx=10, uly=20, lrx=111, lry=70)
@@ -124,7 +124,7 @@ class TestBBoxEquality:
         assert box1._key() != box2._key()
         assert box1 != box2
 
-    def test_key_includes_all_coords_and_flag(self):
+    def test_key_includes_all_coords_and_flag(self) ->None:
         """_key() includes ulx, uly, lrx, lry, and absolute_coords flag"""
         box = BoundingBox(absolute_coords=True, ulx=10, uly=20, lrx=110, lry=70)
 
@@ -139,7 +139,7 @@ class TestBBoxEquality:
 
     # ==================== Equality with Different Construction Methods ====================
 
-    def test_boxes_from_lrx_lry_vs_width_height_equal_if_same_result(self):
+    def test_boxes_from_lrx_lry_vs_width_height_equal_if_same_result(self) ->None:
         """Boxes constructed via (lrx,lry) vs (width,height) are equal if same result"""
         box1 = BoundingBox(absolute_coords=True, ulx=10, uly=20, lrx=110, lry=70)
         box2 = BoundingBox(absolute_coords=True, ulx=10, uly=20, width=100, height=50)
@@ -147,7 +147,7 @@ class TestBBoxEquality:
         # box2 should have lrx = 10 + 100 = 110, lry = 20 + 50 = 70
         assert box1 == box2
 
-    def test_boxes_from_lrx_lry_vs_width_height_not_equal_if_rounding_differs(self):
+    def test_boxes_from_lrx_lry_vs_width_height_not_equal_if_rounding_differs(self) ->None:
         """Boxes may differ if rounding affects final coordinates"""
         # Using width that doesn't round to exact lrx
         box1 = BoundingBox(absolute_coords=True, ulx=10, uly=20, lrx=110, lry=70)
@@ -160,35 +160,35 @@ class TestBBoxEquality:
 
     # ==================== Unhashability ====================
 
-    def test_bbox_is_unhashable(self):
+    def test_bbox_is_unhashable(self) ->None:
         """BoundingBox is unhashable (__hash__ = None)"""
         box = BoundingBox(absolute_coords=True, ulx=10, uly=20, width=100, height=50)
 
         # __hash__ should be None
         assert box.__hash__ is None
 
-    def test_bbox_cannot_be_added_to_set(self):
+    def test_bbox_cannot_be_added_to_set(self) ->None:
         """BoundingBox cannot be added to a set (raises TypeError)"""
         box = BoundingBox(absolute_coords=True, ulx=10, uly=20, width=100, height=50)
 
         with pytest.raises(TypeError, match="unhashable"):
             {box}
 
-    def test_bbox_cannot_be_dict_key(self):
+    def test_bbox_cannot_be_dict_key(self) ->None:
         """BoundingBox cannot be used as dict key (raises TypeError)"""
         box = BoundingBox(absolute_coords=True, ulx=10, uly=20, width=100, height=50)
 
         with pytest.raises(TypeError, match="unhashable"):
             {box: "value"}
 
-    def test_equality_with_none_returns_false(self):
+    def test_equality_with_none_returns_false(self) ->None:
         """BoundingBox != None"""
         box = BoundingBox(absolute_coords=True, ulx=10, uly=20, width=100, height=50)
 
         assert box != None
         assert not (box == None)
 
-    def test_equality_with_different_type_returns_notimplemented(self):
+    def test_equality_with_different_type_returns_notimplemented(self) ->None:
         """Equality with incompatible type returns NotImplemented (doesn't raise)"""
         box = BoundingBox(absolute_coords=True, ulx=10, uly=20, width=100, height=50)
 
@@ -197,14 +197,14 @@ class TestBBoxEquality:
         assert box != "box"
         assert box != [10, 20, 110, 70]
 
-    def test_large_coordinate_boxes_equality(self):
+    def test_large_coordinate_boxes_equality(self) ->None:
         """Boxes with large coordinates can be equal"""
         box1 = BoundingBox(absolute_coords=True, ulx=0, uly=0, width=4999, height=4999)
         box2 = BoundingBox(absolute_coords=True, ulx=0, uly=0, width=4999, height=4999)
 
         assert box1 == box2
 
-    def test_inequality_affects_any_coordinate(self):
+    def test_inequality_affects_any_coordinate(self) ->None:
         """Changing any single coordinate makes boxes unequal"""
         base_box = BoundingBox(absolute_coords=True, ulx=10, uly=20, lrx=110, lry=70)
 

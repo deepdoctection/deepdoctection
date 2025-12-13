@@ -17,8 +17,10 @@ from deepdoctection.extern.hflayoutlm import (
     HFLiltTokenClassifier,
 )
 
-if pytorch_available() and transformers_available():
+if pytorch_available():
     import torch
+
+if transformers_available():
     from transformers import (
         LayoutLMConfig,
         LayoutLMForSequenceClassification,
@@ -77,9 +79,9 @@ def _mk_dummy_tokenizer() -> Any:
 def test_sequence_slow_build_and_predict(
     tmp_path: PathLikeOrStr,
     monkeypatch: pytest.MonkeyPatch,
-    wrapper_cls,
-    model_cls,
-    cfg_cls,
+    wrapper_cls: type,
+    model_cls: type | None,
+    cfg_cls: type | None,
     needs_img: bool,
     img_key: Optional[str],
 ) -> None:
@@ -124,6 +126,7 @@ def test_sequence_slow_build_and_predict(
         "bbox": torch.zeros((1, L, 4), dtype=torch.long),
     }
     if needs_img:
+        assert img_key is not None
         inputs[img_key] = torch.zeros((1, 3, 224, 224), dtype=torch.float32)
 
     result = clf.predict(**inputs)
@@ -161,9 +164,9 @@ def test_sequence_slow_build_and_predict(
 def test_token_slow_build_and_predict(
     tmp_path: PathLikeOrStr,
     monkeypatch: pytest.MonkeyPatch,
-    wrapper_cls,
-    model_cls,
-    cfg_cls,
+    wrapper_cls: type,
+    model_cls: type | None,
+    cfg_cls: type | None,
     needs_img: bool,
     img_key: Optional[str],
 ) -> None:
@@ -213,6 +216,7 @@ def test_token_slow_build_and_predict(
         "token_type_ids": torch.zeros((1, L), dtype=torch.long),
     }
     if needs_img:
+        assert img_key is not None
         inputs[img_key] = torch.zeros((1, 3, 224, 224), dtype=torch.float32)
 
     results = clf.predict(**inputs)

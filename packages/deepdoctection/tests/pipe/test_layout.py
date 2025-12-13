@@ -21,31 +21,33 @@ from unittest.mock import create_autospec
 
 import pytest
 
+from dd_core.datapoint.annotation import ImageAnnotation
 from dd_core.datapoint.view import Image
 from dd_core.utils.object_types import get_type
 from deepdoctection.extern.base import DetectionResult, ObjectDetector
 from deepdoctection.pipe.layout import ImageLayoutService, skip_if_category_or_service_extracted
 
 
-def test_skip_if_category_or_service_extracted_by_category(image: Image):
+def test_skip_if_category_or_service_extracted_by_category(image: Image)-> None:
     result = skip_if_category_or_service_extracted(category_names=get_type("word"))(image)
     assert result is True
 
 
-def test_skip_if_category_or_service_extracted_by_service_id(image: Image):
+def test_skip_if_category_or_service_extracted_by_service_id(image: Image)-> None:
     result = skip_if_category_or_service_extracted(service_ids="01a15bff")(image)
     assert result is True
 
 
-def test_image_layout_service_rebuilds_annotations(image_without_anns: Image, anns: List):
+def test_image_layout_service_rebuilds_annotations(image_without_anns: Image, anns: list[ImageAnnotation])-> None:
     det_results: List[DetectionResult] = []
     for ann in anns:
+        assert ann.bounding_box is not None
         det_results.append(
             DetectionResult(
                 box=ann.bounding_box.to_list("xyxy"),
                 class_id=ann.category_id,
                 score=ann.score if ann.score is not None else 1.0,
-                class_name=ann.category_name.value,
+                class_name=ann.category_name.value, # type: ignore
                 absolute_coords=ann.bounding_box.absolute_coords,
             )
         )

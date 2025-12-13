@@ -20,12 +20,12 @@
 Testing module datasets.instances.pubtabnet
 """
 from pathlib import Path
-from unittest.mock import MagicMock, patch
 
 import numpy as np
 import pytest
 
 import shared_test_utils as stu
+from dd_core.datapoint.image import Image
 from dd_datasets import Pubtabnet
 
 
@@ -42,11 +42,11 @@ def test_dataset_pubtabnet_returns_image(monkeypatch: pytest.MonkeyPatch, datase
 
     # Arrange
     pubtabnet = Pubtabnet()
-    pubtabnet.dataflow.get_workdir = lambda: Path(dataset_test_base_dir) / pubtabnet.dataflow.location
+    pubtabnet.dataflow.get_workdir = lambda: Path(dataset_test_base_dir) / pubtabnet.dataflow.location # type: ignore
     df = pubtabnet.dataflow.build()
 
     # Act
-    df_list = stu.collect_datapoint_from_dataflow(df)
+    df_list: list[Image] = stu.collect_datapoint_from_dataflow(df)
     assert len(df_list) == 3
 
 
@@ -65,10 +65,10 @@ def test_dataset_pubtabnet_with_load_image_returns_image(
 
     # Arrange
     pubtabnet = Pubtabnet()
-    pubtabnet.dataflow.get_workdir = lambda: Path(dataset_test_base_dir) / pubtabnet.dataflow.location
+    pubtabnet.dataflow.get_workdir = lambda: Path(dataset_test_base_dir) / pubtabnet.dataflow.location # type: ignore
     df = pubtabnet.dataflow.build(load_image=True)
 
     # Act
-    df_list = stu.collect_datapoint_from_dataflow(df)
+    df_list: list[Image] = stu.collect_datapoint_from_dataflow(df)
     assert len(df_list) == 3
     assert df_list[0].image is not None

@@ -27,10 +27,10 @@ from dd_datasets import Fintabnet, Pubtabnet
 
 
 @pytest.fixture(name="test_layout")
-def fixture_test_layout():
+def fixture_test_layout(): # type:ignore
     path = stu.asset_path("testlayout")
 
-    def test_layout(raw: bool = False):
+    def test_layout(raw: bool = False): # type:ignore
         with jsonlines.open(path, "r") as reader:
             if raw:
                 return list(reader)
@@ -56,7 +56,7 @@ def fixture_dataset_test_base_dir() -> str:
 
 
 @pytest.fixture()
-def fintabnet(monkeypatch: pytest.MonkeyPatch, dataset_test_base_dir: str):
+def fintabnet(monkeypatch: pytest.MonkeyPatch, dataset_test_base_dir: str)-> Fintabnet:
     monkeypatch.setattr("dd_core.mapper.pubstruct.load_bytes_from_pdf_file", lambda _fn: b"\x01\x02")
     monkeypatch.setattr(
         "dd_core.mapper.pubstruct.convert_pdf_bytes_to_np_array_v2",
@@ -68,7 +68,7 @@ def fintabnet(monkeypatch: pytest.MonkeyPatch, dataset_test_base_dir: str):
 
 
 @pytest.fixture()
-def pubtabnet(dataset_test_base_dir: str):
+def pubtabnet(dataset_test_base_dir: str)-> Pubtabnet:
     ds = Pubtabnet()
     ds.dataflow.get_workdir = lambda: Path(dataset_test_base_dir) / ds.dataflow.location
     return ds

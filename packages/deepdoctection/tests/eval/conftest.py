@@ -26,7 +26,7 @@ from dd_core.utils.object_types import ObjectTypes, get_type
 try:
     from dd_datasets.base import DatasetCategories
 except ImportError:
-    DatasetCategories = None
+    DatasetCategories = None # type: ignore
 
 if TYPE_CHECKING:
     from dd_datasets.info import DatasetCategories

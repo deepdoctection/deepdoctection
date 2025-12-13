@@ -19,7 +19,7 @@
 import os
 import tempfile
 from pathlib import Path
-from typing import Any
+from typing import Any, Optional
 
 import pytest
 
@@ -162,8 +162,8 @@ class TestModelDownloadManager:
                 local_dir: str,
                 force_filename: str,
                 force_download: bool,
-                token: str | None,
-            ):
+                token: Optional[str],
+            ) -> str:
                 target = os.path.join(local_dir, force_filename)
                 os.makedirs(local_dir, exist_ok=True)
                 with open(target, "wb") as f:

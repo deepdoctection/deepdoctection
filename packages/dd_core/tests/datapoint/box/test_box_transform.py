@@ -21,7 +21,7 @@ Tests round-trip property, idempotency, abs↔rel conversions, and property-base
 """
 
 import pytest
-from hypothesis import given, settings
+from hypothesis import given, settings # type: ignore
 from hypothesis import strategies as st
 
 from dd_core.datapoint import BoundingBox
@@ -30,7 +30,7 @@ from dd_core.datapoint import BoundingBox
 class TestBBoxTransform:
     """Tests for BoundingBox transform method (absolute ↔ relative conversions)"""
 
-    def test_roundtrip_abs_to_rel_to_abs_preserves_internal_key(self):
+    def test_roundtrip_abs_to_rel_to_abs_preserves_internal_key(self) -> None:
         """Round-trip abs→rel→abs preserves exact internal _key()"""
         # Create absolute box
         box_abs = BoundingBox(absolute_coords=True, ulx=100, uly=200, width=300, height=150)
@@ -47,7 +47,7 @@ class TestBBoxTransform:
         # Internal key should be identical
         assert box_abs_2._key() == original_key
 
-    def test_roundtrip_rel_to_abs_to_rel_preserves_internal_key(self):
+    def test_roundtrip_rel_to_abs_to_rel_preserves_internal_key(self) -> None:
         """Round-trip rel→abs→rel preserves exact internal _key()"""
         # Create relative box
         box_rel = BoundingBox(absolute_coords=False, ulx=0.1, uly=0.2, width=0.5, height=0.3)
@@ -64,7 +64,7 @@ class TestBBoxTransform:
         # Internal key should be identical
         assert box_rel_2._key() == original_key
 
-    def test_transform_same_mode_returns_self_absolute(self):
+    def test_transform_same_mode_returns_self_absolute(self) -> None:
         """Transform with same mode (absolute) returns self (identity)"""
         box = BoundingBox(absolute_coords=True, ulx=100, uly=200, width=300, height=150)
 
@@ -74,7 +74,7 @@ class TestBBoxTransform:
         # Should return the same object
         assert result is box
 
-    def test_transform_same_mode_returns_self_relative(self):
+    def test_transform_same_mode_returns_self_relative(self) -> None:
         """Transform with same mode (relative) returns self (identity)"""
         box = BoundingBox(absolute_coords=False, ulx=0.1, uly=0.2, width=0.5, height=0.3)
 
@@ -99,7 +99,10 @@ class TestBBoxTransform:
             (100, 200, 150, 250, 1000, 1000, 0.1, 0.2, 0.15, 0.25),
         ],
     )
-    def test_abs_to_rel_expected_values(self, ulx, uly, lrx, lry, img_w, img_h, exp_ulx, exp_uly, exp_lrx, exp_lry):
+    def test_abs_to_rel_expected_values(
+        self, ulx: int, uly: int, lrx: int, lry: int, img_w: int, img_h: int, 
+        exp_ulx: float, exp_uly: float, exp_lrx: float, exp_lry: float
+    ) -> None:
         """Test absolute→relative with expected normalized values"""
         box_abs = BoundingBox(absolute_coords=True, ulx=ulx, uly=uly, lrx=lrx, lry=lry)
         box_rel = box_abs.transform(image_width=img_w, image_height=img_h, absolute_coords=False)
@@ -110,7 +113,7 @@ class TestBBoxTransform:
         assert abs(box_rel.lrx - exp_lrx) < 1e-6
         assert abs(box_rel.lry - exp_lry) < 1e-6
 
-    def test_abs_to_rel_clamping_to_zero_one(self):
+    def test_abs_to_rel_clamping_to_zero_one(self) -> None:
         """Absolute→relative clamps coordinates to [0, 1]"""
         # Box extending beyond image bounds
         box_abs = BoundingBox(absolute_coords=True, ulx=0, uly=0, lrx=1500, lry=1200)
@@ -141,7 +144,10 @@ class TestBBoxTransform:
             (0.1, 0.2, 0.15, 0.25, 1000, 1000, 100, 200, 150, 250),
         ],
     )
-    def test_rel_to_abs_expected_values(self, ulx, uly, lrx, lry, img_w, img_h, exp_ulx, exp_uly, exp_lrx, exp_lry):
+    def test_rel_to_abs_expected_values(
+        self, ulx: float, uly: float, lrx: float, lry: float, img_w: int, img_h: int,
+        exp_ulx: int, exp_uly: int, exp_lrx: int, exp_lry: int
+    ) -> None:
         """Test relative→absolute with expected pixel values"""
         box_rel = BoundingBox(absolute_coords=False, ulx=ulx, uly=uly, lrx=lrx, lry=lry)
         box_abs = box_rel.transform(image_width=img_w, image_height=img_h, absolute_coords=True)
@@ -153,7 +159,7 @@ class TestBBoxTransform:
         assert abs(box_abs.lrx - exp_lrx) <= 1
         assert abs(box_abs.lry - exp_lry) <= 1
 
-    def test_rel_to_abs_respects_rounding(self):
+    def test_rel_to_abs_respects_rounding(self) -> None:
         """Relative→absolute respects banker's rounding"""
         # Coordinates that result in .5 after scaling
         box_rel = BoundingBox(absolute_coords=False, ulx=0.105, uly=0.205, lrx=0.505, lry=0.705)
@@ -165,7 +171,7 @@ class TestBBoxTransform:
         assert isinstance(box_abs.lrx, int)
         assert isinstance(box_abs.lry, int)
 
-    def test_transform_box_at_image_boundary(self):
+    def test_transform_box_at_image_boundary(self) -> None:
         """Transform box exactly at image boundaries"""
         # Box filling entire image
         box_abs = BoundingBox(absolute_coords=True, ulx=0, uly=0, lrx=1920, lry=1080)
@@ -185,7 +191,8 @@ class TestBBoxTransform:
         img_h=st.integers(min_value=100, max_value=8000),
     )
     @settings(max_examples=100, deadline=None)
-    def test_property_roundtrip_preserves_key_abs_start(self, ulx, uly, w, h, img_w, img_h):
+    def test_property_roundtrip_preserves_key_abs_start(self, ulx:int, uly:int, w:int, h:int,
+                                                        img_w:int, img_h:int) -> None:
         """Property: abs→rel→abs round-trip preserves internal key for any valid box"""
         # Ensure box doesn't exceed image bounds for meaningful test
         if ulx + w > img_w or uly + h > img_h:
@@ -208,7 +215,8 @@ class TestBBoxTransform:
         img_h=st.integers(min_value=100, max_value=8000),
     )
     @settings(max_examples=50, deadline=None)
-    def test_property_roundtrip_preserves_key_rel_start(self, ulx, uly, w, h, img_w, img_h):
+    def test_property_roundtrip_preserves_key_rel_start(self, ulx:int, uly:int, w:int, h:int,
+                                                        img_w:int, img_h:int) -> None:
         """Property: rel→abs→rel round-trip preserves internal key for any valid box"""
         # Ensure box stays within [0, 1]
         if ulx + w > 1.0 or uly + h > 1.0:
@@ -244,7 +252,7 @@ class TestBBoxTransform:
         img_h=st.integers(min_value=100, max_value=8000),
     )
     @settings(max_examples=50, deadline=None)
-    def test_property_rel_coords_in_valid_range(self, ulx, uly, w, h, img_w, img_h):
+    def test_property_rel_coords_in_valid_range(self, ulx:int, uly:int, w:int, h:int, img_w:int, img_h:int) -> None:
         """Property: abs→rel always produces coords in [0, 1]"""
 
         # Ensure box is valid
@@ -274,7 +282,8 @@ class TestBBoxTransform:
         img_h=st.integers(min_value=100, max_value=8000),
     )
     @settings(max_examples=100, deadline=None)
-    def test_property_transform_idempotency_absolute(self, ulx, uly, w, h, img_w, img_h):
+    def test_property_transform_idempotency_absolute(self, ulx:int, uly:int, w:int, h:int,
+                                                     img_w:int, img_h:int) -> None:
         """Property: transform(same_mode) is identity for absolute boxes"""
         box = BoundingBox(absolute_coords=True, ulx=ulx, uly=uly, width=w, height=h)
         result = box.transform(image_width=img_w, image_height=img_h, absolute_coords=True)
@@ -290,7 +299,8 @@ class TestBBoxTransform:
         img_h=st.integers(min_value=100, max_value=8000),
     )
     @settings(max_examples=100, deadline=None)
-    def test_property_transform_idempotency_relative(self, ulx, uly, w, h, img_w, img_h):
+    def test_property_transform_idempotency_relative(self, ulx:int, uly:int, w:int, h:int,
+                                                     img_w:int, img_h:int) -> None:
         """Property: transform(same_mode) is identity for relative boxes"""
         # Ensure box stays within [0, 1]
         if ulx + w > 1.0 or uly + h > 1.0:

@@ -207,5 +207,6 @@ def test_values_as_list_not_dict_pub(pubcat: DatasetCategories) -> None:
 def test_invalid_init_sub_categories_type_raises() -> None:
     with pytest.raises(AssertionError):
         DatasetCategories(
-            init_categories=[LayoutType.WORD], init_sub_categories={LayoutType.WORD: [WordType.CHARACTERS]}
+            init_categories=[LayoutType.WORD], init_sub_categories=
+            {LayoutType.WORD: {WordType.CHARACTERS: [WordType.CHARACTERS]}}
         )
