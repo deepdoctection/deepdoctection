@@ -22,45 +22,45 @@ from dd_core.datapoint.view import Page
 class TestPageProperties:
     """Test Page class basic properties"""
 
-    def test_page_has_image_id(self, page: Page):
+    def test_page_has_image_id(self, page: Page) -> None:
         """Page instance has image_id property"""
         assert hasattr(page, "image_id")
         assert isinstance(page.image_id, str)
         assert len(page.image_id) > 0
 
-    def test_page_has_width(self, page: Page):
+    def test_page_has_width(self, page: Page) -> None:
         """Page instance has width property"""
         assert hasattr(page, "width")
         assert isinstance(page.width, int)
         assert page.width > 0
 
-    def test_page_has_height(self, page: Page):
+    def test_page_has_height(self, page: Page) -> None:
         """Page instance has height property"""
         assert hasattr(page, "height")
         assert isinstance(page.height, int)
         assert page.height > 0
 
-    def test_page_has_file_name(self, page: Page):
+    def test_page_has_file_name(self, page: Page) -> None:
         """Page instance has file_name property"""
         assert hasattr(page, "file_name")
         assert isinstance(page.file_name, str)
 
-    def test_page_has_location(self, page: Page):
+    def test_page_has_location(self, page: Page) -> None:
         """Page instance has location property"""
         assert hasattr(page, "location")
         assert isinstance(page.location, str)
 
-    def test_page_has_document_id(self, page: Page):
+    def test_page_has_document_id(self, page: Page) -> None:
         """Page instance has document_id property"""
         assert hasattr(page, "document_id")
         assert isinstance(page.document_id, str)
 
-    def test_page_has_page_number(self, page: Page):
+    def test_page_has_page_number(self, page: Page) -> None:
         """Page instance has page_number property"""
         assert hasattr(page, "page_number")
         assert isinstance(page.page_number, int)
 
-    def test_page_has_ann_base_view(self, page: Page):
+    def test_page_has_ann_base_view(self, page: Page) -> None:
         """Page instance has ann_base_view list"""
         assert hasattr(page, "ann_base_view")
         assert isinstance(page.ann_base_view, list)

@@ -45,7 +45,7 @@ def test_doctr_textline_detector_predict_basic(monkeypatch: pytest.MonkeyPatch) 
     )
 
     # Mock prediction helper
-    def _fake_predict(np_img, predictor):
+    def _fake_predict(np_img, predictor): # type: ignore
         return [
             DetectionResult(box=[0, 0, 10, 10], class_id=1, score=0.9, class_name=LayoutType.WORD),
             DetectionResult(box=[20, 20, 40, 40], class_id=1, score=0.8, class_name=LayoutType.WORD),
@@ -75,7 +75,7 @@ def test_doctr_text_recognizer_predict_basic(monkeypatch: pytest.MonkeyPatch) ->
         raising=True,
     )
 
-    def _fake_recognize(inputs, predictor):
+    def _fake_recognize(inputs, predictor): # type: ignore
         return [
             DetectionResult(score=0.7, text="Foo", uuid=inputs[0][0]),
             DetectionResult(score=0.8, text="Bar", uuid=inputs[1][0]),

@@ -36,7 +36,7 @@ from deepdoctection.eval.accmetric import (
 try:
     from dd_datasets.info import DatasetCategories
 except ImportError:
-    DatasetCategories = None
+    DatasetCategories = None # type: ignore
 
 
 @pytest.mark.skipif(DatasetCategories is None, reason="dd_datasets is not installed; DatasetCategories unavailable")

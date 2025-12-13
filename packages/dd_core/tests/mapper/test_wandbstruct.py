@@ -23,22 +23,28 @@ import pytest
 
 from dd_core.mapper.wandbstruct import to_wandb_image
 from dd_core.utils.file_utils import wandb_available
+from dd_core.utils.object_types import ObjectTypes
+from dd_core.datapoint.image import Image
+from dd_core.datapoint.annotation import ImageAnnotation
+
+if wandb_available():
+    from wandb import Image as Wbimage
 
 
-def _build_categories(anns):
+def _build_categories(anns)->dict[int,ObjectTypes]:
     names = sorted({ann.category_name for ann in anns})
     return {idx + 1: name for idx, name in enumerate(names, start=1)}
 
 
 @pytest.mark.skipif(not wandb_available(), reason="W&B is not installed")
-def test_to_wandb_image_builds_boxes_with_stubbed_wandb(monkeypatch, annotations):
-    from wandb.data_types import Image
+def test_to_wandb_image_builds_boxes_with_stubbed_wandb(annotations): # type: ignore
 
-    dp = annotations(True, False)
+    dp= annotations(True, False)
+
     all_annotations = dp.get_annotation()
     categories = _build_categories(all_annotations)
 
     image_id, wb_image = to_wandb_image(categories)(dp)
 
-    assert isinstance(wb_image, Image)
+    assert isinstance(wb_image, Wbimage)
     assert image_id == "6ea00afa-ba27-382a-8952-51f8e6ce16b7"

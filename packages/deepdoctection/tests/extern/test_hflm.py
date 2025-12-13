@@ -39,7 +39,7 @@ REQUIRES_PT_AND_TR = pytest.mark.skipif(
 
 def _mk_dummy_tokenizer() -> Any:
     class DummyTokenizer:
-        def __call__(self, text, return_tensors="pt", padding=True, truncation=True, max_length=512):
+        def __call__(self, text, return_tensors="pt", padding=True, truncation=True, max_length=512): # type: ignore
             # Minimal encoding dict the model expects
             return {
                 "input_ids": torch.tensor([[1, 2, 3]], dtype=torch.long),
@@ -66,7 +66,7 @@ def test_hflm_sequence_predict_basic(monkeypatch: pytest.MonkeyPatch) -> None:
     )
 
     # Mock prediction helper
-    def _fake_seq_predict(input_ids, attention_mask, token_type_ids, model):
+    def _fake_seq_predict(input_ids, attention_mask, token_type_ids, model): # type: ignore
         return SequenceClassResult(class_id=0, score=0.92)
 
     monkeypatch.setattr(
@@ -86,7 +86,7 @@ def test_hflm_sequence_predict_basic(monkeypatch: pytest.MonkeyPatch) -> None:
     result = clf.predict(**inputs)
     assert result.class_id == 1
     assert result.class_name == "letter"
-    assert result.score > 0.9
+    assert result.score > 0.9 # type: ignore
 
 
 @REQUIRES_PT_AND_TR
@@ -103,7 +103,7 @@ def test_hflm_token_predict_basic(monkeypatch: pytest.MonkeyPatch) -> None:
         raising=True,
     )
 
-    def _fake_tok_predict(uuids, input_ids, attention_mask, token_type_ids, tokens, model):
+    def _fake_tok_predict(uuids, input_ids, attention_mask, token_type_ids, tokens, model): # type: ignore
         return [
             TokenClassResult(uuid="u1", token_id=101, class_id=2, token="A", score=0.8),  # -> class_id+1 = 3
             TokenClassResult(uuid="u2", token_id=102, class_id=0, token="B", score=0.9),  # -> class_id+1 = 1
@@ -141,7 +141,7 @@ def test_hflm_token_predict_basic(monkeypatch: pytest.MonkeyPatch) -> None:
 
 def _mk_dummy_fast_tokenizer() -> Any:
     class DummyTokenizer:
-        def __call__(self, text, return_tensors="pt", padding=True, truncation=True, max_length=512):
+        def __call__(self, text, return_tensors="pt", padding=True, truncation=True, max_length=512): # type: ignore
             return {
                 "input_ids": torch.tensor([[1, 2, 3]], dtype=torch.long),
                 "attention_mask": torch.tensor([[1, 1, 1]], dtype=torch.long),
@@ -162,13 +162,13 @@ def test_hflm_language_predict_basic(monkeypatch: pytest.MonkeyPatch) -> None:
 
     # Mock model construction (no real weights/model)
     class _StubLangModel:
-        def to(self, device):
+        def to(self, device): # type: ignore
             return self
 
-        def eval(self):
+        def eval(self): # type: ignore
             pass
 
-        def __call__(self, input_ids=None, attention_mask=None, token_type_ids=None):
+        def __call__(self, input_ids=None, attention_mask=None, token_type_ids=None): # type: ignore
             # Highest score at index 1 -> class_id becomes 2 -> "deu"
             return type("Out", (), {"logits": torch.tensor([[0.1, 2.0, 0.5]], dtype=torch.float32)})
 

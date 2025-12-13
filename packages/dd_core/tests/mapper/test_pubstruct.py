@@ -20,11 +20,11 @@ import numpy as np
 import pytest
 
 from dd_core.mapper.pubstruct import pub_to_image
-from dd_core.utils.object_types import LayoutType, TableType
-
+from dd_core.utils.object_types import LayoutType, TableType, ObjectTypes
+from dd_core.datapoint.image import Image
 
 @pytest.fixture
-def categories_name_as_key() -> dict:
+def categories_name_as_key() -> dict[ObjectTypes,int]:
     return {
         LayoutType.CELL: 1,
         TableType.ITEM: 2,
@@ -33,11 +33,12 @@ def categories_name_as_key() -> dict:
     }
 
 
-def _count_cells_with_bbox(dp):
+def _count_cells_with_bbox(dp): # type: ignore
     return sum(1 for c in dp["html"]["cells"] if "bbox" in c)
 
 
-def test_pub_to_image_basic(monkeypatch: pytest.MonkeyPatch, pubtabnet_datapoint, categories_name_as_key):
+def test_pub_to_image_basic(monkeypatch: pytest.MonkeyPatch, pubtabnet_datapoint: Image,
+                            categories_name_as_key: dict[ObjectTypes,int])-> None:
     monkeypatch.setattr(
         "dd_core.mapper.pubstruct.load_image_from_file",
         lambda fn: np.zeros((1200, 800, 3), dtype=np.uint8),
@@ -51,7 +52,8 @@ def test_pub_to_image_basic(monkeypatch: pytest.MonkeyPatch, pubtabnet_datapoint
     assert summary.get_sub_category(TableType.NUMBER_OF_COLUMNS).category_id == 9
 
 
-def test_pub_to_image_rows_cols_items(monkeypatch: pytest.MonkeyPatch, pubtabnet_datapoint, categories_name_as_key):
+def test_pub_to_image_rows_cols_items(monkeypatch: pytest.MonkeyPatch, pubtabnet_datapoint: Image,
+                                      categories_name_as_key: dict[ObjectTypes,int])-> None:
     monkeypatch.setattr(
         "dd_core.mapper.pubstruct.load_image_from_file",
         lambda fn: np.zeros((1000, 600, 3), dtype=np.uint8),
@@ -66,7 +68,9 @@ def test_pub_to_image_rows_cols_items(monkeypatch: pytest.MonkeyPatch, pubtabnet
     assert len(items) == n_rows + n_cols
 
 
-def test_pub_to_image_dd_pipe_like(monkeypatch: pytest.MonkeyPatch, pubtabnet_datapoint, categories_name_as_key):
+def test_pub_to_image_dd_pipe_like(monkeypatch: pytest.MonkeyPatch,
+                                   pubtabnet_datapoint: Image,
+                                   categories_name_as_key: dict[ObjectTypes,int])-> None:
     monkeypatch.setattr(
         "dd_core.mapper.pubstruct.load_image_from_file",
         lambda fn: np.zeros((640, 480, 3), dtype=np.uint8),

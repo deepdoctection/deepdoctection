@@ -22,14 +22,14 @@ import pytest
 from numpy.testing import assert_allclose
 
 from dd_core.dataflow import DataFromList
-from dd_core.datapoint import BoundingBox, ImageAnnotation
+from dd_core.datapoint import BoundingBox, ImageAnnotation, Image
 from dd_core.utils.object_types import get_type
 from deepdoctection.eval.cocometric import CocoMetric
 
 try:
     from dd_datasets.base import DatasetCategories
 except ImportError:
-    DatasetCategories = None
+    DatasetCategories = None # type: ignore
 
 
 @pytest.mark.skipif(DatasetCategories is None, reason="dd_datasets is not installed; DatasetCategories unavailable")
@@ -39,7 +39,7 @@ class TestCocoMetric:
     """
 
     @pytest.fixture(autouse=True)
-    def _setup(self, dp_image):
+    def _setup(self, dp_image: Image)-> None:
         dp_image = deepcopy(dp_image)
         box = BoundingBox(ulx=2.6, uly=3.7, lrx=4.6, lry=5.7, absolute_coords=True)
         ann = ImageAnnotation(category_name="test_cat_1", bounding_box=box, score=0.53, category_id=1)

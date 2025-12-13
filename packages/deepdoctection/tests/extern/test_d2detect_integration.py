@@ -40,6 +40,7 @@ def test_slow_build_d2_frcnn_detector_pt() -> None:
     config_path = ModelCatalog.get_full_path_configs(weights)
     weights_path = ModelDownloadManager.maybe_download_weights_and_configs(weights)
     categories = ModelCatalog.get_profile(weights).categories
+    assert categories is not None
 
     det = D2FrcnnDetector(
         path_yaml=config_path,
@@ -69,6 +70,7 @@ def test_slow_build_d2_frcnn_tracing_detector_ts() -> None:
     config_path = ModelCatalog.get_full_path_configs(weights)
     weights_path = ModelDownloadManager.maybe_download_weights_and_configs(weights)
     categories = ModelCatalog.get_profile(weights).categories
+    assert categories is not None
 
     det = D2FrcnnTracingDetector(
         path_yaml=config_path,

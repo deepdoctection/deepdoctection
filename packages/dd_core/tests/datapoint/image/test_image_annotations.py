@@ -30,7 +30,7 @@ from ..conftest import WhiteImage
 class TestImageAnnotations:
     """Test Image annotation operations"""
 
-    def test_dump_assigns_annotation_id(self, white_image: WhiteImage):
+    def test_dump_assigns_annotation_id(self, white_image: WhiteImage) -> None:
         """dump() assigns annotation_id if not set"""
         img = Image(file_name=white_image.file_name)
         ann = ImageAnnotation(
@@ -42,7 +42,7 @@ class TestImageAnnotations:
         img.dump(ann)
         assert ann.annotation_id is not None
 
-    def test_dump_tracks_annotation_ids(self, white_image: WhiteImage):
+    def test_dump_tracks_annotation_ids(self, white_image: WhiteImage) -> None:
         """dump() tracks annotation_id in internal list"""
         img = Image(file_name=white_image.file_name)
         ann = ImageAnnotation(
@@ -52,7 +52,7 @@ class TestImageAnnotations:
         img.dump(ann)
         assert ann.annotation_id in img._annotation_ids
 
-    def test_dump_rejects_duplicate_annotation(self, white_image: WhiteImage):
+    def test_dump_rejects_duplicate_annotation(self, white_image: WhiteImage) -> None:
         """dump() raises error for duplicate annotation"""
         img = Image(file_name=white_image.file_name)
         ann = ImageAnnotation(
@@ -64,7 +64,7 @@ class TestImageAnnotations:
         with raises(ImageError, match="Cannot dump annotation with existing id"):
             img.dump(ann)
 
-    def test_dump_multiple_annotations(self, white_image: WhiteImage):
+    def test_dump_multiple_annotations(self, white_image: WhiteImage) -> None:
         """Multiple annotations can be dumped"""
         img = Image(file_name=white_image.file_name)
         ann1 = ImageAnnotation(
@@ -81,7 +81,7 @@ class TestImageAnnotations:
         assert len(img.annotations) == 2
         assert len(img._annotation_ids) == 2
 
-    def test_get_annotation_returns_all_by_default(self, white_image: WhiteImage):
+    def test_get_annotation_returns_all_by_default(self, white_image: WhiteImage) -> None:
         """get_annotation() returns all active annotations by default"""
         img = Image(file_name=white_image.file_name)
         ann1 = ImageAnnotation(
@@ -98,7 +98,7 @@ class TestImageAnnotations:
         result = img.get_annotation()
         assert len(result) == 2
 
-    def test_get_annotation_filters_by_category_name(self, white_image: WhiteImage):
+    def test_get_annotation_filters_by_category_name(self, white_image: WhiteImage) -> None:
         """get_annotation() filters by category_name"""
         img = Image(file_name=white_image.file_name)
         ann1 = ImageAnnotation(
@@ -117,7 +117,7 @@ class TestImageAnnotations:
         assert len(result) == 1
         assert result[0].category_name.value == "test_cat_1"
 
-    def test_get_annotation_filters_by_multiple_category_names(self, white_image: WhiteImage):
+    def test_get_annotation_filters_by_multiple_category_names(self, white_image: WhiteImage) -> None:
         """get_annotation() filters by multiple category names"""
         img = Image(file_name=white_image.file_name)
         ann1 = ImageAnnotation(
@@ -140,7 +140,7 @@ class TestImageAnnotations:
         result = img.get_annotation(category_names=["test_cat_1", "test_cat_2"])
         assert len(result) == 2
 
-    def test_get_annotation_filters_by_annotation_id(self, white_image: WhiteImage):
+    def test_get_annotation_filters_by_annotation_id(self, white_image: WhiteImage) -> None:
         """get_annotation() filters by annotation_id"""
         img = Image(file_name=white_image.file_name)
         ann1 = ImageAnnotation(
@@ -158,7 +158,7 @@ class TestImageAnnotations:
         assert len(result) == 1
         assert result[0].annotation_id == ann1.annotation_id
 
-    def test_get_annotation_filters_by_service_id(self, white_image: WhiteImage):
+    def test_get_annotation_filters_by_service_id(self, white_image: WhiteImage) -> None:
         """get_annotation() filters by service_id"""
         img = Image(file_name=white_image.file_name)
         ann1 = ImageAnnotation(
@@ -178,7 +178,7 @@ class TestImageAnnotations:
         assert len(result) == 1
         assert result[0].service_id == "service_a"
 
-    def test_get_annotation_ignores_inactive_by_default(self, white_image: WhiteImage):
+    def test_get_annotation_ignores_inactive_by_default(self, white_image: WhiteImage) -> None:
         """get_annotation() ignores inactive annotations by default"""
         img = Image(file_name=white_image.file_name)
         ann = ImageAnnotation(
@@ -191,7 +191,7 @@ class TestImageAnnotations:
         result = img.get_annotation()
         assert len(result) == 0
 
-    def test_get_annotation_can_include_inactive(self, white_image: WhiteImage):
+    def test_get_annotation_can_include_inactive(self, white_image: WhiteImage) -> None:
         """get_annotation() can include inactive annotations"""
         img = Image(file_name=white_image.file_name)
         ann = ImageAnnotation(
@@ -204,7 +204,7 @@ class TestImageAnnotations:
         result = img.get_annotation(ignore_inactive=False)
         assert len(result) == 1
 
-    def test_get_annotation_combined_filters(self, white_image: WhiteImage):
+    def test_get_annotation_combined_filters(self, white_image: WhiteImage) -> None:
         """get_annotation() applies multiple filters correctly"""
         img = Image(file_name=white_image.file_name)
         ann1 = ImageAnnotation(
@@ -231,7 +231,7 @@ class TestImageAnnotations:
         assert len(result) == 1
         assert result[0].annotation_id == ann1.annotation_id
 
-    def test_annotation_id_uniqueness(self, white_image: WhiteImage):
+    def test_annotation_id_uniqueness(self, white_image: WhiteImage) -> None:
         """Each annotation gets a unique annotation_id"""
         img = Image(file_name=white_image.file_name)
         annotations = []

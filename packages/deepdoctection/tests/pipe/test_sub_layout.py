@@ -76,7 +76,7 @@ class TestSubImageLayoutService:
 
         self.sub_image_layout_service = SubImageLayoutService(self._cell_detector, get_type("table"))
 
-    def test_pass_datapoint(
+    def test_pass_datapoint(  # type: ignore
         self,
         dp_image: Image,
         layout_annotations,
@@ -106,13 +106,15 @@ class TestSubImageLayoutService:
         assert len(anns) == 2
 
         first_table_ann = anns[0]
+        assert first_table_ann.image is not None
         second_table_ann = anns[1]
+        assert second_table_ann.image is not None
 
         exp_global_boxes_first_table = global_cell_boxes[0]
         exp_global_boxes_scd_table = global_cell_boxes[1]
 
-        first_table_cell_anns = first_table_ann.image.get_annotation()  # type: ignore
-        second_table_cell_anns = second_table_ann.image.get_annotation()  # type: ignore
+        first_table_cell_anns = first_table_ann.image.get_annotation()
+        second_table_cell_anns = second_table_ann.image.get_annotation()
         assert len(first_table_cell_anns) == 2
         assert len(second_table_cell_anns) == 1
 
@@ -141,7 +143,7 @@ class TestSubImageLayoutService:
             second_table_ann.image.width, second_table_ann.image.height
         )
 
-    def test_pass_datapoint_when_sub_images_do_not_have_a_crop(
+    def test_pass_datapoint_when_sub_images_do_not_have_a_crop( # type: ignore
         self,
         dp_image: Image,
         layout_annotations,

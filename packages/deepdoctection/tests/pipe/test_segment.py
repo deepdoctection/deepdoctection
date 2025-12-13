@@ -68,7 +68,7 @@ class TestTableSegmentationService:
         """
 
         self.table_segmentation_service = TableSegmentationService(
-            "iou",  # type: ignore
+            "iou",
             0.001,
             0.001,
             False,
@@ -225,7 +225,7 @@ class TestTableSegmentationServiceWhenTableFullyTiled:
         """
 
         self.tp_table_segmentation_service = TableSegmentationService(
-            "iou",  # type: ignore
+            "iou",
             0.001,
             0.001,
             True,

@@ -31,7 +31,7 @@ from dd_core.datapoint import BoundingBox
 class TestBBoxExport:
     """Tests for BoundingBox export and serialization methods"""
 
-    def test_to_np_array_xyxy_matches_to_list_absolute(self):
+    def test_to_np_array_xyxy_matches_to_list_absolute(self) -> None:
         """to_np_array('xyxy') matches to_list('xyxy') for absolute coords"""
         box = BoundingBox(absolute_coords=True, ulx=10, uly=20, lrx=110, lry=70)
 
@@ -40,7 +40,7 @@ class TestBBoxExport:
 
         assert_allclose(np_arr, lst, rtol=1e-6)
 
-    def test_to_np_array_xyxy_matches_to_list_relative(self):
+    def test_to_np_array_xyxy_matches_to_list_relative(self) -> None:
         """to_np_array('xyxy') matches to_list('xyxy') for relative coords"""
         box = BoundingBox(absolute_coords=False, ulx=0.1, uly=0.2, lrx=0.6, lry=0.7)
 
@@ -49,7 +49,7 @@ class TestBBoxExport:
 
         assert_allclose(np_arr, lst, rtol=1e-6)
 
-    def test_to_list_xyxy_absolute_returns_ints(self):
+    def test_to_list_xyxy_absolute_returns_ints(self) -> None:
         """to_list('xyxy') returns rounded ints for absolute coords"""
         box = BoundingBox(absolute_coords=True, ulx=10.3, uly=20.7, lrx=110.5, lry=70.2)
 
@@ -61,7 +61,7 @@ class TestBBoxExport:
         assert isinstance(lst[2], int)
         assert isinstance(lst[3], int)
 
-    def test_to_list_xyxy_relative_returns_floats(self):
+    def test_to_list_xyxy_relative_returns_floats(self) -> None:
         """to_list('xyxy') returns floats for relative coords"""
         box = BoundingBox(absolute_coords=False, ulx=0.1, uly=0.2, lrx=0.6, lry=0.7)
 
@@ -73,7 +73,7 @@ class TestBBoxExport:
         assert isinstance(lst[2], float)
         assert isinstance(lst[3], float)
 
-    def test_to_list_xyxy_with_scaling_absolute(self):
+    def test_to_list_xyxy_with_scaling_absolute(self) -> None:
         """to_list('xyxy') applies scale factors correctly for absolute coords"""
         box = BoundingBox(absolute_coords=True, ulx=10, uly=20, lrx=100, lry=80)
 
@@ -82,14 +82,14 @@ class TestBBoxExport:
         # Expected: [10*2, 20*3, 100*2, 80*3] = [20, 60, 200, 240]
         assert lst == [20, 60, 200, 240]
 
-    def test_to_list_xyxy_raises_error_when_scaling_too_large(self):
+    def test_to_list_xyxy_raises_error_when_scaling_too_large(self) -> None:
         """to_list('xyxy') raises ValueError when scaling relative coords with scale > 1"""
         box = BoundingBox(absolute_coords=False, ulx=0.1, uly=0.2, lrx=0.5, lry=0.8)
 
         with pytest.raises(ValueError):
             box.to_list(mode="xyxy", scale_x=1000, scale_y=0.4)
 
-    def test_to_np_array_xywh_matches_to_list_absolute(self):
+    def test_to_np_array_xywh_matches_to_list_absolute(self) -> None:
         """to_np_array('xywh') matches to_list('xywh') for absolute coords"""
         box = BoundingBox(absolute_coords=True, ulx=10, uly=20, width=100, height=50)
 
@@ -98,7 +98,7 @@ class TestBBoxExport:
 
         assert_allclose(np_arr, lst, rtol=1e-6)
 
-    def test_to_np_array_xywh_matches_to_list_relative(self):
+    def test_to_np_array_xywh_matches_to_list_relative(self) -> None:
         """to_np_array('xywh') matches to_list('xywh') for relative coords"""
         box = BoundingBox(absolute_coords=False, ulx=0.1, uly=0.2, width=0.5, height=0.3)
 
@@ -107,7 +107,7 @@ class TestBBoxExport:
 
         assert_allclose(np_arr, lst, rtol=1e-6)
 
-    def test_to_list_xywh_absolute_coords(self):
+    def test_to_list_xywh_absolute_coords(self) -> None:
         """to_list('xywh') returns [ulx, uly, width, height] for absolute coords"""
         box = BoundingBox(absolute_coords=True, ulx=10, uly=20, width=100, height=50)
 
@@ -115,7 +115,7 @@ class TestBBoxExport:
 
         assert lst == [10, 20, 100, 50]
 
-    def test_to_list_xywh_relative_coords(self):
+    def test_to_list_xywh_relative_coords(self) -> None:
         """to_list('xywh') returns [ulx, uly, width, height] for relative coords"""
         box = BoundingBox(absolute_coords=False, ulx=0.1, uly=0.2, width=0.5, height=0.3)
 
@@ -126,7 +126,7 @@ class TestBBoxExport:
         assert abs(lst[2] - 0.5) < 1e-6
         assert abs(lst[3] - 0.3) < 1e-6
 
-    def test_to_list_xywh_with_scaling_absolute(self):
+    def test_to_list_xywh_with_scaling_absolute(self) -> None:
         """to_list('xywh') applies scale factors correctly for absolute coords"""
         box = BoundingBox(absolute_coords=True, ulx=10, uly=20, width=100, height=50)
 
@@ -135,7 +135,7 @@ class TestBBoxExport:
         # Expected: [10*2, 20*3, 100*2, 50*3] = [20, 60, 200, 150]
         assert lst == [20, 60, 200, 150]
 
-    def test_to_np_array_poly_matches_to_list_absolute(self):
+    def test_to_np_array_poly_matches_to_list_absolute(self) -> None:
         """to_np_array('poly') matches to_list('poly') for absolute coords"""
         box = BoundingBox(absolute_coords=True, ulx=10, uly=20, lrx=110, lry=70)
 
@@ -144,7 +144,7 @@ class TestBBoxExport:
 
         assert_allclose(np_arr, lst, rtol=1e-6)
 
-    def test_to_np_array_poly_matches_to_list_relative(self):
+    def test_to_np_array_poly_matches_to_list_relative(self) -> None:
         """to_np_array('poly') matches to_list('poly') for relative coords"""
         box = BoundingBox(absolute_coords=False, ulx=0.1, uly=0.2, lrx=0.6, lry=0.7)
 
@@ -153,7 +153,7 @@ class TestBBoxExport:
 
         assert_allclose(np_arr, lst, rtol=1e-6)
 
-    def test_to_list_poly_absolute_coords(self):
+    def test_to_list_poly_absolute_coords(self) -> None:
         """to_list('poly') returns 8 coordinates (4 corners) for absolute coords"""
         box = BoundingBox(absolute_coords=True, ulx=10, uly=20, lrx=110, lry=70)
 
@@ -162,7 +162,7 @@ class TestBBoxExport:
         # Expected: [ulx, uly, lrx, uly, lrx, lry, ulx, lry]
         assert lst == [10, 20, 110, 20, 110, 70, 10, 70]
 
-    def test_to_list_poly_relative_coords(self):
+    def test_to_list_poly_relative_coords(self) -> None:
         """to_list('poly') returns 8 coordinates (4 corners) for relative coords"""
         box = BoundingBox(absolute_coords=False, ulx=0.1, uly=0.2, lrx=0.6, lry=0.7)
 
@@ -181,7 +181,7 @@ class TestBBoxExport:
         assert abs(lst[6] - 0.1) < 1e-6  # ulx
         assert abs(lst[7] - 0.7) < 1e-6  # lry
 
-    def test_to_list_poly_with_scaling_absolute(self):
+    def test_to_list_poly_with_scaling_absolute(self) -> None:
         """to_list('poly') applies scale factors correctly for absolute coords"""
         box = BoundingBox(absolute_coords=True, ulx=10, uly=20, lrx=110, lry=70)
 
@@ -191,41 +191,41 @@ class TestBBoxExport:
         # = [20, 60, 220, 60, 220, 210, 20, 210]
         assert lst == [20, 60, 220, 60, 220, 210, 20, 210]
 
-    def test_to_np_array_invalid_mode_raises(self):
+    def test_to_np_array_invalid_mode_raises(self) -> None:
         """to_np_array with invalid mode raises AssertionError"""
         box = BoundingBox(absolute_coords=True, ulx=10, uly=20, width=100, height=50)
 
         with pytest.raises(AssertionError):
-            box.to_np_array(mode="invalid")
+            box.to_np_array(mode="invalid") # type:ignore
 
-    def test_to_list_invalid_mode_raises(self):
+    def test_to_list_invalid_mode_raises(self) -> None:
         """to_list with invalid mode raises AssertionError"""
         box = BoundingBox(absolute_coords=True, ulx=10, uly=20, width=100, height=50)
 
         with pytest.raises(AssertionError):
-            box.to_list(mode="invalid")
+            box.to_list(mode="invalid") # type:ignore
 
-    def test_area_absolute_correct_value(self):
+    def test_area_absolute_correct_value(self) -> None:
         """area returns width * height for absolute coords"""
         box = BoundingBox(absolute_coords=True, ulx=10, uly=20, width=100, height=50)
 
         assert box.area == 100 * 50
         assert box.area == 5000
 
-    def test_area_absolute_is_int(self):
+    def test_area_absolute_is_int(self) -> None:
         """area returns int for absolute coords"""
         box = BoundingBox(absolute_coords=True, ulx=10, uly=20, width=100, height=50)
 
         assert isinstance(box.area, int)
 
-    def test_area_relative_raises_valueerror(self):
+    def test_area_relative_raises_valueerror(self) -> None:
         """area raises ValueError for relative coords"""
         box = BoundingBox(absolute_coords=False, ulx=0.1, uly=0.2, width=0.5, height=0.3)
 
         with pytest.raises(ValueError, match="Cannot calculate area.*relative"):
             _ = box.area
 
-    def test_as_dict_contains_required_fields(self):
+    def test_as_dict_contains_required_fields(self) -> None:
         """as_dict() returns dict with required fields"""
         box = BoundingBox(absolute_coords=True, ulx=10, uly=20, lrx=110, lry=70)
 
@@ -237,7 +237,7 @@ class TestBBoxExport:
         assert "lrx" in d
         assert "lry" in d
 
-    def test_as_dict_correct_values_absolute(self):
+    def test_as_dict_correct_values_absolute(self) -> None:
         """as_dict() returns correct values for absolute coords"""
         box = BoundingBox(absolute_coords=True, ulx=10, uly=20, lrx=110, lry=70)
 
@@ -249,7 +249,7 @@ class TestBBoxExport:
         assert d["lrx"] == 110
         assert d["lry"] == 70
 
-    def test_as_dict_correct_values_relative(self):
+    def test_as_dict_correct_values_relative(self) -> None:
         """as_dict() returns correct values for relative coords"""
         box = BoundingBox(absolute_coords=False, ulx=0.1, uly=0.2, lrx=0.6, lry=0.7)
 
@@ -261,7 +261,7 @@ class TestBBoxExport:
         assert abs(d["lrx"] - 0.6) < 1e-6
         assert abs(d["lry"] - 0.7) < 1e-6
 
-    def test_as_dict_correct_types(self):
+    def test_as_dict_correct_types(self) -> None:
         """as_dict() returns correct types for fields"""
         box = BoundingBox(absolute_coords=True, ulx=10, uly=20, lrx=110, lry=70)
 
@@ -273,36 +273,36 @@ class TestBBoxExport:
         assert isinstance(d["lrx"], int)
         assert isinstance(d["lry"], int)
 
-    def test_to_np_array_dtype_float32(self):
+    def test_to_np_array_dtype_float32(self) -> None:
         """to_np_array returns numpy array with float32 dtype"""
         box = BoundingBox(absolute_coords=True, ulx=10, uly=20, width=100, height=50)
 
         for mode in ["xyxy", "xywh", "poly"]:
-            arr = box.to_np_array(mode=mode)
+            arr = box.to_np_array(mode=mode) # type:ignore
             assert arr.dtype == np.float32
 
-    def test_to_np_array_shape_xyxy(self):
+    def test_to_np_array_shape_xyxy(self) -> None:
         """to_np_array('xyxy') returns shape (4,)"""
         box = BoundingBox(absolute_coords=True, ulx=10, uly=20, width=100, height=50)
 
         arr = box.to_np_array(mode="xyxy")
         assert arr.shape == (4,)
 
-    def test_to_np_array_shape_xywh(self):
+    def test_to_np_array_shape_xywh(self) -> None:
         """to_np_array('xywh') returns shape (4,)"""
         box = BoundingBox(absolute_coords=True, ulx=10, uly=20, width=100, height=50)
 
         arr = box.to_np_array(mode="xywh")
         assert arr.shape == (4,)
 
-    def test_to_np_array_shape_poly(self):
+    def test_to_np_array_shape_poly(self) -> None:
         """to_np_array('poly') returns shape (8,)"""
         box = BoundingBox(absolute_coords=True, ulx=10, uly=20, width=100, height=50)
 
         arr = box.to_np_array(mode="poly")
         assert arr.shape == (8,)
 
-    def test_absolute_rounding_in_to_list(self):
+    def test_absolute_rounding_in_to_list(self) -> None:
         """Absolute coords are rounded in to_list"""
         # Create box with float coords that will be rounded internally
         box = BoundingBox(absolute_coords=True, ulx=10.6, uly=20.4, lrx=110.5, lry=70.3)
@@ -313,7 +313,7 @@ class TestBBoxExport:
         for val in lst:
             assert isinstance(val, int)
 
-    def test_relative_raw_floats_in_to_list(self):
+    def test_relative_raw_floats_in_to_list(self) -> None:
         """Relative coords preserve float precision in to_list"""
         box = BoundingBox(absolute_coords=False, ulx=0.123456, uly=0.234567, lrx=0.654321, lry=0.765432)
 

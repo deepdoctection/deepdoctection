@@ -23,6 +23,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 
 import numpy as np
+from numpy.typing import NDArray
 import pytest
 from numpy import uint8
 
@@ -33,7 +34,7 @@ class TestVizHandlerReadWrite:
     """Test VizPackageHandler read/write operations"""
 
     @staticmethod
-    def test_read_write_image(np_image: np.ndarray) -> None:
+    def test_read_write_image(np_image: NDArray[np.uint8]) -> None:
         """Test reading and writing images"""
 
         with TemporaryDirectory() as tmp_dir:
@@ -49,7 +50,7 @@ class TestVizHandlerEncode:
 
     @staticmethod
     @pytest.mark.parametrize("image_dtype", [uint8])
-    def test_encode(np_image: np.ndarray, image_dtype: type) -> None:
+    def test_encode(np_image: NDArray[np.uint8], image_dtype: type) -> None:
         """Test encoding image to bytes"""
 
         result = viz_handler.encode(np_image)
@@ -61,7 +62,7 @@ class TestVizHandlerConvertNpToB64:
     """Test VizPackageHandler convert_np_to_b64"""
 
     @staticmethod
-    def test_convert_np_to_b64(np_image: np.ndarray) -> None:
+    def test_convert_np_to_b64(np_image: NDArray[np.uint8]) -> None:
         """Test converting numpy array to base64 string"""
 
         result = viz_handler.convert_np_to_b64(np_image)
@@ -73,7 +74,7 @@ class TestVizHandlerConvertB64ToNp:
     """Test VizPackageHandler convert_b64_to_np"""
 
     @staticmethod
-    def test_convert_b64_to_np(np_image: np.ndarray) -> None:
+    def test_convert_b64_to_np(np_image: NDArray[np.uint8]) -> None:
         """Test converting base64 string to numpy array"""
 
         b64_str = viz_handler.convert_np_to_b64(np_image)
@@ -87,7 +88,7 @@ class TestVizHandlerConvertBytesToNp:
     """Test VizPackageHandler convert_bytes_to_np"""
 
     @staticmethod
-    def test_convert_bytes_to_np(np_image: np.ndarray) -> None:
+    def test_convert_bytes_to_np(np_image: NDArray[np.uint8]) -> None:
         """Test converting bytes to numpy array"""
 
         image_bytes = viz_handler.encode(np_image)
@@ -102,7 +103,7 @@ class TestVizHandlerResize:
 
     @staticmethod
     @pytest.mark.parametrize("width,height,interpolation", [(75, 50, "VIZ"), (200, 300, "VIZ")])
-    def test_resize(np_image: np.ndarray, width: int, height: int, interpolation: str) -> None:
+    def test_resize(np_image: NDArray[np.uint8], width: int, height: int, interpolation: str) -> None:
         """Test resizing image"""
 
         result = viz_handler.resize(np_image, width, height, interpolation)
@@ -129,7 +130,7 @@ class TestVizHandlerRotateImage:
 
     @staticmethod
     @pytest.mark.parametrize("angle", [90, 180])
-    def test_rotate_image(np_image: np.ndarray, angle: float) -> None:
+    def test_rotate_image(np_image: NDArray[np.uint8], angle: float) -> None:
         """Test rotating image"""
         result = viz_handler.rotate_image(np_image, angle)
         assert isinstance(result, np.ndarray)

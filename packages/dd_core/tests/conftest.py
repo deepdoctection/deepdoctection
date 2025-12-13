@@ -4,6 +4,7 @@ Test utilities for dd_datapoint tests
 Minimal version to support standalone package tests
 """
 
+from typing import Any
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -67,7 +68,7 @@ class WhiteImage:
 class XFundSample:
     """Deterministic XFund sample datapoint for testing."""
 
-    data: dict = field(default_factory=lambda: XFUND_SAMPLE["documents"][0])
+    data: dict[str,Any] = field(default_factory=lambda: XFUND_SAMPLE["documents"][0]) # type: ignore
     np_array_shape: tuple[int, int, int] = (3508, 2480, 3)
 
 

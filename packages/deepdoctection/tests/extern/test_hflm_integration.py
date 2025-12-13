@@ -15,6 +15,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import annotations
+
 import os
 
 import pytest
@@ -42,7 +44,7 @@ REQUIRES_PT_AND_TR = pytest.mark.skipif(
 )
 
 
-def _dummy_tokenizer():
+def _dummy_tokenizer()->"DummyTokenizer":
     class DummyTokenizer:
         def __call__(self, text, return_tensors="pt", padding=True, truncation=True, max_length=512):
             import torch
@@ -140,4 +142,4 @@ def test_hflm_language_slow_build_and_predict(tmp_path: PathLikeOrStr, monkeypat
 
     res = det.predict("Sample text for language detection.")
     assert res.class_name in categories.values()
-    assert 0.0 <= res.score <= 1.0
+    assert 0.0 <= res.score <= 1.0 # type: ignore

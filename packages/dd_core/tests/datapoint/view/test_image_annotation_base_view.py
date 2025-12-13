@@ -26,21 +26,21 @@ from dd_core.utils.error import AnnotationError
 class TestImageAnnotationBaseView:
     """Test ImageAnnotationBaseView functionality"""
 
-    def test_category_name_property(self, page: Page):
+    def test_category_name_property(self, page: Page) -> None:
         """Layout has category_name property"""
 
         layouts = page.layouts
         if layouts:
             assert hasattr(layouts[0], "category_name")
 
-    def test_annotation_id_property(self, page: Page):
+    def test_annotation_id_property(self, page: Page) -> None:
         """Layout has annotation_id property"""
 
         layouts = page.layouts
         if layouts:
             assert isinstance(layouts[0].annotation_id, str)
 
-    def test_base_page_property(self, page: Page):
+    def test_base_page_property(self, page: Page) -> None:
         """Layout has base_page attribute"""
 
         layouts = page.layouts
@@ -48,35 +48,35 @@ class TestImageAnnotationBaseView:
             assert hasattr(layouts[0], "base_page")
             assert layouts[0].base_page == page
 
-    def test_service_id_property(self, page: Page):
+    def test_service_id_property(self, page: Page) -> None:
         """service_id property exists and can be None or str"""
         layouts = page.layouts
         if layouts:
             service_id = layouts[0].service_id
             assert service_id is None or isinstance(service_id, str)
 
-    def test_model_id_property(self, page: Page):
+    def test_model_id_property(self, page: Page) -> None:
         """model_id property exists and can be None or str"""
         layouts = page.layouts
         if layouts:
             model_id = layouts[0].model_id
             assert model_id is None or isinstance(model_id, str)
 
-    def test_session_id_property(self, page: Page):
+    def test_session_id_property(self, page: Page) -> None:
         """session_id property exists and can be None or str"""
         layouts = page.layouts
         if layouts:
             session_id = layouts[0].session_id
             assert session_id is None or isinstance(session_id, str)
 
-    def test_b64_image_returns_string_or_none(self, page: Page):
+    def test_b64_image_returns_string_or_none(self, page: Page) -> None:
         """b64_image property returns string or None"""
         layouts = page.layouts
         if layouts:
             b64_img = layouts[0].b64_image
             assert b64_img is None or isinstance(b64_img, str)
 
-    def test_getattr_with_unregistered_attribute_raises_error(self, page: Page):
+    def test_getattr_with_unregistered_attribute_raises_error(self, page: Page) -> None:
         """__getattr__ raises error for unregistered attributes"""
         layouts = page.layouts
         if layouts:

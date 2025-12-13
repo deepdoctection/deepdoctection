@@ -43,6 +43,6 @@ class TestSimpleTransformService:
         dp = self.simple_transform.pass_datapoint(dp_image)
 
         # Assert
-        assert_array_equal(dp.image, np_output_img)  # type: ignore
+        assert_array_equal(dp.image, np_output_img)
         assert dp.width == 596
         assert dp.height == 794

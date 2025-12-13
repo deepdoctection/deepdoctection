@@ -25,6 +25,7 @@ import pytest
 
 import shared_test_utils as stu
 from dd_core.utils.file_utils import lxml_available
+from dd_core.datapoint.image import Image
 from dd_datasets import IIITar13K
 
 
@@ -36,10 +37,10 @@ def test_dataset_iiitar13k_returns_image(monkeypatch: pytest.MonkeyPatch, datase
 
     # Arrange
     iiitar13k = IIITar13K()
-    iiitar13k.dataflow.get_workdir = lambda: Path(dataset_test_base_dir) / iiitar13k.dataflow.location
+    iiitar13k.dataflow.get_workdir = lambda: Path(dataset_test_base_dir) / iiitar13k.dataflow.location  # type: ignore
     iiitar13k.dataflow.annotation_files = {"val": ""}
     df = iiitar13k.dataflow.build()
 
     # Act
-    df_list = stu.collect_datapoint_from_dataflow(df)
+    df_list: list[Image] = stu.collect_datapoint_from_dataflow(df)
     assert len(df_list) == 1

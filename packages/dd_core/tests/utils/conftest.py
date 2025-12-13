@@ -21,9 +21,8 @@ from __future__ import annotations
 from pathlib import Path
 
 import numpy as np
+from numpy.typing import NDArray
 from pytest import fixture
-
-import shared_test_utils as stu
 
 
 @fixture(name="pdf_bytes")
@@ -36,24 +35,24 @@ def fixture_pdf_bytes(pdf_file_path_two_pages: Path) -> bytes:
 
 
 @fixture(name="coords")
-def fixture_coords() -> np.ndarray:
+def fixture_coords() -> NDArray[np.float32]:
     """Sample coordinates"""
     return np.array([[10.0, 20.0, 50.0, 80.0], [30.0, 40.0, 90.0, 100.0]], dtype=np.float32)
 
 
 @fixture(name="np_image")
-def fixture_np_image() -> np.ndarray:
+def fixture_np_image() -> NDArray[np.uint8]:
     """np_array image"""
     return np.ones([100, 150, 3], dtype=np.uint8) * 255
 
 
 @fixture(name="boxes")
-def fixture_boxes() -> np.ndarray:
+def fixture_boxes() -> NDArray[np.float32]:
     """Sample bounding boxes"""
     return np.array([[10.0, 20.0, 50.0, 80.0], [60.0, 30.0, 100.0, 90.0]], dtype=np.float32)
 
 
 @fixture(name="category_names")
-def fixture_category_names() -> list:
+def fixture_category_names() -> list[tuple[str, str]]:
     """Sample category names"""
     return [("category1", "value1"), ("category2", "value2")]

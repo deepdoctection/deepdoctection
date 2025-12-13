@@ -31,7 +31,7 @@ from dd_core.utils.object_types import get_type
 class TestAnnotationSerialization:
     """Tests for annotation serialization and deserialization"""
 
-    def test_category_annotation_roundtrip(self):
+    def test_category_annotation_roundtrip(self) -> None:
         """Test serializing and deserializing CategoryAnnotation"""
         cat = CategoryAnnotation(category_name="test_cat_1", category_id=1, score=0.95, external_id="test_id")
         data = cat.as_dict()
@@ -42,7 +42,7 @@ class TestAnnotationSerialization:
         assert restored.annotation_id == cat.annotation_id
         assert cat == restored
 
-    def test_image_annotation_roundtrip(self):
+    def test_image_annotation_roundtrip(self) -> None:
         """Test serializing and deserializing ImageAnnotation"""
         bbox = BoundingBox(ulx=10.0, uly=20.0, width=30.0, height=40.0, absolute_coords=True)
         img_ann = ImageAnnotation(category_name="test_cat_1", category_id=1, bounding_box=bbox, external_id="test_id")
@@ -53,7 +53,7 @@ class TestAnnotationSerialization:
         assert restored.annotation_id == img_ann.annotation_id
         assert img_ann == restored
 
-    def test_container_annotation_roundtrip(self):
+    def test_container_annotation_roundtrip(self) -> None:
         """Test serializing and deserializing ContainerAnnotation"""
         container = ContainerAnnotation(category_name="test_cat_2", value="test_value", external_id="test_id")
         data = container.as_dict()
@@ -63,7 +63,7 @@ class TestAnnotationSerialization:
         assert restored.annotation_id == container.annotation_id
         assert container == restored
 
-    def test_annotation_with_sub_categories_roundtrip(self):
+    def test_annotation_with_sub_categories_roundtrip(self) -> None:
         """Test serializing annotation with sub-categories"""
         cat = CategoryAnnotation(category_name="test_cat_1", category_id=1, external_id="parent_id")
         sub_cat = CategoryAnnotation(category_name="test_cat_2", category_id=2, external_id="child_id")
@@ -75,7 +75,7 @@ class TestAnnotationSerialization:
         assert retrieved_sub.category_name == get_type("test_cat_2")
         assert cat == restored
 
-    def test_annotation_with_relationships_roundtrip(self):
+    def test_annotation_with_relationships_roundtrip(self) -> None:
         """Test serializing annotation with relationships"""
         uuid = "c822f8c3-1148-30c4-90eb-cb4896b1ebe5"
         cat = CategoryAnnotation(category_name="test_cat_1", external_id="test_id")
@@ -90,12 +90,12 @@ class TestAnnotationSerialization:
 class TestAnnotationValidation:
     """Tests for validation and error handling"""
 
-    def test_relationships_validator_rejects_invalid_uuid(self):
+    def test_relationships_validator_rejects_invalid_uuid(self) -> None:
         """Test that relationships validator rejects invalid UUIDs"""
         with pytest.raises(UUIDError):
             CategoryAnnotation(category_name="test_cat_1", relationships={"relationship_1": ["not_a_uuid"]})
 
-    def test_relationships_validator_accepts_valid_uuids(self):
+    def test_relationships_validator_accepts_valid_uuids(self) -> None:
         """Test that relationships validator accepts valid UUIDs"""
         uuid1 = "c822f8c3-1148-30c4-90eb-cb4896b1ebe5"
         uuid2 = "d822f8c3-1148-30c4-90eb-cb4896b1ebe6"
@@ -103,7 +103,7 @@ class TestAnnotationValidation:
         assert uuid1 in cat.relationships[get_type("relationship_1")]
         assert uuid2 in cat.relationships[get_type("relationship_1")]
 
-    def test_sub_categories_validator_handles_string_keys(self):
+    def test_sub_categories_validator_handles_string_keys(self) -> None:
         """Test that sub_categories validator converts string keys to ObjectTypes"""
         data = {
             "category_name": "test_cat_1",

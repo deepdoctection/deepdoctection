@@ -33,7 +33,7 @@ from deepdoctection.pipe.common import (
 )
 
 
-def make_ann(category: ObjectTypes, box, score=0.9) -> ImageAnnotation:
+def make_ann(category: ObjectTypes, box: dict[str,int], score=0.9) -> ImageAnnotation:
     ann = ImageAnnotation(category_name=category, score=score, bounding_box=BoundingBox(**box))
     assert ann.get_defining_attributes() == ["category_name", "bounding_box"]
     return ann
@@ -47,7 +47,8 @@ def make_ann(category: ObjectTypes, box, score=0.9) -> ImageAnnotation:
         ([[LayoutType.TABLE, LayoutType.TABLE_ROTATED]], [0.3], [LayoutType.TABLE]),
     ],
 )
-def test_annotation_nms_service_serves(dp_image, pairs, thresh, prio):
+def test_annotation_nms_service_serves(dp_image: Image, pairs: list[list[LayoutType]],
+                                       thresh:list[float], prio: list[LayoutType]):
     a1 = make_ann(LayoutType.TEXT, {"ulx": 10, "uly": 10, "width": 100, "height": 20, "absolute_coords": True})
     a2 = make_ann(LayoutType.TEXT, {"ulx": 15, "uly": 12, "width": 100, "height": 20, "absolute_coords": True})
     a3 = make_ann(LayoutType.TITLE, {"ulx": 12, "uly": 9, "width": 100, "height": 20, "absolute_coords": True})
@@ -64,7 +65,7 @@ def test_annotation_nms_service_serves(dp_image, pairs, thresh, prio):
     assert isinstance(out, Image)
 
 
-def test_matching_service_child_relationships(dp_image):
+def test_matching_service_child_relationships(dp_image: Image)->None:
     parent = make_ann(LayoutType.LIST, {"ulx": 50, "uly": 50, "width": 200, "height": 200, "absolute_coords": True})
     child1 = make_ann(LayoutType.LIST_ITEM, {"ulx": 60, "uly": 60, "width": 50, "height": 20, "absolute_coords": True})
     child2 = make_ann(
@@ -90,7 +91,7 @@ def test_matching_service_child_relationships(dp_image):
     assert child2.annotation_id not in rels
 
 
-def test_matching_service_synthetic_parent_creation(dp_image):
+def test_matching_service_synthetic_parent_creation(dp_image:Image)->None:
     child1 = make_ann(LayoutType.LIST_ITEM, {"ulx": 60, "uly": 60, "width": 50, "height": 20, "absolute_coords": True})
     child2 = make_ann(LayoutType.LIST_ITEM, {"ulx": 80, "uly": 100, "width": 50, "height": 20, "absolute_coords": True})
 
@@ -115,7 +116,7 @@ def test_matching_service_synthetic_parent_creation(dp_image):
     ].get_relationship(Relationships.CHILD)
 
 
-def test_neighbour_matcher_layout_link(dp_image):
+def test_neighbour_matcher_layout_link(dp_image: Image)->None:
     # Two text blocks near each other should be linked via NeighbourMatcher
     a = make_ann(LayoutType.TEXT, {"ulx": 100, "uly": 100, "width": 80, "height": 20, "absolute_coords": True})
     b = make_ann(LayoutType.CAPTION, {"ulx": 190, "uly": 105, "width": 80, "height": 20, "absolute_coords": True})
@@ -136,7 +137,7 @@ def test_neighbour_matcher_layout_link(dp_image):
     assert b.annotation_id in rels_a
 
 
-def test_page_parsing_service_basic(dp_image):
+def test_page_parsing_service_basic(dp_image: Image)-> None:
     container = make_ann(LayoutType.TEXT, {"ulx": 0, "uly": 0, "width": 500, "height": 500, "absolute_coords": True})
     line1 = make_ann(LayoutType.LINE, {"ulx": 10, "uly": 20, "width": 100, "height": 15, "absolute_coords": True})
     line2 = make_ann(LayoutType.LINE, {"ulx": 12, "uly": 40, "width": 100, "height": 15, "absolute_coords": True})

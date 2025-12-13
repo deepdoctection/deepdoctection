@@ -29,10 +29,10 @@ Focused pytest coverage for BoundingBox geometry helper functions:
 import numpy as np
 import pytest
 from numpy.testing import assert_allclose, assert_array_equal
+from numpy.typing import NDArray
 
 from dd_core.datapoint import (
     BoundingBox,
-    BoundingBoxError,
     crop_box_from_image,
     global_to_local_coords,
     intersection_box,
@@ -41,12 +41,13 @@ from dd_core.datapoint import (
     merge_boxes,
     rescale_coords,
 )
+from dd_core.utils import BoundingBoxError
 
 
 class TestIntersectionBox:
     """Test suite for intersection_box function."""
 
-    def test_case_a_same_mode_absolute_overlapping(self):
+    def test_case_a_same_mode_absolute_overlapping(self) ->None:
         """
         Case A: Same mode (absolute), overlapping boxes.
         Assert that ulx/uly are floored and lrx/lry are ceiled.
@@ -65,14 +66,14 @@ class TestIntersectionBox:
         assert result.lrx == 50
         assert result.lry == 61
 
-    def test_case_a_exact_overlap(self):
+    def test_case_a_exact_overlap(self) ->None:
         """Same absolute boxes produce identical intersection."""
         box = BoundingBox(absolute_coords=True, ulx=10, uly=20, lrx=30, lry=40)
         result = intersection_box(box, box)
 
         assert result == box
 
-    def test_case_b_no_overlap_raises(self):
+    def test_case_b_no_overlap_raises(self) ->None:
         """Case B: No overlap should raise BoundingBoxError or ValueError."""
         box1 = BoundingBox(absolute_coords=True, ulx=10, uly=10, lrx=20, lry=20)
         box2 = BoundingBox(absolute_coords=True, ulx=30, uly=30, lrx=40, lry=40)
@@ -80,7 +81,7 @@ class TestIntersectionBox:
         with pytest.raises(BoundingBoxError):
             intersection_box(box1, box2)
 
-    def test_case_b_touching_boxes_zero_width(self):
+    def test_case_b_touching_boxes_zero_width(self) ->None:
         """Case B: Boxes just touching (zero width) should raise exception."""
         box1 = BoundingBox(absolute_coords=True, ulx=10, uly=10, lrx=20, lry=30)
         box2 = BoundingBox(absolute_coords=True, ulx=20, uly=15, lrx=30, lry=25)
@@ -89,7 +90,7 @@ class TestIntersectionBox:
         with pytest.raises(BoundingBoxError):
             intersection_box(box1, box2)
 
-    def test_case_b_touching_boxes_zero_height(self):
+    def test_case_b_touching_boxes_zero_height(self) ->None:
         """Case B: Boxes just touching (zero height) should raise exception."""
         box1 = BoundingBox(absolute_coords=True, ulx=10, uly=10, lrx=30, lry=20)
         box2 = BoundingBox(absolute_coords=True, ulx=15, uly=20, lrx=25, lry=30)
@@ -98,7 +99,7 @@ class TestIntersectionBox:
         with pytest.raises(BoundingBoxError):
             intersection_box(box1, box2)
 
-    def test_case_c_mixed_modes_without_dimensions_raises(self):
+    def test_case_c_mixed_modes_without_dimensions_raises(self) ->None:
         """Case C: Mixed modes without width/height raises AssertionError."""
         box1 = BoundingBox(absolute_coords=True, ulx=100, uly=100, lrx=200, lry=200)
         box2 = BoundingBox(absolute_coords=False, ulx=0.3, uly=0.4, lrx=0.7, lry=0.8)
@@ -106,7 +107,7 @@ class TestIntersectionBox:
         with pytest.raises(AssertionError):
             intersection_box(box1, box2)
 
-    def test_case_c_mixed_modes_with_dimensions(self):
+    def test_case_c_mixed_modes_with_dimensions(self) ->None:
         """
         Case C: Mixed modes with width/height provided.
         Result has coordinate mode of box_2.
@@ -128,7 +129,7 @@ class TestIntersectionBox:
         assert_allclose(result.lrx, 0.3, rtol=1e-6)
         assert_allclose(result.lry, 0.3, rtol=1e-6)
 
-    def test_case_c_mixed_modes_reverse_order(self):
+    def test_case_c_mixed_modes_reverse_order(self) ->None:
         """Mixed modes with box1 relative, box2 absolute."""
         # Image: 800x600
         # Box1 relative: [0.25, 0.5] to [0.75, 1.0] => absolute [200, 300] to [600, 600]
@@ -146,7 +147,7 @@ class TestIntersectionBox:
         assert result.lrx == 500
         assert result.lry == 550
 
-    def test_relative_coords_intersection(self):
+    def test_relative_coords_intersection(self) ->None:
         """Intersection of relative coordinate boxes."""
         box1 = BoundingBox(absolute_coords=False, ulx=0.1, uly=0.2, lrx=0.5, lry=0.6)
         box2 = BoundingBox(absolute_coords=False, ulx=0.3, uly=0.4, lrx=0.7, lry=0.8)
@@ -160,7 +161,7 @@ class TestIntersectionBox:
         assert_allclose(result.lry, 0.6, rtol=1e-6)
 
 
-def get_np_array_for_cropping():
+def get_np_array_for_cropping()->NDArray[np.int32]:
     """
     numpy array for cropping
     """
@@ -170,7 +171,7 @@ def get_np_array_for_cropping():
 class TestCropBoxFromImage:
     """Test suite for crop_box_from_image function."""
 
-    def test_absolute_crop_shape(self):
+    def test_absolute_crop_shape(self) ->None:
         """
         Absolute crop: shape equals (ceil(lry)-floor(uly), ceil(lrx)-floor(ulx)).
         """
@@ -218,11 +219,11 @@ class TestCropBoxFromImage:
     )
     def test_crop_image_and_check_pixelwise(
         self,
-        np_image,
-        crop_box,
-        width,
-        height,
-        expected_np_array,
+        np_image: NDArray[np.uint8],
+        crop_box: BoundingBox,
+        width: int | None,
+        height: int | None,
+        expected_np_array: NDArray[np.uint8],
     ) -> None:
         """
         Testing func: crop_image returns np_image correctly
@@ -234,7 +235,7 @@ class TestCropBoxFromImage:
         # Assert
         assert_array_equal(cropped_image, expected_np_array)
 
-    def test_absolute_crop_clamping_at_borders(self):
+    def test_absolute_crop_clamping_at_borders(self) ->None:
         """Cropping with out-of-bounds box clamps to image extents."""
         image = np.ones((10, 15), dtype=np.uint8) * 42
 
@@ -249,7 +250,7 @@ class TestCropBoxFromImage:
         assert result.shape == (5, 5)
         assert np.all(result == 42)
 
-    def test_relative_crop_without_dimensions_raises(self):
+    def test_relative_crop_without_dimensions_raises(self) ->None:
         """Relative crop without width/height raises AssertionError."""
         image = np.zeros((20, 30), dtype=np.uint8)
         crop_box = BoundingBox(absolute_coords=False, ulx=0.2, uly=0.3, lrx=0.6, lry=0.7)
@@ -257,7 +258,7 @@ class TestCropBoxFromImage:
         with pytest.raises(AssertionError):
             crop_box_from_image(image, crop_box)
 
-    def test_relative_crop_with_dimensions(self):
+    def test_relative_crop_with_dimensions(self) ->None:
         """
         Relative crop with width/height produces same region as absolute.
         """
@@ -275,7 +276,7 @@ class TestCropBoxFromImage:
 
         assert_array_equal(result_rel, result_abs)
 
-    def test_out_of_bounds_crop_clamped(self):
+    def test_out_of_bounds_crop_clamped(self) ->None:
         """Out-of-bounds box is clamped to image size."""
         image = np.arange(100).reshape(10, 10).astype(np.uint8)
 
@@ -291,7 +292,7 @@ class TestCropBoxFromImage:
 class TestLocalGlobalCoords:
     """Test suite for local/global coordinate transformations."""
 
-    def test_local_to_global_happy_path(self):
+    def test_local_to_global_happy_path(self) ->None:
         """
         local_to_global: both absolute, global = local + embedding offset.
         """
@@ -307,7 +308,7 @@ class TestLocalGlobalCoords:
         assert result.lrx == 50 + 30  # 80
         assert result.lry == 100 + 40  # 140
 
-    def test_local_to_global_non_absolute_raises(self):
+    def test_local_to_global_non_absolute_raises(self) ->None:
         """local_to_global with non-absolute coords raises AssertionError."""
         embedding = BoundingBox(absolute_coords=False, ulx=0.5, uly=0.5, lrx=0.9, lry=0.9)
         local_box = BoundingBox(absolute_coords=True, ulx=10, uly=10, lrx=20, lry=20)
@@ -315,7 +316,7 @@ class TestLocalGlobalCoords:
         with pytest.raises(AssertionError):
             local_to_global_coords(local_box, embedding)
 
-    def test_local_to_global_local_non_absolute_raises(self):
+    def test_local_to_global_local_non_absolute_raises(self) ->None:
         """local_to_global with local box non-absolute raises AssertionError."""
         embedding = BoundingBox(absolute_coords=True, ulx=50, uly=100, lrx=200, lry=300)
         local_box = BoundingBox(absolute_coords=False, ulx=0.1, uly=0.1, lrx=0.3, lry=0.3)
@@ -323,7 +324,7 @@ class TestLocalGlobalCoords:
         with pytest.raises(AssertionError):
             local_to_global_coords(local_box, embedding)
 
-    def test_global_to_local_fully_inside(self):
+    def test_global_to_local_fully_inside(self) ->None:
         """
         global_to_local: fully inside embedding, local = global - embedding.ul.
         """
@@ -338,7 +339,7 @@ class TestLocalGlobalCoords:
         assert result.lrx == 300 - 100  # 200
         assert result.lry == 400 - 200  # 200
 
-    def test_global_to_local_partially_outside_clipped(self):
+    def test_global_to_local_partially_outside_clipped(self) ->None:
         """
         global_to_local: partially outside, verify clipping.
         Values clamped to [0, width] x [0, height].
@@ -360,7 +361,7 @@ class TestLocalGlobalCoords:
         assert result.lrx == 300
         assert result.lry == 300
 
-    def test_global_to_local_non_absolute_raises(self):
+    def test_global_to_local_non_absolute_raises(self) ->None:
         """global_to_local with non-absolute coords raises AssertionError."""
         embedding = BoundingBox(absolute_coords=False, ulx=0.2, uly=0.3, lrx=0.8, lry=0.9)
         global_box = BoundingBox(absolute_coords=True, ulx=100, uly=100, lrx=200, lry=200)
@@ -368,7 +369,7 @@ class TestLocalGlobalCoords:
         with pytest.raises(AssertionError):
             global_to_local_coords(global_box, embedding)
 
-    def test_roundtrip_local_global_local(self):
+    def test_roundtrip_local_global_local(self) ->None:
         """Roundtrip: local -> global -> local should preserve box."""
         embedding = BoundingBox(absolute_coords=True, ulx=50, uly=80, lrx=350, lry=480)
         local_original = BoundingBox(absolute_coords=True, ulx=20, uly=30, lrx=100, lry=150)
@@ -382,7 +383,7 @@ class TestLocalGlobalCoords:
 class TestMergeBoxes:
     """Test suite for merge_boxes function."""
 
-    def test_merge_multiple_absolute_boxes(self):
+    def test_merge_multiple_absolute_boxes(self) ->None:
         """Multiple absolute boxes -> min ulx/uly, max lrx/lry."""
         box1 = BoundingBox(absolute_coords=True, ulx=10, uly=20, lrx=50, lry=60)
         box2 = BoundingBox(absolute_coords=True, ulx=30, uly=10, lrx=70, lry=40)
@@ -396,7 +397,7 @@ class TestMergeBoxes:
         assert result.lrx == 70  # max of 50, 70, 40
         assert result.lry == 80  # max of 60, 40, 80
 
-    def test_merge_multiple_relative_boxes(self):
+    def test_merge_multiple_relative_boxes(self) ->None:
         """Multiple relative boxes -> min/max coords."""
         box1 = BoundingBox(absolute_coords=False, ulx=0.2, uly=0.3, lrx=0.5, lry=0.6)
         box2 = BoundingBox(absolute_coords=False, ulx=0.4, uly=0.1, lrx=0.7, lry=0.4)
@@ -410,14 +411,14 @@ class TestMergeBoxes:
         assert_allclose(result.lrx, 0.7, rtol=1e-6)
         assert_allclose(result.lry, 0.9, rtol=1e-6)
 
-    def test_merge_single_box(self):
+    def test_merge_single_box(self) ->None:
         """Merging a single box returns same box."""
         box = BoundingBox(absolute_coords=True, ulx=10, uly=20, lrx=30, lry=40)
         result = merge_boxes(box)
 
         assert result == box
 
-    def test_merge_mixed_modes_raises(self):
+    def test_merge_mixed_modes_raises(self) ->None:
         """Mixed modes raise AssertionError."""
         box1 = BoundingBox(absolute_coords=True, ulx=10, uly=10, lrx=20, lry=20)
         box2 = BoundingBox(absolute_coords=False, ulx=0.3, uly=0.3, lrx=0.5, lry=0.5)
@@ -429,7 +430,7 @@ class TestMergeBoxes:
 class TestRescaleCoords:
     """Test suite for rescale_coords function."""
 
-    def test_rescale_absolute_scale_up(self):
+    def test_rescale_absolute_scale_up(self) ->None:
         """Absolute mode: scale up by factor of 2."""
         box = BoundingBox(absolute_coords=True, ulx=10, uly=20, lrx=30, lry=40)
 
@@ -442,7 +443,7 @@ class TestRescaleCoords:
         assert result.lrx == 60  # 30 * 2
         assert result.lry == 80  # 40 * 2
 
-    def test_rescale_absolute_scale_down(self):
+    def test_rescale_absolute_scale_down(self) ->None:
         """Absolute mode: scale down by factor of 0.5."""
         box = BoundingBox(absolute_coords=True, ulx=100, uly=200, lrx=300, lry=400)
 
@@ -455,7 +456,7 @@ class TestRescaleCoords:
         assert result.lrx == 150  # 300 * 0.5
         assert result.lry == 200  # 400 * 0.5
 
-    def test_rescale_absolute_non_uniform(self):
+    def test_rescale_absolute_non_uniform(self) ->None:
         """Absolute mode: non-uniform scaling (different x and y factors)."""
         box = BoundingBox(absolute_coords=True, ulx=10, uly=20, lrx=50, lry=80)
 
@@ -468,7 +469,7 @@ class TestRescaleCoords:
         assert result.lrx == 100  # 50 * 2
         assert result.lry == 40  # 80 * 0.5
 
-    def test_rescale_relative_unchanged(self):
+    def test_rescale_relative_unchanged(self) ->None:
         """Relative mode: function returns same box unchanged."""
         box = BoundingBox(absolute_coords=False, ulx=0.2, uly=0.3, lrx=0.6, lry=0.8)
 
@@ -480,7 +481,7 @@ class TestRescaleCoords:
         # Check if it's actually the same object
         assert result is box
 
-    def test_rescale_no_change(self):
+    def test_rescale_no_change(self) ->None:
         """Scaling with same dimensions returns box with same coords."""
         box = BoundingBox(absolute_coords=True, ulx=15, uly=25, lrx=45, lry=65)
 
@@ -495,12 +496,12 @@ class TestRescaleCoords:
 class TestIntersectionBoxes:
     """Test suite for intersection_boxes function."""
 
-    def test_empty_inputs_both_empty(self):
+    def test_empty_inputs_both_empty(self) ->None:
         """([], []) returns []."""
         result = intersection_boxes([], [])
         assert result == []
 
-    def test_empty_inputs_first_empty(self):
+    def test_empty_inputs_first_empty(self) ->None:
         """([], B) returns B."""
         box1 = BoundingBox(absolute_coords=True, ulx=10, uly=10, lrx=20, lry=20)
         box2 = BoundingBox(absolute_coords=True, ulx=30, uly=30, lrx=40, lry=40)
@@ -508,7 +509,7 @@ class TestIntersectionBoxes:
         result = intersection_boxes([], [box1, box2])
         assert result == [box1, box2]
 
-    def test_empty_inputs_second_empty(self):
+    def test_empty_inputs_second_empty(self) ->None:
         """(A, []) returns A."""
         box1 = BoundingBox(absolute_coords=True, ulx=10, uly=10, lrx=20, lry=20)
         box2 = BoundingBox(absolute_coords=True, ulx=30, uly=30, lrx=40, lry=40)
@@ -516,7 +517,7 @@ class TestIntersectionBoxes:
         result = intersection_boxes([box1, box2], [])
         assert result == [box1, box2]
 
-    def test_mode_mismatch_raises(self):
+    def test_mode_mismatch_raises(self) ->None:
         """Mode mismatch between the two lists raises ValueError."""
         boxes1 = [BoundingBox(absolute_coords=True, ulx=10, uly=10, lrx=20, lry=20)]
         boxes2 = [BoundingBox(absolute_coords=False, ulx=0.3, uly=0.3, lrx=0.5, lry=0.5)]
@@ -524,7 +525,7 @@ class TestIntersectionBoxes:
         with pytest.raises(ValueError):
             intersection_boxes(boxes1, boxes2)
 
-    def test_pairwise_intersections_mixed_overlap(self):
+    def test_pairwise_intersections_mixed_overlap(self) ->None:
         """
         Pairwise intersections with mixed overlap.
         2x2 grid: some pairs intersect, some don't.
@@ -563,7 +564,7 @@ class TestIntersectionBoxes:
         assert intersect_2[0].lrx == 150
         assert intersect_2[0].lry == 150
 
-    def test_pairwise_intersections_all_overlap(self):
+    def test_pairwise_intersections_all_overlap(self) ->None:
         """All pairs overlap."""
         boxes1 = [
             BoundingBox(absolute_coords=True, ulx=0, uly=0, lrx=100, lry=100),
@@ -577,7 +578,7 @@ class TestIntersectionBoxes:
         result = intersection_boxes(boxes1, boxes2)
         assert len(result) == 2
 
-    def test_pairwise_intersections_no_overlap(self):
+    def test_pairwise_intersections_no_overlap(self) ->None:
         """No pairs overlap."""
         boxes1 = [
             BoundingBox(absolute_coords=True, ulx=10, uly=10, lrx=20, lry=20),
@@ -590,7 +591,7 @@ class TestIntersectionBoxes:
         result = intersection_boxes(boxes1, boxes2)
         assert len(result) == 0
 
-    def test_pairwise_exact_intersection_values(self):
+    def test_pairwise_exact_intersection_values(self) ->None:
         """
         Verify exact intersection values for representative pairs.
         Including floor/ceil behavior for absolute mode.
@@ -610,7 +611,7 @@ class TestIntersectionBoxes:
         assert result[0].lrx == 50
         assert result[0].lry == 61
 
-    def test_relative_coords_pairwise(self):
+    def test_relative_coords_pairwise(self) ->None:
         """Pairwise intersections with relative coordinates."""
         boxes1 = [
             BoundingBox(absolute_coords=False, ulx=0.1, uly=0.2, lrx=0.5, lry=0.6),

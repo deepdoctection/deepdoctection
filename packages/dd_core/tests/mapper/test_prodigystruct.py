@@ -15,12 +15,13 @@
 # limitations under the License.
 
 from math import isclose
+from typing import Any
 
 from dd_core.mapper.prodigystruct import image_to_prodigy, prodigy_to_image
 from dd_core.utils.object_types import get_type
 
 
-def test_prodigy_to_image_basic(prodigy_datapoint):
+def test_prodigy_to_image_basic(prodigy_datapoint: dict[str, Any])-> None:
     """
     Basic mapping from prodigy datapoint to Image: file_name, size and bounding box.
     """
@@ -44,7 +45,7 @@ def test_prodigy_to_image_basic(prodigy_datapoint):
     assert isclose(bbox.lry, 29.0, rel_tol=1e-9)
 
 
-def test_prodigy_to_image_accept_only_filters(prodigy_datapoint):
+def test_prodigy_to_image_accept_only_filters(prodigy_datapoint: dict[str, Any]) -> None:
     """
     When accept_only_answer=True and fixture has answer 'reject', mapper returns None.
     """
@@ -53,7 +54,7 @@ def test_prodigy_to_image_accept_only_filters(prodigy_datapoint):
     assert image is None
 
 
-def test_image_to_prodigy_roundtrip(prodigy_datapoint):
+def test_image_to_prodigy_roundtrip(prodigy_datapoint: dict[str, Any])-> None:
     """
     Create Image from prodigy datapoint then map back to prodigy format and check image & meta.
     """
@@ -67,7 +68,7 @@ def test_image_to_prodigy_roundtrip(prodigy_datapoint):
     assert len(output["spans"]) == len(prodigy_datapoint["spans"])
 
 
-def test_image_to_prodigy_points_and_labels(prodigy_datapoint):
+def test_image_to_prodigy_points_and_labels(prodigy_datapoint: dict[str, Any])-> None:
     """
     Ensure spans keep their point coordinates and present expected keys.
     """

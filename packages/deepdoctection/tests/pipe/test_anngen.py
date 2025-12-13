@@ -15,20 +15,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import numpy as np
 import pytest
 
-from dd_core.datapoint import Image
+from dd_core.datapoint import Image, ContainerAnnotation
 from dd_core.utils.object_types import Relationships, get_type
 from deepdoctection.extern.base import DetectionResult
 from deepdoctection.pipe.anngen import DatapointManager
 
 
-def _detection_result(box, name="text", cid=1, score=0.9):
+def _detection_result(box: list[float], name: str = "text", cid: int = 1, score: float = 0.9) -> DetectionResult:
     return DetectionResult(box=box, class_name=get_type(name), class_id=cid, score=score, absolute_coords=True)
 
 
-def test_set_image_annotation_and_cache(dp_image: Image):
+def test_set_image_annotation_and_cache(dp_image: Image) -> None:
     mgr = DatapointManager(service_id="ibw2e9f9", model_id="idc8e9f3")
     mgr.datapoint = dp_image
 
@@ -37,10 +36,12 @@ def test_set_image_annotation_and_cache(dp_image: Image):
     assert ann_id in mgr._cache_anns
     ann = mgr.get_annotation(ann_id)
     assert ann.category_name == "text"
-    assert ann.bounding_box.ulx == 10
+    bbox = ann.bounding_box
+    assert bbox is not None
+    assert bbox.ulx == 10
 
 
-def test_set_image_annotation_with_image_and_child_relationship(dp_image: Image):
+def test_set_image_annotation_with_image_and_child_relationship(dp_image: Image) -> None:
     mgr = DatapointManager(service_id="svc", model_id="m")
     mgr.datapoint = dp_image
 
@@ -56,10 +57,11 @@ def test_set_image_annotation_with_image_and_child_relationship(dp_image: Image)
     assert child.annotation_id == child_id
 
 
-def test_category_and_container_annotations(dp_image: Image):
+def test_category_and_container_annotations(dp_image: Image) -> None:
     mgr = DatapointManager(service_id="svc", model_id="m")
     mgr.datapoint = dp_image
     ann_id = mgr.set_image_annotation(_detection_result([0, 0, 10, 10]))
+    assert ann_id is not None
 
     mgr.set_category_annotation(get_type("test_cat_1"), 7, get_type("sub_cat_1"), ann_id, 0.5)
     mgr.set_container_annotation(get_type("test_cat_2"), 9, get_type("sub_cat_2"), ann_id, "value_x", 0.6)
@@ -70,14 +72,17 @@ def test_category_and_container_annotations(dp_image: Image):
 
     assert cat_ann.category_id == 7
     assert cat_ann.score == 0.5
+    # cont_ann is a ContainerAnnotation, not CategoryAnnotation
+    assert isinstance(cont_ann, ContainerAnnotation)
     assert cont_ann.value == "value_x"
     assert cont_ann.category_id == 9
 
 
-def test_summary_annotation(dp_image: Image):
+def test_summary_annotation(dp_image: Image) -> None:
     mgr = DatapointManager(service_id="svc", model_id="m")
     mgr.datapoint = dp_image
     ann_id = mgr.set_image_annotation(_detection_result([0, 0, 20, 20]), to_image=True)
+    assert ann_id is not None
 
     summ_global_id = mgr.set_summary_annotation(get_type("sub_cat_1"), get_type("test_cat_1"), 1)
     summ_local_id = mgr.set_summary_annotation(get_type("sub_cat_2"), get_type("test_cat_2"), 2, annotation_id=ann_id)
@@ -91,11 +96,13 @@ def test_summary_annotation(dp_image: Image):
     assert local_summ.category_id == 2
 
 
-def test_remove_and_deactivate_annotations(dp_image: Image):
+def test_remove_and_deactivate_annotations(dp_image: Image) -> None:
     mgr = DatapointManager(service_id="svc", model_id="m")
     mgr.datapoint = dp_image
     a1 = mgr.set_image_annotation(_detection_result([0, 0, 10, 10]))
     a2 = mgr.set_image_annotation(_detection_result([20, 20, 40, 40]))
+    assert a1 is not None
+    assert a2 is not None
 
     mgr.deactivate_annotation(a1)
     active = mgr.datapoint.get_annotation()
@@ -105,7 +112,7 @@ def test_remove_and_deactivate_annotations(dp_image: Image):
     assert a2 not in mgr._cache_anns  # noqa: SLF001
 
 
-def test_errors_assert_and_type():
+def test_errors_assert_and_type() -> None:
     mgr = DatapointManager(service_id="svc", model_id="m")
     with pytest.raises(AssertionError, match="Pass datapoint"):
         mgr.set_image_annotation(_detection_result([0, 0, 10, 10]))
@@ -113,6 +120,6 @@ def test_errors_assert_and_type():
     # Proper setup
     img = Image(file_name="dummy.jpg")
     mgr.datapoint = img
-    bad_dr = DetectionResult(box=("not", "a", "list"), class_name="x", class_id=1, score=0.1, absolute_coords=True)
+    bad_dr = DetectionResult(box=("not", "a", "list"), class_name=get_type("x"), class_id=1, score=0.1, absolute_coords=True)  # type: ignore[arg-type]
     with pytest.raises(TypeError, match="must be of type list or np.ndarray"):
         mgr.set_image_annotation(bad_dr)

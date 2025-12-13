@@ -18,25 +18,26 @@
 import os
 from copy import deepcopy
 
-import numpy as np
+from typing import Any
 import pytest
 
 import shared_test_utils as stu
 from dd_core.datapoint.annotation import CategoryAnnotation, ContainerAnnotation, ImageAnnotation
-from dd_core.datapoint.box import BoundingBox, local_to_global_coords
+from dd_core.datapoint.box import BoundingBox
 from dd_core.datapoint.image import Image
 from dd_core.utils.object_types import get_type
+from dd_core.utils.types import PathLikeOrStr
 from deepdoctection.extern.base import DetectionResult, TokenClassResult
 
 
 @pytest.fixture
-def pdf_path():
+def pdf_path()->PathLikeOrStr:
     # `stu.asset_path('pdf_file_two_pages')` points to a pdf file
     return stu.asset_path("pdf_file_two_pages")
 
 
 @pytest.fixture
-def image_dir_and_file():
+def image_dir_and_file()->tuple[str, PathLikeOrStr]:
     # `stu.asset_path('sample_image')` points to a png file; we need its directory for dir test
     img_path = stu.asset_path("sample_image")
     img_dir = os.path.dirname(img_path)
@@ -44,7 +45,7 @@ def image_dir_and_file():
 
 
 @pytest.fixture
-def image_bytes(image_dir_and_file):
+def image_bytes(image_dir_and_file: tuple[str, PathLikeOrStr])->bytes:
     # Build bytes for the single-image test
     _, img_path = image_dir_and_file
     with open(img_path, "rb") as f:
@@ -54,24 +55,24 @@ def image_bytes(image_dir_and_file):
 @pytest.fixture
 def image() -> Image:
     path = stu.asset_path("page_json")
-    return Image.from_file(path)
+    return Image.from_file(os.fspath(path))
 
 
 @pytest.fixture
-def anns(image: Image):
+def anns(image: Image)->list[ImageAnnotation]:
     # Capture current annotations for building DetectionResults
     return image.get_annotation()
 
 
 @pytest.fixture
-def image_without_anns(image: Image, anns):
+def image_without_anns(image: Image, anns: list[ImageAnnotation])->Image:
     # Remove all annotations from the image to simulate fresh detection
     image.remove(annotation_ids=[ann.annotation_id for ann in anns])
     return image
 
 
 @pytest.fixture
-def cell_detect_results():
+def cell_detect_results()->list[list[DetectionResult]]:
     return [
         [
             DetectionResult(box=[20.0, 20.0, 25.0, 30.0], score=0.8, class_id=1, class_name=get_type("column_header")),
@@ -306,7 +307,7 @@ def dp_image_fully_segmented_fully_tiled(
 
 
 @pytest.fixture
-def token_class_result() -> list:
+def token_class_result() -> list[Any]:
     uuids = [
         "CLS",
         "e9c4b3e7-0b2c-3d45-89f3-db6e3ef864ad",
@@ -346,6 +347,6 @@ def token_class_result() -> list:
             bio_tag=out[6],
         )
         for out in zip(
-            uuids, input_ids[0], token_class_predictions, tokens, class_name, semantic_name, bio_tag  # type: ignore
+            uuids, input_ids[0], token_class_predictions, tokens, class_name, semantic_name, bio_tag
         )
     ]

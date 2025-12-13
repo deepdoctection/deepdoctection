@@ -25,6 +25,7 @@ import numpy as np
 import pytest
 
 import shared_test_utils as stu
+from dd_core.datapoint.image import Image
 from dd_datasets import DocLayNet, DocLayNetSeq
 
 
@@ -40,12 +41,12 @@ def test_dataset_doclaynet_returns_image(monkeypatch: pytest.MonkeyPatch, datase
 
     # Arrange
     doclaynet = DocLayNet()
-    doclaynet.dataflow.get_workdir = lambda: Path(dataset_test_base_dir) / doclaynet.dataflow.location
+    doclaynet.dataflow.get_workdir = lambda: Path(dataset_test_base_dir) / doclaynet.dataflow.location # type: ignore
     doclaynet.dataflow.annotation_files = {"val": "test_doclaynet.json"}
     df = doclaynet.dataflow.build()
 
     # Act
-    df_list = stu.collect_datapoint_from_dataflow(df)
+    df_list: list[Image] = stu.collect_datapoint_from_dataflow(df)
     assert len(df_list) == 2
 
 
@@ -66,5 +67,5 @@ def test_dataset_doclaynet_seq_returns_image(monkeypatch: pytest.MonkeyPatch, da
     df = doclaynet.dataflow.build()
 
     # Act
-    df_list = stu.collect_datapoint_from_dataflow(df)
+    df_list: list[Image] = stu.collect_datapoint_from_dataflow(df)
     assert len(df_list) == 2

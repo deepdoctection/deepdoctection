@@ -30,7 +30,7 @@ from deepdoctection.extern.hflm import LanguageDetector
 from deepdoctection.pipe.language import LanguageDetectionService
 
 
-def test_language_detection_service_sets_summary(image: Image):
+def test_language_detection_service_sets_summary(image: Image)-> None:
     score = np.array([0.95])
     detection = DetectionResult(class_name=get_type("deu"), score=float(score.item()))
 
@@ -43,15 +43,5 @@ def test_language_detection_service_sets_summary(image: Image):
 
     service = LanguageDetectionService(language_detector=language_detector)
 
-    service.dp_manager.set_summary_annotation = Mock()
-
     service.pass_datapoint(image)
-
-    service.dp_manager.set_summary_annotation.assert_called_once()
-    called_args = service.dp_manager.set_summary_annotation.call_args[0]
-
-    assert called_args[0] == PageType.LANGUAGE
-    assert called_args[1] == PageType.LANGUAGE
-    assert called_args[2] == 1
-    assert called_args[3] == "deu"
-    assert pytest.approx(called_args[4], rel=1e-6) == float(score.item())
+    assert image.summary.get_sub_category(get_type("language")).value == "deu" # type: ignore

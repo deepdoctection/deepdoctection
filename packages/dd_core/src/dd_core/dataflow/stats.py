@@ -272,8 +272,8 @@ class StdFromDataFlow(ProxyDataFlow):
                     if n == 1:
                         k = x
 
-                    ex += x - k
-                    ex2 += (x - k) * (x - k)
+                    ex += x - k # type:ignore
+                    ex2 += (x - k) * (x - k)  # type:ignore
 
                 status_bar.update()
                 if self.max_datapoints is not None:

@@ -35,7 +35,7 @@ class TestImageSerialization:
     """Test Image serialization and deserialization"""
 
     @staticmethod
-    def test_as_dict_contains_basic_fields(white_image: WhiteImage):
+    def test_as_dict_contains_basic_fields(white_image: WhiteImage) -> None:
         """as_dict() contains basic fields"""
         img = Image(file_name=white_image.file_name, location=white_image.location)
 
@@ -52,7 +52,7 @@ class TestImageSerialization:
         assert "_summary" in result
 
     @staticmethod
-    def test_as_dict_with_image(white_image: WhiteImage):
+    def test_as_dict_with_image(white_image: WhiteImage) -> None:
         """as_dict() converts image to base64"""
         img = Image(file_name=white_image.file_name)
         img.image = white_image.image
@@ -63,7 +63,7 @@ class TestImageSerialization:
         assert isinstance(result["_image"], str)
 
     @staticmethod
-    def test_roundtrip_as_dict_recreates_image(white_image: WhiteImage):
+    def test_roundtrip_as_dict_recreates_image(white_image: WhiteImage) -> None:
         """Image can be recreated from as_dict() output"""
         img1 = Image(
             file_name=white_image.file_name, location=white_image.location, external_id=white_image.external_id
@@ -78,7 +78,7 @@ class TestImageSerialization:
         assert img2.image_id == img1.image_id
 
     @staticmethod
-    def test_roundtrip_preserves_annotations(white_image: WhiteImage):
+    def test_roundtrip_preserves_annotations(white_image: WhiteImage) -> None:
         """Annotations are preserved in roundtrip"""
         img1 = Image(file_name=white_image.file_name)
         box = BoundingBox(ulx=10, uly=10, width=20, height=20, absolute_coords=True)
@@ -93,7 +93,7 @@ class TestImageSerialization:
         assert img2.annotations[0].bounding_box == box
 
     @staticmethod
-    def test_save_creates_json_file(white_image: WhiteImage, tmp_path: Path):
+    def test_save_creates_json_file(white_image: WhiteImage, tmp_path: Path) -> None:
         """save() creates JSON file"""
         img = Image(file_name=white_image.file_name, location=str(tmp_path))
         img.image = white_image.image
@@ -105,7 +105,7 @@ class TestImageSerialization:
         assert Path(result).suffix == ".json"
 
     @staticmethod
-    def test_save_without_image_to_json(white_image: WhiteImage, tmp_path: Path):
+    def test_save_without_image_to_json(white_image: WhiteImage, tmp_path: Path) -> None:
         """save(image_to_json=False) excludes image data"""
         img = Image(file_name=white_image.file_name)
         img.image = white_image.image
@@ -115,7 +115,7 @@ class TestImageSerialization:
         assert result["_image"] is None
 
     @staticmethod
-    def test_from_file_loads_image(white_image: WhiteImage, tmp_path: Path):
+    def test_from_file_loads_image(white_image: WhiteImage, tmp_path: Path) -> None:
         """from_file() loads Image from JSON file"""
         img1 = Image(file_name=white_image.file_name, location=str(tmp_path))
         img1.image = white_image.image
@@ -127,7 +127,7 @@ class TestImageSerialization:
         assert img2.file_name == img1.file_name
 
     @staticmethod
-    def test_roundtrip_preserves_embeddings(white_image: WhiteImage):
+    def test_roundtrip_preserves_embeddings(white_image: WhiteImage) -> None:
         """Embeddings are preserved in roundtrip"""
         img1 = Image(file_name=white_image.file_name)
         img1.set_width_height(100, 100)
@@ -143,7 +143,7 @@ class TestImageSerialization:
         assert retrieved_bbox.uly == 20
 
     @staticmethod
-    def test_roundtrip_preserves_page_number(white_image: WhiteImage):
+    def test_roundtrip_preserves_page_number(white_image: WhiteImage) -> None:
         """page_number is preserved in roundtrip"""
         img1 = Image(file_name=white_image.file_name, page_number=5)
 
@@ -153,7 +153,7 @@ class TestImageSerialization:
         assert img2.page_number == 5
 
     @staticmethod
-    def test_save_highest_hierarchy_only(white_image: WhiteImage, tmp_path: Path):
+    def test_save_highest_hierarchy_only(white_image: WhiteImage, tmp_path: Path) -> None:
         """save(highest_hierarchy_only=True) removes nested images"""
         img = Image(file_name=white_image.file_name, location=str(tmp_path))
         img.image = white_image.image
@@ -171,7 +171,7 @@ class TestImageSerialization:
         assert result["annotations"][0]["image"] is None
 
     @staticmethod
-    def test_roundtrip_with_multiple_annotations(white_image: WhiteImage):
+    def test_roundtrip_with_multiple_annotations(white_image: WhiteImage) -> None:
         """Multiple annotations are preserved in roundtrip"""
         img1 = Image(file_name=white_image.file_name)
 

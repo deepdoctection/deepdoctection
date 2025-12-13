@@ -36,23 +36,23 @@ from deepdoctection.extern.base import (
 
 
 @pytest.fixture
-def model_categories():
+def model_categories()->ModelCategories:
     init_categories = {1: "word", 2: "line", 3: "table", 4: "figure", 5: "header", 6: "footnote"}
     return ModelCategories(init_categories=init_categories)
 
 
 @pytest.fixture
-def ner_semantics():
+def ner_semantics()->tuple[str, str]:
     return ("question", "answer")
 
 
 @pytest.fixture
-def ner_bio():
+def ner_bio()->tuple[str, str]:
     return ("B", "I")
 
 
 @pytest.fixture
-def ner_model_categories(ner_semantics, ner_bio):
+def ner_model_categories(ner_semantics: tuple[str, str], ner_bio: tuple[str, str])->NerModelCategories:
     return NerModelCategories(
         init_categories=None,
         categories_semantics=ner_semantics,
@@ -61,7 +61,7 @@ def ner_model_categories(ner_semantics, ner_bio):
 
 
 @pytest.fixture
-def mock_base_transform():
+def mock_base_transform()->BaseTransform:
     mock = MagicMock(spec=BaseTransform)
     mock.get_init_args.return_value = ["angle"]
     mock.get_category_names.return_value = (get_type("text"),)
@@ -73,12 +73,12 @@ def mock_base_transform():
 
 
 @pytest.fixture
-def transformer(mock_base_transform):
+def transformer(mock_base_transform: BaseTransform)->DeterministicImageTransformer:
     return DeterministicImageTransformer(mock_base_transform)
 
 
 @pytest.fixture
-def detection_results():
+def detection_results()->list[DetectionResult]:
     dr1 = DetectionResult(
         box=[1, 1, 2, 2],
         class_id=1,

@@ -24,7 +24,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from dataclasses import dataclass
-from typing import Any, Literal, Optional, TypeVar, Union
+from typing import Any, Literal, Optional, TypeVar, Union, Type
 
 from pydantic import BaseModel, Field, PrivateAttr, field_validator, model_validator
 
@@ -49,7 +49,7 @@ class AnnotationMap:
 DEFAULT_CATEGORY_ID = -1
 
 T = TypeVar("T", str, list[str], None)
-
+A = TypeVar("A", bound="Annotation")
 
 class Annotation(BaseModel, ABC):
     """
@@ -177,7 +177,7 @@ class Annotation(BaseModel, ABC):
         self.active = False
 
     @classmethod
-    def from_dict(cls, **kwargs: AnnotationDict) -> Annotation:
+    def from_dict(cls: Type[A], **kwargs: AnnotationDict) -> A:
         """
         Method to initialize a derived class from dict.
 

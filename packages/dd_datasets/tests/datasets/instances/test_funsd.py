@@ -25,6 +25,7 @@ import numpy as np
 import pytest
 
 import shared_test_utils as stu
+from dd_core.datapoint.image import Image
 from dd_core.utils.object_types import LayoutType, WordType
 from dd_datasets import Funsd
 
@@ -39,11 +40,11 @@ def test_dataset_funsd_returns_image_and_annotations(
     )
 
     funsd = Funsd()
-    funsd.dataflow.get_workdir = lambda: Path(dataset_test_base_dir) / funsd.dataflow.location
+    funsd.dataflow.get_workdir = lambda: Path(dataset_test_base_dir) / funsd.dataflow.location # type: ignore
     funsd.dataflow.splits = {"test": ""}
 
     df = funsd.dataflow.build()
-    df_list = stu.collect_datapoint_from_dataflow(df)
+    df_list: list[Image] = stu.collect_datapoint_from_dataflow(df)
 
     assert len(df_list) == 1
     dp = df_list[0]

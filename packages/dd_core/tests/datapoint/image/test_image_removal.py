@@ -30,7 +30,7 @@ class TestImageRemoval:
     """Test Image annotation removal operations"""
 
     @staticmethod
-    def test_remove_by_annotation_id_removes_annotation(white_image: WhiteImage):
+    def test_remove_by_annotation_id_removes_annotation(white_image: WhiteImage) -> None:
         """remove() by annotation_id removes annotation"""
         img = Image(file_name=white_image.file_name)
         ann = ImageAnnotation(
@@ -45,7 +45,7 @@ class TestImageRemoval:
         assert len(result) == 0
 
     @staticmethod
-    def test_remove_by_annotation_id_list(white_image: WhiteImage):
+    def test_remove_by_annotation_id_list(white_image: WhiteImage) -> None:
         """remove() by list of annotation_ids removes all"""
         img = Image(file_name=white_image.file_name)
         ann1 = ImageAnnotation(
@@ -64,7 +64,7 @@ class TestImageRemoval:
         assert len(img.get_annotation()) == 0
 
     @staticmethod
-    def test_remove_by_service_id_removes_matching(white_image: WhiteImage):
+    def test_remove_by_service_id_removes_matching(white_image: WhiteImage) -> None:
         """remove() by service_id removes matching annotations"""
         img = Image(file_name=white_image.file_name)
         ann1 = ImageAnnotation(
@@ -87,7 +87,7 @@ class TestImageRemoval:
         assert result[0].service_id == "service_b"
 
     @staticmethod
-    def test_remove_by_multiple_service_ids(white_image: WhiteImage):
+    def test_remove_by_multiple_service_ids(white_image: WhiteImage) -> None:
         """remove() by list of service_ids removes all matching"""
         img = Image(file_name=white_image.file_name)
         ann1 = ImageAnnotation(
@@ -116,7 +116,7 @@ class TestImageRemoval:
         assert result[0].service_id == "service_c"
 
     @staticmethod
-    def test_remove_updates_annotation_ids_list(white_image: WhiteImage):
+    def test_remove_updates_annotation_ids_list(white_image: WhiteImage) -> None:
         """remove() updates internal _annotation_ids list"""
         img = Image(file_name=white_image.file_name)
         ann = ImageAnnotation(
@@ -131,7 +131,7 @@ class TestImageRemoval:
         assert ann.annotation_id not in img._annotation_ids
 
     @staticmethod
-    def test_remove_preserves_other_annotations(white_image: WhiteImage):
+    def test_remove_preserves_other_annotations(white_image: WhiteImage) -> None:
         """remove() preserves annotations not matching criteria"""
         img = Image(file_name=white_image.file_name)
         ann1 = ImageAnnotation(
@@ -159,7 +159,7 @@ class TestImageRemoval:
         assert ann3.annotation_id in result_ids
 
     @staticmethod
-    def test_get_service_id_to_annotation_id_mapping(white_image: WhiteImage):
+    def test_get_service_id_to_annotation_id_mapping(white_image: WhiteImage) -> None:
         """get_service_id_to_annotation_id returns correct mapping"""
         img = Image(file_name=white_image.file_name)
         ann1 = ImageAnnotation(
@@ -189,7 +189,7 @@ class TestImageRemoval:
         assert len(mapping["service_b"]) == 1
 
     @staticmethod
-    def test_get_annotation_id_to_annotation_maps(white_image: WhiteImage):
+    def test_get_annotation_id_to_annotation_maps(white_image: WhiteImage) -> None:
         """get_annotation_id_to_annotation_maps returns correct structure"""
         img = Image(file_name=white_image.file_name)
         ann = ImageAnnotation(

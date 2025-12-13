@@ -22,12 +22,12 @@ from dd_core.datapoint.view import Page
 class TestPageAnnotations:
     """Test Page annotation retrieval methods"""
 
-    def test_get_annotation_returns_list(self, page: Page):
+    def test_get_annotation_returns_list(self, page: Page) -> None:
         """get_annotation() returns a list"""
         result = page.get_annotation()
         assert isinstance(result, list)
 
-    def test_get_annotation_filters_by_category_name(self, page: Page):
+    def test_get_annotation_filters_by_category_name(self, page: Page) -> None:
         """get_annotation() can filter by category_name"""
         all_anns = page.get_annotation()
         if all_anns:
@@ -35,7 +35,7 @@ class TestPageAnnotations:
             filtered = page.get_annotation(category_names=first_category)
             assert all(ann.category_name == first_category for ann in filtered)
 
-    def test_get_annotation_filters_by_annotation_id(self, page: Page):
+    def test_get_annotation_filters_by_annotation_id(self, page: Page) -> None:
         """get_annotation() can filter by annotation_id"""
         all_anns = page.get_annotation()
         if all_anns:
@@ -45,7 +45,7 @@ class TestPageAnnotations:
             if filtered:
                 assert filtered[0].annotation_id == target_id
 
-    def test_get_annotation_filters_by_annotation_ids_list(self, page: Page):
+    def test_get_annotation_filters_by_annotation_ids_list(self, page: Page) -> None:
         """get_annotation() can filter by list of annotation_ids"""
         all_anns = page.get_annotation()
         if len(all_anns) >= 2:
@@ -53,19 +53,19 @@ class TestPageAnnotations:
             filtered = page.get_annotation(annotation_ids=target_ids)
             assert all(ann.annotation_id in target_ids for ann in filtered)
 
-    def test_layouts_are_floating_text_blocks(self, page: Page):
+    def test_layouts_are_floating_text_blocks(self, page: Page) -> None:
         """layouts are filtered by floating_text_block_categories"""
         layouts = page.layouts
         for layout in layouts:
             assert layout.category_name in page.floating_text_block_categories
 
-    def test_words_are_text_containers(self, page: Page):
+    def test_words_are_text_containers(self, page: Page) -> None:
         """words are filtered by text_container"""
         words = page.words
         for word in words:
             assert word.category_name == page.text_container
 
-    def test_residual_layouts_filtered_correctly(self, page: Page):
+    def test_residual_layouts_filtered_correctly(self, page: Page) -> None:
         """residual_layouts are filtered by residual_text_block_categories"""
         residual = page.residual_layouts
         for res in residual:

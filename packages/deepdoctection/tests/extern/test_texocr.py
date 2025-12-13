@@ -24,7 +24,7 @@ from deepdoctection.extern.texocr import TextractOcrDetector
 
 
 def test_textract_ocr_predict_words_basic(
-    monkeypatch: pytest.MonkeyPatch, sample_np_img: PixelValues, textract_json
+    monkeypatch: pytest.MonkeyPatch, sample_np_img: PixelValues, textract_json: JsonDict
 ) -> None:
     pytest.importorskip("boto3")
 
@@ -37,4 +37,4 @@ def test_textract_ocr_predict_words_basic(
 
     assert isinstance(results, list)
     assert len(results) == 12
-    assert any("consolidated" in r.text.lower() for r in results if hasattr(r, "text"))
+    assert any("consolidated" in r.text.lower() for r in results if hasattr(r, "text") and r.text is not None)

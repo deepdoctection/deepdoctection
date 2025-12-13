@@ -18,12 +18,14 @@
 import numpy as np
 import pytest
 
+from typing import Any
+
 from dd_core.mapper.pascalstruct import pascal_voc_dict_to_image
-from dd_core.utils.object_types import LayoutType
+from dd_core.utils.object_types import LayoutType, ObjectTypes
 
 
 @pytest.fixture
-def categories_name_as_keys() -> dict:
+def categories_name_as_keys() -> dict[ObjectTypes,int]:
     return {
         LayoutType.TABLE: 1,
         LayoutType.LOGO: 2,
@@ -33,7 +35,7 @@ def categories_name_as_keys() -> dict:
 
 
 @pytest.fixture
-def category_names_mapping() -> dict:
+def category_names_mapping() -> dict[str,ObjectTypes]:
     return {
         "natural_image": LayoutType.FIGURE,
         "figure": LayoutType.FIGURE,
@@ -45,9 +47,9 @@ def category_names_mapping() -> dict:
 
 def test_pascal_voc_dict_to_image_maps_annotations(
     monkeypatch: pytest.MonkeyPatch,
-    iiitar13k_datapoint,
-    categories_name_as_keys,
-    category_names_mapping,
+    iiitar13k_datapoint: dict[str, Any],
+    categories_name_as_keys: dict[str,int],
+    category_names_mapping: dict[str,str]
 ) -> None:
     monkeypatch.setattr(
         "dd_core.mapper.pascalstruct.load_image_from_file",
@@ -67,9 +69,9 @@ def test_pascal_voc_dict_to_image_maps_annotations(
 
 def test_pascal_voc_dict_to_image_filters_empty_datapoints(
     monkeypatch: pytest.MonkeyPatch,
-    iiitar13k_datapoint,
-    categories_name_as_keys,
-    category_names_mapping,
+    iiitar13k_datapoint: dict[str, Any],
+    categories_name_as_keys: dict[str,int],
+    category_names_mapping: dict[str,str]
 ) -> None:
     monkeypatch.setattr(
         "dd_core.mapper.pascalstruct.load_image_from_file",

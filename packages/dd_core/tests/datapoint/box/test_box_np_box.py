@@ -23,6 +23,7 @@ Testing functions from datapoint.box that operate on numpy boxes
 
 import numpy as np
 import pytest
+from numpy.typing import NDArray
 
 from dd_core.datapoint.box import area, intersection, ioa, np_iou
 
@@ -41,7 +42,7 @@ from dd_core.datapoint.box import area, intersection, ioa, np_iou
         (np.array([[0.1, 0.2, 0.4, 0.9]], dtype=np.float32), np.array([0.21], dtype=np.float32)),
     ],
 )
-def test_area(boxes, expected):
+def test_area(boxes: NDArray[np.float32], expected: NDArray[np.float32]) -> None:
     out = area(boxes)
     assert out.shape == expected.shape
     assert np.allclose(out, expected, rtol=1e-6, atol=1e-6)
@@ -70,7 +71,7 @@ def test_area(boxes, expected):
         ),
     ],
 )
-def test_intersection(boxes1, boxes2, expected):
+def test_intersection(boxes1:NDArray[np.float32], boxes2: NDArray[np.float32], expected: NDArray[np.float32]) -> None:
     out = intersection(boxes1, boxes2)
     assert out.shape == expected.shape
     assert np.allclose(out, expected, rtol=1e-6, atol=1e-6)
@@ -99,7 +100,7 @@ def test_intersection(boxes1, boxes2, expected):
         ),
     ],
 )
-def test_np_iou(boxes1, boxes2, expected):
+def test_np_iou(boxes1: NDArray[np.float32], boxes2: NDArray[np.float32], expected: NDArray[np.float32]) -> None:
     out = np_iou(boxes1, boxes2)
     assert out.shape == expected.shape
     assert np.allclose(out, expected, rtol=1e-6, atol=1e-6)
@@ -128,7 +129,7 @@ def test_np_iou(boxes1, boxes2, expected):
         ),
     ],
 )
-def test_ioa(boxes1, boxes2, expected):
+def test_ioa(boxes1: NDArray[np.float32], boxes2: NDArray[np.float32], expected: NDArray[np.float32]) -> None:
     out = ioa(boxes1, boxes2)
     assert out.shape == expected.shape
     assert np.allclose(out, expected, rtol=1e-6, atol=1e-6)

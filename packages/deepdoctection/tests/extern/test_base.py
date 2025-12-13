@@ -25,13 +25,14 @@ import pytest
 from dd_core.utils.object_types import get_type
 from deepdoctection.extern.base import (
     DetectionResult,
-    DeterministicImageTransformer,
     ModelCategories,
     NerModelCategories,
+    DeterministicImageTransformer,
+    BaseTransform,
 )
 
 
-def test_model_categories_get_categories_dict(model_categories):
+def test_model_categories_get_categories_dict(model_categories: ModelCategories)->None:
     cats = model_categories.get_categories()
     expected = MappingProxyType(
         {
@@ -46,7 +47,7 @@ def test_model_categories_get_categories_dict(model_categories):
     assert cats == expected
 
 
-def test_model_categories_get_categories_dict_name_as_key(model_categories):
+def test_model_categories_get_categories_dict_name_as_key(model_categories: ModelCategories)->None:
     cats = model_categories.get_categories(name_as_key=True)
     expected = MappingProxyType(
         {
@@ -61,7 +62,7 @@ def test_model_categories_get_categories_dict_name_as_key(model_categories):
     assert cats == expected
 
 
-def test_model_categories_get_categories_tuple(model_categories):
+def test_model_categories_get_categories_tuple(model_categories:ModelCategories)->None:
     cats = model_categories.get_categories(as_dict=False)
     expected = (
         get_type("word"),
@@ -74,7 +75,7 @@ def test_model_categories_get_categories_tuple(model_categories):
     assert cats == expected
 
 
-def test_model_categories_filter(model_categories):
+def test_model_categories_filter(model_categories:ModelCategories)->None:
     model_categories.filter_categories = (get_type("word"), get_type("header"))
     cats = model_categories.get_categories()
     expected = MappingProxyType(
@@ -83,7 +84,7 @@ def test_model_categories_filter(model_categories):
     assert cats == expected
 
 
-def test_model_categories_shift_ids(model_categories):
+def test_model_categories_shift_ids(model_categories:ModelCategories)->None:
     shifted = model_categories.shift_category_ids(-1)
     expected = MappingProxyType(
         {
@@ -98,7 +99,7 @@ def test_model_categories_shift_ids(model_categories):
     assert shifted == expected
 
 
-def test_ner_model_categories_merge(ner_model_categories):
+def test_ner_model_categories_merge(ner_model_categories:NerModelCategories)->None:
     cats = ner_model_categories.get_categories()
     expected = MappingProxyType(
         {
@@ -111,7 +112,7 @@ def test_ner_model_categories_merge(ner_model_categories):
     assert cats == expected
 
 
-def test_ner_model_categories_preserve_init(ner_semantics, ner_bio):
+def test_ner_model_categories_preserve_init(ner_semantics:tuple[str,str], ner_bio:tuple[str,str])->None:
     nm = NerModelCategories(
         init_categories={1: get_type("B-answer"), 2: get_type("B-question")},
         categories_semantics=ner_semantics,
@@ -124,7 +125,7 @@ def test_ner_model_categories_preserve_init(ner_semantics, ner_bio):
     assert cats == expected
 
 
-def test_transform_image(transformer, mock_base_transform):
+def test_transform_image(transformer:DeterministicImageTransformer, mock_base_transform:BaseTransform)->None:
     img = np.zeros((10, 10, 3))
     spec = DetectionResult()
     out = transformer.transform_image(img, spec)  # type: ignore
@@ -132,7 +133,9 @@ def test_transform_image(transformer, mock_base_transform):
     assert np.array_equal(out, np.ones((10, 10, 3)))
 
 
-def test_transform_coords(transformer, mock_base_transform, detection_results):
+def test_transform_coords(transformer:DeterministicImageTransformer,
+                          mock_base_transform:BaseTransform,
+                          detection_results:list[DetectionResult])->None:
     out = transformer.transform_coords(detection_results)
     mock_base_transform.apply_coords.assert_called_once()
     assert len(out) == 2
@@ -144,7 +147,9 @@ def test_transform_coords(transformer, mock_base_transform, detection_results):
     assert out[1].class_name == "umbrella"
 
 
-def test_inverse_transform_coords(transformer, mock_base_transform, detection_results):
+def test_inverse_transform_coords(transformer:DeterministicImageTransformer,
+                          mock_base_transform:BaseTransform,
+                          detection_results:list[DetectionResult])->None:
     out = transformer.inverse_transform_coords(detection_results)
     mock_base_transform.inverse_apply_coords.assert_called_once()
     assert len(out) == 2
@@ -156,7 +161,7 @@ def test_inverse_transform_coords(transformer, mock_base_transform, detection_re
     assert out[1].class_id == 2
 
 
-def test_predict(transformer):
+def test_predict(transformer: DeterministicImageTransformer)->None:
     img = np.zeros((10, 10, 3))
     dr = transformer.predict(img)  # type: ignore
     assert dr.angle == 90
