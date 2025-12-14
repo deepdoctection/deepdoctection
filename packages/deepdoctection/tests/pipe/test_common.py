@@ -33,8 +33,8 @@ from deepdoctection.pipe.common import (
 )
 
 
-def make_ann(category: ObjectTypes, box: dict[str,int], score=0.9) -> ImageAnnotation:
-    ann = ImageAnnotation(category_name=category, score=score, bounding_box=BoundingBox(**box))
+def make_ann(category: ObjectTypes, box: dict[str,int], score: float =0.9) -> ImageAnnotation:
+    ann = ImageAnnotation(category_name=category, score=score, bounding_box=BoundingBox(**box)) # type: ignore
     assert ann.get_defining_attributes() == ["category_name", "bounding_box"]
     return ann
 
@@ -48,7 +48,7 @@ def make_ann(category: ObjectTypes, box: dict[str,int], score=0.9) -> ImageAnnot
     ],
 )
 def test_annotation_nms_service_serves(dp_image: Image, pairs: list[list[LayoutType]],
-                                       thresh:list[float], prio: list[LayoutType]):
+                                       thresh:list[float], prio: list[LayoutType])->None:
     a1 = make_ann(LayoutType.TEXT, {"ulx": 10, "uly": 10, "width": 100, "height": 20, "absolute_coords": True})
     a2 = make_ann(LayoutType.TEXT, {"ulx": 15, "uly": 12, "width": 100, "height": 20, "absolute_coords": True})
     a3 = make_ann(LayoutType.TITLE, {"ulx": 12, "uly": 9, "width": 100, "height": 20, "absolute_coords": True})

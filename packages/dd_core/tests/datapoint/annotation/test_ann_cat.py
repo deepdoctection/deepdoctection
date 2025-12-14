@@ -71,7 +71,7 @@ class TestCategoryAnnotationBasics:
     def test_from_dict(self) -> None:
         """Test creating annotation from dict"""
         data = {"category_name": "test_cat_1", "category_id": 2, "score": 0.85}
-        cat = CategoryAnnotation.from_dict(**data)
+        cat = CategoryAnnotation.from_dict(**data) # type: ignore
         assert cat.category_name == get_type("test_cat_1")
         assert cat.category_id == 2
         assert cat.score == 0.85

@@ -76,7 +76,7 @@ class TestContainerAnnotation:
     def test_container_annotation_set_type_invalid_raises_error(self) -> None:
         container = ContainerAnnotation(category_name="test_cat_1")
         with pytest.raises(ValueError):
-            container.set_type("invalid_type")
+            container.set_type("invalid_type") # type: ignore
 
     def test_container_validates_and_converts_value(self) -> None:
         container = ContainerAnnotation(category_name="test_cat_1")
@@ -87,7 +87,7 @@ class TestContainerAnnotation:
     def test_container_value_type_raises_value_error_when_None(self) -> None:
         container = ContainerAnnotation(category_name="test_cat_2", value=5)
         with pytest.raises(ValueError, match="type cannot be None"):
-            container.set_type(None)
+            container.set_type(None) # type: ignore
 
 
 class TestContainerAnnotationAdvanced:

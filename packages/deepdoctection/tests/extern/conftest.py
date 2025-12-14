@@ -63,7 +63,7 @@ def ner_model_categories(ner_semantics: tuple[str, str], ner_bio: tuple[str, str
 @pytest.fixture
 def mock_base_transform()->BaseTransform:
     mock = MagicMock(spec=BaseTransform)
-    mock.get_init_args.return_value = ["angle"]
+    mock.get_init_args.return_value = ["angle"] # type: ignore
     mock.get_category_names.return_value = (get_type("text"),)
     mock.angle = 90
     mock.apply_image.return_value = np.ones((10, 10, 3))

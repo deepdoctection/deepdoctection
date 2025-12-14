@@ -110,6 +110,8 @@ def test_sequence_slow_build_and_predict(
     else:
         pytest.skip("Unsupported wrapper")
 
+    assert model_cls is not None
+
     cfg = cfg_cls(num_labels=2)
     model = model_cls(cfg)
     model.save_pretrained(tmp_path)

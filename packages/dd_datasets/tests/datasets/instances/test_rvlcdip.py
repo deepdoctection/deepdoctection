@@ -37,7 +37,7 @@ def test_dataset_rvlcdip_returns_image(monkeypatch: pytest.MonkeyPatch, dataset_
     )
 
     rvlcdip = Rvlcdip()
-    rvlcdip.dataflow.get_workdir = lambda: Path(dataset_test_base_dir) / rvlcdip.dataflow.location
+    rvlcdip.dataflow.get_workdir = lambda: Path(dataset_test_base_dir) / rvlcdip.dataflow.location # type: ignore
 
     df = rvlcdip.dataflow.build()
     df_list: list[Image] = stu.collect_datapoint_from_dataflow(df)

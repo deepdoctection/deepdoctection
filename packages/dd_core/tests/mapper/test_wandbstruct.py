@@ -31,7 +31,7 @@ if wandb_available():
     from wandb import Image as Wbimage
 
 
-def _build_categories(anns)->dict[int,ObjectTypes]:
+def _build_categories(anns: ImageAnnotation)->dict[int,ObjectTypes]:
     names = sorted({ann.category_name for ann in anns})
     return {idx + 1: name for idx, name in enumerate(names, start=1)}
 

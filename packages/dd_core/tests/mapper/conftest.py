@@ -78,7 +78,7 @@ def fixture_image_with_layout_anns(image: Image) -> Image:
 @fixture(name="table_image")
 def fixture_table_image(image: Image) -> Image:
     """An image from a table image annotation crop"""
-    return image.get_annotation(category_names="table")[0].image
+    return image.get_annotation(category_names="table")[0].image # type: ignore
 
 
 @fixture(name="coco_datapoint")
@@ -99,7 +99,7 @@ def fixture_xfund_datapoint() -> dict[str, Any]:
 @fixture(name="xfund_image")
 def fixture_xfund_image(xfund_datapoint: dict[str, Any], monkeypatch: pytest.MonkeyPatch) -> Image:
 
-    def _fake_loader(_path: str):
+    def _fake_loader(_path: str):  # type: ignore
         return np.zeros((3508, 2480, 3), dtype=np.uint8)
 
     # Patch the function used inside xfund_to_image
@@ -127,7 +127,7 @@ def fixture_xfund_image(xfund_datapoint: dict[str, Any], monkeypatch: pytest.Mon
         "text": {"token_class": {"other": 1, "question": 2, "answer": 3, "header": 4}},
     }
 
-    img: Image = xfund_to_image(
+    img: Image = xfund_to_image( # type: ignore
         load_image=False,
         fake_score=False,
         categories_dict_name_as_key=categories_dict,
@@ -179,7 +179,7 @@ def fixture_annotations_dict(dp_image: Image): # type: ignore
     with open(path, "r") as f:
         annotations_dict = json.load(f)
 
-    def make_annotation(use_layout: bool, use_captions: bool):
+    def make_annotation(use_layout: bool, use_captions: bool)-> Image:
 
         layout_anns = [ImageAnnotation(**data) for data in annotations_dict["layout_anns"]]
         captions = [ImageAnnotation(**data) for data in annotations_dict["caption_anns"]]

@@ -57,6 +57,7 @@ class TestImageHierarchy:
         img.dump(ann)
         img.image_ann_to_image(annotation_id=ann.annotation_id, crop_image=True)
 
+        assert ann.image.image is not None
         assert ann.image.width == 10
         assert ann.image.height == 4  # Intersects with image bounds
 

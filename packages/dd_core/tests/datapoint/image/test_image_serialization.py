@@ -89,7 +89,7 @@ class TestImageSerialization:
         img2 = Image(**data)
 
         assert len(img2.annotations) == 1
-        assert img2.annotations[0].category_name.value == "test_cat_1"
+        assert img2.annotations[0].category_name.value == "test_cat_1" # type: ignore
         assert img2.annotations[0].bounding_box == box
 
     @staticmethod
@@ -99,6 +99,7 @@ class TestImageSerialization:
         img.image = white_image.image
 
         result = img.save(path=tmp_path, dry=False)
+        assert isinstance(result, str)
 
         assert result is not None
         assert Path(result).exists()
@@ -112,6 +113,7 @@ class TestImageSerialization:
 
         result = img.save(path=tmp_path, image_to_json=False, dry=True)
 
+        assert isinstance(result, dict)
         assert result["_image"] is None
 
     @staticmethod
@@ -121,6 +123,7 @@ class TestImageSerialization:
         img1.image = white_image.image
         file_path = img1.save(path=tmp_path, dry=False)
 
+        assert isinstance(file_path, str)
         img2 = Image.from_file(file_path)
 
         assert isinstance(img2, Image)
@@ -166,6 +169,7 @@ class TestImageSerialization:
         img.image_ann_to_image(annotation_id=ann.annotation_id, crop_image=True)
 
         result = img.save(path=tmp_path, highest_hierarchy_only=True, dry=True)
+        assert isinstance(result, dict)
 
         # Check that annotation image is removed
         assert result["annotations"][0]["image"] is None

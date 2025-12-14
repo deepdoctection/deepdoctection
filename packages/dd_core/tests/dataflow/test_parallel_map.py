@@ -41,7 +41,7 @@ def test_multi_thread_map_data_applies_mapping_function(simple_dict_dataflow: Da
     df = MultiThreadMapData(simple_dict_dataflow, num_thread=2, map_func=double_key2, buffer_size=5, strict=True)
 
     # Act
-    output = stu.collect_datapoint_from_dataflow(df=df, max_datapoints=3)
+    output:list[dict[str,Any]] = stu.collect_datapoint_from_dataflow(df=df, max_datapoints=3)
 
     # Assert
     assert len(output) == 3
@@ -66,7 +66,7 @@ def test_multi_process_map_data_applies_mapping_function(simple_list_dataflow: D
     df = MultiProcessMapData(simple_list_dataflow, num_proc=2, map_func=reverse_list, buffer_size=5, strict=True)
 
     # Act
-    output = stu.collect_datapoint_from_dataflow(df=df)
+    output:list[dict[str,Any]] = stu.collect_datapoint_from_dataflow(df=df)
 
     # Assert
     assert len(output) == 3

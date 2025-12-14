@@ -41,8 +41,8 @@ def test_cache_data_caches_dataflow(simple_list_dataflow: Any) -> None:
     df = CacheData(simple_list_dataflow)
 
     # Act
-    first_pass = stu.collect_datapoint_from_dataflow(df)
-    second_pass = stu.collect_datapoint_from_dataflow(df)
+    first_pass: list[list[str]] = stu.collect_datapoint_from_dataflow(df)
+    second_pass: list[list[str]] = stu.collect_datapoint_from_dataflow(df)
 
     # Assert
     assert first_pass == second_pass
@@ -75,7 +75,7 @@ def test_cache_data_with_shuffle(simple_list_dataflow: Any) -> None:
     df = CacheData(simple_list_dataflow, shuffle=True)
 
     # Act
-    first_pass = stu.collect_datapoint_from_dataflow(df)
+    first_pass: list[list[str]] = stu.collect_datapoint_from_dataflow(df)
 
     # Assert - check all elements are present (order may vary)
     assert len(first_pass) == 3
@@ -90,7 +90,7 @@ def test_custom_data_from_list_with_max_datapoints(simple_list: list[str]) -> No
     df = CustomDataFromList(simple_list, max_datapoints=3)
 
     # Act
-    result = stu.collect_datapoint_from_dataflow(df)
+    result: list[list[str]] = stu.collect_datapoint_from_dataflow(df)
 
     # Assert
     assert len(result) == 3
@@ -106,7 +106,7 @@ def test_custom_data_from_list_with_rebalance_func(simple_dict_list: list[dict[s
     df = CustomDataFromList(simple_dict_list, rebalance_func=rebalance_remove_first)
 
     # Act
-    result = stu.collect_datapoint_from_dataflow(df)
+    result: list[dict[str,Any]] = stu.collect_datapoint_from_dataflow(df)
 
     # Assert
     assert len(result) == 2
@@ -123,7 +123,7 @@ def test_custom_data_from_iterable(simple_list: list[str]) -> None:
     df = CustomDataFromIterable(iterable, max_datapoints=2)
 
     # Act
-    result = stu.collect_datapoint_from_dataflow(df)
+    result:list[list[str]] = stu.collect_datapoint_from_dataflow(df)
 
     # Assert
     assert len(result) == 2
