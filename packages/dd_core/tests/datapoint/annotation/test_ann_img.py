@@ -45,6 +45,7 @@ class TestImageAnnotation:
             "bounding_box": {"ulx": 10, "uly": 20, "width": 30, "height": 40, "absolute_coords": True},
         }
         img_ann = ImageAnnotation(**data)
+        assert img_ann.bounding_box is not None
         assert img_ann.bounding_box.ulx == 10
         assert img_ann.bounding_box.uly == 20
 

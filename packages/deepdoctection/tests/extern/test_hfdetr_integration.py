@@ -37,6 +37,7 @@ def test_slow_build_hfdetr_detector_pt() -> None:
     config_path = ModelCatalog.get_full_path_configs(weights)
     feature_extractor_config_path = ModelCatalog.get_full_path_preprocessor_configs(weights)
     categories = ModelCatalog.get_profile(weights).categories
+    assert categories is not None
 
     device = get_torch_device()
     det = HFDetrDerivedDetector(

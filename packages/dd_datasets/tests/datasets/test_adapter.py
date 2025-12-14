@@ -26,7 +26,7 @@ if pytorch_available():
     from dd_datasets.adapter import DatasetAdapter
 
 
-def _patch_pdf(monkeypatch)->None:
+def _patch_pdf(monkeypatch: pytest.MonkeyPatch)->None:
     monkeypatch.setattr("dd_core.mapper.pubstruct.load_bytes_from_pdf_file", lambda _fn: b"\x01\x02")
     monkeypatch.setattr(
         "dd_core.mapper.pubstruct.convert_pdf_bytes_to_np_array_v2",
@@ -98,8 +98,8 @@ def test_dataset_adapter_max_datapoints_limits(monkeypatch: pytest.MonkeyPatch, 
 
 
 @pytest.mark.skipif(not pytorch_available(), reason="torch not installed")
-def test_dataset_adapter_hf_detr_annotations_non_empty(monkeypatch: pytest.MonkeyPatch,
-                                                       fintabnet)-> None: # type: ignore
+def test_dataset_adapter_hf_detr_annotations_non_empty(monkeypatch: pytest.MonkeyPatch, # type: ignore
+                                                       fintabnet)-> None:
     _patch_pdf(monkeypatch)
     adapter = DatasetAdapter(
         fintabnet,
@@ -109,4 +109,4 @@ def test_dataset_adapter_hf_detr_annotations_non_empty(monkeypatch: pytest.Monke
         load_image=True,
     )
     items = list(iter(adapter))
-    assert all(item["annotations"] for item in items)
+    assert all(item["annotations"] for item in items) # type: ignore

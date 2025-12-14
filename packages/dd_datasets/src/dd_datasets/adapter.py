@@ -56,7 +56,7 @@ class DatasetAdapter(IterableDataset):
         image_to_framework_func: Optional[Callable[[DP], Optional[JsonDict]]] = None,
         use_token_tag: bool = True,
         number_repetitions: int = -1,
-        **build_kwargs: Union[str, bool],
+        **build_kwargs: Union[str, bool, int],
     ) -> None:
         """
         Args:

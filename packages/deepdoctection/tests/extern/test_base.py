@@ -48,7 +48,7 @@ def test_model_categories_get_categories_dict(model_categories: ModelCategories)
 
 
 def test_model_categories_get_categories_dict_name_as_key(model_categories: ModelCategories)->None:
-    cats = model_categories.get_categories(name_as_key=True)
+    cats = model_categories.get_categories(name_as_key=True) # type: ignore
     expected = MappingProxyType(
         {
             get_type("word"): 1,
@@ -129,7 +129,7 @@ def test_transform_image(transformer:DeterministicImageTransformer, mock_base_tr
     img = np.zeros((10, 10, 3))
     spec = DetectionResult()
     out = transformer.transform_image(img, spec)  # type: ignore
-    mock_base_transform.apply_image.assert_called_once_with(img)
+    mock_base_transform.apply_image.assert_called_once_with(img) # type: ignore
     assert np.array_equal(out, np.ones((10, 10, 3)))
 
 
@@ -137,7 +137,7 @@ def test_transform_coords(transformer:DeterministicImageTransformer,
                           mock_base_transform:BaseTransform,
                           detection_results:list[DetectionResult])->None:
     out = transformer.transform_coords(detection_results)
-    mock_base_transform.apply_coords.assert_called_once()
+    mock_base_transform.apply_coords.assert_called_once() # type: ignore
     assert len(out) == 2
     assert out[0].uuid == detection_results[0].uuid
     assert out[1].uuid == detection_results[1].uuid
@@ -151,7 +151,7 @@ def test_inverse_transform_coords(transformer:DeterministicImageTransformer,
                           mock_base_transform:BaseTransform,
                           detection_results:list[DetectionResult])->None:
     out = transformer.inverse_transform_coords(detection_results)
-    mock_base_transform.inverse_apply_coords.assert_called_once()
+    mock_base_transform.inverse_apply_coords.assert_called_once() # type: ignore
     assert len(out) == 2
     assert out[0].uuid == detection_results[0].uuid
     assert out[1].uuid == detection_results[1].uuid

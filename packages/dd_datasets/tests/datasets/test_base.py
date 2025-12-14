@@ -22,6 +22,7 @@ import numpy as np
 import pytest
 
 import shared_test_utils as stu
+from dd_core.datapoint.image import Image
 from dd_datasets import MergeDataset
 from dd_datasets.base import SplitDataFlow
 
@@ -30,7 +31,7 @@ def test_splitdataflow_default_train_split(test_layout)->None:  # type: ignore
     images = test_layout(raw=True)
     sdf = SplitDataFlow(train=images, val=[], test=None)
     df = sdf.build()
-    collected = stu.collect_datapoint_from_dataflow(df)
+    collected: list[Image] = stu.collect_datapoint_from_dataflow(df)
     assert collected == images
     assert len(collected) == len(images)
 
@@ -39,7 +40,7 @@ def test_splitdataflow_val_split_max_datapoints_str(test_layout)->None: # type: 
     images = test_layout(raw=False)
     sdf = SplitDataFlow(train=[], val=images, test=None)
     df = sdf.build(split="val", max_datapoints=1)
-    collected = stu.collect_datapoint_from_dataflow(df)
+    collected: list[Image] = stu.collect_datapoint_from_dataflow(df)
     assert len(collected) == 1
     assert collected[0] in images
 
@@ -54,7 +55,7 @@ def test_splitdataflow_invalid_split_type_raises(test_layout)->None: # type: ign
 def test_merge_dataset_build_concatenates_datapoints(fintabnet, pubtabnet)->None: # type: ignore
     merge = MergeDataset(fintabnet, pubtabnet)
     df = merge.dataflow.build(split="val")
-    out = stu.collect_datapoint_from_dataflow(df)
+    out: list[Image] = stu.collect_datapoint_from_dataflow(df)
     assert len(out) == 4 + 3  # fintabnet val + pubtabnet val
 
 
@@ -75,12 +76,12 @@ def test_merge_dataset_explicit_dataflows(fintabnet, pubtabnet)->None: # type: i
     merge = MergeDataset(fintabnet, pubtabnet)
     merge.explicit_dataflows(df_fn, df_pt)
     df = merge.dataflow.build()
-    out = stu.collect_datapoint_from_dataflow(df)
+    out: list[Image] = stu.collect_datapoint_from_dataflow(df)
     assert len(out) == 2
 
 
-def test_merge_dataset_buffer_and_split_datasets(monkeypatch: pytest.MonkeyPatch,
-                                                 fintabnet, pubtabnet)->None: # type: ignore
+def test_merge_dataset_buffer_and_split_datasets(monkeypatch: pytest.MonkeyPatch, # type: ignore
+                                                 fintabnet, pubtabnet)->None:
     # Deterministic split for 7 datapoints -> train:5, val:1, test:1
     monkeypatch.setattr(
         np.random,
@@ -96,8 +97,8 @@ def test_merge_dataset_buffer_and_split_datasets(monkeypatch: pytest.MonkeyPatch
     assert len(split_ids["test"]) == 1
 
 
-def test_merge_dataset_create_split_by_id_reproduces(monkeypatch: pytest.MonkeyPatch,
-                                                     fintabnet, pubtabnet)->None: # type: ignore
+def test_merge_dataset_create_split_by_id_reproduces(monkeypatch: pytest.MonkeyPatch, # type: ignore
+                                                     fintabnet, pubtabnet)->None:
     monkeypatch.setattr(np.random, "binomial", lambda n, p, size: np.array([0, 0, 0, 0, 1, 1, 0]))
     merge = MergeDataset(fintabnet, pubtabnet)
     merge.buffer_datasets(split="val")

@@ -21,7 +21,7 @@ from unittest.mock import create_autospec
 
 import pytest
 
-from dd_core.datapoint.annotation import ImageAnnotation
+from dd_core.datapoint.annotation import ImageAnnotation,CategoryAnnotation
 from dd_core.datapoint.view import Image
 from dd_core.utils.object_types import get_type
 from deepdoctection.extern.base import DetectionResult, ObjectDetector
@@ -66,7 +66,7 @@ def test_image_layout_service_rebuilds_annotations(image_without_anns: Image, an
     expected_anns = result_image.get_annotation()
     assert len(expected_anns) == len(anns)
 
-    def sort_key(a):
+    def sort_key(a: CategoryAnnotation):
         return (a.category_id, a.bounding_box.to_list("xyxy"))
 
     anns_sorted = sorted(anns, key=sort_key)
@@ -76,4 +76,4 @@ def test_image_layout_service_rebuilds_annotations(image_without_anns: Image, an
         assert recreated.category_id == orig.category_id
         assert recreated.category_name == orig.category_name
         assert recreated.score == pytest.approx(orig.score if orig.score is not None else 1.0, rel=1e-6)
-        assert recreated.bounding_box.to_list("xyxy") == orig.bounding_box.to_list("xyxy")
+        assert recreated.bounding_box.to_list("xyxy") == orig.bounding_box.to_list("xyxy") # type: ignore

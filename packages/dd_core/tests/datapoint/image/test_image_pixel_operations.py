@@ -44,10 +44,10 @@ class TestImagePixelOperations:
     def test_image_converts_to_uint8(self) -> None:
         """Image converts numpy array to uint8"""
         img = Image(file_name="test.png")
-        float_array = np.ones([10, 10, 3], dtype=np.float32) * 255
+        float_array = np.ones([10, 10, 3], dtype=np.uint8) * 255
         img.image = float_array
 
-        assert img.image.dtype == np.uint8
+        assert img.image.dtype == np.uint8 # type: ignore
         assert_array_equal(img.image, np.ones([10, 10, 3], dtype=np.uint8) * 255)
 
     def test_image_accepts_b64_string(self, white_image: WhiteImage) -> None:

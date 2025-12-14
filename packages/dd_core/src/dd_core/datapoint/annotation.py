@@ -425,7 +425,7 @@ class CategoryAnnotation(Annotation):
         if annotation_id not in self.relationships[key_type]:
             self.relationships[key_type].append(annotation_id)
 
-    def get_relationship(self, key: ObjectTypes) -> list[str]:
+    def get_relationship(self, key: TypeOrStr) -> list[str]:
         """
         Returns a list of annotation ids stored with a given relationship key.
 
@@ -437,7 +437,7 @@ class CategoryAnnotation(Annotation):
         """
         relationships = getattr(self, "relationships", None)
         if relationships is not None and isinstance(relationships, dict) and hasattr(relationships, "get"):
-            return relationships.get(key, [])
+            return relationships.get(get_type(key), [])
         return []
 
     def remove_relationship(self, key: ObjectTypes, annotation_ids: Optional[Union[list[str], str]] = None) -> None:

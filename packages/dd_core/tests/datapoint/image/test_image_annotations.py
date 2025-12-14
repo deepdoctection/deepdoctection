@@ -115,7 +115,7 @@ class TestImageAnnotations:
 
         result = img.get_annotation(category_names="test_cat_1")
         assert len(result) == 1
-        assert result[0].category_name.value == "test_cat_1"
+        assert result[0].category_name.value == "test_cat_1"  # type: ignore
 
     def test_get_annotation_filters_by_multiple_category_names(self, white_image: WhiteImage) -> None:
         """get_annotation() filters by multiple category names"""

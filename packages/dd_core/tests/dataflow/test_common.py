@@ -43,7 +43,7 @@ def test_test_data_speed(simple_list_dataflow: DataFromList) -> None:
     df = TestDataSpeed(simple_list_dataflow, size=2, warmup=0)
 
     # Act
-    output = stu.collect_datapoint_from_dataflow(df=df)
+    output:list[list[str]] = stu.collect_datapoint_from_dataflow(df=df)
 
     # Assert
     assert len(output) == 3
@@ -60,7 +60,7 @@ def test_flatten_data_with_lists(simple_list_dataflow: DataFromList) -> None:
     df = FlattenData(simple_list_dataflow)
 
     # Act
-    output = stu.collect_datapoint_from_dataflow(df=df)
+    output:list[list[str]] = stu.collect_datapoint_from_dataflow(df=df)
 
     # Assert
     assert len(output) == 6
@@ -85,7 +85,7 @@ def test_map_data_adds_key_value(simple_dict_dataflow: DataFromList) -> None:
     df = MapData(simple_dict_dataflow, add_new_key)
 
     # Act
-    output = stu.collect_datapoint_from_dataflow(df=df)
+    output:list[dict[str,Any]] = stu.collect_datapoint_from_dataflow(df=df)
 
     # Assert
     assert len(output) == 3
@@ -107,7 +107,7 @@ def test_map_data_component_with_dict_index(simple_dict_dataflow: DataFromList) 
     df = MapDataComponent(simple_dict_dataflow, multiply_by_10, index="key2")
 
     # Act
-    output = stu.collect_datapoint_from_dataflow(df=df)
+    output:list[dict[str,Any]] = stu.collect_datapoint_from_dataflow(df=df)
 
     # Assert
     assert len(output) == 3
@@ -129,7 +129,7 @@ def test_map_data_component_with_list_index(simple_list_dataflow: DataFromList) 
     df = MapDataComponent(simple_list_dataflow, uppercase, index=0)
 
     # Act
-    output = stu.collect_datapoint_from_dataflow(df=df)
+    output:list[str] = stu.collect_datapoint_from_dataflow(df=df)
 
     # Assert
     assert len(output) == 3
@@ -147,7 +147,7 @@ def test_repeated_data_finite(simple_list_dataflow: DataFromList) -> None:
     df = RepeatedData(simple_list_dataflow, num=3)
 
     # Act
-    output = stu.collect_datapoint_from_dataflow(df=df)
+    output:list[str] = stu.collect_datapoint_from_dataflow(df=df)
 
     # Assert
     assert len(output) == 9
@@ -162,7 +162,7 @@ def test_repeated_data_infinite(simple_list_dataflow: DataFromList) -> None:
     df = RepeatedData(simple_list_dataflow, num=-1)
 
     # Act
-    output = stu.collect_datapoint_from_dataflow(df=df, max_datapoints=10)
+    output:list[list[str]] = stu.collect_datapoint_from_dataflow(df=df, max_datapoints=10)
 
     # Assert
     assert len(output) == 10
@@ -182,7 +182,7 @@ def test_concat_data_combines_dataflows(simple_list_dataflow: DataFromList, simp
     df = ConcatData([df1, df2])
 
     # Act
-    output = stu.collect_datapoint_from_dataflow(df=df)
+    output:list[list[str]] = stu.collect_datapoint_from_dataflow(df=df)
 
     # Assert
     assert len(output) == 4
@@ -204,7 +204,7 @@ def test_concat_data_preserves_order() -> None:
     df = ConcatData([df1, df2, df3])
 
     # Act
-    output = stu.collect_datapoint_from_dataflow(df=df)
+    output:list[dict[str,Any]] = stu.collect_datapoint_from_dataflow(df=df)
 
     # Assert
     assert len(output) == 5
@@ -221,7 +221,7 @@ def test_join_data_with_lists() -> None:
     df = JoinData([df1, df2])
 
     # Act
-    output = stu.collect_datapoint_from_dataflow(df=df)
+    output:list[list[str]] = stu.collect_datapoint_from_dataflow(df=df)
 
     # Assert
     assert len(output) == 3
@@ -241,7 +241,7 @@ def test_join_data_with_dicts() -> None:
     df = JoinData([df1, df2])
 
     # Act
-    output = stu.collect_datapoint_from_dataflow(df=df)
+    output:list[dict[str,Any]] = stu.collect_datapoint_from_dataflow(df=df)
 
     # Assert
     assert len(output) == 2
@@ -258,7 +258,7 @@ def test_batch_data_full_batches(simple_list_dataflow: DataFromList) -> None:
     df_batch = BatchData(df, batch_size=2, remainder=False)
 
     # Act
-    output = stu.collect_datapoint_from_dataflow(df=df_batch)
+    output:list[list[str]] = stu.collect_datapoint_from_dataflow(df=df_batch)
 
     # Assert
     assert len(output) == 3
@@ -277,7 +277,7 @@ def test_batch_data_with_remainder() -> None:
     df_batch = BatchData(df, batch_size=2, remainder=True)
 
     # Act
-    output = stu.collect_datapoint_from_dataflow(df=df_batch)
+    output:list[list[str]] = stu.collect_datapoint_from_dataflow(df=df_batch)
 
     # Assert
     assert len(output) == 3
@@ -296,7 +296,7 @@ def test_batch_data_dict_elements() -> None:
     df_batch = BatchData(df, batch_size=2, remainder=False)
 
     # Act
-    output = stu.collect_datapoint_from_dataflow(df=df_batch)
+    output:list[list[dict[str,Any]]] = stu.collect_datapoint_from_dataflow(df=df_batch)
 
     # Assert
     assert len(output) == 2

@@ -44,16 +44,16 @@ REQUIRES_PT_AND_TR = pytest.mark.skipif(
 )
 
 
-def _dummy_tokenizer()->"DummyTokenizer":
-    class DummyTokenizer:
-        def __call__(self, text, return_tensors="pt", padding=True, truncation=True, max_length=512):
-            import torch
+class DummyTokenizer:
+    def __call__(self, text, return_tensors="pt", padding=True, truncation=True, max_length=512):
+        import torch
 
-            return {
-                "input_ids": torch.tensor([[5, 6, 7]], dtype=torch.long),
-                "attention_mask": torch.tensor([[1, 1, 1]], dtype=torch.long),
-            }
+        return {
+            "input_ids": torch.tensor([[5, 6, 7]], dtype=torch.long),
+            "attention_mask": torch.tensor([[1, 1, 1]], dtype=torch.long),
+        }
 
+def _dummy_tokenizer()-> DummyTokenizer:
     return DummyTokenizer()
 
 
