@@ -47,7 +47,7 @@ class TestImagePixelOperations:
         float_array = np.ones([10, 10, 3], dtype=np.uint8) * 255
         img.image = float_array
 
-        assert img.image.dtype == np.uint8 # type: ignore
+        assert img.image.dtype == np.uint8
         assert_array_equal(img.image, np.ones([10, 10, 3], dtype=np.uint8) * 255)
 
     def test_image_accepts_b64_string(self, white_image: WhiteImage) -> None:

@@ -15,6 +15,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""
+Unit tests for verifying deepdoctection's integration with python-doctr.
+
+This module contains test cases to validate the functionality of DoctrTextlineDetector,
+DoctrTextRecognizer, and DocTrRotationTransformer components from the deepdoctection package,
+mocking their external dependencies to ensure tests run predictably.
+
+Tests in this module:
+- `test_doctr_textline_detector_predict_basic`: Tests text line detection using a mock model and
+  prediction function.
+- `test_doctr_text_recognizer_predict_basic`: Tests text recognition functionality using a mock
+  model and custom logic for text recognition outputs.
+- `test_doctr_rotation_transformer_predict_and_transform`: Validates image rotation predictions
+  and transformations.
+"""
+
 from unittest.mock import MagicMock
 
 import numpy as np
@@ -37,6 +53,7 @@ REQUIRES_PT_AND_DOCTR = pytest.mark.skipif(
 
 @REQUIRES_PT_AND_DOCTR
 def test_doctr_textline_detector_predict_basic(monkeypatch: pytest.MonkeyPatch) -> None:
+    """test text line detection using mocked model and prediction function."""
     # Mock model construction (no real weights/model)
     monkeypatch.setattr(
         "deepdoctection.extern.doctrocr.DoctrTextlineDetector.get_wrapped_model",
@@ -45,7 +62,7 @@ def test_doctr_textline_detector_predict_basic(monkeypatch: pytest.MonkeyPatch) 
     )
 
     # Mock prediction helper
-    def _fake_predict(np_img, predictor): # type: ignore
+    def _fake_predict(np_img, predictor):  # type: ignore # pylint:disable=W0613
         return [
             DetectionResult(box=[0, 0, 10, 10], class_id=1, score=0.9, class_name=LayoutType.WORD),
             DetectionResult(box=[20, 20, 40, 40], class_id=1, score=0.8, class_name=LayoutType.WORD),
@@ -69,13 +86,14 @@ def test_doctr_textline_detector_predict_basic(monkeypatch: pytest.MonkeyPatch) 
 
 @REQUIRES_PT_AND_DOCTR
 def test_doctr_text_recognizer_predict_basic(monkeypatch: pytest.MonkeyPatch) -> None:
+    """test text recognition using mocked model and custom prediction logic."""
     monkeypatch.setattr(
         "deepdoctection.extern.doctrocr.DoctrTextRecognizer.get_wrapped_model",
         MagicMock(return_value=MagicMock()),
         raising=True,
     )
 
-    def _fake_recognize(inputs, predictor): # type: ignore
+    def _fake_recognize(inputs, predictor):  # type: ignore
         return [
             DetectionResult(score=0.7, text="Foo", uuid=inputs[0][0]),
             DetectionResult(score=0.8, text="Bar", uuid=inputs[1][0]),
@@ -101,6 +119,7 @@ def test_doctr_text_recognizer_predict_basic(monkeypatch: pytest.MonkeyPatch) ->
 
 @REQUIRES_PT_AND_DOCTR
 def test_doctr_rotation_transformer_predict_and_transform(monkeypatch: pytest.MonkeyPatch) -> None:
+    """test image rotation predictions and transformations."""
     monkeypatch.setattr(
         "deepdoctection.extern.doctrocr.estimate_orientation",
         MagicMock(return_value=90.0),

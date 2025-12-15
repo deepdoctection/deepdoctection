@@ -21,7 +21,7 @@ Tests round-trip property, idempotency, abs↔rel conversions, and property-base
 """
 
 import pytest
-from hypothesis import given, settings # type: ignore
+from hypothesis import given, settings  # type: ignore
 from hypothesis import strategies as st
 
 from dd_core.datapoint import BoundingBox
@@ -100,8 +100,17 @@ class TestBBoxTransform:
         ],
     )
     def test_abs_to_rel_expected_values(
-        self, ulx: int, uly: int, lrx: int, lry: int, img_w: int, img_h: int, 
-        exp_ulx: float, exp_uly: float, exp_lrx: float, exp_lry: float
+        self,
+        ulx: int,
+        uly: int,
+        lrx: int,
+        lry: int,
+        img_w: int,
+        img_h: int,
+        exp_ulx: float,
+        exp_uly: float,
+        exp_lrx: float,
+        exp_lry: float,
     ) -> None:
         """Test absolute→relative with expected normalized values"""
         box_abs = BoundingBox(absolute_coords=True, ulx=ulx, uly=uly, lrx=lrx, lry=lry)
@@ -145,8 +154,17 @@ class TestBBoxTransform:
         ],
     )
     def test_rel_to_abs_expected_values(
-        self, ulx: float, uly: float, lrx: float, lry: float, img_w: int, img_h: int,
-        exp_ulx: int, exp_uly: int, exp_lrx: int, exp_lry: int
+        self,
+        ulx: float,
+        uly: float,
+        lrx: float,
+        lry: float,
+        img_w: int,
+        img_h: int,
+        exp_ulx: int,
+        exp_uly: int,
+        exp_lrx: int,
+        exp_lry: int,
     ) -> None:
         """Test relative→absolute with expected pixel values"""
         box_rel = BoundingBox(absolute_coords=False, ulx=ulx, uly=uly, lrx=lrx, lry=lry)
@@ -191,8 +209,9 @@ class TestBBoxTransform:
         img_h=st.integers(min_value=100, max_value=8000),
     )
     @settings(max_examples=100, deadline=None)
-    def test_property_roundtrip_preserves_key_abs_start(self, ulx:int, uly:int, w:int, h:int,
-                                                        img_w:int, img_h:int) -> None:
+    def test_property_roundtrip_preserves_key_abs_start(
+        self, ulx: int, uly: int, w: int, h: int, img_w: int, img_h: int
+    ) -> None:
         """Property: abs→rel→abs round-trip preserves internal key for any valid box"""
         # Ensure box doesn't exceed image bounds for meaningful test
         if ulx + w > img_w or uly + h > img_h:
@@ -215,8 +234,9 @@ class TestBBoxTransform:
         img_h=st.integers(min_value=100, max_value=8000),
     )
     @settings(max_examples=50, deadline=None)
-    def test_property_roundtrip_preserves_key_rel_start(self, ulx:int, uly:int, w:int, h:int,
-                                                        img_w:int, img_h:int) -> None:
+    def test_property_roundtrip_preserves_key_rel_start(
+        self, ulx: int, uly: int, w: int, h: int, img_w: int, img_h: int
+    ) -> None:
         """Property: rel→abs→rel round-trip preserves internal key for any valid box"""
         # Ensure box stays within [0, 1]
         if ulx + w > 1.0 or uly + h > 1.0:
@@ -224,7 +244,7 @@ class TestBBoxTransform:
 
         try:
             box_rel = BoundingBox(absolute_coords=False, ulx=ulx, uly=uly, width=w, height=h)
-        except BaseException:
+        except BaseException: # pylint:disable=W0718
             # Skip invalid boxes (e.g., due to rounding edge cases)
             return
 
@@ -233,7 +253,7 @@ class TestBBoxTransform:
         try:
             box_abs = box_rel.transform(image_width=img_w, image_height=img_h, absolute_coords=True)
             box_rel_2 = box_abs.transform(image_width=img_w, image_height=img_h, absolute_coords=False)
-        except BaseException:
+        except BaseException:  # pylint:disable=W0718
             # Skip if transform fails due to edge cases
             return
 
@@ -252,7 +272,9 @@ class TestBBoxTransform:
         img_h=st.integers(min_value=100, max_value=8000),
     )
     @settings(max_examples=50, deadline=None)
-    def test_property_rel_coords_in_valid_range(self, ulx:int, uly:int, w:int, h:int, img_w:int, img_h:int) -> None:
+    def test_property_rel_coords_in_valid_range(
+        self, ulx: int, uly: int, w: int, h: int, img_w: int, img_h: int
+    ) -> None:
         """Property: abs→rel always produces coords in [0, 1]"""
 
         # Ensure box is valid
@@ -263,7 +285,7 @@ class TestBBoxTransform:
 
         try:
             box_rel = box_abs.transform(image_width=img_w, image_height=img_h, absolute_coords=False)
-        except BaseException:
+        except BaseException:  # pylint:disable=W0718
             # Skip boxes that fail transformation (e.g., due to rounding to zero width/height)
             # BoundingBoxError is a BaseException, not Exception
             return
@@ -282,8 +304,9 @@ class TestBBoxTransform:
         img_h=st.integers(min_value=100, max_value=8000),
     )
     @settings(max_examples=100, deadline=None)
-    def test_property_transform_idempotency_absolute(self, ulx:int, uly:int, w:int, h:int,
-                                                     img_w:int, img_h:int) -> None:
+    def test_property_transform_idempotency_absolute(
+        self, ulx: int, uly: int, w: int, h: int, img_w: int, img_h: int
+    ) -> None:
         """Property: transform(same_mode) is identity for absolute boxes"""
         box = BoundingBox(absolute_coords=True, ulx=ulx, uly=uly, width=w, height=h)
         result = box.transform(image_width=img_w, image_height=img_h, absolute_coords=True)
@@ -299,8 +322,9 @@ class TestBBoxTransform:
         img_h=st.integers(min_value=100, max_value=8000),
     )
     @settings(max_examples=100, deadline=None)
-    def test_property_transform_idempotency_relative(self, ulx:int, uly:int, w:int, h:int,
-                                                     img_w:int, img_h:int) -> None:
+    def test_property_transform_idempotency_relative(
+        self, ulx: int, uly: int, w: int, h: int, img_w: int, img_h: int
+    ) -> None:
         """Property: transform(same_mode) is identity for relative boxes"""
         # Ensure box stays within [0, 1]
         if ulx + w > 1.0 or uly + h > 1.0:
@@ -308,7 +332,7 @@ class TestBBoxTransform:
 
         try:
             box = BoundingBox(absolute_coords=False, ulx=ulx, uly=uly, width=w, height=h)
-        except Exception:
+        except Exception:  # pylint:disable=W0718
             return
 
         result = box.transform(image_width=img_w, image_height=img_h, absolute_coords=False)

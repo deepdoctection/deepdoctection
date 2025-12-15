@@ -15,6 +15,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""
+This module contains tests for integrating the python-doctr library with DeepDoctection components.
+
+It validates the functionality of Doctr textline detector and text recognizer using specified weights
+and configurations. The tests ensure that models can be built, used, and cleared correctly on devices
+where the dependencies are available.
+
+"""
+
 import pytest
 
 from dd_core.utils import get_torch_device
@@ -34,11 +43,12 @@ REQUIRES_PT_AND_DOCTR = pytest.mark.skipif(
 @REQUIRES_PT_AND_DOCTR
 @pytest.mark.slow
 def test_slow_build_doctr_textline_detector_pt() -> None:
+    """test basic prediction using mocked tokenizers and models."""
     weights = "doctr/db_resnet50/db_resnet50-ac60cadc.pt"
     weights_path = ModelDownloadManager.maybe_download_weights_and_configs(weights)
     profile = ModelCatalog.get_profile(weights)
     device = get_torch_device()
-    det = DoctrTextlineDetector(profile.architecture, weights_path, profile.categories, device) # type: ignore
+    det = DoctrTextlineDetector(profile.architecture, weights_path, profile.categories, device)  # type: ignore
 
     assert det.doctr_predictor is not None
     assert len(det.get_category_names()) > 0
@@ -47,10 +57,11 @@ def test_slow_build_doctr_textline_detector_pt() -> None:
     assert det.doctr_predictor is None
 
 
-"""
+
 @REQUIRES_PT_AND_DOCTR
 @pytest.mark.slow
 def test_slow_build_doctr_text_recognizer_pt() -> None:
+    """test basic prediction using mocked tokenizers and models."""
     weights = "doctr/crnn_vgg16_bn/crnn_vgg16_bn-9762b0b0.pt"
     weights_path = ModelDownloadManager.maybe_download_weights_and_configs(weights)
     profile = ModelCatalog.get_profile(weights)
@@ -61,4 +72,4 @@ def test_slow_build_doctr_text_recognizer_pt() -> None:
 
     rec.clear_model()
     assert rec.doctr_predictor is None
-"""
+

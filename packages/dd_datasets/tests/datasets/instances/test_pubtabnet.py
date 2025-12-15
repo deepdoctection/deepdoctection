@@ -42,7 +42,7 @@ def test_dataset_pubtabnet_returns_image(monkeypatch: pytest.MonkeyPatch, datase
 
     # Arrange
     pubtabnet = Pubtabnet()
-    pubtabnet.dataflow.get_workdir = lambda: Path(dataset_test_base_dir) / pubtabnet.dataflow.location # type: ignore
+    pubtabnet.dataflow.get_workdir = lambda: Path(dataset_test_base_dir) / pubtabnet.dataflow.location  # type: ignore
     df = pubtabnet.dataflow.build()
 
     # Act
@@ -65,7 +65,7 @@ def test_dataset_pubtabnet_with_load_image_returns_image(
 
     # Arrange
     pubtabnet = Pubtabnet()
-    pubtabnet.dataflow.get_workdir = lambda: Path(dataset_test_base_dir) / pubtabnet.dataflow.location # type: ignore
+    pubtabnet.dataflow.get_workdir = lambda: Path(dataset_test_base_dir) / pubtabnet.dataflow.location  # type: ignore
     df = pubtabnet.dataflow.build(load_image=True)
 
     # Act

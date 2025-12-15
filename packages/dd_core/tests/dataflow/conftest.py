@@ -37,7 +37,7 @@ def ficture_simple_list() -> list[list[str]]:
 
 
 @fixture(name="simple_list_dataflow")
-def fixture_simple_list_dataflow(simple_list) -> DataFromList:
+def fixture_simple_list_dataflow(simple_list: list[list[str]]) -> DataFromList:
     """
     Simple dataflow with list elements
     """
@@ -53,7 +53,7 @@ def ficture_simple_dict() -> list[dict[str, Any]]:
 
 
 @fixture(name="simple_dict_dataflow")
-def fixture_simple_dict_dataflow(simple_dict_list) -> DataFromList:
+def fixture_simple_dict_dataflow(simple_dict_list: list[dict[str, Any]]) -> DataFromList:
     """
     Simple dataflow with dict elements
     """
@@ -90,7 +90,7 @@ def fixture_numerical_dataset() -> list[list[list[float]]]:
 
 
 @fixture(name="numerical_dataflow")
-def fixture_numerical_dataflow(numerical_dataset) -> DataFromList:
+def fixture_numerical_dataflow(numerical_dataset: list[list[list[float]]]) -> DataFromList:
     """
     Numerical dataflow for stats testing
     """

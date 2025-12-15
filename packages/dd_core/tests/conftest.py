@@ -4,9 +4,9 @@ Test utilities for dd_datapoint tests
 Minimal version to support standalone package tests
 """
 
-from typing import Any
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 import pytest
@@ -68,7 +68,7 @@ class WhiteImage:
 class XFundSample:
     """Deterministic XFund sample datapoint for testing."""
 
-    data: dict[str,Any] = field(default_factory=lambda: XFUND_SAMPLE["documents"][0]) # type: ignore
+    data: dict[str, Any] = field(default_factory=lambda: XFUND_SAMPLE["documents"][0])  # type: ignore
     np_array_shape: tuple[int, int, int] = (3508, 2480, 3)
 
 
@@ -80,6 +80,7 @@ def fixture_page_json_path() -> Path:
 
 @pytest.fixture(name="pdf_file_path_two_pages")
 def fixture_pdf_file_path_two_pages() -> Path:
+    """Provide path to a sample PDF file with two pages."""
     return stu.asset_path("pdf_file_two_pages")
 
 

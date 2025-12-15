@@ -15,6 +15,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""
+This module contains an integration test for the HFDetrDerivedDetector class from the
+deepdoctection.extern.hfdetr module. The test ensures that the detector can be initialized
+with correct configurations, performs as expected, and cleans up resources properly.
+
+The test requires PyTorch, Transformers, and Timm to be installed. If these dependencies
+are not available, the test will be skipped.
+"""
+
 import pytest
 
 from dd_core.utils import get_torch_device
@@ -31,6 +40,7 @@ REQUIRES_PT_AND_TR = pytest.mark.skipif(
 @REQUIRES_PT_AND_TR
 @pytest.mark.slow
 def test_slow_build_hfdetr_detector_pt() -> None:
+    """test basic prediction using mocked tokenizers and models."""
     # Use Table Transformer pre-trained model as example
     weights = "microsoft/table-transformer-detection/model.safetensors"
     weights_path = ModelDownloadManager.maybe_download_weights_and_configs(weights)

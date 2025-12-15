@@ -19,13 +19,8 @@
 Testing Image serialization (as_dict, as_json, from_file, save)
 """
 
-import json
 from pathlib import Path
 
-import numpy as np
-from pytest import mark
-
-import shared_test_utils as stu
 from dd_core.datapoint import BoundingBox, Image, ImageAnnotation
 
 from ..conftest import WhiteImage
@@ -89,7 +84,7 @@ class TestImageSerialization:
         img2 = Image(**data)
 
         assert len(img2.annotations) == 1
-        assert img2.annotations[0].category_name.value == "test_cat_1" # type: ignore
+        assert img2.annotations[0].category_name.value == "test_cat_1"  # type: ignore
         assert img2.annotations[0].bounding_box == box
 
     @staticmethod

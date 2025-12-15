@@ -196,14 +196,14 @@ class TestBBoxExport:
         box = BoundingBox(absolute_coords=True, ulx=10, uly=20, width=100, height=50)
 
         with pytest.raises(AssertionError):
-            box.to_np_array(mode="invalid") # type:ignore
+            box.to_np_array(mode="invalid")  # type:ignore
 
     def test_to_list_invalid_mode_raises(self) -> None:
         """to_list with invalid mode raises AssertionError"""
         box = BoundingBox(absolute_coords=True, ulx=10, uly=20, width=100, height=50)
 
         with pytest.raises(AssertionError):
-            box.to_list(mode="invalid") # type:ignore
+            box.to_list(mode="invalid")  # type:ignore
 
     def test_area_absolute_correct_value(self) -> None:
         """area returns width * height for absolute coords"""
@@ -278,7 +278,7 @@ class TestBBoxExport:
         box = BoundingBox(absolute_coords=True, ulx=10, uly=20, width=100, height=50)
 
         for mode in ["xyxy", "xywh", "poly"]:
-            arr = box.to_np_array(mode=mode) # type:ignore
+            arr = box.to_np_array(mode=mode)  # type:ignore
             assert arr.dtype == np.float32
 
     def test_to_np_array_shape_xyxy(self) -> None:

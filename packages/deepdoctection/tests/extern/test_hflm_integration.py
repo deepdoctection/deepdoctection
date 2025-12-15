@@ -15,6 +15,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""
+Integration tests for language models using Hugging Face's transformers library.
+
+This module contains integration tests for various language model capabilities,
+such as sequence classification, token classification, and language detection,
+utilizing Hugging Face's `transformers` library. The tests ensure that the models
+are properly instantiated, configured, and capable of making predictions.
+
+"""
+
 from __future__ import annotations
 
 import os
@@ -35,7 +45,6 @@ if pytorch_available() and transformers_available():
         XLMRobertaConfig,
         XLMRobertaForSequenceClassification,
         XLMRobertaForTokenClassification,
-        XLMRobertaTokenizerFast,
     )
 
 REQUIRES_PT_AND_TR = pytest.mark.skipif(
@@ -45,23 +54,34 @@ REQUIRES_PT_AND_TR = pytest.mark.skipif(
 
 
 class DummyTokenizer:
-    def __call__(self, text, return_tensors="pt", padding=True, truncation=True, max_length=512):
+    """
+    A dummy tokenizer for tokenizing input text.
+
+    This class provides a callable interface to tokenize text data, emulating a basic
+    tokenization process similar to popular tokenizer implementations. It is primarily
+    used for testing or demonstration purposes and does not involve actual tokenization
+    logic.
+
+    """
+    def __call__(self, text, return_tensors="pt", padding=True, truncation=True, max_length=512):  # type: ignore
         import torch
 
         return {
-            "input_ids": torch.tensor([[5, 6, 7]], dtype=torch.long),
+            "input_ids": torch.tensor([[5, 6, 7]], dtype=torch.long),  # pylint:disable=W0621
             "attention_mask": torch.tensor([[1, 1, 1]], dtype=torch.long),
         }
 
-def _dummy_tokenizer()-> DummyTokenizer:
+
+def _dummy_tokenizer() -> DummyTokenizer:
     return DummyTokenizer()
 
 
 @REQUIRES_PT_AND_TR
 @pytest.mark.slow
-def test_hflm_sequence_slow_build_and_predict(tmp_path: PathLikeOrStr, monkeypatch: pytest.MonkeyPatch) -> None:
-    cfg = XLMRobertaConfig(num_labels=2)
-    model = XLMRobertaForSequenceClassification(cfg)
+def test_hflm_sequence_slow_build_and_predict(tmp_path: PathLikeOrStr) -> None:
+    """Test sequence classification using a tiny model."""
+    cfg = XLMRobertaConfig(num_labels=2)  # pylint:disable=E0606
+    model = XLMRobertaForSequenceClassification(cfg) # pylint:disable=E0606
     model.save_pretrained(tmp_path)
     cfg.save_pretrained(tmp_path)
 
@@ -86,7 +106,8 @@ def test_hflm_sequence_slow_build_and_predict(tmp_path: PathLikeOrStr, monkeypat
 
 @REQUIRES_PT_AND_TR
 @pytest.mark.slow
-def test_hflm_token_slow_build_and_predict(tmp_path: PathLikeOrStr, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_hflm_token_slow_build_and_predict(tmp_path: PathLikeOrStr) -> None:
+    """Test token classification using a tiny model."""
     cfg = XLMRobertaConfig(num_labels=3)
     model = XLMRobertaForTokenClassification(cfg)
     model.save_pretrained(tmp_path)
@@ -118,6 +139,7 @@ def test_hflm_token_slow_build_and_predict(tmp_path: PathLikeOrStr, monkeypatch:
 @REQUIRES_PT_AND_TR
 @pytest.mark.slow
 def test_hflm_language_slow_build_and_predict(tmp_path: PathLikeOrStr, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Test language detection using a tiny model."""
     # Build a tiny language detection model (sequence classification head)
     cfg = XLMRobertaConfig(num_labels=3)
     model = XLMRobertaForSequenceClassification(cfg)
@@ -142,4 +164,4 @@ def test_hflm_language_slow_build_and_predict(tmp_path: PathLikeOrStr, monkeypat
 
     res = det.predict("Sample text for language detection.")
     assert res.class_name in categories.values()
-    assert 0.0 <= res.score <= 1.0 # type: ignore
+    assert 0.0 <= res.score <= 1.0  # type: ignore

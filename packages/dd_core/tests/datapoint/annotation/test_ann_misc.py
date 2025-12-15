@@ -15,6 +15,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""
+This module provides test cases for serialization, deserialization, and validation of annotation-related
+classes, such as `CategoryAnnotation`, `ImageAnnotation`, and `ContainerAnnotation`. It ensures proper
+handling of data roundtrips, sub-categories, relationships, and validation functionalities.
+"""
 
 import pytest
 

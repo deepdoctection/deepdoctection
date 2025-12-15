@@ -15,13 +15,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""
+This module provides reusable pytest fixtures for testing components related to data processing with images,
+annotations, and relevant formats like COCO and XFUND. Fixtures defined in this module include utilities
+for loading and preparing structured data, images, and datasets used in various test cases.
+
+Fixtures serve as reusable components essential for setting up test environments, ensuring consistency,
+and reducing code repetition across test modules.
+"""
+
 import json
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 import pytest
 from pytest import fixture
-from typing import Any
 
 import shared_test_utils as stu
 from dd_core.dataflow.custom_serialize import SerializerCoco
@@ -78,7 +87,7 @@ def fixture_image_with_layout_anns(image: Image) -> Image:
 @fixture(name="table_image")
 def fixture_table_image(image: Image) -> Image:
     """An image from a table image annotation crop"""
-    return image.get_annotation(category_names="table")[0].image # type: ignore
+    return image.get_annotation(category_names="table")[0].image  # type: ignore
 
 
 @fixture(name="coco_datapoint")
@@ -92,12 +101,14 @@ def fixture_coco_datapoint() -> dict[str, Any]:
 
 @fixture(name="xfund_datapoint")
 def fixture_xfund_datapoint() -> dict[str, Any]:
+    """Provide a XFUND datapoint dict."""
     xfund_dict = XFundSample().data
     return xfund_dict
 
 
 @fixture(name="xfund_image")
 def fixture_xfund_image(xfund_datapoint: dict[str, Any], monkeypatch: pytest.MonkeyPatch) -> Image:
+    """Provide an Image instance loaded from xfund_datapoint fixture."""
 
     def _fake_loader(_path: str):  # type: ignore
         return np.zeros((3508, 2480, 3), dtype=np.uint8)
@@ -127,7 +138,7 @@ def fixture_xfund_image(xfund_datapoint: dict[str, Any], monkeypatch: pytest.Mon
         "text": {"token_class": {"other": 1, "question": 2, "answer": 3, "header": 4}},
     }
 
-    img: Image = xfund_to_image( # type: ignore
+    img: Image = xfund_to_image(  # type: ignore
         load_image=False,
         fake_score=False,
         categories_dict_name_as_key=categories_dict,
@@ -139,29 +150,34 @@ def fixture_xfund_image(xfund_datapoint: dict[str, Any], monkeypatch: pytest.Mon
 
 @fixture(name="xfund_raw_layoutlm_features")
 def fixture_xfund_raw_layoutlm_features() -> dict[str, Any]:
+    """Provide a XFUND raw layoutlm features dict."""
     return XFUND_RAW_LAYOUTLM_FEATURES
 
 
 @fixture(name="layoutlm_features")
-def fixture_layoutlm_features() ->  dict[str, Any]:
+def fixture_layoutlm_features() -> dict[str, Any]:
+    """Provide a XFUND layoutlm features dict."""
     return XFUND_LAYOUTLM_FEATURES[0]
 
 
 @fixture(name="prodigy_datapoint")
 def fixture_prodigy_datapoint() -> dict[str, Any]:
+    """Provide a Prodigy datapoint dict."""
     return PRODIGY_DATAPOINT
 
 
 @fixture(name="pubtabnet_datapoint")
 def fixture_pubtabnet_datapoint() -> dict[str, Any]:
+    """Provide a PubTabNet datapoint dict."""
     path = stu.asset_path("pubtabnet_like")
-    with open(path, "r") as f:
+    with open(path, "r", encoding="utf-8") as f:
         pubtabnet_dict = json.load(f)
     return pubtabnet_dict
 
 
 @fixture(name="iiitar13k_datapoint")
 def fixture_iiitar13k_datapoint() -> dict[str, Any]:
+    """Provide a IIITAR13K datapoint dict."""
     return IIITAR13K_DATAPOINT
 
 
@@ -174,12 +190,13 @@ def fixture_dp_image() -> Image:
 
 
 @fixture(name="annotations")
-def fixture_annotations_dict(dp_image: Image): # type: ignore
+def fixture_annotations_dict(dp_image: Image):  # type: ignore
+    """fixture annotations dict"""
     path = stu.asset_path("annotations")
-    with open(path, "r") as f:
+    with open(path, "r", encoding="utf-8") as f:
         annotations_dict = json.load(f)
 
-    def make_annotation(use_layout: bool, use_captions: bool)-> Image:
+    def make_annotation(use_layout: bool, use_captions: bool) -> Image:
 
         layout_anns = [ImageAnnotation(**data) for data in annotations_dict["layout_anns"]]
         captions = [ImageAnnotation(**data) for data in annotations_dict["caption_anns"]]

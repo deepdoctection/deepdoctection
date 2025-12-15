@@ -40,7 +40,7 @@ def test_dataset_fintabnet_returns_image(monkeypatch: pytest.MonkeyPatch, datase
     )
 
     fintabnet = Fintabnet()
-    fintabnet.dataflow.get_workdir = lambda: Path(dataset_test_base_dir) / fintabnet.dataflow.location # type: ignore
+    fintabnet.dataflow.get_workdir = lambda: Path(dataset_test_base_dir) / fintabnet.dataflow.location  # type: ignore
     df = fintabnet.dataflow.build()
 
     df_list: list[Image] = stu.collect_datapoint_from_dataflow(df)
@@ -58,7 +58,7 @@ def test_dataset_fintabnet_with_load_image_returns_image(
     )
 
     fintabnet = Fintabnet()
-    fintabnet.dataflow.get_workdir = lambda: Path(dataset_test_base_dir) / fintabnet.dataflow.location # type: ignore
+    fintabnet.dataflow.get_workdir = lambda: Path(dataset_test_base_dir) / fintabnet.dataflow.location  # type: ignore
 
     df = fintabnet.dataflow.build(load_image=True)
 

@@ -83,6 +83,6 @@ class TestImageAnnotationBaseView:
             try:
                 _ = layouts[0].non_existent_attribute_xyz
                 assert False, "Expected AttributeError"
-            except AnnotationError as e:
+            except AnnotationError as _:
                 # Should raise some kind of error
                 assert True

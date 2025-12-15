@@ -22,8 +22,8 @@ Testing the module utils.transform
 from typing import Literal
 
 import numpy as np
-from numpy.typing import NDArray
 import pytest
+from numpy.typing import NDArray
 
 from dd_core.utils.transform import (
     InferenceResize,
@@ -48,7 +48,7 @@ class TestBoxToPoint4:
             (np.array([[0.0, 0.0, 10.0, 10.0], [5.0, 5.0, 15.0, 15.0]], dtype=np.float32), (8, 2)),
         ],
     )
-    def test_box_to_point4_shape(boxes: NDArray[np.float32], expected_shape: tuple[int,int]) -> None:
+    def test_box_to_point4_shape(boxes: NDArray[np.float32], expected_shape: tuple[int, int]) -> None:
         """Test box_to_point4 returns correct shape"""
         result = box_to_point4(boxes)
         assert result.shape == expected_shape
@@ -80,7 +80,7 @@ class TestPoint4ToBox:
             ),
         ],
     )
-    def test_point4_to_box_shape(points: NDArray[np.float32], expected_shape: tuple[int,int]) -> None:
+    def test_point4_to_box_shape(points: NDArray[np.float32], expected_shape: tuple[int, int]) -> None:
         """Test point4_to_box returns correct shape"""
         result = point4_to_box(points)
         assert result.shape == expected_shape
@@ -91,8 +91,7 @@ class TestResizeTransform:
 
     @staticmethod
     @pytest.mark.parametrize("h,w,new_h,new_w", [(100, 150, 50, 75), (100, 150, 200, 300)])
-    def test_resize_transform_apply_image(np_image: NDArray[np.uint8], h: int, w: int,
-                                          new_h: int, new_w: int) -> None:
+    def test_resize_transform_apply_image(np_image: NDArray[np.uint8], h: int, w: int, new_h: int, new_w: int) -> None:
         """Test ResizeTransform.apply_image"""
         transform = ResizeTransform(h, w, new_h, new_w, "VIZ")
         result = transform.apply_image(np_image)
@@ -131,8 +130,9 @@ class TestNormalizeImage:
             (np.array([0.485, 0.456, 0.406], dtype=np.float32), np.array([0.229, 0.224, 0.225], dtype=np.float32)),
         ],
     )
-    def test_normalize_image(np_image: NDArray[np.uint8], pixel_mean: NDArray[np.float32],
-                             pixel_std: NDArray[np.float32]) -> None:
+    def test_normalize_image(
+        np_image: NDArray[np.uint8], pixel_mean: NDArray[np.float32], pixel_std: NDArray[np.float32]
+    ) -> None:
         """Test normalize_image"""
         result = normalize_image(np_image, pixel_mean, pixel_std)
         assert result.shape == np_image.shape
@@ -157,7 +157,9 @@ class TestPadTransform:
 
     @staticmethod
     @pytest.mark.parametrize("top,right,bottom,left", [(10, 20, 10, 20)])
-    def test_pad_transform_apply_image(np_image: NDArray[np.uint8], top: int, right: int, bottom: int, left: int) -> None:
+    def test_pad_transform_apply_image(
+        np_image: NDArray[np.uint8], top: int, right: int, bottom: int, left: int
+    ) -> None:
         """Test PadTransform.apply_image"""
         transform = PadTransform(top, right, bottom, left)
         result = transform.apply_image(np_image)
@@ -167,7 +169,9 @@ class TestPadTransform:
 
     @staticmethod
     @pytest.mark.parametrize("top,right,bottom,left", [(10, 20, 10, 20)])
-    def test_pad_transform_apply_coords(coords: NDArray[np.float32], top: int, right: int, bottom: int, left: int) -> None:
+    def test_pad_transform_apply_coords(
+        coords: NDArray[np.float32], top: int, right: int, bottom: int, left: int
+    ) -> None:
         """Test PadTransform.apply_coords"""
         transform = PadTransform(top, right, bottom, left)
         result = transform.apply_coords(coords.copy())

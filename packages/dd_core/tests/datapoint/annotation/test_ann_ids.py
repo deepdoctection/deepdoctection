@@ -15,6 +15,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""
+Unit tests for annotation ID and state ID generation.
+
+This module provides test cases to verify the behavior and determinism of
+annotation ID and state ID generation in the CategoryAnnotation system. Tests
+cover various scenarios, including generation based on external IDs, UUIDs, and
+attribute changes. Additionally, this module also tests the propagation and
+interactions of annotation IDs in nested structures.
+"""
 
 import pytest
 

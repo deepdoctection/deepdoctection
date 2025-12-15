@@ -52,7 +52,7 @@ __all__ = [
     "local_to_global_coords",
     "crop_box_from_image",
     "merge_boxes",
-    "rescale_coords"
+    "rescale_coords",
 ]
 
 # taken from https://github.com/tensorpack/tensorpack/blob/master/examples/FasterRCNN/common.py

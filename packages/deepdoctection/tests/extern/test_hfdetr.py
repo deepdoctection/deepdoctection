@@ -15,6 +15,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""
+Unit tests for HFDetrDerivedDetector class and its functionality.
+
+This module contains tests for the HFDetrDerivedDetector class. It verifies
+various behaviors such as predictions, category filtering, and clearing
+the model instance.
+
+Tests in this module leverage monkeypatching and mocking to simulate behavior
+and dependencies without requiring actual models or configurations.
+
+"""
+
 from types import SimpleNamespace
 from unittest.mock import MagicMock
 
@@ -35,6 +47,7 @@ REQUIRES_PT_AND_TR = pytest.mark.skipif(
 
 @REQUIRES_PT_AND_TR
 def test_hfdetr_predict_basic(monkeypatch: pytest.MonkeyPatch) -> None:
+    """test basic prediction using mocked tokenizers and models."""
 
     dummy_config = SimpleNamespace(
         architectures=["TableTransformerForObjectDetection"],
@@ -57,7 +70,8 @@ def test_hfdetr_predict_basic(monkeypatch: pytest.MonkeyPatch) -> None:
         raising=True,
     )
 
-    def _fake_predict(np_img, predictor, feature_extractor, device, threshold, nms_threshold):
+    def _fake_predict(np_img, # type: ignore # pylint:disable=W0613
+                      predictor, feature_extractor, device, threshold, nms_threshold):
         # Note: class_id returned by DETR is zero-based; mapping in detector will shift +1 internally
         return [
             DetectionResult(box=[0, 0, 10, 10], class_id=0, score=0.95),
@@ -87,11 +101,12 @@ def test_hfdetr_predict_basic(monkeypatch: pytest.MonkeyPatch) -> None:
     assert len(results) == 2
     assert results[0].class_id == 1
     assert results[0].class_name == "table"
-    assert results[0].score > 0.9
+    assert results[0].score > 0.9  # type: ignore
 
 
 @REQUIRES_PT_AND_TR
 def test_hfdetr_category_filtering(monkeypatch: pytest.MonkeyPatch) -> None:
+    """test category filtering using mocked tokenizers and models."""
 
     dummy_config = SimpleNamespace(
         architectures=["TableTransformerForObjectDetection"],
@@ -115,7 +130,8 @@ def test_hfdetr_category_filtering(monkeypatch: pytest.MonkeyPatch) -> None:
     )
 
     # Return two detections with class_id=0 (will map to id 1) and one default type (None)
-    def _fake_predict(np_img, predictor, feature_extractor, device, threshold, nms_threshold):
+    def _fake_predict(np_img, predictor, # type: ignore # pylint:disable=W0613
+                      feature_extractor, device, threshold, nms_threshold):
         return [
             DetectionResult(box=[0, 0, 10, 10], class_id=0, score=0.9),
             DetectionResult(box=[10, 10, 20, 20], class_id=None, score=0.7),
@@ -147,6 +163,7 @@ def test_hfdetr_category_filtering(monkeypatch: pytest.MonkeyPatch) -> None:
 
 @REQUIRES_PT_AND_TR
 def test_hfdetr_clear_model(monkeypatch: pytest.MonkeyPatch) -> None:
+    """test clearing the model instance."""
 
     dummy_config = SimpleNamespace(
         architectures=["TableTransformerForObjectDetection"],

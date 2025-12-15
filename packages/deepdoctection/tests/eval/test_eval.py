@@ -15,8 +15,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""
+Unit tests for evaluation processes using the `Evaluator` class.
 
-from typing import List
+This module contains tests to ensure the `Evaluator` processes input images
+and returns metrics correctly. It makes use of mock objects to simulate
+dependencies and test various evaluation scenarios.
+
+The tests verify proper handling of detection results, category assignments,
+and integration of COCO metrics through the evaluation pipeline.
+"""
+
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -32,7 +41,7 @@ from deepdoctection.pipe.layout import ImageLayoutService
 try:
     from dd_datasets.base import DatasetCategories
 except ImportError:
-    DatasetCategories = None # type: ignore
+    DatasetCategories = None  # type: ignore
 
 
 @pytest.mark.skipif(DatasetCategories is None, reason="dd_datasets is not installed; DatasetCategories unavailable")

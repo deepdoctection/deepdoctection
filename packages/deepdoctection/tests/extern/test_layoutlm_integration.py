@@ -1,3 +1,30 @@
+# -*- coding: utf-8 -*-
+# File: test_layoutlm_integration.py
+
+# Copyright 2025 Dr. Janis Meyer. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+"""
+Integration tests for sequence and token classification with HuggingFace's LayoutLM, LayoutLMv2,
+LayoutLMv3, and LiLT models.
+
+Allows testing model wrappers for the ability to save, load, and perform inference under various
+configurations. Includes support for both sequence and token-level classifications under models
+provided from HuggingFace.
+
+"""
+
 import os
 import uuid
 from typing import Any, Optional
@@ -111,6 +138,7 @@ def test_sequence_slow_build_and_predict(
         pytest.skip("Unsupported wrapper")
 
     assert model_cls is not None
+    assert cfg_cls is not None
 
     cfg = cfg_cls(num_labels=2)
     model = model_cls(cfg)
@@ -199,6 +227,9 @@ def test_token_slow_build_and_predict(
         pytest.skip("Unsupported wrapper")
 
     # Create and save tiny model
+    assert model_cls is not None
+    assert cfg_cls is not None
+
     cfg = cfg_cls(num_labels=3)
     model = model_cls(cfg)
     model.save_pretrained(tmp_path)

@@ -15,6 +15,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""
+This module contains unit tests for object detection models based on Detectron2 frameworks.
+
+The module is responsible for verifying the functionality of object detection models, focusing
+on their ability to load configurations, map prediction outputs to categories, and test basic
+instances of object mappings.
+
+"""
 
 from __future__ import annotations
 
@@ -27,11 +35,7 @@ import pytest
 
 from dd_core.utils.file_utils import detectron2_available, pytorch_available
 from dd_core.utils.object_types import LayoutType, ObjectTypes
-
-REQUIRES_PT_AND_D2 = pytest.mark.skipif(
-    not (pytorch_available() and detectron2_available()),
-    reason="Requires PyTorch and Detectron2 installed",
-)
+from deepdoctection.extern.d2detect import D2FrcnnDetector, D2FrcnnTracingDetector
 
 if pytorch_available():
     import torch
@@ -39,7 +43,11 @@ if pytorch_available():
 if detectron2_available():
     from detectron2.structures import Instances, Boxes
 
-from deepdoctection.extern.d2detect import D2FrcnnDetector, D2FrcnnTracingDetector
+
+REQUIRES_PT_AND_D2 = pytest.mark.skipif(
+    not (pytorch_available() and detectron2_available()),
+    reason="Requires PyTorch and Detectron2 installed",
+)
 
 
 def _stub_cfg() -> SimpleNamespace:
@@ -51,7 +59,8 @@ def _stub_cfg() -> SimpleNamespace:
 
 
 def _get_mock_instances() -> List[List[Dict[str, Instances]]]:
-    pred_boxes = Boxes(torch.tensor([[1.0, 1.0, 5.0, 6.0], [10.0, 10.0, 12.0, 12.0]], dtype=torch.float32))
+    pred_boxes = Boxes(torch.tensor(  # pylint:disable=E0606
+        [[1.0, 1.0, 5.0, 6.0], [10.0, 10.0, 12.0, 12.0]], dtype=torch.float32))
     scores = torch.tensor([0.93, 0.54], dtype=torch.float32)
     pred_classes = torch.tensor([0, 1], dtype=torch.uint8)
     inst = Instances((400, 600))
@@ -117,7 +126,7 @@ def test_d2_frcnn_tracing_predict_basic_mapping(monkeypatch: pytest.MonkeyPatch)
     )
 
     # Fake TorchScript callable returning (boxes, classes, scores, _)
-    def _fake_ts_forward(_image: torch.Tensor)-> tuple[torch.Tensor, torch.Tensor, torch.Tensor, None]:
+    def _fake_ts_forward(_image: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, None]:
         boxes = torch.tensor([[2.0, 2.0, 6.0, 6.0], [12.0, 12.0, 16.0, 16.0]], dtype=torch.float32)
         classes = torch.tensor([0, 1], dtype=torch.int64)
         scores = torch.tensor([0.95, 0.7], dtype=torch.float32)

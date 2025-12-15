@@ -51,7 +51,7 @@ class TestLayoutViews:
 
         layouts = page.layouts
         if layouts:
-            ordered_words = layouts[0].get_ordered_words() # type: ignore
+            ordered_words = layouts[0].get_ordered_words()  # type: ignore
             assert isinstance(ordered_words, list)
 
     def test_layout_get_ordered_words_has_reading_order(self, page: Page) -> None:
@@ -59,7 +59,7 @@ class TestLayoutViews:
 
         layouts = page.layouts
         if layouts:
-            ordered_words = layouts[0].get_ordered_words() # type: ignore
+            ordered_words = layouts[0].get_ordered_words()  # type: ignore
             for word in ordered_words:
                 assert word.reading_order is not None
 
@@ -68,7 +68,7 @@ class TestLayoutViews:
 
         layouts = page.layouts
         if layouts:
-            length = len(layouts[0]) # type: ignore
+            length = len(layouts[0])  # type: ignore
             assert isinstance(length, int)
             assert length >= 0
 
@@ -78,7 +78,7 @@ class TestLayoutViews:
         layouts = page.layouts
         if layouts:
             layout = layouts[0]
-            assert len(layout) == len(layout.text) # type: ignore
+            assert len(layout) == len(layout.text)  # type: ignore
 
     def test_layout_bbox_returns_list(self, page: Page) -> None:
         """Layout.bbox returns a list of floats"""

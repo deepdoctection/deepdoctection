@@ -14,6 +14,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""
+Unit tests verifying the mapping between Prodigy datapoints and custom Image structures.
+
+This module contains test cases to assess the correctness and integrity of data
+transformations between the Prodigy format and the custom Image data model. The
+tests validate essential attributes like file names, sizes, bounding boxes, and
+annotations through roundtrip conversions and edge case scenarios.
+
+"""
+
 from math import isclose
 from typing import Any
 
@@ -21,7 +31,7 @@ from dd_core.mapper.prodigystruct import image_to_prodigy, prodigy_to_image
 from dd_core.utils.object_types import get_type
 
 
-def test_prodigy_to_image_basic(prodigy_datapoint: dict[str, Any])-> None:
+def test_prodigy_to_image_basic(prodigy_datapoint: dict[str, Any]) -> None:
     """
     Basic mapping from prodigy datapoint to Image: file_name, size and bounding box.
     """
@@ -54,7 +64,7 @@ def test_prodigy_to_image_accept_only_filters(prodigy_datapoint: dict[str, Any])
     assert image is None
 
 
-def test_image_to_prodigy_roundtrip(prodigy_datapoint: dict[str, Any])-> None:
+def test_image_to_prodigy_roundtrip(prodigy_datapoint: dict[str, Any]) -> None:
     """
     Create Image from prodigy datapoint then map back to prodigy format and check image & meta.
     """
@@ -62,13 +72,13 @@ def test_image_to_prodigy_roundtrip(prodigy_datapoint: dict[str, Any])-> None:
     image = prodigy_to_image(categories, True, False)(prodigy_datapoint)
     assert image is not None
 
-    output = image_to_prodigy()(image)
+    output = image_to_prodigy()(image)  # pylint:disable=E1102
     assert output["text"] == prodigy_datapoint["text"]
     assert output["meta"]["file_name"] == image.file_name
     assert len(output["spans"]) == len(prodigy_datapoint["spans"])
 
 
-def test_image_to_prodigy_points_and_labels(prodigy_datapoint: dict[str, Any])-> None:
+def test_image_to_prodigy_points_and_labels(prodigy_datapoint: dict[str, Any]) -> None:
     """
     Ensure spans keep their point coordinates and present expected keys.
     """
@@ -77,7 +87,7 @@ def test_image_to_prodigy_points_and_labels(prodigy_datapoint: dict[str, Any])->
     image = mapper(prodigy_datapoint)
     assert image is not None
 
-    output = image_to_prodigy()(image)
+    output = image_to_prodigy()(image)  # pylint:disable=E1102
     span0 = output["spans"][0]
     # points should reflect the fixture values (as floats)
     assert isclose(float(span0["points"][0][0]), 1.0, rel_tol=1e-9)

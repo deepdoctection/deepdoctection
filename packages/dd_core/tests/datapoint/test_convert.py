@@ -29,7 +29,7 @@ from .conftest import TestPdfPage
 
 PDFIUM_AVAILABLE = True
 try:
-    import pypdfium2  # noqa: F401
+    import pypdfium2  # pylint:disable=W0611
 except ImportError:
     PDFIUM_AVAILABLE = False
 

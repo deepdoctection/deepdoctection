@@ -272,7 +272,7 @@ class StdFromDataFlow(ProxyDataFlow):
                     if n == 1:
                         k = x
 
-                    ex += x - k # type:ignore
+                    ex += x - k  # type:ignore
                     ex2 += (x - k) * (x - k)  # type:ignore
 
                 status_bar.update()

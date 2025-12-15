@@ -15,6 +15,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""
+Configuration file for pytest fixtures.
+
+This module contains pytest fixtures to provide reusable components for testing purposes.
+These fixtures include setups for handling PDF files, numerical arrays, image arrays,
+bounding boxes, and category names.
+
+"""
 
 from __future__ import annotations
 

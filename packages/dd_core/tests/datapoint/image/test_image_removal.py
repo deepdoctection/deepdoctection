@@ -19,8 +19,6 @@
 Testing Image remove operations
 """
 
-from pytest import mark
-
 from dd_core.datapoint import BoundingBox, Image, ImageAnnotation
 
 from ..conftest import WhiteImage

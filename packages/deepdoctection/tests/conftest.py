@@ -15,20 +15,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""
+Test configuration file for pytest fixtures used in the testing of
+image, layout, and annotation functionalities provided by dd_core
+and related modules.
 
-import os
+This module includes reusable pytest fixtures to mock and prepare
+datapoints, simulate various types of annotations, and support test
+cases requiring fixture-based setup.
+
+"""
+
 from copy import deepcopy
 
 import numpy as np
 import pytest
 
-import shared_test_utils as stu
-from dd_core.datapoint.annotation import CategoryAnnotation, ContainerAnnotation, ImageAnnotation
+from dd_core.datapoint.annotation import CategoryAnnotation, ImageAnnotation
 from dd_core.datapoint.box import BoundingBox, local_to_global_coords
 from dd_core.datapoint.image import Image
 from dd_core.utils.object_types import ObjectTypes, get_type, object_types_registry, update_black_list
 from dd_core.utils.viz import viz_handler
-from deepdoctection.extern.base import DetectionResult, TokenClassResult
 
 
 @pytest.fixture
@@ -40,7 +47,9 @@ def dp_image() -> Image:
 
 
 @pytest.fixture
-def layout_annotations(): # type: ignore
+def layout_annotations():  # type: ignore
+    """fixture layout_annotations with layout_annotations(segmentation=False) will return also cells, rows and
+     columns"""
 
     def layout_ann(segmentation: bool = False) -> list[ImageAnnotation]:
         if segmentation:
@@ -188,7 +197,7 @@ def dp_image_tab_cell_item(dp_image: Image, layout_annotations) -> Image:  # typ
         table.image.dump(ann)
         table.image.image_ann_to_image(ann.annotation_id)
         ann_global_box = local_to_global_coords(
-            ann.bounding_box,     # type: ignore
+            ann.bounding_box,  # type: ignore
             table.get_bounding_box(dp_image.image_id).transform(
                 image_width=dp_image.width, image_height=dp_image.height, absolute_coords=True
             ),
@@ -196,7 +205,7 @@ def dp_image_tab_cell_item(dp_image: Image, layout_annotations) -> Image:  # typ
         assert ann.image is not None
         ann.image.set_embedding(
             table.annotation_id,
-            ann.bounding_box.transform( # type: ignore
+            ann.bounding_box.transform(  # type: ignore
                 image_width=table.image.width, image_height=table.image.height, absolute_coords=False
             ),
         )
@@ -210,6 +219,7 @@ def dp_image_tab_cell_item(dp_image: Image, layout_annotations) -> Image:  # typ
 
 @pytest.fixture
 def row_sub_cats() -> list[CategoryAnnotation]:
+    """fixture row_sub_cats"""
     return [
         CategoryAnnotation(category_name=get_type("row_number"), category_id=1, service_id="dbf4f87c"),
         CategoryAnnotation(category_name=get_type("row_number"), category_id=2, service_id="dbf4f87c"),
@@ -218,6 +228,7 @@ def row_sub_cats() -> list[CategoryAnnotation]:
 
 @pytest.fixture
 def column_sub_cats() -> list[CategoryAnnotation]:
+    """fixture column_sub_cats"""
     return [
         CategoryAnnotation(category_name=get_type("column_number"), category_id=1, service_id="dbf4f87c"),
         CategoryAnnotation(category_name=get_type("column_number"), category_id=2, service_id="dbf4f87c"),

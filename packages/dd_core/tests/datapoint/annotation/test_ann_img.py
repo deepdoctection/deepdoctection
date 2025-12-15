@@ -15,6 +15,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""
+Unit testing for the functionality of ImageAnnotation and its integration with BoundingBox.
+
+This module includes tests for creating instances of ImageAnnotation with basic configurations,
+handling bounding boxes defined directly or through dictionaries, verifying annotation ID
+determinism, and testing the BoundingBox integration.
+"""
+
 import pytest
 
 from dd_core.datapoint.annotation import (
@@ -46,8 +54,8 @@ class TestImageAnnotation:
         }
         img_ann = ImageAnnotation(**data)
         assert img_ann.bounding_box is not None
-        assert img_ann.bounding_box.ulx == 10
-        assert img_ann.bounding_box.uly == 20
+        assert img_ann.bounding_box.ulx == 10 # pylint:disable=E1101
+        assert img_ann.bounding_box.uly == 20 # pylint:disable=E1101
 
     def test_image_annotation_get_bounding_box_basic(self) -> None:
         """Test getting bounding box from ImageAnnotation"""
@@ -91,5 +99,5 @@ class TestBoundingBoxIntegration:
         bbox_dict = {"ulx": 5.0, "uly": 10.0, "width": 20.0, "height": 30.0, "absolute_coords": True}
         img_ann = ImageAnnotation(category_name="test_cat_1", bounding_box=bbox_dict)
         assert isinstance(img_ann.bounding_box, BoundingBox)
-        assert img_ann.bounding_box.ulx == 5
-        assert img_ann.bounding_box.uly == 10
+        assert img_ann.bounding_box.ulx == 5 # pylint:disable=E1101
+        assert img_ann.bounding_box.uly == 10 # pylint:disable=E1101

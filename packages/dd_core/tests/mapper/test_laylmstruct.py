@@ -19,8 +19,6 @@
 Testing the module mapper.laylmstruct
 """
 
-from typing import Dict
-
 import numpy as np
 import pytest
 
@@ -109,7 +107,7 @@ def test_raw_features_to_layoutlm_features(xfund_image: Image, layoutlm_features
     """
     # Arrange
     dp = image_to_raw_layoutlm_features()(xfund_image)  # pylint: disable=E1120
-    tokenizer_fast = LayoutLMTokenizerFast.from_pretrained("microsoft/layoutlm-base-uncased")
+    tokenizer_fast = LayoutLMTokenizerFast.from_pretrained("microsoft/layoutlm-base-uncased") # pylint: disable=E0606
 
     # Act
     assert dp is not None

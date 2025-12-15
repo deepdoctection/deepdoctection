@@ -66,6 +66,12 @@ test = [
     "pytest-cov",
 ]
 
+docs = [
+    "mkdocs-material==9.7.0",
+    "mkdocstrings-python==1.19.0",
+    "griffe==0.25.0"
+]
+
 [project.urls]
 Homepage = "https://github.com/deepdoctection/deepdoctection"
 Documentation = "https://deepdoctection.readthedocs.io"

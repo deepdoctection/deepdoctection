@@ -20,8 +20,6 @@ Testing the module dataflow.custom
 """
 from typing import Any
 
-from pytest import mark
-
 import shared_test_utils as stu
 from dd_core.dataflow import CacheData, CustomDataFromIterable, CustomDataFromList
 
@@ -106,7 +104,7 @@ def test_custom_data_from_list_with_rebalance_func(simple_dict_list: list[dict[s
     df = CustomDataFromList(simple_dict_list, rebalance_func=rebalance_remove_first)
 
     # Act
-    result: list[dict[str,Any]] = stu.collect_datapoint_from_dataflow(df)
+    result: list[dict[str, Any]] = stu.collect_datapoint_from_dataflow(df)
 
     # Assert
     assert len(result) == 2
@@ -123,7 +121,7 @@ def test_custom_data_from_iterable(simple_list: list[str]) -> None:
     df = CustomDataFromIterable(iterable, max_datapoints=2)
 
     # Act
-    result:list[list[str]] = stu.collect_datapoint_from_dataflow(df)
+    result: list[list[str]] = stu.collect_datapoint_from_dataflow(df)
 
     # Assert
     assert len(result) == 2

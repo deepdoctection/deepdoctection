@@ -15,6 +15,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""
+Constants for processed and raw layout LM feature definitions.
+
+This module provides predefined dictionaries and structures representing
+processed and raw features for layout-based models, such as LayoutLM. These
+constants primarily serve as a representation of structured data for document
+and form processing tasks. They are often used in data pipelines for layout
+information-based models.
+
+"""
+
 XFUND_RAW_LAYOUTLM_FEATURES = {
     "image_id": "c421a065-cfd4-3057-8d50-4b98e3c09810",
     "width": 1000,

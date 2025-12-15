@@ -1,5 +1,29 @@
 # -*- coding: utf-8 -*-
-# File: test_hflayoutlm.py
+# File: test_layoutlm.py
+
+# Copyright 2025 Dr. Janis Meyer. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+"""
+Unit tests for LayoutLM-based sequence and token classification models in the DeepDoctection framework.
+
+This module contains test cases for various versions of LayoutLM models, demonstrating
+basic functionality for both sequence-level and token-level prediction. The tests ensure
+that components from the external `deepdoctection` and associated PyTorch/transformers
+operations behave as expected under mocked conditions.
+
+"""
 
 from typing import Any
 from unittest.mock import MagicMock
@@ -37,6 +61,7 @@ def _mk_dummy_tokenizer() -> Any:
 
 @REQUIRES_PT_AND_TR
 def test_layoutlm_sequence_predict_basic(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Test basic sequence prediction with a mocked LayoutLM model."""
     # Avoid network tokenizer download during ctor
     monkeypatch.setattr(
         "deepdoctection.extern.hflayoutlm.get_tokenizer_from_model_class",
@@ -51,7 +76,9 @@ def test_layoutlm_sequence_predict_basic(monkeypatch: pytest.MonkeyPatch) -> Non
     )
 
     # Mock prediction helper
-    def _fake_seq_predict(input_ids: Any, attention_mask: Any, token_type_ids: Any, boxes: Any, model: Any, images: Any = None) -> SequenceClassResult:
+    def _fake_seq_predict(
+        input_ids: Any, attention_mask: Any, token_type_ids: Any, boxes: Any, model: Any, images: Any = None
+    ) -> SequenceClassResult:
         return SequenceClassResult(class_id=1, score=0.99)
 
     monkeypatch.setattr(
@@ -76,6 +103,7 @@ def test_layoutlm_sequence_predict_basic(monkeypatch: pytest.MonkeyPatch) -> Non
 
 @REQUIRES_PT_AND_TR
 def test_layoutlm_v2_sequence_predict_basic(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Test basic sequence prediction with a mocked LayoutLM model."""
     monkeypatch.setattr(
         "deepdoctection.extern.hflayoutlm.get_tokenizer_from_model_class",
         lambda cls, use_xlm: _mk_dummy_tokenizer(),
@@ -87,7 +115,10 @@ def test_layoutlm_v2_sequence_predict_basic(monkeypatch: pytest.MonkeyPatch) -> 
         raising=True,
     )
 
-    def _fake_seq_predict(input_ids: Any, attention_mask: Any, token_type_ids: Any, boxes: Any, model: Any, images: Any = None) -> SequenceClassResult:
+    def _fake_seq_predict(
+        input_ids: Any, # pylint: disable=W0613
+            attention_mask: Any, token_type_ids: Any, boxes: Any, model: Any, images: Any = None
+    ) -> SequenceClassResult:
         return SequenceClassResult(class_id=1, score=0.95)
 
     monkeypatch.setattr(
@@ -113,6 +144,7 @@ def test_layoutlm_v2_sequence_predict_basic(monkeypatch: pytest.MonkeyPatch) -> 
 
 @REQUIRES_PT_AND_TR
 def test_layoutlm_v3_sequence_predict_basic(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Test basic sequence prediction with a mocked LayoutLM model."""
     monkeypatch.setattr(
         "deepdoctection.extern.hflayoutlm.get_tokenizer_from_model_class",
         lambda cls, use_xlm: _mk_dummy_tokenizer(),
@@ -124,7 +156,10 @@ def test_layoutlm_v3_sequence_predict_basic(monkeypatch: pytest.MonkeyPatch) -> 
         raising=True,
     )
 
-    def _fake_seq_predict(input_ids: Any, attention_mask: Any, token_type_ids: Any, boxes: Any, model: Any, images: Any = None) -> SequenceClassResult:
+    def _fake_seq_predict(
+        input_ids: Any, # pylint: disable=W0613
+            attention_mask: Any, token_type_ids: Any, boxes: Any, model: Any, images: Any = None
+    ) -> SequenceClassResult:
         return SequenceClassResult(class_id=1, score=0.93)
 
     monkeypatch.setattr(
@@ -150,6 +185,7 @@ def test_layoutlm_v3_sequence_predict_basic(monkeypatch: pytest.MonkeyPatch) -> 
 
 @REQUIRES_PT_AND_TR
 def test_layoutlm_token_predict_basic(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Test basic token prediction with a mocked LayoutLM model."""
     monkeypatch.setattr(
         "deepdoctection.extern.hflayoutlm.get_tokenizer_from_model_class",
         lambda cls, use_xlm: _mk_dummy_tokenizer(),
@@ -161,7 +197,16 @@ def test_layoutlm_token_predict_basic(monkeypatch: pytest.MonkeyPatch) -> None:
         raising=True,
     )
 
-    def _fake_tok_predict(uuids: Any, input_ids: Any, attention_mask: Any, token_type_ids: Any, boxes: Any, tokens: Any, model: Any, images: Any = None) -> list[TokenClassResult]:
+    def _fake_tok_predict(
+        uuids: Any, # pylint: disable=W0613
+        input_ids: Any,
+        attention_mask: Any,
+        token_type_ids: Any,
+        boxes: Any,
+        tokens: Any,
+        model: Any,
+        images: Any = None,
+    ) -> list[TokenClassResult]:
         return [
             TokenClassResult(uuid="a", token_id=101, class_id=2, token="X", score=0.9),  # -> id 3 -> "O"
             TokenClassResult(uuid="b", token_id=102, class_id=0, token="Y", score=0.8),  # -> id 1 -> "B-header"
@@ -194,6 +239,7 @@ def test_layoutlm_token_predict_basic(monkeypatch: pytest.MonkeyPatch) -> None:
 
 @REQUIRES_PT_AND_TR
 def test_layoutlm_v2_token_predict_basic(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Test basic token prediction with a mocked LayoutLM model."""
     monkeypatch.setattr(
         "deepdoctection.extern.hflayoutlm.get_tokenizer_from_model_class",
         lambda cls, use_xlm: _mk_dummy_tokenizer(),
@@ -205,7 +251,16 @@ def test_layoutlm_v2_token_predict_basic(monkeypatch: pytest.MonkeyPatch) -> Non
         raising=True,
     )
 
-    def _fake_tok_predict(uuids: Any, input_ids: Any, attention_mask: Any, token_type_ids: Any, boxes: Any, tokens: Any, model: Any, images: Any = None) -> list[TokenClassResult]:
+    def _fake_tok_predict(
+        uuids: Any, # pylint: disable=W0613
+        input_ids: Any,
+        attention_mask: Any,
+        token_type_ids: Any,
+        boxes: Any,
+        tokens: Any,
+        model: Any,
+        images: Any = None,
+    ) -> list[TokenClassResult]:
         return [
             TokenClassResult(uuid="a", token_id=11, class_id=1, token="X", score=0.7),
             TokenClassResult(uuid="b", token_id=12, class_id=2, token="Y", score=0.6),
@@ -238,6 +293,7 @@ def test_layoutlm_v2_token_predict_basic(monkeypatch: pytest.MonkeyPatch) -> Non
 
 @REQUIRES_PT_AND_TR
 def test_layoutlm_v3_token_predict_basic(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Test basic token prediction with a mocked LayoutLM model."""
     monkeypatch.setattr(
         "deepdoctection.extern.hflayoutlm.get_tokenizer_from_model_class",
         lambda cls, use_xlm: _mk_dummy_tokenizer(),
@@ -249,7 +305,16 @@ def test_layoutlm_v3_token_predict_basic(monkeypatch: pytest.MonkeyPatch) -> Non
         raising=True,
     )
 
-    def _fake_tok_predict(uuids: Any, input_ids: Any, attention_mask: Any, token_type_ids: Any, boxes: Any, tokens: Any, model: Any, images: Any = None) -> list[TokenClassResult]:
+    def _fake_tok_predict(
+        uuids: Any, # pylint: disable=W0613
+        input_ids: Any,
+        attention_mask: Any,
+        token_type_ids: Any,
+        boxes: Any,
+        tokens: Any,
+        model: Any,
+        images: Any = None,
+    ) -> list[TokenClassResult]:
         return [
             TokenClassResult(uuid="u1", token_id=1, class_id=0, token="a", score=0.9),
             TokenClassResult(uuid="u2", token_id=2, class_id=2, token="b", score=0.8),
@@ -283,6 +348,7 @@ def test_layoutlm_v3_token_predict_basic(monkeypatch: pytest.MonkeyPatch) -> Non
 
 @REQUIRES_PT_AND_TR
 def test_lilt_token_and_sequence_predict_basic(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Test basic token and sequence prediction with a mocked Lilt model."""
     monkeypatch.setattr(
         "deepdoctection.extern.hflayoutlm.get_tokenizer_from_model_class",
         lambda cls, use_xlm: _mk_dummy_tokenizer(),
@@ -299,13 +365,24 @@ def test_lilt_token_and_sequence_predict_basic(monkeypatch: pytest.MonkeyPatch) 
         raising=True,
     )
 
-    def _fake_tok_predict(uuids: Any, input_ids: Any, attention_mask: Any, token_type_ids: Any, boxes: Any, tokens: Any, model: Any, images: Any = None) -> list[TokenClassResult]:
+    def _fake_tok_predict(
+        uuids: Any, # pylint: disable=W0613
+        input_ids: Any,
+        attention_mask: Any,
+        token_type_ids: Any,
+        boxes: Any,
+        tokens: Any,
+        model: Any,
+        images: Any = None,
+    ) -> list[TokenClassResult]:
         return [
             TokenClassResult(uuid="t1", token_id=5, class_id=0, token="foo", score=0.5),
             TokenClassResult(uuid="t2", token_id=6, class_id=2, token="bar", score=0.6),
         ]
 
-    def _fake_seq_predict(input_ids: Any, attention_mask: Any, token_type_ids: Any, boxes: Any, model: Any, images: Any = None) -> SequenceClassResult:
+    def _fake_seq_predict(
+        input_ids: Any, attention_mask: Any, token_type_ids: Any, boxes: Any, model: Any, images: Any = None
+    ) -> SequenceClassResult:
         return SequenceClassResult(class_id=0, score=0.8)
 
     monkeypatch.setattr(
@@ -349,6 +426,7 @@ def test_lilt_token_and_sequence_predict_basic(monkeypatch: pytest.MonkeyPatch) 
 
 @REQUIRES_PT_AND_TR
 def test_sequence_validate_encodings_errors(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Test sequence validation errors."""
     # Keep ctor offline
     monkeypatch.setattr(
         "deepdoctection.extern.hflayoutlm.get_tokenizer_from_model_class",
@@ -375,6 +453,7 @@ def test_sequence_validate_encodings_errors(monkeypatch: pytest.MonkeyPatch) -> 
 
 @REQUIRES_PT_AND_TR
 def test_token_validate_encodings_errors(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Test token validation errors."""
     monkeypatch.setattr(
         "deepdoctection.extern.hflayoutlm.get_tokenizer_from_model_class",
         lambda cls, use_xlm: _mk_dummy_tokenizer(),

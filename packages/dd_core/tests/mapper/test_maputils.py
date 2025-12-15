@@ -15,6 +15,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""
+Unit tests for utility functions and classes in the `dd_core.mapper.maputils` module.
+
+This module provides unit tests for functionalities such as context management, the
+`DefaultMapper`, curried mapper methods, fake score calculation, and label summarization.
+Each test verifies the expected behavior of the respective function or class, including
+handling specific conditions, parameterization, and interactions.
+
+"""
+
 from typing import Union
 
 import numpy as np
@@ -30,10 +40,11 @@ from dd_core.mapper.maputils import (
 from dd_core.utils.object_types import ObjectTypes, get_type
 
 
-def test_mapping_context_manager_suppresses_known_exception_and_logs(monkeypatch)-> None: # type: ignore
+def test_mapping_context_manager_suppresses_known_exception_and_logs(monkeypatch) -> None:  # type: ignore
+    """Test that MappingContextManager suppresses known exceptions and logs them."""
     recorded = {}
 
-    def fake_warning(arg): # type: ignore
+    def fake_warning(arg):  # type: ignore
         # capture the logging record passed
         recorded["arg"] = arg
 
@@ -47,13 +58,15 @@ def test_mapping_context_manager_suppresses_known_exception_and_logs(monkeypatch
     assert "MappingContextManager error" in str(recorded["arg"])
 
 
-def test_mapping_context_manager_propagates_unknown_exception()-> None:
+def test_mapping_context_manager_propagates_unknown_exception() -> None:
+    """Test that MappingContextManager propagates unknown exceptions."""
     with pytest.raises(RuntimeError):
         with MappingContextManager():
             raise RuntimeError("boom")
 
 
-def test_mapping_context_manager_no_exception_sets_flag_false()-> None:
+def test_mapping_context_manager_no_exception_sets_flag_false() -> None:
+    """Test that MappingContextManager sets context_error flag to False when no exception is raised."""
     with MappingContextManager():
         pass
     m = MappingContextManager()
@@ -62,15 +75,16 @@ def test_mapping_context_manager_no_exception_sets_flag_false()-> None:
     assert m.context_error is False
 
 
-def test_default_mapper_and_curry_behavior()-> None:
-    def my_map(dp, a, b=0): # type: ignore
+def test_default_mapper_and_curry_behavior() -> None:
+    """Test DefaultMapper and curry behavior."""
+    def my_map(dp, a, b=0):  # type: ignore
         return (dp, a, b)
 
     dm = DefaultMapper(my_map, 2, b=3)
     assert dm("datum") == ("datum", 2, 3)
 
     @curry
-    def decorated(dp, x, y): # type: ignore
+    def decorated(dp, x, y):  # type: ignore
         return (dp, x, y)
 
     wrapped = decorated(5, 6)
@@ -78,7 +92,8 @@ def test_default_mapper_and_curry_behavior()-> None:
     assert wrapped("Z") == ("Z", 5, 6)
 
 
-def test_maybe_get_fake_score_mocked(monkeypatch)-> None:  # type: ignore
+def test_maybe_get_fake_score_mocked(monkeypatch) -> None:  # type: ignore
+    """Test maybe_get_fake_score with mocked RNG."""
     # monkeypatch the RNG in the module to return a known value
     monkeypatch.setattr("dd_core.mapper.maputils.np.random.uniform", lambda a, b, c: np.array([0.123456]))
     val = maybe_get_fake_score(True)
@@ -88,7 +103,8 @@ def test_maybe_get_fake_score_mocked(monkeypatch)-> None:  # type: ignore
     assert maybe_get_fake_score(False) is None
 
 
-def test_label_summarizer_dump_get_summary_and_print(monkeypatch)-> None:  # type: ignore
+def test_label_summarizer_dump_get_summary_and_print(monkeypatch) -> None:  # type: ignore
+    """Test LabelSummarizer dump, get_summary, and print_summary_histogram."""
     # simple category objects with .value attribute expected by LabelSummarizer
     categories = {
         1: get_type("test_cat_1"),
@@ -106,7 +122,7 @@ def test_label_summarizer_dump_get_summary_and_print(monkeypatch)-> None:  # typ
     # capture logger.info called by print_summary_histogram
     captured = {}
 
-    def fake_info(arg): # type: ignore
+    def fake_info(arg):  # type: ignore
         captured["arg"] = arg
 
     monkeypatch.setattr("dd_core.mapper.maputils.logger.info", fake_info)

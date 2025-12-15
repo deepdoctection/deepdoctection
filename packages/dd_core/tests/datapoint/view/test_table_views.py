@@ -51,7 +51,7 @@ class TestTableViews:
 
         tables = page.tables
         for table in tables:
-            row_cells = table.row(1) # type: ignore
+            row_cells = table.row(1)  # type: ignore
             assert isinstance(row_cells, list)
 
     def test_table_column_method_returns_list(self, page: Page) -> None:
@@ -59,7 +59,7 @@ class TestTableViews:
 
         tables = page.tables
         for table in tables:
-            col_cells = table.column(1) # type: ignore
+            col_cells = table.column(1)  # type: ignore
             assert isinstance(col_cells, list)
 
     def test_table_column_header_cells_returns_list(self, page: Page) -> None:
@@ -125,7 +125,7 @@ class TestTableViews:
 
         tables = page.tables
         for table in tables:
-            kv_map = table.kv_header_rows(1) # type: ignore
+            kv_map = table.kv_header_rows(1)  # type: ignore
             assert hasattr(kv_map, "__getitem__")
 
     def test_table_has_number_of_rows(self, page: Page) -> None:

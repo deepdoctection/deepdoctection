@@ -15,10 +15,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""
+Unit tests for table segmentation functionalities.
 
-from typing import List, Sequence, Union
+This module includes test cases for validating the behavior and correctness
+of table segmentation-related processes. These tests ensure that bounding
+boxes, subcategories, and annotations are correctly assigned and manipulated
+during table segmentation tasks.
 
-from dd_core.datapoint import BoundingBox, CategoryAnnotation, CellType, Image, LayoutType, get_type
+"""
+
+from typing import List
+
+from dd_core.datapoint import BoundingBox, CategoryAnnotation, Image, get_type
 from deepdoctection.extern.base import DetectionResult
 from deepdoctection.pipe.segment import (
     PubtablesSegmentationService,
@@ -92,8 +101,8 @@ class TestTableSegmentationService:
 
         # Assert items have correctly assigned sub categories row/col number
         for item_name, sub_item_name in zip(
-            self.table_segmentation_service.item_names,  # pylint: disable=W0212
-            self.table_segmentation_service.sub_item_names,  # pylint: disable=W0212
+            self.table_segmentation_service.item_names,
+            self.table_segmentation_service.sub_item_names,
         ):
             items = dp.get_annotation(category_names=item_name)
             items_expected = dp_expected.get_annotation(category_names=item_name)
@@ -104,9 +113,9 @@ class TestTableSegmentationService:
                 assert item_cat.category_id == item_cat_expected.category_id
 
         # Assert cells have correctly assigned sub categories row/col/rs/cs number
-        cells = dp.get_annotation(category_names=self.table_segmentation_service.cell_names)  # pylint: disable=W0212
+        cells = dp.get_annotation(category_names=self.table_segmentation_service.cell_names)
         cells_expected = dp_expected.get_annotation(
-            category_names=self.table_segmentation_service.cell_names  # pylint: disable=W0212
+            category_names=self.table_segmentation_service.cell_names
         )
 
         for el in zip(cells, cells_expected):
@@ -252,10 +261,10 @@ class TestTableSegmentationServiceWhenTableFullyTiled:
         dp = self.tp_table_segmentation_service.pass_datapoint(dp)
 
         # Assert
-        cells = dp.get_annotation(category_names=self.tp_table_segmentation_service.cell_names)  # pylint: disable=W0212
+        cells = dp.get_annotation(category_names=self.tp_table_segmentation_service.cell_names)
 
         cells_expected = dp_expected.get_annotation(
-            category_names=self.tp_table_segmentation_service.cell_names  # pylint: disable=W0212
+            category_names=self.tp_table_segmentation_service.cell_names
         )
 
         assert len(cells) == len(cells_expected)

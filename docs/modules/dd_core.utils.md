@@ -1,5 +1,5 @@
 
-::: deepdoctection.utils
+::: dd_core.utils
     options:
         show_submodules: True
         filters:
