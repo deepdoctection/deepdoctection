@@ -34,7 +34,7 @@ class TestBBoxEquality:
         """A BoundingBox equals itself"""
         box = BoundingBox(absolute_coords=True, ulx=10, uly=20, width=100, height=50)
 
-        assert box == box
+        assert box == box  # pylint:disable=R0124
 
     def test_identical_absolute_boxes_are_equal(self) -> None:
         """Two absolute boxes with identical coordinates are equal"""

@@ -15,6 +15,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""
+Module providing fixtures for testing.
+
+This module contains reusable pytest fixtures related to dataset categories.
+Fixtures help in externalizing commonly used data or configurations, enabling
+test clarity and reusability. These fixtures define mock objects for testing
+purposes.
+
+Functions:
+    dataset_categories: Provides a DatasetCategories object initialized with
+        predefined categories and subcategories.
+    fixture_categories: Returns a dictionary mapping integer keys to
+        predefined ObjectTypes.
+"""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Mapping, Sequence

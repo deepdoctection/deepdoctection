@@ -45,18 +45,17 @@ def fixture_test_layout():  # type:ignore
         with jsonlines.open(path, "r") as reader:
             if raw:
                 return list(reader)
-            else:
-                datapoints_raw = list(reader)
-                images = []
-                for dp in datapoints_raw:
-                    images.append(
-                        prodigy_to_image(
-                            categories_name_as_key={"text": 1, "title": 2, "list": 3, "table": 4, "figure": 5},
-                            load_image=True,
-                            fake_score=False,
-                        )(dp)
-                    )
-                return images
+            datapoints_raw = list(reader)
+            images = []
+            for dp in datapoints_raw:
+                images.append(
+                    prodigy_to_image(
+                        categories_name_as_key={"text": 1, "title": 2, "list": 3, "table": 4, "figure": 5},
+                        load_image=True,
+                        fake_score=False,
+                    )(dp)
+                )
+            return images
 
     return test_layout
 

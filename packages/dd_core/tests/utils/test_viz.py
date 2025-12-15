@@ -24,7 +24,6 @@ from tempfile import TemporaryDirectory
 
 import numpy as np
 import pytest
-from numpy import uint8
 from numpy.typing import NDArray
 
 from dd_core.utils.viz import viz_handler
@@ -49,8 +48,7 @@ class TestVizHandlerEncode:
     """Test VizPackageHandler encode operations"""
 
     @staticmethod
-    @pytest.mark.parametrize("image_dtype", [uint8])
-    def test_encode(np_image: NDArray[np.uint8], image_dtype: type) -> None:
+    def test_encode(np_image: NDArray[np.uint8]) -> None:
         """Test encoding image to bytes"""
 
         result = viz_handler.encode(np_image)
