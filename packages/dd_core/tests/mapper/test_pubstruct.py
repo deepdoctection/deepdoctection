@@ -36,6 +36,7 @@ from dd_core.utils.object_types import LayoutType, ObjectTypes, TableType
 
 @pytest.fixture
 def categories_name_as_key() -> dict[ObjectTypes, int]:
+    """Category names as keys for mapping PubTabNet annotations to Image annotations."""
     return {
         LayoutType.CELL: 1,
         TableType.ITEM: 2,
@@ -50,7 +51,7 @@ def _count_cells_with_bbox(dp):  # type: ignore
 
 def test_pub_to_image_basic(
     monkeypatch: pytest.MonkeyPatch, pubtabnet_datapoint: Image,
-    categories_name_as_key: dict[ObjectTypes, int]
+    categories_name_as_key: dict[ObjectTypes, int]  # pylint:disable=W0621
 ) -> None:
     """Test basic mapping from pubtabnet datapoint to Image."""
     monkeypatch.setattr(

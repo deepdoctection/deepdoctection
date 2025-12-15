@@ -93,7 +93,7 @@ def test_doctr_text_recognizer_predict_basic(monkeypatch: pytest.MonkeyPatch) ->
         raising=True,
     )
 
-    def _fake_recognize(inputs, predictor):  # type: ignore
+    def _fake_recognize(inputs, predictor):  # type: ignore # pylint:disable=W0613
         return [
             DetectionResult(score=0.7, text="Foo", uuid=inputs[0][0]),
             DetectionResult(score=0.8, text="Bar", uuid=inputs[1][0]),

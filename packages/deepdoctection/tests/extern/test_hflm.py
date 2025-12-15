@@ -130,7 +130,7 @@ def test_hflm_token_predict_basic(monkeypatch: pytest.MonkeyPatch) -> None:
     )
 
     def _fake_tok_predict(uuids, # type: ignore # pylint:disable=W0613
-                          input_ids, attention_mask, token_type_ids, tokens, model):
+                          input_ids, attention_mask, token_type_ids, tokens, model):  # pylint:disable=W0613
         return [
             TokenClassResult(uuid="u1", token_id=101, class_id=2, token="A", score=0.8),  # -> class_id+1 = 3
             TokenClassResult(uuid="u2", token_id=102, class_id=0, token="B", score=0.9),  # -> class_id+1 = 1
@@ -167,7 +167,14 @@ def test_hflm_token_predict_basic(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 def _mk_dummy_fast_tokenizer() -> Any:
+
     class DummyTokenizer:
+        """
+        Creates and returns a dummy tokenizer class instance, simulating the behavior of a
+        fast tokenizer. The returned tokenizer performs tokenization on input text and
+        returns tensors for input IDs, attention mask, and optionally token type IDs.
+
+        """
         def __call__(self, text, return_tensors="pt", padding=True, truncation=True, max_length=512):  # type: ignore
             return {
                 "input_ids": torch.tensor([[1, 2, 3]], dtype=torch.long),
@@ -190,13 +197,14 @@ def test_hflm_language_predict_basic(monkeypatch: pytest.MonkeyPatch) -> None:
 
     # Mock model construction (no real weights/model)
     class _StubLangModel:
-        def to(self, device):  # type: ignore
+        def to(self, device):  # type: ignore # pylint:disable=C0116,W0613
             return self
 
-        def eval(self):  # type: ignore
+        def eval(self):  # type: ignore  # pylint:disable=C0116
             pass
 
-        def __call__(self, input_ids=None, attention_mask=None, token_type_ids=None):  # type: ignore
+        def __call__(self, input_ids=None, # type: ignore
+                     attention_mask=None, token_type_ids=None):
             # Highest score at index 1 -> class_id becomes 2 -> "deu"
             return type("Out", (), {"logits": torch.tensor([[0.1, 2.0, 0.5]], dtype=torch.float32)})
 

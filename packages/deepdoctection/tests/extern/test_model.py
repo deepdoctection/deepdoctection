@@ -194,7 +194,7 @@ class TestModelDownloadManager:
             assert os.path.getsize(weights_abs) == 10
             assert os.path.isfile(configs_abs)
 
-    def test_maybe_download_weights_and_configs_gd(self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    def test_maybe_download_weights_and_configs_gd(self, monkeypatch: pytest.MonkeyPatch) -> None:
         """
         Google Drive branch: ensure it calls download helper and returns absolute weights path.
         """

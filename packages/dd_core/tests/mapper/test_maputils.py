@@ -89,7 +89,7 @@ def test_default_mapper_and_curry_behavior() -> None:
 
     wrapped = decorated(5, 6)
     assert isinstance(wrapped, DefaultMapper)
-    assert wrapped("Z") == ("Z", 5, 6)
+    assert wrapped("Z") == ("Z", 5, 6) # pylint:disable=E1102
 
 
 def test_maybe_get_fake_score_mocked(monkeypatch) -> None:  # type: ignore

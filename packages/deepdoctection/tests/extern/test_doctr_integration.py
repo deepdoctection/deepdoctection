@@ -72,4 +72,3 @@ def test_slow_build_doctr_text_recognizer_pt() -> None:
 
     rec.clear_model()
     assert rec.doctr_predictor is None
-
