@@ -81,17 +81,16 @@ nav:
           - LayoutLM For Custom Token Classification: ./tutorials/LayoutLM_For_Custom_Token_Class.md
     - API:
         - Analyzer: ./modules/deepdoctection.analyzer.md
-        - Dataflow: ./modules/deepdoctection.dataflow.md
-        - Datapoint: ./modules/deepdoctection.datapoint.md
-        - Datasets: ./modules/deepdoctection.datasets.md
-        - Datasets Instances: ./modules/deepdoctection.datasets.instances.md
+        - Dataflow: ./modules/dd_core.dataflow.md
+        - Datapoint: ./modules/dd_core.datapoint.md
+        - Datasets: ./modules/dd_datasets.md
+        - Datasets Instances: ./modules/dd_datasets.instances.md
         - Eval: ./modules/deepdoctection.eval.md
         - Extern: ./modules/deepdoctection.extern.md
-        - Extern PT: ./modules/deepdoctection.extern.pt.md
-        - Mapper: ./modules/deepdoctection.mapper.md
+        - Mapper: ./modules/dd_core.mapper.md
         - Pipe: ./modules/deepdoctection.pipe.md
         - Train: ./modules/deepdoctection.train.md
-        - Utils: ./modules/deepdoctection.utils.md
+        - Utils: ./modules/dd_core.utils.md
 
 
 plugins:
@@ -100,6 +99,10 @@ plugins:
     - mkdocstrings:
         handlers:
           python:
+            paths:
+              - packages/dd_core/src
+              - packages/dd_datasets/src
+              - packages/deepdoctection/src
             options:
               parameter_headings: true
               line_length: 120
@@ -112,4 +115,6 @@ plugins:
 
 # to watch lib files in mkdocs server. Uncomment, if update docs locally
 watch:
-    - deepdoctection
+  - packages/dd_core/src
+  - packages/dd_datasets/src
+  - packages/deepdoctection/src

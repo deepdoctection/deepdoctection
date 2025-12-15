@@ -15,8 +15,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""
+Fixtures for unit tests within the test framework.
+
+This module provides reusable test fixtures to mock and initialize test
+dependencies such as model categories, NER model configurations, image
+transformers, detection results, and sample data. These fixtures facilitate
+consistent and reliable testing of various components in the testing
+environment, such as models, serializers, and utilities.
+
+"""
+
 import json
 import uuid
+from typing import Any
 from unittest.mock import MagicMock
 
 import numpy as np
@@ -36,23 +48,28 @@ from deepdoctection.extern.base import (
 
 
 @pytest.fixture
-def model_categories()->ModelCategories:
+def model_categories() -> ModelCategories:
+    """fixture model_categories"""
     init_categories = {1: "word", 2: "line", 3: "table", 4: "figure", 5: "header", 6: "footnote"}
     return ModelCategories(init_categories=init_categories)
 
 
 @pytest.fixture
-def ner_semantics()->tuple[str, str]:
+def ner_semantics() -> tuple[str, str]:
+    """fixture ner_semantics"""
     return ("question", "answer")
 
 
 @pytest.fixture
-def ner_bio()->tuple[str, str]:
+def ner_bio() -> tuple[str, str]:
+    """fixture ner_bio"""
     return ("B", "I")
 
 
 @pytest.fixture
-def ner_model_categories(ner_semantics: tuple[str, str], ner_bio: tuple[str, str])->NerModelCategories:
+def ner_model_categories(ner_semantics: tuple[str, str],  # pylint: disable=W0621
+                         ner_bio: tuple[str, str]) -> NerModelCategories:
+    """fixture ner_model_categories"""
     return NerModelCategories(
         init_categories=None,
         categories_semantics=ner_semantics,
@@ -61,9 +78,10 @@ def ner_model_categories(ner_semantics: tuple[str, str], ner_bio: tuple[str, str
 
 
 @pytest.fixture
-def mock_base_transform()->BaseTransform:
+def mock_base_transform() -> BaseTransform:
+    """fixture mock_base_transform"""
     mock = MagicMock(spec=BaseTransform)
-    mock.get_init_args.return_value = ["angle"] # type: ignore
+    mock.get_init_args.return_value = ["angle"]
     mock.get_category_names.return_value = (get_type("text"),)
     mock.angle = 90
     mock.apply_image.return_value = np.ones((10, 10, 3))
@@ -73,12 +91,14 @@ def mock_base_transform()->BaseTransform:
 
 
 @pytest.fixture
-def transformer(mock_base_transform: BaseTransform)->DeterministicImageTransformer:
+def transformer(mock_base_transform: BaseTransform) -> DeterministicImageTransformer:
+    """fixture transformer"""
     return DeterministicImageTransformer(mock_base_transform)
 
 
 @pytest.fixture
-def detection_results()->list[DetectionResult]:
+def detection_results() -> list[DetectionResult]:
+    """fixture detection_results"""
     dr1 = DetectionResult(
         box=[1, 1, 2, 2],
         class_id=1,
@@ -100,12 +120,14 @@ def detection_results()->list[DetectionResult]:
 
 @pytest.fixture
 def sample_np_img() -> PixelValues:
+    """fixture sample_np_img"""
     # Small dummy image
     return np.zeros((10, 20, 3), dtype=np.uint8)
 
 
 @pytest.fixture
 def sample_pdf_bytes() -> bytes:
+    """fixture sample_pdf_bytes"""
     # Load first page bytes of the two-page test PDF
     df = SerializerPdfDoc.load(stu.asset_path("pdf_file_two_pages"))
     df.reset_state()
@@ -114,6 +136,7 @@ def sample_pdf_bytes() -> bytes:
 
 
 @pytest.fixture
-def textract_json() -> dict:
+def textract_json() -> dict[str, Any]:
+    """fixture textract_json"""
     with open(stu.asset_path("textract_sample"), "r") as f:
         return json.load(f)

@@ -15,6 +15,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""
+Unit tests for language models used in document annotation pipelines.
+
+This module contains functions to test the functionality of token classification
+and sequence classification services specialized for layout-based language models
+such as LayoutLM.
+
+The tests ensure that the services classify tokens and sequences as expected,
+and validate the pipeline output against predefined annotations.
+
+"""
+
 from unittest.mock import MagicMock
 
 import pytest

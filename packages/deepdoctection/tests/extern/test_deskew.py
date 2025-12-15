@@ -15,10 +15,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# python
-# File: deepdoctection/packages/deepdoctection/tests/extern/test_deskew.py
+"""
+Unit tests for deskew functionality using OpenCV and Pillow backends.
 
-import importlib.util
+This module contains test cases for verifying the functionality of the deskewing
+operation provided by the `Jdeskewer` class. It validates both the prediction
+and transformation steps against expected outputs using images processed
+with OpenCV and Pillow backends. The tests are skipped if the `jdeskew` library
+is not available.
+"""
 
 import pytest
 from numpy.testing import assert_array_equal
@@ -32,7 +37,8 @@ from deepdoctection.extern.deskew import Jdeskewer
 
 
 @pytest.mark.skipif(not jdeskew_available(), reason="Requires jdeskew to be installed")
-def test_jdeskew_predict_and_transform_opencv(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_jdeskew_predict_and_transform_opencv() -> None:
+    """test jdeskew predict and transform with OpenCV backend"""
     # Use OpenCV backend
     SETTINGS.USE_DD_OPENCV = True
     SETTINGS.USE_DD_PILLOW = False
@@ -46,12 +52,13 @@ def test_jdeskew_predict_and_transform_opencv(monkeypatch: pytest.MonkeyPatch) -
     det = skewer.predict(img_in)  # type: ignore
     assert det.angle == 4.5326
 
-    img_out = skewer.transform_image(img_in, det) # type: ignore
+    img_out = skewer.transform_image(img_in, det)  # type: ignore
     assert_array_equal(img_gt, img_out)
 
 
 @pytest.mark.skipif(not jdeskew_available(), reason="Requires jdeskew to be installed")
-def test_jdeskew_predict_and_transform_pillow(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_jdeskew_predict_and_transform_pillow() -> None:
+    """test jdeskew predict and transform with Pillow backend"""
     SETTINGS.USE_DD_OPENCV = False
     SETTINGS.USE_DD_PILLOW = True
     SETTINGS.export_to_environ()
@@ -61,8 +68,8 @@ def test_jdeskew_predict_and_transform_pillow(monkeypatch: pytest.MonkeyPatch) -
     img_gt = load_image_from_file(stu.asset_path("deskewed_gt_pil"))
 
     skewer = Jdeskewer()
-    det = skewer.predict(img_in) # type: ignore
+    det = skewer.predict(img_in)  # type: ignore
     assert det.angle == 4.5326
 
-    img_out = skewer.transform_image(img_in, det) # type: ignore
+    img_out = skewer.transform_image(img_in, det)  # type: ignore
     assert_array_equal(img_gt, img_out)

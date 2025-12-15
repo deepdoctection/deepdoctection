@@ -24,7 +24,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from dataclasses import dataclass
-from typing import Any, Literal, Optional, TypeVar, Union, Type
+from typing import Any, Literal, Optional, Type, TypeVar, Union
 
 from pydantic import BaseModel, Field, PrivateAttr, field_validator, model_validator
 
@@ -50,6 +50,7 @@ DEFAULT_CATEGORY_ID = -1
 
 T = TypeVar("T", str, list[str], None)
 A = TypeVar("A", bound="Annotation")
+
 
 class Annotation(BaseModel, ABC):
     """

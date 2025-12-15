@@ -15,6 +15,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""
+Unit tests for the functionality of the ContainerAnnotation class.
+
+This module provides test cases to validate the functionality of
+the `ContainerAnnotation` class, including its ability to handle
+type-aware value assignment, type coercion, and validations. It
+ensures the integrity of data encapsulated in the annotation
+objects and helps enforce correct behavior under various conditions.
+"""
+
 import pytest
 from pydantic import ValidationError
 
@@ -29,65 +39,76 @@ class TestContainerAnnotation:
     """Tests for ContainerAnnotation class with type-aware value handling"""
 
     def test_container_annotation_creation_basic(self) -> None:
+        """Test basic ContainerAnnotation creation"""
         container = ContainerAnnotation(category_name="test_cat_1", value="Hello World")
         assert container.value == "Hello World"
         assert isinstance(container.value, str)
         assert container.value_type == "str"
 
     def test_container_annotation_value_coercion_int_untyped(self) -> None:
+        """Test that ContainerAnnotation coerces int value to int"""
         container = ContainerAnnotation(category_name="test_cat_2", value=42)
         assert container.value == 42
         assert isinstance(container.value, int)
         assert container.value_type == "int"
 
     def test_container_annotation_set_type_str(self) -> None:
+        """Test that ContainerAnnotation can be set to a new type"""
         container = ContainerAnnotation(category_name="test_cat_1")
         container.set_type("str")
         container.value = "test"
         assert container.value == "test"
 
     def test_container_annotation_set_type_int_assignment_preserved(self) -> None:
+        """Test that ContainerAnnotation preserves assignment type when set_type() is called"""
         container = ContainerAnnotation(category_name="test_cat_2")
         container.set_type("int")
         container.value = 42
         assert container.value == 42
 
     def test_container_annotation_set_type_float(self) -> None:
+        """Test that ContainerAnnotation can be set to a new type"""
         container = ContainerAnnotation(category_name="test_cat_2")
         container.set_type("float")
         container.value = 3.14
         assert container.value == 3.14
 
     def test_container_annotation_set_type_list_str(self) -> None:
+        """Test that ContainerAnnotation can be set to a new type"""
         container = ContainerAnnotation(category_name="test_cat_1", value=["a", "b"])
         assert container.value == ["a", "b"]
         container.set_type("list[str]")
 
     def test_container_annotation_list_str_rejects_non_str(self) -> None:
+        """Test that ContainerAnnotation rejects non-str values in list[str]"""
         with pytest.raises(ValidationError):
             _ = ContainerAnnotation(category_name="test_cat_1", value=["a", 2])
 
     def test_container_annotation_set_type_none_disables_validation_and_coerces(self) -> None:
+        """Test that ContainerAnnotation can be set to None"""
         container = ContainerAnnotation(category_name="test_cat_2", value=42)
         container.value = 42
         container.set_type("str")
         assert container.value == "42"
 
     def test_container_annotation_set_type_invalid_raises_error(self) -> None:
+        """Test that set_type raises error for invalid type"""
         container = ContainerAnnotation(category_name="test_cat_1")
         with pytest.raises(ValueError):
-            container.set_type("invalid_type") # type: ignore
+            container.set_type("invalid_type")  # type: ignore
 
     def test_container_validates_and_converts_value(self) -> None:
+        """Test that ContainerAnnotation validates and converts value on assignment"""
         container = ContainerAnnotation(category_name="test_cat_1")
         container.set_type("str")
         container.value = 456
         assert container.value == "456"
 
     def test_container_value_type_raises_value_error_when_None(self) -> None:
+        """Test that value_type raises ValueError when value is None"""
         container = ContainerAnnotation(category_name="test_cat_2", value=5)
         with pytest.raises(ValueError, match="type cannot be None"):
-            container.set_type(None) # type: ignore
+            container.set_type(None)  # type: ignore
 
 
 class TestContainerAnnotationAdvanced:

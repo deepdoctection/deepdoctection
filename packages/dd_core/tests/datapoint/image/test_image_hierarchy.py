@@ -19,9 +19,8 @@
 Testing Image hierarchy operations (image_ann_to_image, maybe_ann_to_sub_image, etc.)
 """
 
-import numpy as np
 from numpy import float32, ones
-from pytest import mark, raises
+from pytest import raises
 
 from dd_core.datapoint import BoundingBox, Image, ImageAnnotation
 from dd_core.utils.error import ImageError
@@ -57,9 +56,9 @@ class TestImageHierarchy:
         img.dump(ann)
         img.image_ann_to_image(annotation_id=ann.annotation_id, crop_image=True)
 
-        assert ann.image.image is not None
-        assert ann.image.width == 10
-        assert ann.image.height == 4  # Intersects with image bounds
+        assert ann.image is not None
+        assert ann.image.width == 10 # pylint:disable=E1101
+        assert ann.image.height == 4 # pylint:disable=E1101
 
     def test_image_ann_to_image_creates_embedding(self, white_image: WhiteImage) -> None:
         """image_ann_to_image creates embedding in parent image"""
@@ -72,7 +71,8 @@ class TestImageHierarchy:
         img.dump(ann)
         img.image_ann_to_image(annotation_id=ann.annotation_id, crop_image=False)
 
-        assert img.image_id in ann.image.embeddings
+        assert ann.image is not None
+        assert img.image_id in ann.image.embeddings  # pylint:disable=E1101
 
     def test_image_ann_to_image_crop_image_creates_pixels(self, white_image: WhiteImage) -> None:
         """image_ann_to_image with crop_image=True creates pixel data"""
@@ -85,8 +85,8 @@ class TestImageHierarchy:
         img.dump(ann)
         img.image_ann_to_image(annotation_id=ann.annotation_id, crop_image=True)
 
-        assert ann.image.image is not None
-        assert ann.image.image.shape == (4, 10, 3)
+        assert ann.image is not None
+        assert ann.image.image.shape == (4, 10, 3)  # pylint:disable=E1101
 
     def test_image_ann_to_image_no_crop_leaves_no_pixels(self, white_image: WhiteImage) -> None:
         """image_ann_to_image with crop_image=False doesn't create pixels"""
@@ -99,7 +99,7 @@ class TestImageHierarchy:
         img.dump(ann)
         img.image_ann_to_image(annotation_id=ann.annotation_id, crop_image=False)
 
-        assert ann.image.image is None
+        assert ann.image is None
 
     def test_image_ann_to_image_requires_bbox(self, white_image: WhiteImage) -> None:
         """image_ann_to_image requires bounding box to be set"""
@@ -174,7 +174,7 @@ class TestImageHierarchy:
 
         # Image object exists but pixels are cleared
         assert ann.image is not None
-        assert ann.image.image is None
+        assert ann.image.image is None  # pylint:disable=E1101
 
     def test_get_categories_from_current_state(self, white_image: WhiteImage) -> None:
         """get_categories_from_current_state returns active category names"""

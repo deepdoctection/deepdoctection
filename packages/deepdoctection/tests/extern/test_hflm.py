@@ -15,6 +15,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""
+Test suite for validating HuggingFace Language Models (HFLm) based sequence and token classification,
+as well as language detection functionalities.
+
+This module contains unit tests for the various components of the deepdoctection.extern.hflm interface,
+utilizing mock-based testing to simulate model behaviors and predictions. These tests ensure that the
+sequence classifiers, token classifiers, and language detectors perform as expected and handle boundary
+cases appropriately without real dependency on the HuggingFace ecosystem at runtime.
+
+The tests perform the following actions:
+1. Validate sequence classification using mocked tokenizers and models.
+2. Validate token classification by verifying predictions based on input encodings.
+3. Test language detection functionality.
+4. Validate error handling during misconfiguration or mismatches in the expected input data.
+
+All tests are conditionally skipped if the required libraries (PyTorch and transformers) are not available.
+"""
+
 from typing import Any
 from unittest.mock import MagicMock
 
@@ -38,11 +56,18 @@ REQUIRES_PT_AND_TR = pytest.mark.skipif(
 
 
 def _mk_dummy_tokenizer() -> Any:
+
     class DummyTokenizer:
-        def __call__(self, text, return_tensors="pt", padding=True, truncation=True, max_length=512): # type: ignore
+        """
+        The dummy tokenizer mimics the behavior of a common tokenizer used in NLP
+        tasks. It provides a functionality where processing a text produces dummy
+        encodings expected for a model input. The returned tokenizer adheres to a
+        specific structure including input IDs and attention masks.
+        """
+        def __call__(self, text, return_tensors="pt", padding=True, truncation=True, max_length=512):  # type: ignore
             # Minimal encoding dict the model expects
             return {
-                "input_ids": torch.tensor([[1, 2, 3]], dtype=torch.long),
+                "input_ids": torch.tensor([[1, 2, 3]], dtype=torch.long), # pylint:disable=E0606
                 "attention_mask": torch.tensor([[1, 1, 1]], dtype=torch.long),
                 # No token_type_ids for XLM-R; model code will create zeros_like if absent
             }
@@ -52,6 +77,7 @@ def _mk_dummy_tokenizer() -> Any:
 
 @REQUIRES_PT_AND_TR
 def test_hflm_sequence_predict_basic(monkeypatch: pytest.MonkeyPatch) -> None:
+    """test sequence classification using mocked tokenizers and models."""
     # Avoid network tokenizer download during ctor
     monkeypatch.setattr(
         "deepdoctection.extern.hflm.get_tokenizer_from_model_class",
@@ -66,7 +92,7 @@ def test_hflm_sequence_predict_basic(monkeypatch: pytest.MonkeyPatch) -> None:
     )
 
     # Mock prediction helper
-    def _fake_seq_predict(input_ids, attention_mask, token_type_ids, model): # type: ignore
+    def _fake_seq_predict(input_ids, attention_mask, token_type_ids, model):  # type: ignore # pylint:disable=W0613
         return SequenceClassResult(class_id=0, score=0.92)
 
     monkeypatch.setattr(
@@ -86,12 +112,12 @@ def test_hflm_sequence_predict_basic(monkeypatch: pytest.MonkeyPatch) -> None:
     result = clf.predict(**inputs)
     assert result.class_id == 1
     assert result.class_name == "letter"
-    assert result.score > 0.9 # type: ignore
+    assert result.score > 0.9  # type: ignore
 
 
 @REQUIRES_PT_AND_TR
 def test_hflm_token_predict_basic(monkeypatch: pytest.MonkeyPatch) -> None:
-
+    """test token classification using mocked tokenizers and models."""
     monkeypatch.setattr(
         "deepdoctection.extern.hflm.get_tokenizer_from_model_class",
         lambda cls, use_xlm: _mk_dummy_tokenizer(),
@@ -103,7 +129,8 @@ def test_hflm_token_predict_basic(monkeypatch: pytest.MonkeyPatch) -> None:
         raising=True,
     )
 
-    def _fake_tok_predict(uuids, input_ids, attention_mask, token_type_ids, tokens, model): # type: ignore
+    def _fake_tok_predict(uuids, # type: ignore # pylint:disable=W0613
+                          input_ids, attention_mask, token_type_ids, tokens, model):
         return [
             TokenClassResult(uuid="u1", token_id=101, class_id=2, token="A", score=0.8),  # -> class_id+1 = 3
             TokenClassResult(uuid="u2", token_id=102, class_id=0, token="B", score=0.9),  # -> class_id+1 = 1
@@ -141,7 +168,7 @@ def test_hflm_token_predict_basic(monkeypatch: pytest.MonkeyPatch) -> None:
 
 def _mk_dummy_fast_tokenizer() -> Any:
     class DummyTokenizer:
-        def __call__(self, text, return_tensors="pt", padding=True, truncation=True, max_length=512): # type: ignore
+        def __call__(self, text, return_tensors="pt", padding=True, truncation=True, max_length=512):  # type: ignore
             return {
                 "input_ids": torch.tensor([[1, 2, 3]], dtype=torch.long),
                 "attention_mask": torch.tensor([[1, 1, 1]], dtype=torch.long),
@@ -153,6 +180,7 @@ def _mk_dummy_fast_tokenizer() -> Any:
 
 @REQUIRES_PT_AND_TR
 def test_hflm_language_predict_basic(monkeypatch: pytest.MonkeyPatch) -> None:
+    """test language detection using mocked tokenizers and models."""
     # Avoid network tokenizer download during ctor
     monkeypatch.setattr(
         "transformers.XLMRobertaTokenizerFast.from_pretrained",
@@ -162,13 +190,13 @@ def test_hflm_language_predict_basic(monkeypatch: pytest.MonkeyPatch) -> None:
 
     # Mock model construction (no real weights/model)
     class _StubLangModel:
-        def to(self, device): # type: ignore
+        def to(self, device):  # type: ignore
             return self
 
-        def eval(self): # type: ignore
+        def eval(self):  # type: ignore
             pass
 
-        def __call__(self, input_ids=None, attention_mask=None, token_type_ids=None): # type: ignore
+        def __call__(self, input_ids=None, attention_mask=None, token_type_ids=None):  # type: ignore
             # Highest score at index 1 -> class_id becomes 2 -> "deu"
             return type("Out", (), {"logits": torch.tensor([[0.1, 2.0, 0.5]], dtype=torch.float32)})
 
@@ -187,6 +215,7 @@ def test_hflm_language_predict_basic(monkeypatch: pytest.MonkeyPatch) -> None:
 
 @REQUIRES_PT_AND_TR
 def test_hflm_sequence_validate_encodings_errors(monkeypatch: pytest.MonkeyPatch) -> None:
+    """test sequence classification using mocked tokenizers and models."""
     # Avoid tokenizer resolution during ctor (model class is MagicMock)
     monkeypatch.setattr(
         "deepdoctection.extern.hflm.get_tokenizer_from_model_class",
@@ -214,6 +243,7 @@ def test_hflm_sequence_validate_encodings_errors(monkeypatch: pytest.MonkeyPatch
 
 @REQUIRES_PT_AND_TR
 def test_hflm_token_validate_encodings_errors(monkeypatch: pytest.MonkeyPatch) -> None:
+    """test token classification using mocked tokenizers and models."""
     # Avoid tokenizer resolution during ctor (model class is MagicMock)
     monkeypatch.setattr(
         "deepdoctection.extern.hflm.get_tokenizer_from_model_class",

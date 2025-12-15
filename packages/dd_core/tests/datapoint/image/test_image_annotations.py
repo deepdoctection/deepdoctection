@@ -19,10 +19,10 @@
 Testing Image annotation dump and retrieval operations
 """
 
-from pytest import mark, raises
+from pytest import raises
 
 from dd_core.datapoint import BoundingBox, Image, ImageAnnotation
-from dd_core.utils.error import AnnotationError, ImageError
+from dd_core.utils.error import ImageError
 
 from ..conftest import WhiteImage
 

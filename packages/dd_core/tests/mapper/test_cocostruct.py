@@ -15,6 +15,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""
+Unit tests for COCO structure mapping functions.
+
+This module provides tests to validate the mapping of COCO annotations
+to the internal ``Image`` structure and vice versa. It ensures that the
+mapping correctly handles various scenarios such as image loading, fake
+scores, and coarse sub-categories.
+
+Tests in this module cover:
+- Mapping COCO annotations to ``Image`` objects without loading images.
+- Mapping COCO annotations with options for fake scores and sub-categories.
+- Validating the correct handling of annotation details during the mapping.
+- Exporting an ``Image`` object to COCO format and validating its correctness.
+
+The test cases utilize pytest for assertions and mocking where applicable.
+"""
 
 from typing import Any, Dict, List, Optional
 

@@ -19,6 +19,7 @@
 Testing Page factory methods and initialization
 """
 
+from copy import copy
 from pathlib import Path
 
 from dd_core.datapoint.image import Image
@@ -47,7 +48,7 @@ class TestPageFactory:
 
     def test_page_copy_creates_new_instance(self, page: Page) -> None:
         """Page.__copy__() creates a new Page instance"""
-        page_copy = page.__copy__()
+        page_copy = copy(page)
         assert isinstance(page_copy, Page)
         assert page_copy is not page
         assert page_copy.image_id == page.image_id

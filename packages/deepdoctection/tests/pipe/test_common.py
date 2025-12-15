@@ -15,6 +15,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""
+Utility functions and test cases for common annotation and matching services.
+
+This module provides utility functions for creating annotations and a variety
+of test cases that validate the functionality of services related to annotation
+management, matching, and layout structure processing.
+
+"""
+
 import pytest
 
 from dd_core.datapoint.annotation import ImageAnnotation
@@ -33,8 +42,9 @@ from deepdoctection.pipe.common import (
 )
 
 
-def make_ann(category: ObjectTypes, box: dict[str,int], score: float =0.9) -> ImageAnnotation:
-    ann = ImageAnnotation(category_name=category, score=score, bounding_box=BoundingBox(**box)) # type: ignore
+def make_ann(category: ObjectTypes, box: dict[str, int], score: float = 0.9) -> ImageAnnotation:
+    """Create an ImageAnnotation with the given category and bounding box."""
+    ann = ImageAnnotation(category_name=category, score=score, bounding_box=BoundingBox(**box))  # type: ignore
     assert ann.get_defining_attributes() == ["category_name", "bounding_box"]
     return ann
 
@@ -47,8 +57,10 @@ def make_ann(category: ObjectTypes, box: dict[str,int], score: float =0.9) -> Im
         ([[LayoutType.TABLE, LayoutType.TABLE_ROTATED]], [0.3], [LayoutType.TABLE]),
     ],
 )
-def test_annotation_nms_service_serves(dp_image: Image, pairs: list[list[LayoutType]],
-                                       thresh:list[float], prio: list[LayoutType])->None:
+def test_annotation_nms_service_serves(
+    dp_image: Image, pairs: list[list[LayoutType]], thresh: list[float], prio: list[LayoutType]
+) -> None:
+    """Test that the AnnotationNmsService serves the expected results."""
     a1 = make_ann(LayoutType.TEXT, {"ulx": 10, "uly": 10, "width": 100, "height": 20, "absolute_coords": True})
     a2 = make_ann(LayoutType.TEXT, {"ulx": 15, "uly": 12, "width": 100, "height": 20, "absolute_coords": True})
     a3 = make_ann(LayoutType.TITLE, {"ulx": 12, "uly": 9, "width": 100, "height": 20, "absolute_coords": True})
@@ -65,7 +77,8 @@ def test_annotation_nms_service_serves(dp_image: Image, pairs: list[list[LayoutT
     assert isinstance(out, Image)
 
 
-def test_matching_service_child_relationships(dp_image: Image)->None:
+def test_matching_service_child_relationships(dp_image: Image) -> None:
+    """Test that the MatchingService creates the expected relationships."""
     parent = make_ann(LayoutType.LIST, {"ulx": 50, "uly": 50, "width": 200, "height": 200, "absolute_coords": True})
     child1 = make_ann(LayoutType.LIST_ITEM, {"ulx": 60, "uly": 60, "width": 50, "height": 20, "absolute_coords": True})
     child2 = make_ann(
@@ -91,7 +104,8 @@ def test_matching_service_child_relationships(dp_image: Image)->None:
     assert child2.annotation_id not in rels
 
 
-def test_matching_service_synthetic_parent_creation(dp_image:Image)->None:
+def test_matching_service_synthetic_parent_creation(dp_image: Image) -> None:
+    """Test that the MatchingService creates synthetic parents."""
     child1 = make_ann(LayoutType.LIST_ITEM, {"ulx": 60, "uly": 60, "width": 50, "height": 20, "absolute_coords": True})
     child2 = make_ann(LayoutType.LIST_ITEM, {"ulx": 80, "uly": 100, "width": 50, "height": 20, "absolute_coords": True})
 
@@ -116,7 +130,8 @@ def test_matching_service_synthetic_parent_creation(dp_image:Image)->None:
     ].get_relationship(Relationships.CHILD)
 
 
-def test_neighbour_matcher_layout_link(dp_image: Image)->None:
+def test_neighbour_matcher_layout_link(dp_image: Image) -> None:
+    """Test that the NeighbourMatcher creates the expected layout link."""
     # Two text blocks near each other should be linked via NeighbourMatcher
     a = make_ann(LayoutType.TEXT, {"ulx": 100, "uly": 100, "width": 80, "height": 20, "absolute_coords": True})
     b = make_ann(LayoutType.CAPTION, {"ulx": 190, "uly": 105, "width": 80, "height": 20, "absolute_coords": True})
@@ -137,7 +152,8 @@ def test_neighbour_matcher_layout_link(dp_image: Image)->None:
     assert b.annotation_id in rels_a
 
 
-def test_page_parsing_service_basic(dp_image: Image)-> None:
+def test_page_parsing_service_basic(dp_image: Image) -> None:
+    """Test that the PageParsingService serves the expected results."""
     container = make_ann(LayoutType.TEXT, {"ulx": 0, "uly": 0, "width": 500, "height": 500, "absolute_coords": True})
     line1 = make_ann(LayoutType.LINE, {"ulx": 10, "uly": 20, "width": 100, "height": 15, "absolute_coords": True})
     line2 = make_ann(LayoutType.LINE, {"ulx": 12, "uly": 40, "width": 100, "height": 15, "absolute_coords": True})

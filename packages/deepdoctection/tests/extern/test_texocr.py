@@ -15,6 +15,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""
+A test module for verifying basic functionality of Textract OCR integration.
+
+This module contains unit tests to validate the behavior of the TextractOcrDetector class.
+It ensures the detector correctly predicts OCR results and verifies its functionality using mocked
+dependencies and predefined test data.
+"""
+
 from unittest.mock import MagicMock
 
 import pytest
@@ -26,6 +34,7 @@ from deepdoctection.extern.texocr import TextractOcrDetector
 def test_textract_ocr_predict_words_basic(
     monkeypatch: pytest.MonkeyPatch, sample_np_img: PixelValues, textract_json: JsonDict
 ) -> None:
+    """test textract ocr predict words basic"""
     pytest.importorskip("boto3")
 
     monkeypatch.setattr("deepdoctection.extern.texocr.get_boto3_requirement", lambda: ("boto3", True, ""))

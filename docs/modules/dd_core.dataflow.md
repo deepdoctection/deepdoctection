@@ -1,5 +1,5 @@
 
-::: deepdoctection.dataflow
+::: dd_core.dataflow
     options:
         show_submodules: True
         filters:

@@ -50,7 +50,7 @@ def test_dataset_layouttest_with_load_image_returns_image(dataset_test_base_dir:
 
     # Arrange
     layouttest = LayoutTest()
-    layouttest.dataflow.get_workdir = lambda: Path(dataset_test_base_dir) / layouttest.dataflow.location # type: ignore
+    layouttest.dataflow.get_workdir = lambda: Path(dataset_test_base_dir) / layouttest.dataflow.location  # type: ignore
     layouttest.dataflow.splits = {"test": ""}
     layouttest.dataflow.annotation_files = {"test": "test_layout.jsonl"}
     df = layouttest.dataflow.build(load_image=True)

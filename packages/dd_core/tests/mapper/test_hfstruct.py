@@ -15,6 +15,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""
+Unit tests for the integration between Image objects and HF DETR training data.
+
+This module tests the transformation functions that convert `Image` objects
+to a format compatible with HF DETR training. Specifically, it verifies that
+the output data includes correct annotations and that filtering by category
+names works appropriately.
+"""
 
 import numpy as np
 
@@ -23,6 +31,7 @@ from dd_core.mapper.hfstruct import image_to_hf_detr_training
 
 
 def test_image_to_hf_detr_training_all_categories(image_with_layout_anns: Image) -> None:
+    """Test that the output data includes all annotations."""
     # Mock image pixels to bypass file loading
     image_with_layout_anns.image = np.zeros(
         (int(image_with_layout_anns.height), int(image_with_layout_anns.width), 3),
@@ -36,6 +45,7 @@ def test_image_to_hf_detr_training_all_categories(image_with_layout_anns: Image)
 
 
 def test_image_to_hf_detr_training_filtered_text(image_with_layout_anns: Image) -> None:
+    """Test that the output data includes only annotations of the specified category."""
     # Mock image pixels to bypass file loading
     image_with_layout_anns.image = np.zeros(
         (int(image_with_layout_anns.height), int(image_with_layout_anns.width), 3),

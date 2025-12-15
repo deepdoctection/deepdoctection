@@ -15,6 +15,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""
+This module contains unit tests for the evaluation metrics used in the deepdoctection framework. The metrics
+are tested for their correctness in evaluating ground truth data against predictions.
+
+The tests include evaluation for accuracy, confusion matrices, precision, and recall metrics under various
+contexts such as categories and subcategories. Dummy test cases verify trivial correctness of the implemented
+metric definitions.
+"""
+
 from __future__ import annotations
 
 import pytest
@@ -36,7 +45,7 @@ from deepdoctection.eval.accmetric import (
 try:
     from dd_datasets.info import DatasetCategories
 except ImportError:
-    DatasetCategories = None # type: ignore
+    DatasetCategories = None  # type: ignore
 
 
 @pytest.mark.skipif(DatasetCategories is None, reason="dd_datasets is not installed; DatasetCategories unavailable")

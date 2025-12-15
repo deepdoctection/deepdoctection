@@ -15,6 +15,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""
+A set of test functions for validating category and subcategory mapping, filtering,
+and id reassignment for images and their annotations in a data processing pipeline.
+
+These tests validate the correctness of the following core operations:
+- Mapping categories to subcategories using `cat_to_sub_cat`.
+- Reassigning or filtering category IDs with `re_assign_cat_ids` and `filter_cat`.
+- Extracting and filtering summary data using `filter_summary`.
+- Mapping image annotations to category IDs with `image_to_cat_id`.
+- Removing specific categories from annotations with `remove_cats`.
+"""
+
 
 from dd_core.datapoint.image import Image
 from dd_core.mapper.cats import (
@@ -27,7 +39,7 @@ from dd_core.mapper.cats import (
 )
 
 
-def test_cat_to_sub_word_to_characters_with_id_mapping(image: Image)-> None:
+def test_cat_to_sub_word_to_characters_with_id_mapping(image: Image) -> None:
     """
     test func: cat_to_sub_cat replaces categories with sub categories correctly
     """
@@ -50,7 +62,7 @@ def test_cat_to_sub_word_to_characters_with_id_mapping(image: Image)-> None:
             assert ann.category_id == 9
 
 
-def test_cat_to_sub_word_to_characters_no_category_id_change(image: Image)-> None:
+def test_cat_to_sub_word_to_characters_no_category_id_change(image: Image) -> None:
     """
     test func: cat_to_sub_cat replaces categories with sub categories correctly
     """
@@ -65,7 +77,7 @@ def test_cat_to_sub_word_to_characters_no_category_id_change(image: Image)-> Non
         assert ann.category_id == -1  # default value
 
 
-def test_re_assign_cat_ids(image: Image)-> None:
+def test_re_assign_cat_ids(image: Image) -> None:
     """Test re_assign_cat_ids keeps only word and text with correct ids."""
     categories_dict_name_as_key = {"word": 1, "text": 2}
 
@@ -160,7 +172,7 @@ def test_filter_summary_columns_name_none(table_image: Image) -> None:
 
 def test_image_to_cat_id_basic_categories(table_image: Image) -> None:
     """Extract ids for column, row, cell categories."""
-    result, img_id = image_to_cat_id(category_names=["column", "row", "cell"])(table_image)
+    result, img_id = image_to_cat_id(category_names=["column", "row", "cell"])(table_image)  # pylint:disable=E1102
     assert result == {
         "column": [2] * 3,
         "row": [3] * 5,
@@ -171,7 +183,7 @@ def test_image_to_cat_id_basic_categories(table_image: Image) -> None:
 
 def test_image_to_cat_id_subcategory_ids(table_image: Image) -> None:
     """Extract sub-category ids for column_number."""
-    result, img_id = image_to_cat_id(
+    result, img_id = image_to_cat_id( # pylint:disable=E1102
         category_names=["column"],
         sub_categories={"column": "column_number"},
     )(table_image)
@@ -184,7 +196,7 @@ def test_image_to_cat_id_subcategory_ids(table_image: Image) -> None:
 
 def test_image_to_cat_id_subcategory_names(table_image: Image) -> None:
     """Extract sub-category names for column_number."""
-    result, img_id = image_to_cat_id(
+    result, img_id = image_to_cat_id( # pylint:disable=E1102
         category_names=["column"],
         sub_categories={"column": "column_number"},
         id_name_or_value="name",
@@ -198,7 +210,7 @@ def test_image_to_cat_id_subcategory_names(table_image: Image) -> None:
 
 def test_image_to_cat_id_summary_ids(table_image: Image) -> None:
     """Extract summary sub-category ids."""
-    result, img_id = image_to_cat_id(
+    result, img_id = image_to_cat_id( # pylint:disable=E1102
         summary_sub_category_names=[
             "number_of_rows",
             "number_of_columns",
@@ -217,7 +229,7 @@ def test_image_to_cat_id_summary_ids(table_image: Image) -> None:
 
 def test_image_to_cat_id_summary_names(table_image: Image) -> None:
     """Extract summary sub-category names."""
-    result, img_id = image_to_cat_id(
+    result, img_id = image_to_cat_id( # pylint:disable=E1102
         summary_sub_category_names=[
             "number_of_rows",
             "number_of_columns",
@@ -253,7 +265,7 @@ def test_remove_cats_relationships(image: Image) -> None:
     """Remove child relationship from text annotations."""
     dp = remove_cats(relationships={"text": "child"})(image)
     for ann in dp.get_annotation(category_names=["text"]):
-        assert len(ann.relationships["child"]) == 0 # type: ignore
+        assert len(ann.relationships["child"]) == 0  # type: ignore
 
 
 def test_remove_cats_category_and_sub_category(image: Image) -> None:
@@ -273,7 +285,7 @@ def test_remove_cats_sub_category_and_relationship(image: Image) -> None:
     dp = remove_cats(sub_categories={"text": "characters"}, relationships={"text": "child"})(image)
     for ann in dp.get_annotation(category_names=["text"]):
         assert "characters" not in ann.sub_categories
-        assert len(ann.relationships["child"]) == 0 # type: ignore
+        assert len(ann.relationships["child"]) == 0  # type: ignore
 
 
 def test_remove_cats_all(image: Image) -> None:

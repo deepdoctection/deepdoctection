@@ -15,8 +15,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""
+Test cases for the TextOrderService component integration.
 
-from pytest import mark
+This module contains various test cases to validate the integration of the
+TextOrderService component with different configurations. The tests ensure
+that the reading order of text and word annotations is correctly assigned
+to the processed datapoint.
+
+"""
 
 from dd_core.datapoint import BoundingBox, ContainerAnnotation, Image, ImageAnnotation, get_type
 from deepdoctection.pipe.order import TextOrderService

@@ -15,6 +15,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""
+Unit tests for validating the functionality of CategoryAnnotation
+and its associated subcategories and relationships.
+
+This module contains test cases focusing on various aspects of
+the creation, manipulation, and interactions of CategoryAnnotation
+instances. It asserts correctness when managing attributes,
+converting annotations to and from dictionaries, handling
+subcategories, and creating relationships.
+"""
+
 import pytest
 
 from dd_core.datapoint.annotation import (
@@ -71,7 +82,7 @@ class TestCategoryAnnotationBasics:
     def test_from_dict(self) -> None:
         """Test creating annotation from dict"""
         data = {"category_name": "test_cat_1", "category_id": 2, "score": 0.85}
-        cat = CategoryAnnotation.from_dict(**data) # type: ignore
+        cat = CategoryAnnotation.from_dict(**data)  # type: ignore
         assert cat.category_name == get_type("test_cat_1")
         assert cat.category_id == 2
         assert cat.score == 0.85

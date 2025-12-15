@@ -20,7 +20,7 @@ Property-based testing for Image class using hypothesis
 """
 
 import numpy as np
-from hypothesis import assume, given # type: ignore
+from hypothesis import given  # type: ignore
 from hypothesis import strategies as st
 
 from dd_core.datapoint import BoundingBox, Image

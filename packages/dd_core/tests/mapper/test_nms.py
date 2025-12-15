@@ -15,6 +15,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""
+Unit tests for verifying the functionality of non-maximum suppression (NMS) operations in the context of
+PyTorch-enabled environments.
+
+This module contains test cases to validate the correct behavior of batched NMS and image annotation filtering
+provided by the `dd_core.mapper` library. Tests are dynamically skipped if PyTorch is not installed in the
+environment.
+
+"""
 
 import pytest
 
@@ -26,9 +35,10 @@ if pytorch_available():
 
 
 @pytest.mark.skipif(not pytorch_available(), reason="torch is not installed")
-def test_batched_nms_uses_box_ops()->None:
+def test_batched_nms_uses_box_ops() -> None:
+    """Test that batched NMS uses the box ops implementation."""
 
-    boxes = torch.tensor(
+    boxes = torch.tensor( # pylint: disable=E0606
         [
             [0.0, 0.0, 10.0, 10.0],
             [1.0, 1.0, 11.0, 11.0],
@@ -45,7 +55,8 @@ def test_batched_nms_uses_box_ops()->None:
 
 
 @pytest.mark.skipif(not pytorch_available(), reason="torch is not installed")
-def test_pt_nms_image_annotations_returns_expected_subset(annotations)->None: # type: ignore
+def test_pt_nms_image_annotations_returns_expected_subset(annotations) -> None:  # type: ignore
+    """Test that pt_nms_image_annotations returns the expected subset of annotations."""
     dp_image = annotations(True, True)
     anns = dp_image.get_annotation()
     output = pt_nms_image_annotations(anns, threshold=0.01)
@@ -53,7 +64,8 @@ def test_pt_nms_image_annotations_returns_expected_subset(annotations)->None: # 
 
 
 @pytest.mark.skipif(not pytorch_available(), reason="torch is not installed")
-def test_pt_nms_image_annotations_returns_expected_subset_with_prio(annotations)->None: # type: ignore
+def test_pt_nms_image_annotations_returns_expected_subset_with_prio(annotations) -> None:  # type: ignore
+    """Test that pt_nms_image_annotations returns the expected subset of annotations with prio."""
     dp_image = annotations(True, True)
     anns = dp_image.get_annotation()
     output = pt_nms_image_annotations(anns, threshold=0.01, prio="title")

@@ -41,7 +41,7 @@ def test_dataset_doclaynet_returns_image(monkeypatch: pytest.MonkeyPatch, datase
 
     # Arrange
     doclaynet = DocLayNet()
-    doclaynet.dataflow.get_workdir = lambda: Path(dataset_test_base_dir) / doclaynet.dataflow.location # type: ignore
+    doclaynet.dataflow.get_workdir = lambda: Path(dataset_test_base_dir) / doclaynet.dataflow.location  # type: ignore
     doclaynet.dataflow.annotation_files = {"val": "test_doclaynet.json"}
     df = doclaynet.dataflow.build()
 
@@ -62,7 +62,7 @@ def test_dataset_doclaynet_seq_returns_image(monkeypatch: pytest.MonkeyPatch, da
 
     # Arrange
     doclaynet = DocLayNetSeq()
-    doclaynet.dataflow.get_workdir = lambda: Path(dataset_test_base_dir) / doclaynet.dataflow.location # type: ignore
+    doclaynet.dataflow.get_workdir = lambda: Path(dataset_test_base_dir) / doclaynet.dataflow.location  # type: ignore
     doclaynet.dataflow.annotation_files = {"val": "test_doclaynet.json"}
     df = doclaynet.dataflow.build()
 

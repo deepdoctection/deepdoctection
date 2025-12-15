@@ -15,6 +15,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""
+Module containing pytest fixtures to set up test environments and provide test data for the project.
+
+Fixtures in this module handle various setup tasks such as providing mock datasets,
+parsing test data, and patching methods to simulate external dependencies. These
+fixtures are used to simplify and standardize testing.
+
+"""
+
 from pathlib import Path
 
 import jsonlines
@@ -27,10 +36,12 @@ from dd_datasets import Fintabnet, Pubtabnet
 
 
 @pytest.fixture(name="test_layout")
-def fixture_test_layout(): # type:ignore
+def fixture_test_layout():  # type:ignore
+    """return test_layout function. Use test_layout(raw=True) to get raw datapoints or test_layout() to get Image
+     datapoints """
     path = stu.asset_path("testlayout")
 
-    def test_layout(raw: bool = False): # type:ignore
+    def test_layout(raw: bool = False):  # type:ignore
         with jsonlines.open(path, "r") as reader:
             if raw:
                 return list(reader)
@@ -52,23 +63,26 @@ def fixture_test_layout(): # type:ignore
 
 @pytest.fixture(name="dataset_test_base_dir")
 def fixture_dataset_test_base_dir() -> str:
+    """return dataset_test_base_dir"""
     return (Path(__file__).parent / "assets" / "datasets").as_posix()
 
 
 @pytest.fixture()
-def fintabnet(monkeypatch: pytest.MonkeyPatch, dataset_test_base_dir: str)-> Fintabnet:
+def fintabnet(monkeypatch: pytest.MonkeyPatch, dataset_test_base_dir: str) -> Fintabnet:
+    """fintabnet dataset fixture"""
     monkeypatch.setattr("dd_core.mapper.pubstruct.load_bytes_from_pdf_file", lambda _fn: b"\x01\x02")
     monkeypatch.setattr(
         "dd_core.mapper.pubstruct.convert_pdf_bytes_to_np_array_v2",
         lambda *args, **kwargs: np.ones((794, 596, 3), dtype=np.uint8) * 255,
     )
     ds = Fintabnet()
-    ds.dataflow.get_workdir = lambda: Path(dataset_test_base_dir) / ds.dataflow.location
+    ds.dataflow.get_workdir = lambda: Path(dataset_test_base_dir) / ds.dataflow.location  # type: ignore
     return ds
 
 
 @pytest.fixture()
-def pubtabnet(dataset_test_base_dir: str)-> Pubtabnet:
+def pubtabnet(dataset_test_base_dir: str) -> Pubtabnet:
+    """pubtabnet dataset fixture"""
     ds = Pubtabnet()
-    ds.dataflow.get_workdir = lambda: Path(dataset_test_base_dir) / ds.dataflow.location
+    ds.dataflow.get_workdir = lambda: Path(dataset_test_base_dir) / ds.dataflow.location  # type: ignore
     return ds

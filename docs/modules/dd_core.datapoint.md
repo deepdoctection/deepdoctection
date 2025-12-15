@@ -1,5 +1,5 @@
 
-::: deepdoctection.datapoint
+::: dd_core.datapoint
     options:
         show_submodules: True
         filters:

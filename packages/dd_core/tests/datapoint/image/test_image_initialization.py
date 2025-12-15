@@ -19,7 +19,7 @@
 Testing Image initialization and basic properties
 """
 
-from pytest import mark, raises
+from pytest import raises
 
 from dd_core.datapoint import Image
 from dd_core.utils import get_uuid

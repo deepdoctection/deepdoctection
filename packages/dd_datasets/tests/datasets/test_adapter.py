@@ -26,7 +26,7 @@ if pytorch_available():
     from dd_datasets.adapter import DatasetAdapter
 
 
-def _patch_pdf(monkeypatch: pytest.MonkeyPatch)->None:
+def _patch_pdf(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr("dd_core.mapper.pubstruct.load_bytes_from_pdf_file", lambda _fn: b"\x01\x02")
     monkeypatch.setattr(
         "dd_core.mapper.pubstruct.convert_pdf_bytes_to_np_array_v2",
@@ -35,7 +35,7 @@ def _patch_pdf(monkeypatch: pytest.MonkeyPatch)->None:
 
 
 @pytest.mark.skipif(not pytorch_available(), reason="torch not installed")
-def test_dataset_adapter_cache_d2_mapping(monkeypatch: pytest.MonkeyPatch, fintabnet)-> None: # type: ignore
+def test_dataset_adapter_cache_d2_mapping(monkeypatch: pytest.MonkeyPatch, fintabnet) -> None:  # type: ignore
     _patch_pdf(monkeypatch)
     adapter = DatasetAdapter(
         fintabnet,
@@ -54,7 +54,7 @@ def test_dataset_adapter_cache_d2_mapping(monkeypatch: pytest.MonkeyPatch, finta
 
 
 @pytest.mark.skipif(not pytorch_available(), reason="torch not installed")
-def test_dataset_adapter_non_cache_infinite_raises(fintabnet)-> None: # type: ignore
+def test_dataset_adapter_non_cache_infinite_raises(fintabnet) -> None:  # type: ignore
     with pytest.raises(ValueError):
         DatasetAdapter(
             fintabnet,
@@ -65,7 +65,7 @@ def test_dataset_adapter_non_cache_infinite_raises(fintabnet)-> None: # type: ig
 
 
 @pytest.mark.skipif(not pytorch_available(), reason="torch not installed")
-def test_dataset_adapter_non_cache_repetition(monkeypatch: pytest.MonkeyPatch, fintabnet)-> None: # type: ignore
+def test_dataset_adapter_non_cache_repetition(monkeypatch: pytest.MonkeyPatch, fintabnet) -> None:  # type: ignore
     _patch_pdf(monkeypatch)
     adapter = DatasetAdapter(
         fintabnet,
@@ -82,7 +82,7 @@ def test_dataset_adapter_non_cache_repetition(monkeypatch: pytest.MonkeyPatch, f
 
 
 @pytest.mark.skipif(not pytorch_available(), reason="torch not installed")
-def test_dataset_adapter_max_datapoints_limits(monkeypatch: pytest.MonkeyPatch, fintabnet)-> None: # type: ignore
+def test_dataset_adapter_max_datapoints_limits(monkeypatch: pytest.MonkeyPatch, fintabnet) -> None:  # type: ignore
     _patch_pdf(monkeypatch)
     adapter = DatasetAdapter(
         fintabnet,
@@ -98,8 +98,9 @@ def test_dataset_adapter_max_datapoints_limits(monkeypatch: pytest.MonkeyPatch, 
 
 
 @pytest.mark.skipif(not pytorch_available(), reason="torch not installed")
-def test_dataset_adapter_hf_detr_annotations_non_empty(monkeypatch: pytest.MonkeyPatch, # type: ignore
-                                                       fintabnet)-> None:
+def test_dataset_adapter_hf_detr_annotations_non_empty(
+    monkeypatch: pytest.MonkeyPatch, fintabnet  # type: ignore
+) -> None:
     _patch_pdf(monkeypatch)
     adapter = DatasetAdapter(
         fintabnet,
@@ -109,4 +110,4 @@ def test_dataset_adapter_hf_detr_annotations_non_empty(monkeypatch: pytest.Monke
         load_image=True,
     )
     items = list(iter(adapter))
-    assert all(item["annotations"] for item in items) # type: ignore
+    assert all(item["annotations"] for item in items)  # type: ignore

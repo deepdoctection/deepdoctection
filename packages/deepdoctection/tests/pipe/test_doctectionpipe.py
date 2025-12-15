@@ -15,6 +15,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""
+Test cases for validating the DoctectionPipe functionality with various data sources
+and output formats.
+
+This module includes test cases for analyzing PDFs, directories, and datasets
+using the `DoctectionPipe`. It ensures that the pipeline behaves as expected
+under different scenarios and formats. Input types include paths, bytes, and
+dataflows for images and pages. Tests validate output structure, type consistency,
+and the number of resulting datapoints.
+"""
+
 
 import pytest
 
@@ -34,6 +45,7 @@ def _set_env_dpi(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 def test_analyze_path_pdf_pages(pdf_path: PathLikeOrStr) -> None:
+    """test analyze pdf path with pages output"""
     identity_pipe = DoctectionPipe(pipeline_component_list=[])
     df = identity_pipe.analyze(path=pdf_path, output="page")
     items: list[Image] = stu.collect_datapoint_from_dataflow(df)
@@ -42,6 +54,7 @@ def test_analyze_path_pdf_pages(pdf_path: PathLikeOrStr) -> None:
 
 
 def test_analyze_path_dir_png_identity_image(image_dir_and_file: tuple[str, PathLikeOrStr]) -> None:
+    """test analyze dir path with image output"""
     img_dir, _ = image_dir_and_file
     identity_pipe = DoctectionPipe(pipeline_component_list=[])
     df = identity_pipe.analyze(path=img_dir, file_type=".png", output="image")
@@ -51,6 +64,7 @@ def test_analyze_path_dir_png_identity_image(image_dir_and_file: tuple[str, Path
 
 
 def test_analyze_bytes_single_image(image_dir_and_file: tuple[str, PathLikeOrStr], image_bytes: bytes) -> None:
+    """test analyze bytes with image output"""
     identity_pipe = DoctectionPipe(pipeline_component_list=[])
     _, img_path = image_dir_and_file
     df = identity_pipe.analyze(path=img_path, bytes=image_bytes, file_type=".png", output="image")
@@ -60,6 +74,7 @@ def test_analyze_bytes_single_image(image_dir_and_file: tuple[str, PathLikeOrStr
 
 
 def test_analyze_dataset_dataflow_image(dp_image: Image) -> None:
+    """test analyze dataset dataflow with image output"""
     identity_pipe = DoctectionPipe(pipeline_component_list=[])
     dp_list = [dp_image]
     dataset_df = DataFromList(lst=dp_list)
@@ -70,6 +85,7 @@ def test_analyze_dataset_dataflow_image(dp_image: Image) -> None:
 
 
 def test_analyze_path_pdf_dict(pdf_path: PathLikeOrStr) -> None:
+    """test analyze pdf path with dict output"""
     identity_pipe = DoctectionPipe(pipeline_component_list=[])
     df = identity_pipe.analyze(path=pdf_path, output="dict")
     items: list[Image] = stu.collect_datapoint_from_dataflow(df)

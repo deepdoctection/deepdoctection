@@ -15,6 +15,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""
+Tests for the module handling XFUND structure conversion to image representation.
+
+This module provides tests for verifying the mapping of XFUND data points to
+`Image` objects, with specific configurations such as image loading and fake
+score assignment. It ensures correct handling of word-level annotations and
+verifies expected structures in the resulting `Image`.
+
+"""
+
 
 from typing import Any, Dict, List, Optional
 

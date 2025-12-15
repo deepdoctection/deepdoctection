@@ -15,13 +15,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""
+Unit tests for validating the `TesseractOcrDetector` functionality.
 
-# python
-# File: 'deepdoctection/packages/deepdoctection/tests/extern/test_tessocr.py'
+This file contains a series of test cases that focus on verifying the behavior of the
+`TesseractOcrDetector` class, including text prediction from images, handling of different
+configuration options, language mappings, and requirements retrieval.
+
+The tests use Python's `pytest` framework and the `monkeypatch` feature for dependency isolation.
+"""
 
 from typing import Any
 
-import numpy as np
 import pytest
 from numpy.typing import NDArray
 
@@ -31,6 +36,7 @@ from deepdoctection.extern.tessocr import TesseractOcrDetector
 
 
 def test_tesseract_ocr_predict_words_basic(monkeypatch: pytest.MonkeyPatch, sample_np_img: NDArray[Any]) -> None:
+    """test tesseract ocr predict words basic"""
     # Mock the Tesseract data extraction to avoid any subprocess calls
     fake_rows = {
         "left": [1, 10],
@@ -58,6 +64,7 @@ def test_tesseract_ocr_predict_words_basic(monkeypatch: pytest.MonkeyPatch, samp
 
 
 def test_tesseract_ocr_predict_lines_enabled(monkeypatch: pytest.MonkeyPatch, sample_np_img: NDArray[Any]) -> None:
+    """test tesseract ocr predict lines enabled"""
     # Provide multiple words on two lines so line grouping can be formed
     fake_rows = {
         "left": [1, 12, 5, 15],
@@ -91,6 +98,7 @@ def test_tesseract_ocr_predict_lines_enabled(monkeypatch: pytest.MonkeyPatch, sa
 
 
 def test_tesseract_ocr_get_category_names_toggle_lines() -> None:
+    """test tesseract ocr get category names toggle lines"""
     det = TesseractOcrDetector(SETTINGS.CONF_TESSERACT_SRC, config_overwrite=["LINES=False"])
     names = det.get_category_names()
     assert names == (LayoutType.WORD,)
@@ -101,6 +109,7 @@ def test_tesseract_ocr_get_category_names_toggle_lines() -> None:
 
 
 def test_tesseract_ocr_set_language_mapping() -> None:
+    """test tesseract ocr set language mapping"""
     det = TesseractOcrDetector(SETTINGS.CONF_TESSERACT_SRC)
     # Map pseudo language code to tess code via `_LANG_CODE_TO_TESS_LANG_CODE`
     det.set_language(Languages.GERMAN)  # uses `ObjectTypes` enum path; `nn` -> 'eng'
@@ -108,6 +117,7 @@ def test_tesseract_ocr_set_language_mapping() -> None:
 
 
 def test_tesseract_ocr_get_requirements() -> None:
+    """test tesseract ocr get requirements"""
     det = TesseractOcrDetector(SETTINGS.CONF_TESSERACT_SRC)
     reqs = det.get_requirements()
     assert isinstance(reqs, list)

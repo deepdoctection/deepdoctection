@@ -15,6 +15,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""
+Unit tests for metric registry functionality.
+
+These tests evaluate whether metrics are correctly registered within the
+metric registry and ensure that new metrics can be added, retrieved, and
+used properly.
+"""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, List, Tuple

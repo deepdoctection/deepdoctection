@@ -15,10 +15,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""
+This module provides pytest fixtures for testing various components of the deep learning-based
+document analysis framework. The fixtures include assets like sample images, annotations,
+detection results, and other related data required for testing functionality.
+
+These fixtures simulate different scenarios such as annotated images, fresh detection capabilities,
+and layout-specific or word-level annotations associated with bounding boxes for detailed testing.
+
+"""
+
 import os
 from copy import deepcopy
-
 from typing import Any
+
 import pytest
 
 import shared_test_utils as stu
@@ -31,13 +41,15 @@ from deepdoctection.extern.base import DetectionResult, TokenClassResult
 
 
 @pytest.fixture
-def pdf_path()->PathLikeOrStr:
+def pdf_path() -> PathLikeOrStr:
+    """fixture pdf_path"""
     # `stu.asset_path('pdf_file_two_pages')` points to a pdf file
     return stu.asset_path("pdf_file_two_pages")
 
 
 @pytest.fixture
-def image_dir_and_file()->tuple[str, PathLikeOrStr]:
+def image_dir_and_file() -> tuple[str, PathLikeOrStr]:
+    """fixture image_dir_and_file"""
     # `stu.asset_path('sample_image')` points to a png file; we need its directory for dir test
     img_path = stu.asset_path("sample_image")
     img_dir = os.path.dirname(img_path)
@@ -45,7 +57,8 @@ def image_dir_and_file()->tuple[str, PathLikeOrStr]:
 
 
 @pytest.fixture
-def image_bytes(image_dir_and_file: tuple[str, PathLikeOrStr])->bytes:
+def image_bytes(image_dir_and_file: tuple[str, PathLikeOrStr]) -> bytes:
+    """fixture image_bytes"""
     # Build bytes for the single-image test
     _, img_path = image_dir_and_file
     with open(img_path, "rb") as f:
@@ -54,25 +67,29 @@ def image_bytes(image_dir_and_file: tuple[str, PathLikeOrStr])->bytes:
 
 @pytest.fixture
 def image() -> Image:
+    """fixture image"""
     path = stu.asset_path("page_json")
     return Image.from_file(os.fspath(path))
 
 
 @pytest.fixture
-def anns(image: Image)->list[ImageAnnotation]:
+def anns(image: Image) -> list[ImageAnnotation]:
+    """fixture anns"""
     # Capture current annotations for building DetectionResults
     return image.get_annotation()
 
 
 @pytest.fixture
-def image_without_anns(image: Image, anns: list[ImageAnnotation])->Image:
+def image_without_anns(image: Image, anns: list[ImageAnnotation]) -> Image:
+    """fixture image_without_anns"""
     # Remove all annotations from the image to simulate fresh detection
     image.remove(annotation_ids=[ann.annotation_id for ann in anns])
     return image
 
 
 @pytest.fixture
-def cell_detect_results()->list[list[DetectionResult]]:
+def cell_detect_results() -> list[list[DetectionResult]]:
+    """fixture cell_detect_results"""
     return [
         [
             DetectionResult(box=[20.0, 20.0, 25.0, 30.0], score=0.8, class_id=1, class_name=get_type("column_header")),
@@ -308,6 +325,7 @@ def dp_image_fully_segmented_fully_tiled(
 
 @pytest.fixture
 def token_class_result() -> list[Any]:
+    """fixture token_class_result"""
     uuids = [
         "CLS",
         "e9c4b3e7-0b2c-3d45-89f3-db6e3ef864ad",
@@ -346,7 +364,5 @@ def token_class_result() -> list[Any]:
             semantic_name=out[5],
             bio_tag=out[6],
         )
-        for out in zip(
-            uuids, input_ids[0], token_class_predictions, tokens, class_name, semantic_name, bio_tag
-        )
+        for out in zip(uuids, input_ids[0], token_class_predictions, tokens, class_name, semantic_name, bio_tag)
     ]

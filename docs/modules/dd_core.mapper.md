@@ -1,5 +1,5 @@
 
-::: deepdoctection.mapper
+::: dd_core.mapper
     options:
         show_submodules: True
         filters:

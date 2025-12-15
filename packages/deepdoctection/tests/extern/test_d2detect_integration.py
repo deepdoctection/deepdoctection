@@ -15,6 +15,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""
+Tests for integration of Detectron2-based models with DeepDoctection.
+
+This module contains integration tests to validate the proper initialization
+and setup of Detectron2-based models, specifically `D2FrcnnDetector` and
+`D2FrcnnTracingDetector`, by loading configurations and weights for both
+PyTorch models and TorchScript exported models. These tests ensure that the
+models' essential attributes and categories are initialized, but do not perform
+inference to maintain execution speed.
+
+Tests are skipped if PyTorch and Detectron2 are not installed.
+"""
 
 import pytest
 

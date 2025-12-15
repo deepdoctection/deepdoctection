@@ -43,6 +43,7 @@ from dd_core.datapoint.box import area, intersection, ioa, np_iou
     ],
 )
 def test_area(boxes: NDArray[np.float32], expected: NDArray[np.float32]) -> None:
+    """Test area"""
     out = area(boxes)
     assert out.shape == expected.shape
     assert np.allclose(out, expected, rtol=1e-6, atol=1e-6)
@@ -71,7 +72,8 @@ def test_area(boxes: NDArray[np.float32], expected: NDArray[np.float32]) -> None
         ),
     ],
 )
-def test_intersection(boxes1:NDArray[np.float32], boxes2: NDArray[np.float32], expected: NDArray[np.float32]) -> None:
+def test_intersection(boxes1: NDArray[np.float32], boxes2: NDArray[np.float32], expected: NDArray[np.float32]) -> None:
+    """Test intersection"""
     out = intersection(boxes1, boxes2)
     assert out.shape == expected.shape
     assert np.allclose(out, expected, rtol=1e-6, atol=1e-6)
@@ -101,6 +103,7 @@ def test_intersection(boxes1:NDArray[np.float32], boxes2: NDArray[np.float32], e
     ],
 )
 def test_np_iou(boxes1: NDArray[np.float32], boxes2: NDArray[np.float32], expected: NDArray[np.float32]) -> None:
+    """Test np_iou"""
     out = np_iou(boxes1, boxes2)
     assert out.shape == expected.shape
     assert np.allclose(out, expected, rtol=1e-6, atol=1e-6)
@@ -130,6 +133,7 @@ def test_np_iou(boxes1: NDArray[np.float32], boxes2: NDArray[np.float32], expect
     ],
 )
 def test_ioa(boxes1: NDArray[np.float32], boxes2: NDArray[np.float32], expected: NDArray[np.float32]) -> None:
+    """Test ioa"""
     out = ioa(boxes1, boxes2)
     assert out.shape == expected.shape
     assert np.allclose(out, expected, rtol=1e-6, atol=1e-6)

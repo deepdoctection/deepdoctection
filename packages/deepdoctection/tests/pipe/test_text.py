@@ -18,8 +18,8 @@
 """
 Testing module pipe.text
 """
+
 from copy import deepcopy
-from typing import List
 from unittest.mock import MagicMock
 
 from pytest import mark, raises
@@ -226,7 +226,7 @@ class TestTextExtractionServiceWithSubImage:
         first_table_ann = table_anns[0]
         assert first_table_ann.image is not None
         second_table_ann = table_anns[1]
-        assert  second_table_ann.image is not None
+        assert second_table_ann.image is not None
         first_word_ann = word_anns[0]
         second_word_ann = word_anns[1]
         third_word_ann = word_anns[2]
@@ -239,9 +239,7 @@ class TestTextExtractionServiceWithSubImage:
         assert local_box_fta == first_word_ann.bounding_box.transform(
             first_table_ann.image.width, first_table_ann.image.height
         )
-        ft_text_ann = first_table_ann.image.get_annotation(annotation_ids=first_word_ann.annotation_id)[
-            0
-        ]
+        ft_text_ann = first_table_ann.image.get_annotation(annotation_ids=first_word_ann.annotation_id)[0]
 
         assert isinstance(ft_text_ann, ImageAnnotation)
 
@@ -252,9 +250,7 @@ class TestTextExtractionServiceWithSubImage:
         assert local_box_sta == second_word_ann.bounding_box.transform(
             first_table_ann.image.width, first_table_ann.image.height
         )
-        ft_text_ann = first_table_ann.image.get_annotation(
-            annotation_ids=second_word_ann.annotation_id
-        )[0]
+        ft_text_ann = first_table_ann.image.get_annotation(annotation_ids=second_word_ann.annotation_id)[0]
         assert isinstance(ft_text_ann, ImageAnnotation)
 
         global_box_tta = third_word_ann.get_bounding_box(dp.image_id)
@@ -264,9 +260,7 @@ class TestTextExtractionServiceWithSubImage:
         assert local_box_tta == third_word_ann.bounding_box.transform(
             second_table_ann.image.width, second_table_ann.image.height
         )
-        st_text_ann = second_table_ann.image.get_annotation(
-            annotation_ids=third_word_ann.annotation_id
-        )[0]
+        st_text_ann = second_table_ann.image.get_annotation(annotation_ids=third_word_ann.annotation_id)[0]
         assert isinstance(st_text_ann, ImageAnnotation)
 
         global_box_fta = fourth_word_ann.get_bounding_box(dp.image_id)
@@ -276,7 +270,5 @@ class TestTextExtractionServiceWithSubImage:
         assert local_box_fta == fourth_word_ann.bounding_box.transform(
             second_table_ann.image.width, second_table_ann.image.height
         )
-        st_text_ann = second_table_ann.image.get_annotation(
-            annotation_ids=fourth_word_ann.annotation_id
-        )[0]
+        st_text_ann = second_table_ann.image.get_annotation(annotation_ids=fourth_word_ann.annotation_id)[0]
         assert isinstance(st_text_ann, ImageAnnotation)

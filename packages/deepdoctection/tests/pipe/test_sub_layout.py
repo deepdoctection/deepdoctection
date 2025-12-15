@@ -15,10 +15,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""
+Test suite for testing components related to sub-layout processing in the `deepdoctection` library.
+
+This module contains tests for the `DetectResultGenerator` and
+`SubImageLayoutService` classes. The tests validate the construction
+and processing of detection results, ensuring correct functionality
+of the sub-layout components when working with images and annotations.
+"""
+
 from typing import Mapping
 from unittest.mock import MagicMock
 
-from dd_core.datapoint import BoundingBox, ImageAnnotation
+from dd_core.datapoint import BoundingBox
 from dd_core.datapoint.image import Image
 from dd_core.utils.object_types import ObjectTypes, get_type
 from deepdoctection.extern.base import DetectionResult, ObjectDetector
@@ -143,7 +152,7 @@ class TestSubImageLayoutService:
             second_table_ann.image.width, second_table_ann.image.height
         )
 
-    def test_pass_datapoint_when_sub_images_do_not_have_a_crop( # type: ignore
+    def test_pass_datapoint_when_sub_images_do_not_have_a_crop(  # type: ignore
         self,
         dp_image: Image,
         layout_annotations,

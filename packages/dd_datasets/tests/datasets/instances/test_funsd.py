@@ -40,7 +40,7 @@ def test_dataset_funsd_returns_image_and_annotations(
     )
 
     funsd = Funsd()
-    funsd.dataflow.get_workdir = lambda: Path(dataset_test_base_dir) / funsd.dataflow.location # type: ignore
+    funsd.dataflow.get_workdir = lambda: Path(dataset_test_base_dir) / funsd.dataflow.location  # type: ignore
     funsd.dataflow.splits = {"test": ""}
 
     df = funsd.dataflow.build()

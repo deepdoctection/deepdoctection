@@ -15,6 +15,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""
+Defines constant data structures used in the system.
+
+This module includes pre-defined sample data structures and specific constant
+values such as example PDF bytes, data samples for Prodigy and XFUND, which
+can be used for testing, validation, or initialization in other parts of a
+larger system or application.
+"""
 
 PDF_BYTES = (
     b"%PDF-1.3\n1 0 obj\n<<\n/Type /Pages\n/Count 1\n/Kids [ 3 0 R ]\n>>\nendobj\n2 0 obj\n<<\n/Producer "

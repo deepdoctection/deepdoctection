@@ -24,8 +24,8 @@ from pathlib import Path
 import pytest
 
 import shared_test_utils as stu
-from dd_core.utils.file_utils import lxml_available
 from dd_core.datapoint.image import Image
+from dd_core.utils.file_utils import lxml_available
 from dd_datasets import IIITar13K
 
 

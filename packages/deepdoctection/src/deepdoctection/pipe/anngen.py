@@ -174,13 +174,13 @@ class DatapointManager:
                 )
                 if ann.image is None:
                     raise ValueError("image cannot be None")
-                ann.image.set_embedding( # pylint: disable=E1101
+                ann.image.set_embedding(  # pylint: disable=E1101
                     parent_ann.annotation_id,
                     ann.bounding_box.transform(  # type:ignore # pylint: disable=E1101
                         image_width=parent_ann.image.width, image_height=parent_ann.image.height
                     ),
                 )
-                ann.image.set_embedding( # pylint: disable=E1101
+                ann.image.set_embedding(  # pylint: disable=E1101
                     self.datapoint.image_id,
                     ann_global_box.transform(image_width=self.datapoint.width, image_height=self.datapoint.height),
                 )

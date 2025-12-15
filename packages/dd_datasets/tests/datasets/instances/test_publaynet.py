@@ -50,7 +50,7 @@ def test_dataset_publaynet_with_load_image_returns_image(
     )
 
     publaynet = Publaynet()
-    publaynet.dataflow.get_workdir = lambda: Path(dataset_test_base_dir) / publaynet.dataflow.location # type: ignore
+    publaynet.dataflow.get_workdir = lambda: Path(dataset_test_base_dir) / publaynet.dataflow.location  # type: ignore
     publaynet.dataflow.annotation_files = {"val": "publaynet.json"}
 
     df = publaynet.dataflow.build(load_image=True)

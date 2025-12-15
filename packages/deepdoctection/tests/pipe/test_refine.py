@@ -15,6 +15,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""
+Unit tests for table segmentation refinement and related utility functions.
+
+This module contains test cases for validating the behavior of utility
+functions and classes associated with table segmentation refinement. The
+tests include scenarios for rectangular cell tiling, generating HTML
+representation of tables, and integration testing for the table segmentation
+refinement service.
+
+Tests are parametrized for various inputs and expected outputs. Some tests
+are conditionally skipped if the required dependencies are not available.
+"""
 
 from typing import List, Set, Tuple
 
@@ -293,7 +305,7 @@ class TestTableSegmentationRefinementService:
         ]
         summary_html = table.get_sub_category(TableType.HTML)
         cells = dp.get_annotation(
-            category_names=self.table_segmentation_refinement_service.cell_names  # pylint: disable=W0212
+            category_names=self.table_segmentation_refinement_service.cell_names
         )
         row_numbers = {cell.get_sub_category(CellType.ROW_NUMBER).category_id for cell in cells}
         col_numbers = {cell.get_sub_category(CellType.COLUMN_NUMBER).category_id for cell in cells}

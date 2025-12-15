@@ -23,9 +23,9 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 
 import numpy as np
-from numpy.typing import NDArray
 import pytest
 from numpy import uint8
+from numpy.typing import NDArray
 
 from dd_core.utils.viz import viz_handler
 

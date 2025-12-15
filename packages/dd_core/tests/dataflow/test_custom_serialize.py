@@ -46,7 +46,7 @@ with try_import() as pt_import_guard:
 
 
 @pytest.fixture(name="temp_dir")
-def fixture_temp_dir() -> None:
+def fixture_temp_dir():  # type:ignore
     """
     Temporary directory fixture
     """
@@ -60,11 +60,11 @@ def test_file_closing_iterator_closes_file(temp_dir: str, simple_dict_list: list
     """
 
     file_path = Path(temp_dir) / "test.json"
-    with open(file_path, "w") as f:
+    with open(file_path, "w", encoding="utf-8") as f:
         for item in simple_dict_list:
             f.write(json.dumps(item) + "\n")
 
-    file_obj = open(file_path, "r")
+    file_obj = open(file_path, "r", encoding="utf-8") # pylint: disable=R1732
     iterator = FileClosingIterator(file_obj, iter(file_obj))
 
     # Act - consume the iterator
@@ -88,7 +88,7 @@ def test_serializer_jsonlines_load(temp_dir: str, simple_dict_list: list[dict[st
 
     # Act
     df = SerializerJsonlines.load(file_path)
-    result:list[dict[str,Any]] = stu.collect_datapoint_from_dataflow(df)
+    result: list[dict[str, Any]] = stu.collect_datapoint_from_dataflow(df)
 
     # Assert
     assert len(result) == 3
@@ -126,7 +126,7 @@ def test_serializer_tabsep_files_load(text_file: Path) -> None:
     """
     # Act
     df = SerializerTabsepFiles.load(text_file)
-    result:list[tuple[str]] = stu.collect_datapoint_from_dataflow(df)
+    result: list[tuple[str]] = stu.collect_datapoint_from_dataflow(df)
 
     # Assert
     assert len(result) == 5
@@ -140,7 +140,7 @@ def test_serializer_tabsep_files_load_with_max_datapoints(text_file: Path) -> No
     """
     # Act
     df = SerializerTabsepFiles.load(text_file, max_datapoints=3)
-    result:list[tuple[str]] = stu.collect_datapoint_from_dataflow(df)
+    result: list[tuple[str]] = stu.collect_datapoint_from_dataflow(df)
 
     # Assert
     assert len(result) == 3
@@ -161,7 +161,7 @@ def test_serializer_files_load(temp_dir: str) -> None:
 
     # Act
     df = SerializerFiles.load(test_dir, file_type=".pdf", sort=True)
-    result:list[str] = stu.collect_datapoint_from_dataflow(df)
+    result: list[str] = stu.collect_datapoint_from_dataflow(df)
 
     # Assert
     assert len(result) == 3
@@ -193,7 +193,7 @@ def test_serializer_coco_load(coco_file_path: Path) -> None:
     """
     # Act
     df = SerializerCoco.load(coco_file_path)
-    result:list[dict[str,Any]] = stu.collect_datapoint_from_dataflow(df)
+    result: list[dict[str, Any]] = stu.collect_datapoint_from_dataflow(df)
 
     # Assert
     assert len(result) == 20
@@ -210,7 +210,7 @@ def test_serializer_pdf_doc_load(pdf_file_path_two_pages: Path) -> None:
     """
     # Act
     df = SerializerPdfDoc.load(pdf_file_path_two_pages)
-    result:list[dict[str,Any]] = stu.collect_datapoint_from_dataflow(df)
+    result: list[dict[str, Any]] = stu.collect_datapoint_from_dataflow(df)
 
     # Assert
     assert len(result) == 2
@@ -233,7 +233,7 @@ def test_serializer_pdf_doc_with_max_datapoints(pdf_file_path_two_pages: Path) -
     """
     # Act
     df = SerializerPdfDoc.load(pdf_file_path_two_pages, max_datapoints=1)
-    result:list[dict[str,Any]] = stu.collect_datapoint_from_dataflow(df)
+    result: list[dict[str, Any]] = stu.collect_datapoint_from_dataflow(df)
 
     # Assert
     assert len(result) == 1

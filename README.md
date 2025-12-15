@@ -26,7 +26,10 @@ Version `v.1.0` includes a major refactoring.  Key changes include:
 </p>
 
 
-**deep**doctection is a Python library that orchestrates Scan and PDF document layout analysis and extraction for RAG.
+**deep**doctection is a Python library that orchestrates Scan and PDF document layout analysis, OCR and document 
+and token classification. Build and run a pipeline for your document extraction tasks, devlop your own document
+extraction workflow and use pre-trained models for inference.
+
 It also provides a framework for training, evaluating and inferencing Document AI models.
 
 # Overview
@@ -41,8 +44,8 @@ It also provides a framework for training, evaluating and inferencing Document A
   [**Bert**](https://huggingface.co/docs/transformers/model_doc/xlm-roberta)-style including features like sliding windows.
 - Text mining for native PDFs with [**pdfplumber**](https://github.com/jsvine/pdfplumber),
 - Language detection with with transformer based `papluca/xlm-roberta-base-language-detection`. 
-- Deskewing and rotating images with [**jdeskew**](https://github.com/phamquiluan/jdeskew).
-- Fine-tuning and evaluation tools.
+- Deskewing and rotating images with [**jdeskew**](https://github.com/phamquiluan/jdeskew) or [**Tesseract**](https://github.com/tesseract-ocr/tesseract).
+- Fine-tuning object detection, document or token classification models and evaluating whole pipelines.
 - Lot's of [tutorials](https://github.com/deepdoctection/notebooks)
 
 Have a look at the [**introduction notebook**](https://github.com/deepdoctection/notebooks/blob/main/Analyzer_Get_Started.ipynb) for an easy start.
@@ -54,45 +57,7 @@ Check the [**release notes**](https://github.com/deepdoctection/deepdoctection/r
 # Hugging Face Space Demo
 
 Check the demo of a document layout analysis pipeline with OCR on 🤗
-[**Hugging Face spaces**](https://huggingface.co/spaces/deepdoctection/deepdoctection) or use the gradio client. 
-
-```
-pip install gradio_client   # requires Python >= 3.10 
-```
-
-To process a single image:
-
-```python
-from gradio_client import Client, handle_file
-
-if __name__ == "__main__":
-
-    client = Client("deepdoctection/deepdoctection")
-    result = client.predict(
-        img=handle_file('/local_path/to/dir/file_name.jpeg'),  # accepts image files, e.g. JPEG, PNG
-        pdf=None,   
-        max_datapoints = 2,
-        api_name = "/analyze_image"
-    )
-    print(result)
-```
-
-To process a PDF document:
-
-```python
-from gradio_client import Client, handle_file
-
-if __name__ == "__main__":
-
-    client = Client("deepdoctection/deepdoctection")
-    result = client.predict(
-        img=None,
-        pdf=handle_file("/local_path/to/dir/your_doc.pdf"),
-        max_datapoints = 2, # increase to process up to 9 pages
-        api_name = "/analyze_image"
-    )
-    print(result)
-```
+[**Hugging Face spaces**](https://huggingface.co/spaces/deepdoctection/deepdoctection).
 
 --------------------------------------------------------------------------------------------------------
 
