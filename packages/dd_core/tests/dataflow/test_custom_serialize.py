@@ -64,7 +64,7 @@ def test_file_closing_iterator_closes_file(temp_dir: str, simple_dict_list: list
         for item in simple_dict_list:
             f.write(json.dumps(item) + "\n")
 
-    file_obj = open(file_path, "r", encoding="utf-8") # pylint: disable=R1732
+    file_obj = open(file_path, "r", encoding="utf-8")  # pylint: disable=R1732
     iterator = FileClosingIterator(file_obj, iter(file_obj))
 
     # Act - consume the iterator

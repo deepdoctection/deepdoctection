@@ -294,6 +294,7 @@ class _MultiProcessZMQDataFlow(DataFlow, ABC):
         self._procs: list[Any] = []
         self.context = None
         self.socket = None
+        super().__init__()
 
     def reset_state(self) -> Any:
         """

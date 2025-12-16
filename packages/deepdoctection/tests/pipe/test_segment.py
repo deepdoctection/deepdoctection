@@ -114,9 +114,7 @@ class TestTableSegmentationService:
 
         # Assert cells have correctly assigned sub categories row/col/rs/cs number
         cells = dp.get_annotation(category_names=self.table_segmentation_service.cell_names)
-        cells_expected = dp_expected.get_annotation(
-            category_names=self.table_segmentation_service.cell_names
-        )
+        cells_expected = dp_expected.get_annotation(category_names=self.table_segmentation_service.cell_names)
 
         for el in zip(cells, cells_expected):
             cell, cell_expected = el[0], el[1]
@@ -263,9 +261,7 @@ class TestTableSegmentationServiceWhenTableFullyTiled:
         # Assert
         cells = dp.get_annotation(category_names=self.tp_table_segmentation_service.cell_names)
 
-        cells_expected = dp_expected.get_annotation(
-            category_names=self.tp_table_segmentation_service.cell_names
-        )
+        cells_expected = dp_expected.get_annotation(category_names=self.tp_table_segmentation_service.cell_names)
 
         assert len(cells) == len(cells_expected)
 

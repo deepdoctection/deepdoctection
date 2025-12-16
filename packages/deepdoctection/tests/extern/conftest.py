@@ -67,8 +67,9 @@ def ner_bio() -> tuple[str, str]:
 
 
 @pytest.fixture
-def ner_model_categories(ner_semantics: tuple[str, str],  # pylint: disable=W0621
-                         ner_bio: tuple[str, str]) -> NerModelCategories: # pylint: disable=W0621
+def ner_model_categories(
+    ner_semantics: tuple[str, str], ner_bio: tuple[str, str]  # pylint: disable=W0621
+) -> NerModelCategories:
     """fixture ner_model_categories"""
     return NerModelCategories(
         init_categories=None,
@@ -91,7 +92,7 @@ def mock_base_transform() -> BaseTransform:
 
 
 @pytest.fixture
-def transformer(mock_base_transform: BaseTransform) -> DeterministicImageTransformer: # pylint: disable=W0621
+def transformer(mock_base_transform: BaseTransform) -> DeterministicImageTransformer:  # pylint: disable=W0621
     """fixture transformer"""
     return DeterministicImageTransformer(mock_base_transform)
 
@@ -138,5 +139,5 @@ def sample_pdf_bytes() -> bytes:
 @pytest.fixture
 def textract_json() -> dict[str, Any]:
     """fixture textract_json"""
-    with open(stu.asset_path("textract_sample"), "r") as f: # pylint: disable=W1514
+    with open(stu.asset_path("textract_sample"), "r") as f:  # pylint: disable=W1514
         return json.load(f)

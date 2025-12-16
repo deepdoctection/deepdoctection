@@ -680,6 +680,7 @@ class SerializerPdfDoc:
         if not os.path.isdir(path_target):
             raise NotADirectoryError(path)
         df = SerializerPdfDoc.load(path, max_datapoint)
+        df.reset_state()
         for dp in df:
             with open(os.path.join(path_target, dp["file_name"]), "wb") as page:
                 page.write(dp["pdf_bytes"])

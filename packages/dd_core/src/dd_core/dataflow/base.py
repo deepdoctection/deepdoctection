@@ -25,6 +25,7 @@ import threading
 from abc import ABC, abstractmethod
 from typing import Any, Iterator, no_type_check
 
+from ..utils.error import DataFlowResetStateNotCalledError
 from ..utils.utils import get_rng
 
 
@@ -51,6 +52,9 @@ class DataFlowReentrantGuard:
 
 class DataFlow:
     """Base class for all DataFlow"""
+
+    def __init__(self) -> None:
+        self._reset_called = False
 
     @abstractmethod
     def __iter__(self) -> Iterator[Any]:
@@ -135,6 +139,7 @@ class RNGDataFlow(DataFlow, ABC):
     def reset_state(self) -> None:
         """Reset the RNG"""
         self.rng = get_rng(self)
+        self._reset_called = True
 
 
 class ProxyDataFlow(DataFlow):
@@ -150,9 +155,11 @@ class ProxyDataFlow(DataFlow):
             df: DataFlow to proxy.
         """
         self.df = df
+        super().__init__()
 
     def reset_state(self) -> None:
         """Resets the state of the proxied DataFlow."""
+        self._reset_called = True
         self.df.reset_state()
 
     def __len__(self) -> int:
@@ -171,4 +178,6 @@ class ProxyDataFlow(DataFlow):
         Returns:
             Iterator[Any]: Iterator of the proxied DataFlow.
         """
+        if not self._reset_called:
+            raise DataFlowResetStateNotCalledError()
         return self.df.__iter__()

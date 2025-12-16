@@ -49,7 +49,7 @@ def dp_image() -> Image:
 @pytest.fixture
 def layout_annotations():  # type: ignore
     """fixture layout_annotations with layout_annotations(segmentation=False) will return also cells, rows and
-     columns"""
+    columns"""
 
     def layout_ann(segmentation: bool = False) -> list[ImageAnnotation]:
         if segmentation:
@@ -190,8 +190,8 @@ def dp_image_tab_cell_item(dp_image: Image, layout_annotations) -> Image:  # typ
         dp_image.dump(ann)
 
     table = dp_image.get_annotation(category_names=get_type("table"))[0]
-    assert table.image is not None
     dp_image.image_ann_to_image(table.annotation_id, True)
+    assert table.image is not None
     table_anns = dp_image.get_annotation(category_names=[get_type("cell"), get_type("row"), get_type("column")])
     for ann in table_anns:
         table.image.dump(ann)
@@ -237,9 +237,9 @@ def column_sub_cats() -> list[CategoryAnnotation]:
 
 @pytest.fixture
 def dp_image_fully_segmented(
-    dp_image_tab_cell_item: Image, # pylint:disable=W0621
-    row_sub_cats: list[CategoryAnnotation], # pylint:disable=W0621
-    column_sub_cats: list[CategoryAnnotation], # pylint:disable=W0621
+    dp_image_tab_cell_item: Image,  # pylint:disable=W0621
+    row_sub_cats: list[CategoryAnnotation],  # pylint:disable=W0621
+    column_sub_cats: list[CategoryAnnotation],  # pylint:disable=W0621
 ) -> Image:
     """fixture dp_image_fully_segmented"""
     dp = deepcopy(dp_image_tab_cell_item)

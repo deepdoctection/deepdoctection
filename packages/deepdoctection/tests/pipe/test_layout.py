@@ -45,7 +45,7 @@ def test_skip_if_category_or_service_extracted_by_category(image: Image) -> None
 
 def test_skip_if_category_or_service_extracted_by_service_id(image: Image) -> None:
     """test skip_if_category_or_service_extracted by service id"""
-    result = skip_if_category_or_service_extracted(service_ids="01a15bff")(image) # pylint:disable=E1102
+    result = skip_if_category_or_service_extracted(service_ids="01a15bff")(image)  # pylint:disable=E1102
     assert result is True
 
 

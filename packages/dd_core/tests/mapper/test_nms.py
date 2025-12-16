@@ -38,7 +38,7 @@ if pytorch_available():
 def test_batched_nms_uses_box_ops() -> None:
     """Test that batched NMS uses the box ops implementation."""
 
-    boxes = torch.tensor( # pylint: disable=E0606
+    boxes = torch.tensor(  # pylint: disable=E0606
         [
             [0.0, 0.0, 10.0, 10.0],
             [1.0, 1.0, 11.0, 11.0],

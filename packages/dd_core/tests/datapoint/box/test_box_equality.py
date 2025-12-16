@@ -171,7 +171,7 @@ class TestBBoxEquality:
         box = BoundingBox(absolute_coords=True, ulx=10, uly=20, width=100, height=50)
 
         with pytest.raises(TypeError, match="unhashable"):
-            {box} # pylint:disable=W0104,E1143
+            {box}  # pylint:disable=W0104,E1143
 
     def test_bbox_cannot_be_dict_key(self) -> None:
         """BoundingBox cannot be used as dict key (raises TypeError)"""

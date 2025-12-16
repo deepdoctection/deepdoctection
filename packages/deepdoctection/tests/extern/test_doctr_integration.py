@@ -57,12 +57,11 @@ def test_slow_build_doctr_textline_detector_pt() -> None:
     assert det.doctr_predictor is None
 
 
-
 @REQUIRES_PT_AND_DOCTR
 @pytest.mark.slow
 def test_slow_build_doctr_text_recognizer_pt() -> None:
     """test basic prediction using mocked tokenizers and models."""
-    weights = "doctr/crnn_vgg16_bn/crnn_vgg16_bn-9762b0b0.pt"
+    weights = "doctr/crnn_vgg16_bn/crnn_vgg16_bn-0417f351.pt"
     weights_path = ModelDownloadManager.maybe_download_weights_and_configs(weights)
     profile = ModelCatalog.get_profile(weights)
     device = get_torch_device()

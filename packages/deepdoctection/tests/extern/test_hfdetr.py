@@ -70,8 +70,9 @@ def test_hfdetr_predict_basic(monkeypatch: pytest.MonkeyPatch) -> None:
         raising=True,
     )
 
-    def _fake_predict(np_img, # type: ignore # pylint:disable=W0613
-                      predictor, feature_extractor, device, threshold, nms_threshold): # pylint:disable=W0613
+    def _fake_predict(
+        np_img, predictor, feature_extractor, device, threshold, nms_threshold  # type: ignore # pylint:disable=W0613
+    ):
         # Note: class_id returned by DETR is zero-based; mapping in detector will shift +1 internally
         return [
             DetectionResult(box=[0, 0, 10, 10], class_id=0, score=0.95),
@@ -130,8 +131,9 @@ def test_hfdetr_category_filtering(monkeypatch: pytest.MonkeyPatch) -> None:
     )
 
     # Return two detections with class_id=0 (will map to id 1) and one default type (None)
-    def _fake_predict(np_img, predictor, # type: ignore # pylint:disable=W0613
-                      feature_extractor, device, threshold, nms_threshold): # pylint:disable=W0613
+    def _fake_predict(
+        np_img, predictor, feature_extractor, device, threshold, nms_threshold  # type: ignore # pylint:disable=W0613
+    ):
         return [
             DetectionResult(box=[0, 0, 10, 10], class_id=0, score=0.9),
             DetectionResult(box=[10, 10, 20, 20], class_id=None, score=0.7),

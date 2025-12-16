@@ -64,10 +64,11 @@ def _mk_dummy_tokenizer() -> Any:
         encodings expected for a model input. The returned tokenizer adheres to a
         specific structure including input IDs and attention masks.
         """
+
         def __call__(self, text, return_tensors="pt", padding=True, truncation=True, max_length=512):  # type: ignore
             # Minimal encoding dict the model expects
             return {
-                "input_ids": torch.tensor([[1, 2, 3]], dtype=torch.long), # pylint:disable=E0606
+                "input_ids": torch.tensor([[1, 2, 3]], dtype=torch.long),  # pylint:disable=E0606
                 "attention_mask": torch.tensor([[1, 1, 1]], dtype=torch.long),
                 # No token_type_ids for XLM-R; model code will create zeros_like if absent
             }
@@ -129,8 +130,9 @@ def test_hflm_token_predict_basic(monkeypatch: pytest.MonkeyPatch) -> None:
         raising=True,
     )
 
-    def _fake_tok_predict(uuids, # type: ignore # pylint:disable=W0613
-                          input_ids, attention_mask, token_type_ids, tokens, model):  # pylint:disable=W0613
+    def _fake_tok_predict(
+        uuids, input_ids, attention_mask, token_type_ids, tokens, model  # type: ignore # pylint:disable=W0613
+    ):
         return [
             TokenClassResult(uuid="u1", token_id=101, class_id=2, token="A", score=0.8),  # -> class_id+1 = 3
             TokenClassResult(uuid="u2", token_id=102, class_id=0, token="B", score=0.9),  # -> class_id+1 = 1
@@ -175,6 +177,7 @@ def _mk_dummy_fast_tokenizer() -> Any:
         returns tensors for input IDs, attention mask, and optionally token type IDs.
 
         """
+
         def __call__(self, text, return_tensors="pt", padding=True, truncation=True, max_length=512):  # type: ignore
             return {
                 "input_ids": torch.tensor([[1, 2, 3]], dtype=torch.long),
@@ -203,8 +206,7 @@ def test_hflm_language_predict_basic(monkeypatch: pytest.MonkeyPatch) -> None:
         def eval(self):  # type: ignore  # pylint:disable=C0116
             pass
 
-        def __call__(self, input_ids=None, # type: ignore
-                     attention_mask=None, token_type_ids=None):
+        def __call__(self, input_ids=None, attention_mask=None, token_type_ids=None):  # type: ignore
             # Highest score at index 1 -> class_id becomes 2 -> "deu"
             return type("Out", (), {"logits": torch.tensor([[0.1, 2.0, 0.5]], dtype=torch.float32)})
 

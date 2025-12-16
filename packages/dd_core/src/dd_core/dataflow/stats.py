@@ -81,11 +81,6 @@ class MeanFromDataFlow(ProxyDataFlow):
         self.key = key
         self.max_datapoints = max_datapoints
         self.mean: npt.NDArray[Any]
-        self._reset_called = False
-
-    def reset_state(self) -> None:
-        self._reset_called = True
-        super().reset_state()
 
     def __iter__(self) -> Any:
         """
@@ -207,11 +202,6 @@ class StdFromDataFlow(ProxyDataFlow):
         self.key = key
         self.max_datapoints = max_datapoints
         self.std: npt.NDArray[Any]
-        self._reset_called = False
-
-    def reset_state(self) -> None:
-        self._reset_called = True
-        super().reset_state()
 
     def __iter__(self) -> Any:
         """

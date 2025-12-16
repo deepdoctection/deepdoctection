@@ -53,7 +53,7 @@ REQUIRES_PT_AND_TR = pytest.mark.skipif(
 
 
 def _mk_dummy_tokenizer() -> Any:
-    class DummyTokenizer: # pylint:disable=C0115,R0903
+    class DummyTokenizer:  # pylint:disable=C0115,R0903
         pass
 
     return DummyTokenizer()
@@ -77,8 +77,12 @@ def test_layoutlm_sequence_predict_basic(monkeypatch: pytest.MonkeyPatch) -> Non
 
     # Mock prediction helper
     def _fake_seq_predict(
-        input_ids: Any, # pylint:disable=W0613
-        attention_mask: Any, token_type_ids: Any, boxes: Any, model: Any, images: Any = None # pylint:disable=W0613
+        input_ids: Any,  # pylint:disable=W0613
+        attention_mask: Any,  # pylint:disable=W0613
+        token_type_ids: Any,  # pylint:disable=W0613
+        boxes: Any,  # pylint:disable=W0613
+        model: Any,  # pylint:disable=W0613
+        images: Any = None,  # pylint:disable=W0613
     ) -> SequenceClassResult:
         return SequenceClassResult(class_id=1, score=0.99)
 
@@ -92,7 +96,7 @@ def test_layoutlm_sequence_predict_basic(monkeypatch: pytest.MonkeyPatch) -> Non
     clf = HFLayoutLmSequenceClassifier("path/to/json", "path/to/model", categories, device="cpu")
 
     inputs = {
-        "input_ids": torch.tensor([[10, 11, 12]], dtype=torch.long), # pylint:disable=E0606
+        "input_ids": torch.tensor([[10, 11, 12]], dtype=torch.long),  # pylint:disable=E0606
         "attention_mask": torch.tensor([[1, 1, 1]], dtype=torch.long),
         "token_type_ids": torch.zeros((1, 3), dtype=torch.long),
         "bbox": torch.zeros((1, 3, 4), dtype=torch.long),
@@ -117,8 +121,12 @@ def test_layoutlm_v2_sequence_predict_basic(monkeypatch: pytest.MonkeyPatch) -> 
     )
 
     def _fake_seq_predict(
-        input_ids: Any, # pylint: disable=W0613
-            attention_mask: Any, token_type_ids: Any, boxes: Any, model: Any, images: Any = None # pylint:disable=W0613
+        input_ids: Any,  # pylint: disable=W0613
+        attention_mask: Any,  # pylint:disable=W0613
+        token_type_ids: Any,  # pylint:disable=W0613
+        boxes: Any,  # pylint:disable=W0613
+        model: Any,  # pylint:disable=W0613
+        images: Any = None,  # pylint:disable=W0613
     ) -> SequenceClassResult:
         return SequenceClassResult(class_id=1, score=0.95)
 
@@ -158,8 +166,12 @@ def test_layoutlm_v3_sequence_predict_basic(monkeypatch: pytest.MonkeyPatch) -> 
     )
 
     def _fake_seq_predict(
-        input_ids: Any, # pylint: disable=W0613
-            attention_mask: Any, token_type_ids: Any, boxes: Any, model: Any, images: Any = None # pylint:disable=W0613
+        input_ids: Any,  # pylint: disable=W0613
+        attention_mask: Any,  # pylint:disable=W0613
+        token_type_ids: Any,  # pylint:disable=W0613
+        boxes: Any,  # pylint:disable=W0613
+        model: Any,  # pylint:disable=W0613
+        images: Any = None,  # pylint:disable=W0613
     ) -> SequenceClassResult:
         return SequenceClassResult(class_id=1, score=0.93)
 
@@ -199,14 +211,14 @@ def test_layoutlm_token_predict_basic(monkeypatch: pytest.MonkeyPatch) -> None:
     )
 
     def _fake_tok_predict(
-        uuids: Any, # pylint: disable=W0613
-        input_ids: Any, # pylint:disable=W0613
-        attention_mask: Any, # pylint:disable=W0613
-        token_type_ids: Any, # pylint:disable=W0613
-        boxes: Any, # pylint:disable=W0613
-        tokens: Any, # pylint:disable=W0613
-        model: Any, # pylint:disable=W0613
-        images: Any = None, # pylint:disable=W0613
+        uuids: Any,  # pylint: disable=W0613
+        input_ids: Any,  # pylint:disable=W0613
+        attention_mask: Any,  # pylint:disable=W0613
+        token_type_ids: Any,  # pylint:disable=W0613
+        boxes: Any,  # pylint:disable=W0613
+        tokens: Any,  # pylint:disable=W0613
+        model: Any,  # pylint:disable=W0613
+        images: Any = None,  # pylint:disable=W0613
     ) -> list[TokenClassResult]:
         return [
             TokenClassResult(uuid="a", token_id=101, class_id=2, token="X", score=0.9),  # -> id 3 -> "O"
@@ -253,14 +265,14 @@ def test_layoutlm_v2_token_predict_basic(monkeypatch: pytest.MonkeyPatch) -> Non
     )
 
     def _fake_tok_predict(
-        uuids: Any, # pylint: disable=W0613
-        input_ids: Any, # pylint:disable=W0613
-        attention_mask: Any, # pylint:disable=W0613
-        token_type_ids: Any, # pylint:disable=W0613
-        boxes: Any, # pylint:disable=W0613
-        tokens: Any, # pylint:disable=W0613
-        model: Any, # pylint:disable=W0613
-        images: Any = None, # pylint:disable=W0613
+        uuids: Any,  # pylint: disable=W0613
+        input_ids: Any,  # pylint:disable=W0613
+        attention_mask: Any,  # pylint:disable=W0613
+        token_type_ids: Any,  # pylint:disable=W0613
+        boxes: Any,  # pylint:disable=W0613
+        tokens: Any,  # pylint:disable=W0613
+        model: Any,  # pylint:disable=W0613
+        images: Any = None,  # pylint:disable=W0613
     ) -> list[TokenClassResult]:
         return [
             TokenClassResult(uuid="a", token_id=11, class_id=1, token="X", score=0.7),
@@ -307,14 +319,14 @@ def test_layoutlm_v3_token_predict_basic(monkeypatch: pytest.MonkeyPatch) -> Non
     )
 
     def _fake_tok_predict(
-        uuids: Any, # pylint: disable=W0613
-        input_ids: Any, # pylint:disable=W0613
-        attention_mask: Any, # pylint:disable=W0613
-        token_type_ids: Any, # pylint:disable=W0613
-        boxes: Any, # pylint:disable=W0613
-        tokens: Any, # pylint:disable=W0613
-        model: Any, # pylint:disable=W0613
-        images: Any = None, # pylint:disable=W0613
+        uuids: Any,  # pylint: disable=W0613
+        input_ids: Any,  # pylint:disable=W0613
+        attention_mask: Any,  # pylint:disable=W0613
+        token_type_ids: Any,  # pylint:disable=W0613
+        boxes: Any,  # pylint:disable=W0613
+        tokens: Any,  # pylint:disable=W0613
+        model: Any,  # pylint:disable=W0613
+        images: Any = None,  # pylint:disable=W0613
     ) -> list[TokenClassResult]:
         return [
             TokenClassResult(uuid="u1", token_id=1, class_id=0, token="a", score=0.9),
@@ -367,14 +379,14 @@ def test_lilt_token_and_sequence_predict_basic(monkeypatch: pytest.MonkeyPatch) 
     )
 
     def _fake_tok_predict(
-        uuids: Any, # pylint: disable=W0613
-        input_ids: Any, # pylint:disable=W0613
-        attention_mask: Any, # pylint:disable=W0613
-        token_type_ids: Any, # pylint:disable=W0613
-        boxes: Any, # pylint:disable=W0613
-        tokens: Any, # pylint:disable=W0613
-        model: Any, # pylint:disable=W0613
-        images: Any = None, # pylint:disable=W0613
+        uuids: Any,  # pylint: disable=W0613
+        input_ids: Any,  # pylint:disable=W0613
+        attention_mask: Any,  # pylint:disable=W0613
+        token_type_ids: Any,  # pylint:disable=W0613
+        boxes: Any,  # pylint:disable=W0613
+        tokens: Any,  # pylint:disable=W0613
+        model: Any,  # pylint:disable=W0613
+        images: Any = None,  # pylint:disable=W0613
     ) -> list[TokenClassResult]:
         return [
             TokenClassResult(uuid="t1", token_id=5, class_id=0, token="foo", score=0.5),
@@ -383,7 +395,11 @@ def test_lilt_token_and_sequence_predict_basic(monkeypatch: pytest.MonkeyPatch) 
 
     def _fake_seq_predict(
         input_ids: Any,  # pylint:disable=W0613
-        attention_mask: Any, token_type_ids: Any, boxes: Any, model: Any, images: Any = None # pylint:disable=W0613
+        attention_mask: Any,  # pylint:disable=W0613
+        token_type_ids: Any,  # pylint:disable=W0613
+        boxes: Any,  # pylint:disable=W0613
+        model: Any,  # pylint:disable=W0613
+        images: Any = None,  # pylint:disable=W0613
     ) -> SequenceClassResult:
         return SequenceClassResult(class_id=0, score=0.8)
 

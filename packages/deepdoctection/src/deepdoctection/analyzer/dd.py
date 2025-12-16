@@ -103,15 +103,16 @@ def get_dd_analyzer(
     cfg.LANGUAGE = None
     cfg.LIB = lib
     cfg.DEVICE = device
-    if cfg.LAYOUT.WEIGHTS is None:
-        cfg.ENFORCE_WEIGHTS.LAYOUT = False
-    if cfg.ITEM.WEIGHTS is None:
-        cfg.ENFORCE_WEIGHTS.ITEM = False
-    if cfg.CELL.WEIGHTS is None:
-        cfg.ENFORCE_WEIGHTS.CELL = False
 
     if config_overwrite:
         cfg.update_args(config_overwrite)
+
+    if cfg.LAYOUT.WEIGHTS is None or cfg.LAYOUT.WEIGHTS == "None":
+        cfg.ENFORCE_WEIGHTS.LAYOUT = False
+    if cfg.ITEM.WEIGHTS is None or cfg.ITEM.WEIGHTS == "None":
+        cfg.ENFORCE_WEIGHTS.ITEM = False
+    if cfg.CELL.WEIGHTS is None or cfg.CELL.WEIGHTS == "None":
+        cfg.ENFORCE_WEIGHTS.CELL = False
     cfg.freeze()
 
     config_sanity_checks()

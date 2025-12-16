@@ -54,7 +54,7 @@ def test_to_wandb_image_builds_boxes_with_stubbed_wandb(annotations):  # type: i
     all_annotations = dp.get_annotation()
     categories = _build_categories(all_annotations)
 
-    image_id, wb_image = to_wandb_image(categories)(dp) # pylint:disable=E1102
+    image_id, wb_image = to_wandb_image(categories)(dp)  # pylint:disable=E1102
 
-    assert isinstance(wb_image, Wbimage) # pylint:disable=E0606
+    assert isinstance(wb_image, Wbimage)  # pylint:disable=E0606
     assert image_id == "6ea00afa-ba27-382a-8952-51f8e6ce16b7"

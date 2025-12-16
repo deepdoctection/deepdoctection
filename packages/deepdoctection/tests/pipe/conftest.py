@@ -57,7 +57,7 @@ def image_dir_and_file() -> tuple[str, PathLikeOrStr]:
 
 
 @pytest.fixture
-def image_bytes(image_dir_and_file: tuple[str, PathLikeOrStr]) -> bytes: # pylint:disable=W0621
+def image_bytes(image_dir_and_file: tuple[str, PathLikeOrStr]) -> bytes:  # pylint:disable=W0621
     """fixture image_bytes"""
     # Build bytes for the single-image test
     _, img_path = image_dir_and_file
@@ -73,14 +73,14 @@ def image() -> Image:
 
 
 @pytest.fixture
-def anns(image: Image) -> list[ImageAnnotation]: # pylint:disable=W0621
+def anns(image: Image) -> list[ImageAnnotation]:  # pylint:disable=W0621
     """fixture anns"""
     # Capture current annotations for building DetectionResults
     return image.get_annotation()
 
 
 @pytest.fixture
-def image_without_anns(image: Image, anns: list[ImageAnnotation]) -> Image: # pylint:disable=W0621
+def image_without_anns(image: Image, anns: list[ImageAnnotation]) -> Image:  # pylint:disable=W0621
     """fixture image_without_anns"""
     # Remove all annotations from the image to simulate fresh detection
     image.remove(annotation_ids=[ann.annotation_id for ann in anns])
@@ -187,8 +187,8 @@ def word_sub_cats_for_ordering() -> list[list[CategoryAnnotation]]:
 
 @pytest.fixture
 def words_annotations_with_sub_cats(
-    word_layout_annotations_for_ordering: list[ImageAnnotation], # pylint:disable=W0621
-    word_sub_cats_for_ordering: list[list[CategoryAnnotation]], # pylint:disable=W0621
+    word_layout_annotations_for_ordering: list[ImageAnnotation],  # pylint:disable=W0621
+    word_sub_cats_for_ordering: list[list[CategoryAnnotation]],  # pylint:disable=W0621
 ) -> list[ImageAnnotation]:
     """fixture words_annotations_with_sub_cats"""
     for ann, sub_cat_list in zip(word_layout_annotations_for_ordering, word_sub_cats_for_ordering):
@@ -224,8 +224,8 @@ def layout_annotations_for_ordering() -> list[ImageAnnotation]:
 @pytest.fixture
 def dp_image_with_layout_and_word_annotations(
     dp_image: Image,
-    layout_annotations_for_ordering: list[ImageAnnotation], # pylint:disable=W0621
-    words_annotations_with_sub_cats: list[ImageAnnotation], # pylint:disable=W0621
+    layout_annotations_for_ordering: list[ImageAnnotation],  # pylint:disable=W0621
+    words_annotations_with_sub_cats: list[ImageAnnotation],  # pylint:disable=W0621
 ) -> Image:
     """
     fixture dp_image_with_layout_and_word_annotations

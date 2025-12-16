@@ -55,7 +55,7 @@ def test_ioa_max_parent_only_uniqueness(annotations) -> None:  # type: ignore
     With max_parent_only=True each child index should appear at most once and parent/child arrays align.
     """
     dp = annotations(use_layout=True, use_captions=True)
-    child_idx, parent_idx,_,_ = match_anns_by_intersection(
+    child_idx, parent_idx, _, _ = match_anns_by_intersection(
         dp, matching_rule="ioa", threshold=0.0, max_parent_only=True
     )
     assert len(child_idx) == len(parent_idx)

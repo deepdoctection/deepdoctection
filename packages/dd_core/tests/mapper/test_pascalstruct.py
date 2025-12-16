@@ -59,8 +59,8 @@ def category_names_mapping() -> dict[str, ObjectTypes]:
 def test_pascal_voc_dict_to_image_maps_annotations(
     monkeypatch: pytest.MonkeyPatch,
     iiitar13k_datapoint: dict[str, Any],
-    categories_name_as_keys: dict[str, int], # pylint:disable=W0621
-    category_names_mapping: dict[str, str], # pylint:disable=W0621
+    categories_name_as_keys: dict[str, int],  # pylint:disable=W0621
+    category_names_mapping: dict[str, str],  # pylint:disable=W0621
 ) -> None:
     """Test mapping Pascal VOC annotations to Image annotations."""
     monkeypatch.setattr(
@@ -82,8 +82,8 @@ def test_pascal_voc_dict_to_image_maps_annotations(
 def test_pascal_voc_dict_to_image_filters_empty_datapoints(
     monkeypatch: pytest.MonkeyPatch,
     iiitar13k_datapoint: dict[str, Any],
-    categories_name_as_keys: dict[str, int], # pylint:disable=W0621
-    category_names_mapping: dict[str, str], # pylint:disable=W0621
+    categories_name_as_keys: dict[str, int],  # pylint:disable=W0621
+    category_names_mapping: dict[str, str],  # pylint:disable=W0621
 ) -> None:
     """Test filtering empty Pascal VOC datapoints."""
     monkeypatch.setattr(

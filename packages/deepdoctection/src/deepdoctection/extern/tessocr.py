@@ -498,7 +498,7 @@ class TesseractRotationTransformer(ImageTransformer):
         """
         output_dict = predict_rotation(np_img)
         return DetectionResult(
-            angle=float(output_dict["Orientation in degrees"]), score=float(output_dict["Orientation confidence"])
+            angle=float(output_dict["Orientation in degrees"]), score=float(output_dict["Orientation confidence"]) / 100
         )
 
     @classmethod
