@@ -70,7 +70,7 @@ REQUIRES_PT_AND_TR = pytest.mark.skipif(
 
 
 def _mk_dummy_tokenizer() -> Any:
-    class DummyTokenizer: # pylint:disable=C0115, R0903
+    class DummyTokenizer:  # pylint:disable=C0115, R0903
         pass
 
     return DummyTokenizer()
@@ -123,17 +123,17 @@ def test_sequence_slow_build_and_predict(
     )
 
     if wrapper_cls is HFLayoutLmSequenceClassifier:
-        cfg_cls = LayoutLMConfig # pylint:disable=E0606
-        model_cls = LayoutLMForSequenceClassification # pylint:disable=E0606
+        cfg_cls = LayoutLMConfig  # pylint:disable=E0606
+        model_cls = LayoutLMForSequenceClassification  # pylint:disable=E0606
     elif wrapper_cls is HFLayoutLmv2SequenceClassifier:
-        cfg_cls = LayoutLMv2Config # pylint:disable=E0606
-        model_cls = LayoutLMv2ForSequenceClassification # pylint:disable=E0606
+        cfg_cls = LayoutLMv2Config  # pylint:disable=E0606
+        model_cls = LayoutLMv2ForSequenceClassification  # pylint:disable=E0606
     elif wrapper_cls is HFLayoutLmv3SequenceClassifier:
-        cfg_cls = LayoutLMv3Config # pylint:disable=E0606
-        model_cls = LayoutLMv3ForSequenceClassification # pylint:disable=E0606
+        cfg_cls = LayoutLMv3Config  # pylint:disable=E0606
+        model_cls = LayoutLMv3ForSequenceClassification  # pylint:disable=E0606
     elif wrapper_cls is HFLiltSequenceClassifier:
-        cfg_cls = LiltConfig # pylint:disable=E0606
-        model_cls = LiltForSequenceClassification # pylint:disable=E0606
+        cfg_cls = LiltConfig  # pylint:disable=E0606
+        model_cls = LiltForSequenceClassification  # pylint:disable=E0606
     else:
         pytest.skip("Unsupported wrapper")
 
@@ -150,7 +150,7 @@ def test_sequence_slow_build_and_predict(
 
     L = 4
     inputs = {
-        "input_ids": torch.randint(5, (1, L), dtype=torch.long), # pylint:disable=E0606
+        "input_ids": torch.randint(5, (1, L), dtype=torch.long),  # pylint:disable=E0606
         "attention_mask": torch.ones((1, L), dtype=torch.long),
         "token_type_ids": torch.zeros((1, L), dtype=torch.long),
         "bbox": torch.zeros((1, L, 4), dtype=torch.long),
@@ -213,16 +213,16 @@ def test_token_slow_build_and_predict(
     # Resolve config/model classes per wrapper
     if wrapper_cls is HFLayoutLmTokenClassifier:
         cfg_cls = LayoutLMConfig
-        model_cls = LayoutLMForTokenClassification # pylint:disable=E0606
+        model_cls = LayoutLMForTokenClassification  # pylint:disable=E0606
     elif wrapper_cls is HFLayoutLmv2TokenClassifier:
         cfg_cls = LayoutLMv2Config
-        model_cls = LayoutLMv2ForTokenClassification # pylint:disable=E0606
+        model_cls = LayoutLMv2ForTokenClassification  # pylint:disable=E0606
     elif wrapper_cls is HFLayoutLmv3TokenClassifier:
         cfg_cls = LayoutLMv3Config
-        model_cls = LayoutLMv3ForTokenClassification # pylint:disable=E0606
+        model_cls = LayoutLMv3ForTokenClassification  # pylint:disable=E0606
     elif wrapper_cls is HFLiltTokenClassifier:
         cfg_cls = LiltConfig
-        model_cls = LiltForTokenClassification # pylint:disable=E0606
+        model_cls = LiltForTokenClassification  # pylint:disable=E0606
     else:
         pytest.skip("Unsupported wrapper")
 

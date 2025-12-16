@@ -304,9 +304,7 @@ class TestTableSegmentationRefinementService:
             summary.get_sub_category(TableType.MAX_COL_SPAN).category_id,
         ]
         summary_html = table.get_sub_category(TableType.HTML)
-        cells = dp.get_annotation(
-            category_names=self.table_segmentation_refinement_service.cell_names
-        )
+        cells = dp.get_annotation(category_names=self.table_segmentation_refinement_service.cell_names)
         row_numbers = {cell.get_sub_category(CellType.ROW_NUMBER).category_id for cell in cells}
         col_numbers = {cell.get_sub_category(CellType.COLUMN_NUMBER).category_id for cell in cells}
         row_spans = {cell.get_sub_category(CellType.ROW_SPAN).category_id for cell in cells}

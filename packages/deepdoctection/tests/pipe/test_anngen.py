@@ -137,7 +137,8 @@ def test_errors_assert_and_type() -> None:
     # Proper setup
     img = Image(file_name="dummy.jpg")
     mgr.datapoint = img
-    bad_dr = DetectionResult(box=("not", "a", "list"), class_name=get_type("x"), class_id=1, score=0.1,
-                             absolute_coords=True)  # type: ignore[arg-type]
+    bad_dr = DetectionResult(
+        box=("not", "a", "list"), class_name=get_type("test_cat_1"), class_id=1, score=0.1, absolute_coords=True
+    )  # type: ignore[arg-type]
     with pytest.raises(TypeError, match="must be of type list or np.ndarray"):
         mgr.set_image_annotation(bad_dr)

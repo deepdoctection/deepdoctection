@@ -50,8 +50,9 @@ def _count_cells_with_bbox(dp):  # type: ignore
 
 
 def test_pub_to_image_basic(
-    monkeypatch: pytest.MonkeyPatch, pubtabnet_datapoint: Image,
-    categories_name_as_key: dict[ObjectTypes, int]  # pylint:disable=W0621
+    monkeypatch: pytest.MonkeyPatch,
+    pubtabnet_datapoint: Image,
+    categories_name_as_key: dict[ObjectTypes, int],  # pylint:disable=W0621
 ) -> None:
     """Test basic mapping from pubtabnet datapoint to Image."""
     monkeypatch.setattr(
@@ -68,8 +69,9 @@ def test_pub_to_image_basic(
 
 
 def test_pub_to_image_rows_cols_items(
-    monkeypatch: pytest.MonkeyPatch, pubtabnet_datapoint: Image,
-    categories_name_as_key: dict[ObjectTypes, int] # pylint:disable=W0621
+    monkeypatch: pytest.MonkeyPatch,
+    pubtabnet_datapoint: Image,
+    categories_name_as_key: dict[ObjectTypes, int],  # pylint:disable=W0621
 ) -> None:
     """Test mapping of rows, cols and items."""
     monkeypatch.setattr(
@@ -87,8 +89,9 @@ def test_pub_to_image_rows_cols_items(
 
 
 def test_pub_to_image_dd_pipe_like(
-    monkeypatch: pytest.MonkeyPatch, pubtabnet_datapoint: Image,
-    categories_name_as_key: dict[ObjectTypes, int] # pylint:disable=W0621
+    monkeypatch: pytest.MonkeyPatch,
+    pubtabnet_datapoint: Image,
+    categories_name_as_key: dict[ObjectTypes, int],  # pylint:disable=W0621
 ) -> None:
     """Test mapping of dd_pipe_like."""
     monkeypatch.setattr(

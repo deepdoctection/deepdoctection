@@ -244,7 +244,7 @@ class TestBBoxTransform:
 
         try:
             box_rel = BoundingBox(absolute_coords=False, ulx=ulx, uly=uly, width=w, height=h)
-        except BaseException: # pylint:disable=W0718
+        except BaseException:  # pylint:disable=W0718
             # Skip invalid boxes (e.g., due to rounding edge cases)
             return
 

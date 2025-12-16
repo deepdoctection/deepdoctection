@@ -57,8 +57,8 @@ class TestImageHierarchy:
         img.image_ann_to_image(annotation_id=ann.annotation_id, crop_image=True)
 
         assert ann.image is not None
-        assert ann.image.width == 10 # pylint:disable=E1101
-        assert ann.image.height == 4 # pylint:disable=E1101
+        assert ann.image.width == 10  # pylint:disable=E1101
+        assert ann.image.height == 4  # pylint:disable=E1101
 
     def test_image_ann_to_image_creates_embedding(self, white_image: WhiteImage) -> None:
         """image_ann_to_image creates embedding in parent image"""
@@ -99,7 +99,8 @@ class TestImageHierarchy:
         img.dump(ann)
         img.image_ann_to_image(annotation_id=ann.annotation_id, crop_image=False)
 
-        assert ann.image is None
+        assert ann.image is not None
+        assert ann.image.image is None  # pylint:disable=E1101
 
     def test_image_ann_to_image_requires_bbox(self, white_image: WhiteImage) -> None:
         """image_ann_to_image requires bounding box to be set"""

@@ -1270,7 +1270,7 @@ class PubtablesSegmentationService(PipelineComponent):
 
             cells = []
             if table.image:
-                cells = table.image.get_annotation(category_names=self.cell_names)
+                cells = table.image.get_annotation(category_names=self.cell_names + self.spanning_cell_names)
             if cells:
                 number_of_rows = max(
                     cell.get_sub_category(CellType.ROW_NUMBER).category_id

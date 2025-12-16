@@ -28,7 +28,6 @@ Log levels can be set via the environment variable `LOG_LEVEL` (default: INFO).
 from __future__ import annotations
 
 import errno
-import functools
 import json
 import logging
 import logging.config
@@ -322,7 +321,9 @@ def get_logger_dir() -> Optional[PathLikeOrStr]:
     return _LOG_DIR
 
 
-@functools.lru_cache(maxsize=None)
+_logged_once_keys: set[str] = set()
+
+
 def log_once(message: str, function: str = "info") -> None:
     """
     Log certain message only once. Calling this function more than once with
@@ -337,4 +338,8 @@ def log_once(message: str, function: str = "info") -> None:
         message: Message to log.
         function: The name of the logger method. For example, "info", "warn", "error".
     """
+    key = str(message)
+    if key in _logged_once_keys:
+        return
+    _logged_once_keys.add(key)
     getattr(logger, function)(message)

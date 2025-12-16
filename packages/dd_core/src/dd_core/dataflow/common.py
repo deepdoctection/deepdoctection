@@ -25,6 +25,7 @@ from typing import Any, Callable, Iterator, Union
 
 import tqdm
 
+from ..utils.error import DataFlowResetStateNotCalledError
 from ..utils.tqdm import get_tqdm, get_tqdm_default_kwargs
 from .base import DataFlow, ProxyDataFlow
 
@@ -50,6 +51,8 @@ class TestDataSpeed(ProxyDataFlow):
 
     def __iter__(self) -> Iterator[Any]:
         """Will run testing at the beginning, then produce data normally."""
+        if not self._reset_called:
+            raise DataFlowResetStateNotCalledError()
         self.start()
         yield from self.df
 
@@ -86,6 +89,8 @@ class FlattenData(ProxyDataFlow):
     """
 
     def __iter__(self) -> Any:
+        if not self._reset_called:
+            raise DataFlowResetStateNotCalledError()
         for dp in self.df:
             if isinstance(dp, (list, tuple)):
                 for dpp in dp:
@@ -118,6 +123,8 @@ class MapData(ProxyDataFlow):
         self.func = func
 
     def __iter__(self) -> Iterator[Any]:
+        if not self._reset_called:
+            raise DataFlowResetStateNotCalledError()
         for dp in self.df:
             ret = self.func(copy(dp))  # shallow copy the list
             if ret is not None:
@@ -197,6 +204,8 @@ class RepeatedData(ProxyDataFlow):
         return len(self.df) * self.num
 
     def __iter__(self) -> Iterator[Any]:
+        if not self._reset_called:
+            raise DataFlowResetStateNotCalledError()
         if self.num == -1:
             while True:
                 yield from self.df
@@ -226,8 +235,10 @@ class ConcatData(DataFlow):
             df_lists: A list of DataFlows.
         """
         self.df_lists = df_lists
+        super().__init__()
 
     def reset_state(self) -> None:
+        self._reset_called = True
         for df in self.df_lists:
             df.reset_state()
 
@@ -235,6 +246,8 @@ class ConcatData(DataFlow):
         return sum(len(x) for x in self.df_lists)
 
     def __iter__(self) -> Iterator[Any]:
+        if not self._reset_called:
+            raise DataFlowResetStateNotCalledError()
         for df in self.df_lists:
             yield from df
 
@@ -268,8 +281,10 @@ class JoinData(DataFlow):
                       case `__iter__` will also be called multiple times.
         """
         self.df_lists = df_lists
+        super().__init__()
 
     def reset_state(self) -> None:
+        self._reset_called = True
         for df in set(self.df_lists):
             df.reset_state()
 
@@ -280,6 +295,8 @@ class JoinData(DataFlow):
         return min(len(k) for k in self.df_lists)
 
     def __iter__(self) -> Iterator[Any]:
+        if not self._reset_called:
+            raise DataFlowResetStateNotCalledError()
         itrs = [k.__iter__() for k in self.df_lists]
         try:
             while True:
@@ -337,6 +354,8 @@ class BatchData(ProxyDataFlow):
         return div + int(self.remainder)
 
     def __iter__(self) -> Iterator[Any]:
+        if not self._reset_called:
+            raise DataFlowResetStateNotCalledError()
         holder = []
         for data in self.df:
             holder.append(data)

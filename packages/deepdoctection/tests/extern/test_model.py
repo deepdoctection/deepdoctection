@@ -167,12 +167,12 @@ class TestModelDownloadManager:
             os.makedirs(os.path.dirname(configs_abs), exist_ok=True)
 
             def _fake_hf_hub_download(
-                repo_id: str, # pylint: disable=W0613
-                file_name: str, # pylint: disable=W0613
+                repo_id: str,  # pylint: disable=W0613
+                file_name: str,  # pylint: disable=W0613
                 local_dir: str,
                 force_filename: str,
-                force_download: bool, # pylint: disable=W0613
-                token: Optional[str], # pylint: disable=W0613
+                force_download: bool,  # pylint: disable=W0613
+                token: Optional[str],  # pylint: disable=W0613
             ) -> str:
                 target = os.path.join(local_dir, force_filename)
                 os.makedirs(local_dir, exist_ok=True)
@@ -231,8 +231,9 @@ class TestModelDownloadManager:
             weights_abs = (SETTINGS.MODEL_DIR / name).as_posix()
             os.makedirs(os.path.dirname(weights_abs), exist_ok=True)
 
-            def _fake_download(url: str, # pylint: disable=W0613
-                               directory: str, file_name: str, expect_size: int) -> None:
+            def _fake_download(
+                url: str, directory: str, file_name: str, expect_size: int  # pylint: disable=W0613
+            ) -> None:
                 target = os.path.join(directory, file_name)
                 os.makedirs(directory, exist_ok=True)
                 with open(target, "wb") as f:

@@ -63,8 +63,9 @@ class DummyTokenizer:
     logic.
 
     """
+
     def __call__(self, text, return_tensors="pt", padding=True, truncation=True, max_length=512):  # type: ignore
-        import torch # pylint:disable=W0621,C0415
+        import torch  # pylint:disable=W0621,C0415
 
         return {
             "input_ids": torch.tensor([[5, 6, 7]], dtype=torch.long),
@@ -81,7 +82,7 @@ def _dummy_tokenizer() -> DummyTokenizer:
 def test_hflm_sequence_slow_build_and_predict(tmp_path: PathLikeOrStr) -> None:
     """Test sequence classification using a tiny model."""
     cfg = XLMRobertaConfig(num_labels=2)  # pylint:disable=E0606
-    model = XLMRobertaForSequenceClassification(cfg) # pylint:disable=E0606
+    model = XLMRobertaForSequenceClassification(cfg)  # pylint:disable=E0606
     model.save_pretrained(tmp_path)
     cfg.save_pretrained(tmp_path)
 
@@ -96,7 +97,7 @@ def test_hflm_sequence_slow_build_and_predict(tmp_path: PathLikeOrStr) -> None:
 
     L = 5
     inputs = {
-        "input_ids": torch.randint(50, (1, L), dtype=torch.long), # pylint:disable=E0606
+        "input_ids": torch.randint(50, (1, L), dtype=torch.long),  # pylint:disable=E0606
         "attention_mask": torch.ones((1, L), dtype=torch.long),
         "token_type_ids": torch.zeros((1, L), dtype=torch.long),
     }

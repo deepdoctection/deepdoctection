@@ -77,6 +77,7 @@ def test_mapping_context_manager_no_exception_sets_flag_false() -> None:
 
 def test_default_mapper_and_curry_behavior() -> None:
     """Test DefaultMapper and curry behavior."""
+
     def my_map(dp, a, b=0):  # type: ignore
         return (dp, a, b)
 
@@ -89,7 +90,7 @@ def test_default_mapper_and_curry_behavior() -> None:
 
     wrapped = decorated(5, 6)
     assert isinstance(wrapped, DefaultMapper)
-    assert wrapped("Z") == ("Z", 5, 6) # pylint:disable=E1102
+    assert wrapped("Z") == ("Z", 5, 6)  # pylint:disable=E1102
 
 
 def test_maybe_get_fake_score_mocked(monkeypatch) -> None:  # type: ignore

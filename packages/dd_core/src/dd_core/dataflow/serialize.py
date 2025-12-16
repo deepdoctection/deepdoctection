@@ -37,6 +37,8 @@ class DataFromList(RNGDataFlow):
         return len(self.lst)
 
     def __iter__(self) -> Iterator[Any]:
+        if not self._reset_called:
+            raise DataFlowResetStateNotCalledError()
         if not self.shuffle:
             yield from self.lst
         else:
@@ -63,6 +65,7 @@ class DataFromIterable(DataFlow):
             self._len = len(iterable)  # type: ignore
         except (NotImplementedError, TypeError):
             pass
+        super().__init__()
 
     def __len__(self) -> int:
         if self._len is None:
@@ -70,10 +73,12 @@ class DataFromIterable(DataFlow):
         return self._len
 
     def __iter__(self) -> Iterator[Any]:
+        if not self._reset_called:
+            raise DataFlowResetStateNotCalledError()
         yield from self._itr
 
     def reset_state(self) -> None:
-        pass
+        self._reset_called = True
 
 
 class FakeData(RNGDataFlow):

@@ -22,6 +22,16 @@ deskewed_gt_pil:
   size: 118079
   license: Apache-2.0
   description: Deskewed image using Pillow
+invoice_pdf:
+  path: deepdoctection/tests/assets/pdf_dir/sample_invoice.pdf
+  sha256: eb946849d228d56dfc68aff2652a766d79742815bea9ad9ae6a6e3c6dc7cdb0c
+  size: 163434
+  license: Apache-2.0
+invoice_rotated_pdf:
+  path: deepdoctection/tests/assets/pdf_dir/sample_invoice_rotated.pdf
+  sha256: 1ae42e7a75b5d9af128e882e92d171dc7182721273d58b102e82c1fa203d57e0
+  size: 13870
+  license: Apache-2.0
 page_json:
   path: dd_core/tests/assets/a8d0e15c-7463-378a-a3e5-28590a4440ab.json
   sha256: ae8e68f2b06624986ef959feb38b7431c8b666927442dbfe9abc263ca00d3286

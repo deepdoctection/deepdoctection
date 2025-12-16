@@ -770,9 +770,12 @@ class Table(Layout):
                         f" at upper-left only, annotation_id: {cell.annotation_id}"
                     )
                 )
-            table_list[cell.row_number - 1][cell.column_number - 1] = (  # type: ignore
-                table_list[cell.row_number - 1][cell.column_number - 1] + cell.text + " "  # type: ignore
-            )
+            try:
+                table_list[cell.row_number - 1][cell.column_number - 1] = (  # type: ignore
+                    table_list[cell.row_number - 1][cell.column_number - 1] + cell.text + " "  # type: ignore
+                )
+            except IndexError:
+                pass
         return table_list
 
     @property

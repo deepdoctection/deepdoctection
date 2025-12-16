@@ -35,7 +35,7 @@ from dd_core.dataflow.common import (
 )
 
 
-def test_test_data_speed(simple_list_dataflow: DataFromList) -> None:
+def test_data_speed(simple_list_dataflow: DataFromList) -> None:
     """
     Test TestDataSpeed runs and produces the same datapoints
     """

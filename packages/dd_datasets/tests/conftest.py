@@ -38,7 +38,7 @@ from dd_datasets import Fintabnet, Pubtabnet
 @pytest.fixture(name="test_layout")
 def fixture_test_layout():  # type:ignore
     """return test_layout function. Use test_layout(raw=True) to get raw datapoints or test_layout() to get Image
-     datapoints """
+    datapoints"""
     path = stu.asset_path("testlayout")
 
     def test_layout(raw: bool = False):  # type:ignore

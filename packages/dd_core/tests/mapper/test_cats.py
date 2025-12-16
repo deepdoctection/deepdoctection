@@ -183,7 +183,7 @@ def test_image_to_cat_id_basic_categories(table_image: Image) -> None:
 
 def test_image_to_cat_id_subcategory_ids(table_image: Image) -> None:
     """Extract sub-category ids for column_number."""
-    result, img_id = image_to_cat_id( # pylint:disable=E1102
+    result, img_id = image_to_cat_id(  # pylint:disable=E1102
         category_names=["column"],
         sub_categories={"column": "column_number"},
     )(table_image)
@@ -196,7 +196,7 @@ def test_image_to_cat_id_subcategory_ids(table_image: Image) -> None:
 
 def test_image_to_cat_id_subcategory_names(table_image: Image) -> None:
     """Extract sub-category names for column_number."""
-    result, img_id = image_to_cat_id( # pylint:disable=E1102
+    result, img_id = image_to_cat_id(  # pylint:disable=E1102
         category_names=["column"],
         sub_categories={"column": "column_number"},
         id_name_or_value="name",
@@ -210,7 +210,7 @@ def test_image_to_cat_id_subcategory_names(table_image: Image) -> None:
 
 def test_image_to_cat_id_summary_ids(table_image: Image) -> None:
     """Extract summary sub-category ids."""
-    result, img_id = image_to_cat_id( # pylint:disable=E1102
+    result, img_id = image_to_cat_id(  # pylint:disable=E1102
         summary_sub_category_names=[
             "number_of_rows",
             "number_of_columns",
@@ -229,7 +229,7 @@ def test_image_to_cat_id_summary_ids(table_image: Image) -> None:
 
 def test_image_to_cat_id_summary_names(table_image: Image) -> None:
     """Extract summary sub-category names."""
-    result, img_id = image_to_cat_id( # pylint:disable=E1102
+    result, img_id = image_to_cat_id(  # pylint:disable=E1102
         summary_sub_category_names=[
             "number_of_rows",
             "number_of_columns",

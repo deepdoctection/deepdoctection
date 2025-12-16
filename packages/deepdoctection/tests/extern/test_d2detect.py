@@ -41,7 +41,7 @@ if pytorch_available():
     import torch
 
 if detectron2_available():
-    from detectron2.structures import Instances, Boxes
+    from detectron2.structures import Boxes, Instances
 
 
 REQUIRES_PT_AND_D2 = pytest.mark.skipif(
@@ -59,8 +59,9 @@ def _stub_cfg() -> SimpleNamespace:
 
 
 def _get_mock_instances() -> List[List[Dict[str, Instances]]]:
-    pred_boxes = Boxes(torch.tensor(  # pylint:disable=E0606
-        [[1.0, 1.0, 5.0, 6.0], [10.0, 10.0, 12.0, 12.0]], dtype=torch.float32))
+    pred_boxes = Boxes(  # pylint:disable=E0606
+        torch.tensor([[1.0, 1.0, 5.0, 6.0], [10.0, 10.0, 12.0, 12.0]], dtype=torch.float32)  # pylint:disable=E0606
+    )
     scores = torch.tensor([0.93, 0.54], dtype=torch.float32)
     pred_classes = torch.tensor([0, 1], dtype=torch.uint8)
     inst = Instances((400, 600))
