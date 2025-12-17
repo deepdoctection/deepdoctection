@@ -26,10 +26,12 @@ clean-build: ## Remove build artifacts
 	find . -name '*.egg' -exec rm -rf {} +
 
 clean-pyc: ## Remove Python bytecode and cache files
-	find . -name '*.pyc' -exec rm -f {} +
-	find . -name '*.pyo' -exec rm -f {} +
-	find . -name '*~' -exec rm -f {} +
-	find . -name '__pycache__' -exec rm -fr {} +
+	# remove .pyc/.pyo and editor backups
+	find . -type f -name '*.pyc' -delete 2>/dev/null || true
+	find . -type f -name '*.pyo' -delete 2>/dev/null || true
+	find . -type f -name '*~' -delete 2>/dev/null || true
+	# remove __pycache__ dirs without descending to avoid races
+	find . -type d -name '__pycache__' -prune -exec rm -rf {} + 2>/dev/null || true
 
 clean-test: ## Remove test and coverage artifacts (top-level and packages)
 	# top-level
