@@ -1,4 +1,4 @@
-# deepdoctection
+# Deepdoctection
 
 **deepdoctection** is the main package for running and training models. It provides the
 pipeline framework, model wrappers, built-in pipelines, training scripts and evaluation methods.
