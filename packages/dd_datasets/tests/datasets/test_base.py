@@ -80,8 +80,8 @@ def test_merge_dataset_explicit_dataflows(fintabnet, pubtabnet) -> None:  # type
     assert len(out) == 2
 
 
-def test_merge_dataset_buffer_and_split_datasets(
-    monkeypatch: pytest.MonkeyPatch, fintabnet, pubtabnet  # type: ignore
+def test_merge_dataset_buffer_and_split_datasets( # type: ignore
+    monkeypatch: pytest.MonkeyPatch, fintabnet, pubtabnet
 ) -> None:
     # Deterministic split for 7 datapoints -> train:5, val:1, test:1
     monkeypatch.setattr(
@@ -98,8 +98,8 @@ def test_merge_dataset_buffer_and_split_datasets(
     assert len(split_ids["test"]) == 1
 
 
-def test_merge_dataset_create_split_by_id_reproduces(
-    monkeypatch: pytest.MonkeyPatch, fintabnet, pubtabnet  # type: ignore
+def test_merge_dataset_create_split_by_id_reproduces( # type: ignore
+    monkeypatch: pytest.MonkeyPatch, fintabnet, pubtabnet
 ) -> None:
     monkeypatch.setattr(np.random, "binomial", lambda n, p, size: np.array([0, 0, 0, 0, 1, 1, 0]))
     merge = MergeDataset(fintabnet, pubtabnet)

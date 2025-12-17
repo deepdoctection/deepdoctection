@@ -306,6 +306,7 @@ ModelCatalog.load_profiles_from_file(os.environ["MODEL_CATALOG_BASE"])
 ModelCatalog.load_profiles_from_file(os.environ.get("MODEL_CATALOG"))
 
 
+
 def print_model_infos(add_description: bool = True, add_config: bool = True, add_categories: bool = True) -> None:
     """
     Prints a table with all registered model profiles and some of their attributes (name, description, config and

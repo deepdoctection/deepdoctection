@@ -324,7 +324,7 @@ def get_logger_dir() -> Optional[PathLikeOrStr]:
 _logged_once_keys: set[str] = set()
 
 
-def log_once(message: str, function: str = "info") -> None:
+def log_once(message: Union[str,LoggingRecord] , function: str = "info") -> None:
     """
     Log certain message only once. Calling this function more than once with
     the same message will result in no operation.

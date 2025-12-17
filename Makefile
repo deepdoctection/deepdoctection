@@ -2,18 +2,18 @@
 
 UNAME_S := $(shell uname -s)
 
-
 PYTHON=python3
 
-black:
-	black --line-length 120 deepdoctection tests setup.py
+# optional: R=1 enables --recreate (-r) for tox
+ifdef R
+TOX_R = -r
+endif
 
 analyze:
-	mypy -p deepdoctection -p tests -p tests_d2
+	tox -c packages/tox.ini -e py310-type-all $(TOX_R)
 
-check-format:
-	black --line-length 120 --check deepdoctection tests setup.py
-	isort --check tests setup.py
+check-lint-and-format:
+	tox -c packages/tox.ini -e py310-check-format-and-lint-all $(TOX_R)
 
 clean: clean-build clean-pyc clean-test
 
@@ -22,7 +22,7 @@ clean-build:
 	rm -fr dist/
 	rm -fr .eggs/
 	find . -name '*.egg-info' -exec rm -fr {} +
-	find . -name '*.egg' -exec rm -f {} +
+	find . -name '*.egg' -exec rm -rf {} +
 
 clean-pyc:
 	find . -name '*.pyc' -exec rm -f {} +
@@ -31,28 +31,21 @@ clean-pyc:
 	find . -name '__pycache__' -exec rm -fr {} +
 
 clean-test:
-	rm -fr .tox/
-	rm -f .coverage
+	rm -fr packages/.tox/
+	rm -fr packages/.hypothesis/
+	rm -fr packages/.coverage
+	rm -fr packages/coverage
 	rm -fr htmlcov/
 	rm -fr .pytest_cache
 
-format-and-qa: format lint analyze
+qa: analyze check-lint-and-format
 
-format: black isort
+format:
+	tox -e py310-format-all -r
 
 install-dd-dev-pt: check-venv
 	@echo "--> Installing pt"
 	pip install -e ".[pt]"
-	@echo "--> Installing dev, test dependencies"
-	pip install -e ".[dev, test]"
-	@echo "--> Done installing dev, test dependencies"
-	pip install -e ".[docs]"
-	@echo "--> Done installing docs dependencies"
-	@echo ""
-
-install-dd-dev-tf: check-venv
-	@echo "--> Installing source-all-tf"
-	pip install -e ".[tf]"
 	@echo "--> Installing dev, test dependencies"
 	pip install -e ".[dev, test]"
 	@echo "--> Done installing dev, test dependencies"
@@ -76,34 +69,13 @@ package_actions: check-venv
 	pip install --upgrade build
 	$(PYTHON) -m build
 
-# all tests - this will never succeed in full due to dependency conflicts
+# default env if ENV is not provided
+TOX_ENV ?= py310-core-test
+
 test:
 	pytest --cov=deepdoctection --cov-branch --cov-report=html tests
 	pytest --cov=deepdoctection --cov-branch --cov-report=html tests_d2
 
-# tests that does only require the basic detup
-test-basic:
-	pytest --cov=deepdoctection --cov-branch --cov-report=html -m basic tests
-
-# tests that require additional dependencies not based on DL libraries
-test-additional: test-basic
-	pytest --cov=deepdoctection --cov-branch --cov-report=html -m additional tests
-
-# analyzer with legacy configurations
-test-pt-legacy:
-	pytest --cov=deepdoctection --cov-branch --cov-report=html -m "pt_legacy" tests
-
-# tests with full TF setup
-test-tf: test-additional
-	pytest --cov=deepdoctection --cov-branch --cov-report=html -m "tf_deps" tests
-
-# tests with full PT setup
-test-pt: test-additional
-	pytest --cov=deepdoctection --cov-branch --cov-report=html -m "pt_deps" tests
-	pytest --cov=deepdoctection --cov-branch --cov-report=html tests_d2
-
-test-gpu:
-	pytest --cov=deepdoctection --cov-branch --cov-report=html -m "requires_gpu" tests
 
 up-req: check-venv
 	@echo "--> Updating Python requirements"
@@ -123,7 +95,7 @@ install-dd: check-venv
 	pip install -e ./packages/dd_core[full]
 	pip install -e ./packages/dd_datasets[full]
 	@echo "--> Installing deepdoctection (full) into active venv"
-	pip install -e ./packages/deepdoctection[full,test]
+	pip install -e ./packages/deepdoctection[full]
 	@echo "--> Done"
 
 venv:

@@ -65,6 +65,7 @@ def test_slow_build_doctr_text_recognizer_pt() -> None:
     weights_path = ModelDownloadManager.maybe_download_weights_and_configs(weights)
     profile = ModelCatalog.get_profile(weights)
     device = get_torch_device()
+    assert profile.architecture is not None
     rec = DoctrTextRecognizer(profile.architecture, weights_path, device)
 
     assert rec.doctr_predictor is not None
