@@ -31,14 +31,15 @@ import pytest
 from numpy.typing import NDArray
 
 from dd_core.utils.env_info import SETTINGS
-from dd_core.utils.object_types import Languages, LayoutType
 from dd_core.utils.file_utils import tesseract_available
+from dd_core.utils.object_types import Languages, LayoutType
 from deepdoctection.extern.tessocr import TesseractOcrDetector
 
 REQUIRES_TESSERACT = pytest.mark.skipif(
     not tesseract_available(),
     reason="Requires Poppler or pypdfium2 installed",
 )
+
 
 @REQUIRES_TESSERACT
 def test_tesseract_ocr_predict_words_basic(monkeypatch: pytest.MonkeyPatch, sample_np_img: NDArray[Any]) -> None:
