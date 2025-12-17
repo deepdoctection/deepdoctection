@@ -32,9 +32,15 @@ from numpy.typing import NDArray
 
 from dd_core.utils.env_info import SETTINGS
 from dd_core.utils.object_types import Languages, LayoutType
+from dd_core.utils.file_utils import tesseract_available
 from deepdoctection.extern.tessocr import TesseractOcrDetector
 
+REQUIRES_TESSERACT = pytest.mark.skipif(
+    not tesseract_available(),
+    reason="Requires Poppler or pypdfium2 installed",
+)
 
+@REQUIRES_TESSERACT
 def test_tesseract_ocr_predict_words_basic(monkeypatch: pytest.MonkeyPatch, sample_np_img: NDArray[Any]) -> None:
     """test tesseract ocr predict words basic"""
     # Mock the Tesseract data extraction to avoid any subprocess calls
@@ -63,6 +69,7 @@ def test_tesseract_ocr_predict_words_basic(monkeypatch: pytest.MonkeyPatch, samp
     assert any("pdf" in t for t in texts) or any("hello" in t for t in texts)
 
 
+@REQUIRES_TESSERACT
 def test_tesseract_ocr_predict_lines_enabled(monkeypatch: pytest.MonkeyPatch, sample_np_img: NDArray[Any]) -> None:
     """test tesseract ocr predict lines enabled"""
     # Provide multiple words on two lines so line grouping can be formed
@@ -97,6 +104,7 @@ def test_tesseract_ocr_predict_lines_enabled(monkeypatch: pytest.MonkeyPatch, sa
     assert any("a simple" in lt for lt in line_texts) or any("pdf file" in lt for lt in line_texts)
 
 
+@REQUIRES_TESSERACT
 def test_tesseract_ocr_get_category_names_toggle_lines() -> None:
     """test tesseract ocr get category names toggle lines"""
     det = TesseractOcrDetector(SETTINGS.CONF_TESSERACT_SRC, config_overwrite=["LINES=False"])
@@ -108,6 +116,7 @@ def test_tesseract_ocr_get_category_names_toggle_lines() -> None:
     assert names2 == (LayoutType.WORD, LayoutType.LINE)
 
 
+@REQUIRES_TESSERACT
 def test_tesseract_ocr_set_language_mapping() -> None:
     """test tesseract ocr set language mapping"""
     det = TesseractOcrDetector(SETTINGS.CONF_TESSERACT_SRC)
@@ -116,6 +125,7 @@ def test_tesseract_ocr_set_language_mapping() -> None:
     assert det.config.LANGUAGES == "deu"
 
 
+@REQUIRES_TESSERACT
 def test_tesseract_ocr_get_requirements() -> None:
     """test tesseract ocr get requirements"""
     det = TesseractOcrDetector(SETTINGS.CONF_TESSERACT_SRC)
