@@ -31,7 +31,6 @@ jobs:
         run: |
           python -m pip install --upgrade pip==${{ matrix.pip }}
           pip install tox==${{ matrix.tox }}
-          tox --version
 
       - name: Run analyze
         run: make analyze
@@ -59,7 +58,6 @@ jobs:
         run: |
           python -m pip install --upgrade pip==${{ matrix.pip }}
           pip install tox==${{ matrix.tox }}
-          tox --version
 
       - name: Run check-lint-and-format
         run: make check-lint-and-format
