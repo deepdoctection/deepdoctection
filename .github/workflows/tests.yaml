@@ -32,7 +32,15 @@ jobs:
           - { name: 'py312-datasets-test', python: '3.12', pip: '25.3', tox: '4.32.0', os: 'ubuntu-latest', poppler: false, tesseract: false }
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository (with LFS)
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Pull Git LFS assets
+        run: |
+          git lfs install --local
+          git lfs pull
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -78,7 +86,15 @@ jobs:
           - { name: 'py312-deepdoctection-full', python: '3.12', pip: '25.3', tox: '4.32.0', os: 'ubuntu-latest', poppler: false, tesseract: false }
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository (with LFS)
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Pull Git LFS assets
+        run: |
+          git lfs install --local
+          git lfs pull
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -124,7 +140,15 @@ jobs:
           - { name: 'py312-deepdoctection-slow', python: '3.12', pip: '25.3', tox: '4.32.0', os: 'ubuntu-latest', poppler: false, tesseract: true }
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository (with LFS)
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Pull Git LFS assets
+        run: |
+          git lfs install --local
+          git lfs pull
 
       - name: Set up Python
         uses: actions/setup-python@v5
