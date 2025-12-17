@@ -40,12 +40,12 @@ full = [
     "apted==1.0.3",
     "distance==0.1.3",
     "lxml>=4.9.1",
+    "pycocotools>=2.0.2",
     # DL dependencies
     "timm>=0.9.16",
     "transformers>=4.48.0",
     "accelerate>=0.29.1",
     "python-doctr>=1.0.0",
-    "pycocotools>=2.0.2",
 ]
 
 types = [

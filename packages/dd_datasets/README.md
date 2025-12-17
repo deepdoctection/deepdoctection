@@ -1,10 +1,15 @@
-# dd-datasets
+<p align="center">
+  <img src="https://github.com/deepdoctection/deepdoctection/raw/master/docs/tutorials/_imgs/dd_logo.png" alt="Deep Doctection Logo" width="60%">
+</p>
 
-Datasets and category clases and some dataset instances for training models supported by deepdoctection.
+# deepdoctection-datasets
+
+Categories and Datasets as well as some dataset instances for training models supported by deepdoctection.
 
 ## Overview
 
-`dd-datasets` is a package that provides comprehensive dataset management capabilities for document AI tasks. 
+`dd-datasets` is a package that provides comprehensive dataset management capabilities for Document AI tasks. 
+
 It includes:
 
 - **datasets**: Built-in dataset definitions and dataflow builders for popular document understanding datasets. 
@@ -14,13 +19,13 @@ It includes:
 ## Installation
 
 ```bash
-pip install dd-datasets
+(uv) pip install dd-datasets
 ```
 
 For using all datasets including those that require the xml-parsing tool lxml:
 
 ```bash
-pip install dd-datasets[full]
+(uv) pip install dd-datasets[full]
 ```
 
 ## License

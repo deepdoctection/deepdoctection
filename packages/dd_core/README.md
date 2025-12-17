@@ -1,4 +1,8 @@
-# dd-core
+<p align="center">
+  <img src="https://github.com/deepdoctection/deepdoctection/raw/master/docs/tutorials/_imgs/dd_logo.png" alt="Deep Doctection Logo" width="60%">
+</p>
+
+# deepdoctection-core
 
 Core data structures, utilities, mapper and dataflows for the deepdoctection ecosystem.
 
@@ -16,7 +20,13 @@ Core data structures, utilities, mapper and dataflows for the deepdoctection eco
 ## Installation
 
 ```bash
-pip install dd-core
+(uv) pip install dd-core
+```
+
+To install with PDF processing support:
+
+```bash
+(uv) pip install dd-core[full]
 ```
 
 
