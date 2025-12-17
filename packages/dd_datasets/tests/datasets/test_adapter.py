@@ -98,7 +98,7 @@ def test_dataset_adapter_max_datapoints_limits(monkeypatch: pytest.MonkeyPatch, 
 
 
 @pytest.mark.skipif(not pytorch_available(), reason="torch not installed")
-def test_dataset_adapter_hf_detr_annotations_non_empty( # type: ignore
+def test_dataset_adapter_hf_detr_annotations_non_empty(  # type: ignore
     monkeypatch: pytest.MonkeyPatch, fintabnet
 ) -> None:
     _patch_pdf(monkeypatch)

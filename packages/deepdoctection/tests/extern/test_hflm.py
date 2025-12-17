@@ -130,8 +130,8 @@ def test_hflm_token_predict_basic(monkeypatch: pytest.MonkeyPatch) -> None:
         raising=True,
     )
 
-    def _fake_tok_predict( # type: ignore
-        uuids, input_ids, attention_mask, token_type_ids, tokens, model   # pylint:disable=W0613
+    def _fake_tok_predict(  # type: ignore
+        uuids, input_ids, attention_mask, token_type_ids, tokens, model  # pylint:disable=W0613
     ):
         return [
             TokenClassResult(uuid="u1", token_id=101, class_id=2, token="A", score=0.8),  # -> class_id+1 = 3
