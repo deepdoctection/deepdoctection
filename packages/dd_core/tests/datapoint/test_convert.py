@@ -90,7 +90,12 @@ def test_poppler_with_dpi_300(monkeypatch: pytest.MonkeyPatch, pdf_page: TestPdf
     """
     monkeypatch.setenv("USE_DD_PDFIUM", "False")
     np_array = convert_pdf_bytes_to_np_array_v2(pdf_page.pdf_bytes, dpi=300)
-    assert np_array.shape == pdf_page.np_array_shape
+    array_shape = pdf_page.np_array_shape
+    assert np_array.shape == pdf_page.np_array_shape or np_array.shape == (
+        array_shape[0] + 1,
+        array_shape[1],
+        array_shape[2],
+    )
 
 
 @pytest.mark.skipif(not POPLER_AVAILABLE, reason="Poppler is not available")

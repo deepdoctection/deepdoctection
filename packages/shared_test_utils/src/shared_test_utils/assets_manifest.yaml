@@ -22,6 +22,30 @@ deskewed_gt_pil:
   size: 118079
   license: Apache-2.0
   description: Deskewed image using Pillow
+doclaynet:
+  path: dd_datasets/tests/assets/datasets/DocLayNet_core/test_doclaynet.json
+  sha256: 55881b7818a4377ad49b12bbb12686483a3300a3eb8dde5313b944ee0834a80e
+  size: 11345
+  license: Apache-2.0
+  description: Doclaynet annotations, two samples
+fintabnet:
+  path: dd_datasets/tests/assets/datasets/fintabnet/FinTabNet_1.0.0_table_val.jsonl
+  sha256: 68f0682e3b658a78ea815d6a0a2e2289dde1cec0bd61ec13c1704b7fcf6e221c
+  size: 22384
+  license: Apache-2.0
+  description: Fintabnet annotations, four samples
+funsd:
+  path: dd_datasets/tests/assets/datasets/funsd/annotations/1234.json
+  sha256: e89724ad3b5fc8acbf5b06208c49310dc1eea89c36c42d70e5894de9dee74df1
+  size: 69984
+  license: Apache-2.0
+  description: Funsd annotation, one samples
+iiitar13k:
+  path: dd_datasets/tests/assets/datasets/iiitar13k/ar_alstom_2015_noneng_123.xml
+  sha256: 592796619622109eb1be3aae2b62c4643ea40012e4f41d4eded0bd42a35867f9
+  size: 633
+  license: Apache-2.0
+  description: IIItar13K annotation, one sample
 invoice_pdf:
   path: deepdoctection/tests/assets/pdf_dir/sample_invoice.pdf
   sha256: eb946849d228d56dfc68aff2652a766d79742815bea9ad9ae6a6e3c6dc7cdb0c
@@ -44,12 +68,42 @@ pdf_file_two_pages:
   size: 3028
   license: Apache-2.0
   description: pdf sample with two pages
+publaynet:
+  path: dd_datasets/tests/assets/datasets/publaynet/publaynet.json
+  sha256: 40d2efc6a7d36c8722e0999958eb935c8c814b89a44c309d5c964b6d9dcfd35b
+  size: 22652
+  license: Apache-2.0
+  description: Publaynet annotation, 20 samples
+pubtables1M_det:
+  path: dd_datasets/tests/assets/datasets/PubTables1M/PubTables1M-Detection-PASCAL-VOC/val/PMC493268_7.xml
+  sha256: 50c41c651b0f81e890c844ca9e2a81ac894bf931d15bd0921ebf7ffcd0523420
+  size: 695
+  license: Apache-2.0
+  description: Pubtables1M detection annotation, one sample
+pubtables1M_struct_ann:
+  path: dd_datasets/tests/assets/datasets/PubTables1M/PubTables-1M-Structure_Annotations_Val/PMC497045_table_2.xml
+  sha256: f4f3aaa6273b37925eab18c8e631658fc88108e01dc08f36e7b1447b951c6f05
+  size: 14057
+  license: Apache-2.0
+  description: Pubtables1M structure annotation, one sample
+pubtabnet:
+  path: dd_datasets/tests/assets/datasets/pubtabnet/PubTabNet_2.0.0.jsonl
+  sha256: 606b4957e41ce717576e3bc849755f4f7dd35c06de477fc5d0be6875026f8cc4
+  size: 11429
+  license: Apache-2.0
+  description: Pubtabnet annotation, three sample
 pubtabnet_like:
   path: dd_core/tests/assets/pubtabnet_like.json
   sha256: b570cb58922405d08d89907a2db6a1279ae204bc260b08c9724d45227a8acd14
   size: 19201
   license: Apache-2.0
   description: Sample Pubtabnet GT sample
+rvlcdip:
+  path: dd_datasets/tests/assets/datasets/rvl-cdip/labels/val.txt
+  sha256: df0f36eec9b5d4905af65db3df540b616102ed5cc57896a6e6d8fd1837483f39
+  size: 206
+  license: Apache-2.0
+  description: Rvl-CDIP, five sample
 sample_document_image:
   path: dd_core/tests/assets/sample_document_image.png
   sha256: a55679ce5cad22ffbea912eea1973bf5c1032abdce7105662844a936f7cd910d

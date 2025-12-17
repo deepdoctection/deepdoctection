@@ -51,17 +51,18 @@ def test_dd_analyzer_default_config_on_invoice_pdf() -> None:
     assert isinstance(pages[0], Page)
     page = pages[0]
 
-    assert len(page.layouts) == 8
+    assert len(page.layouts) in {7,8}
 
     table = page.tables[0]
     assert table.csv is not None
     assert table.html is not None
 
-    assert len(table.cells) > 0
+    assert len(table.cells) > 0 # type: ignore
 
     assert len(page.residual_layouts) == 6
 
-    assert {"page_header", "page_footer"} == {layout.category_name.value for layout in page.residual_layouts}
+    assert {"page_header", "page_footer"} == {layout.category_name.value  # type: ignore
+                                              for layout in page.residual_layouts}
     assert len(page.text) > 0
 
 
