@@ -31,6 +31,7 @@ from typing import Literal, Mapping, Optional, Sequence, Union
 import numpy as np
 from lazy_imports import try_import
 
+from dd_core.datapoint.image import ImageFormats
 from dd_core.mapper.nms import batched_nms
 from dd_core.utils import get_torch_device
 from dd_core.utils.file_utils import get_detectron2_requirement, get_pytorch_requirement
@@ -108,6 +109,99 @@ def d2_predict_image(
         for k in range(len(instances))
     ]
     return results
+
+def d2_torch_predict_image(torch_img: torch.Tensor,
+                           predictor: nn.Module,
+                           resizer: InferenceResize,
+                           nms_thresh_class_agnostic: float) -> list[DetectionResult]:
+    """
+    Run detection on an image using a torch tensor input. It will also handle the preprocessing internally which
+    is using a custom resizing within some bounds. Moreover, and different from the setting where D2 is used
+    it will also handle the resizing of the bounding box coords to the original image size.
+
+    Args:
+        torch_img: torch tensor image
+        predictor: torch nn module implemented in Detectron2
+        resizer: instance for resizing the input image
+        nms_thresh_class_agnostic: class agnostic nms threshold
+
+    Returns:
+        list of `DetectionResult`s
+    """
+    height, width = torch_img.shape[1:3]
+    resized_img = resizer.get_transform(torch_img).apply_torch_image(torch_img)
+    image = resized_img.permute(2, 0, 1)
+
+    with torch.no_grad():
+        inputs = {"image": image, "height": height, "width": width}
+        predictions = predictor([inputs])[0]
+        predictions = _d2_post_processing(predictions, nms_thresh_class_agnostic)
+    instances = predictions["instances"]
+    results = [
+        DetectionResult(
+            box=instances[k].pred_boxes.tensor.tolist()[0],
+            score=instances[k].scores.tolist()[0],
+            class_id=instances[k].pred_classes.tolist()[0],
+        )
+        for k in range(len(instances))
+    ]
+    return results
+
+
+def d2_torch_jit_predict_image(
+    torch_img: torch.Tensor,
+    d2_predictor: nn.Module,
+    resizer: InferenceResize,
+    nms_thresh_class_agnostic: float,
+) -> list[DetectionResult]:
+    """
+    Run detection on an image using a Torchscript model and a torch tensor input.
+
+    It will handle the preprocessing internally using a custom resizing within some
+    bounds and, different from the plain D2 setting, also handle the resizing of
+    the bounding box coordinates back to the original image size.
+
+    Args:
+        torch_img: Image as a torch tensor of shape `[C, H, W]` or `[H, W, C]`.
+        d2_predictor: Torchscript nn module.
+        resizer: Instance for resizing the input image.
+        nms_thresh_class_agnostic: Class agnostic NMS threshold.
+
+    Returns:
+        A list of `DetectionResult`s.
+    """
+    height, width = torch_img.shape[1:3]
+    resized_img = resizer.get_transform(torch_img).apply_torch_image(torch_img)
+    new_height, new_width = resized_img.shape[:2]
+
+
+    image = resized_img.permute(2, 0, 1).to(dtype=torch.float32)
+
+    with torch.no_grad():
+        boxes, classes, scores, _ = d2_predictor(image)
+        class_masks = torch.ones(classes.shape, dtype=torch.uint8, device=boxes.device)
+        keep = batched_nms(boxes, scores, class_masks, nms_thresh_class_agnostic).cpu()
+
+        inverse_resizer = ResizeTransform(new_height, new_width, height, width, "VIZ")
+
+        np_boxes = boxes.cpu().numpy().reshape(-1, 2)
+        np_boxes = inverse_resizer.apply_coords(np_boxes)
+        np_boxes = np_boxes.reshape(-1, 4)
+
+        np_boxes, classes, scores = np_boxes[keep], classes[keep], scores[keep]
+        if np_boxes.ndim == 1:
+            np_boxes = np.expand_dims(np_boxes, axis=0)
+
+    detect_result_list: list[DetectionResult] = []
+    for box, label, score in zip(np_boxes, classes, scores):
+        detect_result_list.append(
+            DetectionResult(
+                box=box.tolist(),
+                class_id=label.item(),
+                score=score.item(),
+            )
+        )
+    return detect_result_list
 
 
 def d2_jit_predict_image(
@@ -335,6 +429,8 @@ class D2FrcnnDetector(D2FrcnnDetectorMixin):
         )
         return self._map_category_names(detection_results)
 
+
+
     @classmethod
     def get_requirements(cls) -> list[Requirement]:
         return [get_pytorch_requirement(), get_detectron2_requirement()]
@@ -486,6 +582,24 @@ class D2FrcnnTracingDetector(D2FrcnnDetectorMixin):
         """
         detection_results = d2_jit_predict_image(
             np_img,
+            self.d2_predictor,
+            self.resizer,
+            self.cfg.NMS_THRESH_CLASS_AGNOSTIC,
+        )
+        return self._map_category_names(detection_results)
+
+    def predict_image(self, image_data: ImageFormats) -> list[DetectionResult]:
+        """
+        Prediction per image.
+
+        Args:
+           image_data: image as `ImageFormats`
+
+        Returns:
+              A list of `DetectionResult`s
+        """
+        detection_results = d2_torch_jit_predict_image(
+            image_data.to_torch(next(self.d2_predictor.buffers()).device),
             self.d2_predictor,
             self.resizer,
             self.cfg.NMS_THRESH_CLASS_AGNOSTIC,

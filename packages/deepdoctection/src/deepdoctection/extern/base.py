@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+ # -*- coding: utf-8 -*-
 # File: base.py
 
 # Copyright 2021 Dr. Janis Meyer. All rights reserved.
@@ -384,18 +384,6 @@ class ObjectDetector(PredictorBase, ABC):
             A list of DetectionResult objects containing the results of the prediction.
         """
         raise NotImplementedError()
-
-    @abstractmethod
-    def predict_image(self, image_data: ImageFormats) -> list[DetectionResult]:
-        """
-        Abstract method predict_image
-
-        Args:
-            image_data: ImageFormats as return value from ```my_image.get_image()```
-
-        Returns:
-            A list of DetectionResult objects containing the results of the prediction.
-        """
 
     @property
     def accepts_batch(self) -> bool:
