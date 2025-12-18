@@ -30,6 +30,7 @@ from numpy import uint8
 from ..utils.pdf_utils import pdf_to_np_array
 from ..utils.types import PixelValues
 from ..utils.viz import viz_handler
+from ..utils.file_utils import pytorch_available
 
 with try_import() as pypdf_import_guard:
     from pypdf import PdfReader
@@ -157,15 +158,15 @@ def convert_np_array_to_torch(np_image: PixelValues, device: Optional[torch.devi
     Raises:
         ImportError: If torch is not installed.
     """
-    try:
+    if pytorch_available():
         tensor = torch.from_numpy(np_image)
-    except NameError as exc:
-        raise ImportError("torch is not installed.") from exc
 
-    if device is None:
-        device = torch.device("cpu")
+        if device is None:
+            device = torch.device("cpu")
 
-    if tensor.dtype != torch.uint8:
-        tensor = tensor.to(torch.uint8)
+        if tensor.dtype != torch.uint8:
+            tensor = tensor.to(torch.uint8)
 
-    return tensor.to(device)
+        return tensor.to(device)
+
+    raise ImportError("torch is not installed.")

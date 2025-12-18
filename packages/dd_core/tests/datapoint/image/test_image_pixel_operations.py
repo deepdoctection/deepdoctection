@@ -21,13 +21,20 @@ Testing Image pixel data operations (setting/getting images)
 
 import numpy as np
 from numpy.testing import assert_array_equal
-from pytest import raises
+import pytest
+from lazy_imports import try_import
 
 from dd_core.datapoint import Image, convert_np_array_to_b64
 from dd_core.utils.error import ImageError
+from dd_core.utils.file_utils import pytorch_available
 
 from ..conftest import WhiteImage
 
+with try_import() as import_guard:
+    import torch
+
+REQUIRES_PYTORCH = pytest.mark.skipif(not pytorch_available(),
+                                      reason="Requires PyTorch to be installed")
 
 class TestImagePixelOperations:
     """Test Image pixel data handling"""
@@ -59,6 +66,36 @@ class TestImagePixelOperations:
         assert img.image is not None
         assert_array_equal(img.image, white_image.image)
 
+    @REQUIRES_PYTORCH
+    def test_image_get_image_to_torch_cpu(self, white_image: WhiteImage) -> None:
+        """get_image().to_torch() returns a torch.Tensor on cpu"""
+
+        img = Image(file_name=white_image.file_name)
+        img.image = white_image.image
+
+        t_image = img.get_image().to_torch(device=torch.device("cpu"))
+        assert isinstance(t_image, torch.Tensor)
+        assert t_image.device.type == "cpu"
+
+    @REQUIRES_PYTORCH
+    def test_image_formats_cache_is_invalidated_when_image_is_reset(self, white_image: WhiteImage) -> None:
+        """Resetting Image.image invalidates cached ImageFormats object and cached tensors"""
+
+        img = Image(file_name=white_image.file_name)
+        img.image = white_image.image
+
+        formats_1 = img.get_image()
+        t1 = formats_1.to_torch(device=torch.device("cpu"))
+
+        new_pixels = (white_image.image.copy()).astype(np.uint8)
+        img.image = new_pixels
+
+        formats_2 = img.get_image()
+        t2 = formats_2.to_torch(device=torch.device("cpu"))
+
+        assert formats_1 is not formats_2
+        assert t1 is not t2
+
     def test_image_get_image_to_np_array(self, white_image: WhiteImage) -> None:
         """get_image().to_np_array() returns numpy array"""
         img = Image(file_name=white_image.file_name)
@@ -88,7 +125,7 @@ class TestImagePixelOperations:
         """Image setter rejects unsupported types"""
         img = Image(file_name="test.png")
 
-        with raises(ImageError, match="Cannot load image. Unsupported type"):
+        with pytest.raises(ImageError, match="Cannot load image. Unsupported type"):
             img.image = [1, 2, 3]  # type: ignore
 
     def test_image_clear_image_preserves_bbox_by_default(self, white_image: WhiteImage) -> None:

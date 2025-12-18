@@ -30,6 +30,7 @@ from typing import TYPE_CHECKING, Any, Literal, Mapping, Optional, Sequence, Uni
 import numpy as np
 from lazy_imports import try_import
 
+from dd_core.datapoint.image import ImageFormats
 from dd_core.utils.identifier import get_uuid_from_str
 from dd_core.utils.logger import logger
 from dd_core.utils.object_types import (
@@ -378,8 +379,23 @@ class ObjectDetector(PredictorBase, ABC):
 
         Args:
             np_img: A numpy array representing the image to be processed by the predictor.
+
+        Returns:
+            A list of DetectionResult objects containing the results of the prediction.
         """
         raise NotImplementedError()
+
+    @abstractmethod
+    def predict_image(self, image_data: ImageFormats) -> list[DetectionResult]:
+        """
+        Abstract method predict_image
+
+        Args:
+            image_data: ImageFormats as return value from ```my_image.get_image()```
+
+        Returns:
+            A list of DetectionResult objects containing the results of the prediction.
+        """
 
     @property
     def accepts_batch(self) -> bool:
