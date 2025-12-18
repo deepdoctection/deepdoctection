@@ -5,14 +5,13 @@
 Init file for deepdoctection package. This file is used to import all submodules and to set some environment variables
 """
 
-import os
 import sys
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Dict, List
 
-# Import from dd_core (utils and datapoint are now external dependencies)
+from dd_core.utils.file_utils import _LazyModule
 from dd_core.utils.env_info import collect_env_info
-from dd_core.utils.file_utils import _LazyModule, pytorch_available
-from dd_core.utils.logger import LoggingRecord, logger
+from dd_core.utils.logger import logger, LoggingRecord
+
 
 __version__ = "1.0"
 
@@ -129,10 +128,23 @@ _IMPORT_STRUCTURE = {
     ],
 }
 
+
 # Setting some environment variables so that standard functions can be invoked with available hardware
 env_info = collect_env_info()
 logger.debug(LoggingRecord(msg=env_info))
 
+# Build extra objects for the lazy module, starting with the version
+_extra_objects: Dict[str, object] = {"__version__": __version__}
+
+# Re-export all public attributes from dd_core under deepdoctection namespace
+import dd_core
+for _name in dir(dd_core):
+    if _name.startswith("_"):
+        continue
+    # Optional: if dd_core defines __all__, you could respect it instead:
+    # if hasattr(dd_core, "__all__") and _name not in dd_core.__all__:
+    #     continue
+    _extra_objects[_name] = getattr(dd_core, _name)
 
 # Direct imports for type-checking
 if TYPE_CHECKING:
@@ -142,11 +154,14 @@ if TYPE_CHECKING:
     from .pipe import *
     from .train import *
 
+    from dd_core import *
+    from dd_datasets import *
+
 else:
     sys.modules[__name__] = _LazyModule(
         __name__,
         globals()["__file__"],
         _IMPORT_STRUCTURE,
-        module_spec=__spec__,
-        extra_objects={"__version__": __version__},
+        module_spec=globals().get("__spec__"),
+        extra_objects=_extra_objects
     )

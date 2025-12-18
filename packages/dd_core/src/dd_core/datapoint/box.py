@@ -44,6 +44,7 @@ __all__ = [
     "coco_iou",
     "iou",
     "intersection",
+    "np_iou",
     "intersection_box",
     "intersection_boxes",
     "area",

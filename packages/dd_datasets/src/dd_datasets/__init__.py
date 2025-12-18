@@ -19,14 +19,62 @@
 Dataset base classes, dataflows, adapters etc.
 """
 
-from dd_core.utils.file_utils import pytorch_available
+import sys
 
-from .base import *
-from .dataflow_builder import DataFlowBaseBuilder
-from .info import *
-from .instances import *
-from .registry import *
-from .save import *
+from typing import TYPE_CHECKING
+
+from dd_core.utils.file_utils import pytorch_available, _LazyModule
+
+
+__version__ = "1.0"
+
+_IMPORT_STRUCTURE = {
+    "base": ["DatasetBase",
+             "SplitDataFlow",
+             "MergeDataset",
+             "DatasetCard",
+             "CustomDataset"],
+    "dataflow_builder": [
+             "DataFlowBaseBuilder",
+             ],
+    "info": ["DatasetInfo",
+             "DatasetCategories",
+             "get_merged_categories"],
+    "registry": ["get_dataset",
+                 "print_dataset_infos"],
+    "save": ["dataflow_to_json"],
+    "instances": ["DocLayNet",
+                  "DocLayNetSeq",
+                  "Fintabnet",
+                  "Funsd",
+                  "IIITar13K",
+                  "LayoutTest",
+                  "Publaynet",
+                  "Pubtables1MDet",
+                  "Pubtables1MStruct",
+                  "Pubtabnet",
+                  "Rvlcdip",
+                  "Xfund"]
+}
 
 if pytorch_available():
+    _IMPORT_STRUCTURE["adapter"] = ["DatasetAdapter"]
+
+
+if TYPE_CHECKING:
     from .adapter import *
+    from .base import *
+    from .dataflow_builder import *
+    from .info import *
+    from .registry import *
+    from .save import *
+    from .instances import *
+
+else:
+    sys.modules[__name__] = _LazyModule(
+        __name__,
+        globals()["__file__"],
+        _IMPORT_STRUCTURE,
+        module_spec=__spec__,
+        extra_objects={"__version__": __version__},
+    )

@@ -44,7 +44,7 @@ from termcolor import colored
 from .env_info import ENV_VARS_TRUE
 from .types import PathLikeOrStr
 
-__all__ = ["logger", "set_logger_dir", "auto_set_dir", "get_logger_dir"]
+__all__ = ["logger", "set_logger_dir", "auto_set_dir", "get_logger_dir", "LoggingRecord", "log_once"]
 
 
 @dataclass

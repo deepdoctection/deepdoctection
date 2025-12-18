@@ -34,7 +34,7 @@ from ..utils.types import JsonDict, PubtabnetDict
 from ..utils.utils import is_file_extension
 from .maputils import MappingContextManager, curry, maybe_get_fake_score
 
-__all__ = ["pub_to_image"]
+__all__ = ["pub_to_image", "tile_table", "pub_to_image_uncur"]
 
 
 def _convert_boxes(dp: JsonDict, height: int) -> JsonDict:
