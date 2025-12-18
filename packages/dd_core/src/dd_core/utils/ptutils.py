@@ -80,13 +80,14 @@ def get_num_gpu() -> int:
 set_torch_auto_device = get_torch_device
 
 
-
-def apply_torch_image(img: torch.Tensor,
-                      height: Union[int, float],
-                      width: Union[int, float],
-                      new_height: Union[int, float],
-                      new_width: Union[int, float],
-                      interp: str) -> torch.Tensor:
+def apply_torch_image(
+    img: torch.Tensor,
+    height: Union[int, float],
+    width: Union[int, float],
+    new_height: Union[int, float],
+    new_width: Union[int, float],
+    interp: str,
+) -> torch.Tensor:
     """
     Apply the resize transformation to a PyTorch tensor image without using `viz_handler`.
 
@@ -112,7 +113,6 @@ def apply_torch_image(img: torch.Tensor,
     # Ensure spatial dimensions match
     assert tuple(img.shape[:2]) == (height, width)
 
-
     if img.ndim == 2:
         img = img.unsqueeze(-1)  # [H, W] -> [H, W, 1]
 
@@ -131,4 +131,3 @@ def apply_torch_image(img: torch.Tensor,
         ret = ret.unsqueeze(-1)
 
     return ret
-

@@ -25,16 +25,16 @@ from __future__ import annotations
 
 import inspect
 from abc import ABC, abstractmethod
-from typing import Literal, Optional, Set, Union, TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal, Optional, Set, Union
 
 import numpy as np
 import numpy.typing as npt
 from numpy import float32
 
 from .object_types import ObjectTypes, PageType
+from .ptutils import apply_torch_image
 from .types import PixelValues
 from .viz import viz_handler
-from .ptutils import apply_torch_image
 
 if TYPE_CHECKING:
     import torch
@@ -217,7 +217,7 @@ class ResizeTransform(BaseTransform):
             Resized image tensor of shape `[new_height, new_width]` or
             `[new_height, new_width, C]`, matching the channel layout of the input.
         """
-        return apply_torch_image(img, self.h,self.w,self.new_h,self.new_w, self.torch_interp)
+        return apply_torch_image(img, self.h, self.w, self.new_h, self.new_w, self.torch_interp)
 
     def apply_coords(self, coords: npt.NDArray[float32]) -> npt.NDArray[float32]:
         """

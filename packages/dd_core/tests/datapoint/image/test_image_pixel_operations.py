@@ -20,9 +20,9 @@ Testing Image pixel data operations (setting/getting images)
 """
 
 import numpy as np
-from numpy.testing import assert_array_equal
 import pytest
 from lazy_imports import try_import
+from numpy.testing import assert_array_equal
 
 from dd_core.datapoint import Image, convert_np_array_to_b64
 from dd_core.utils.error import ImageError
@@ -33,8 +33,8 @@ from ..conftest import WhiteImage
 with try_import() as import_guard:
     import torch
 
-REQUIRES_PYTORCH = pytest.mark.skipif(not pytorch_available(),
-                                      reason="Requires PyTorch to be installed")
+REQUIRES_PYTORCH = pytest.mark.skipif(not pytorch_available(), reason="Requires PyTorch to be installed")
+
 
 class TestImagePixelOperations:
     """Test Image pixel data handling"""

@@ -29,7 +29,6 @@ from typing import Any, Literal, Mapping, Optional, Sequence, Union
 import numpy as np
 from lazy_imports import try_import
 
-from dd_core.datapoint.image import ImageFormats
 from dd_core.utils import get_torch_device
 from dd_core.utils.env_info import ENV_VARS_TRUE
 from dd_core.utils.file_utils import (
@@ -219,7 +218,6 @@ class DoctrTextlineDetector(DoctrTextlineDetectorMixin):
             A list of `DetectionResult`
         """
         return doctr_predict_text_lines(np_img, self.doctr_predictor)
-
 
     @classmethod
     def get_requirements(cls) -> list[Requirement]:
