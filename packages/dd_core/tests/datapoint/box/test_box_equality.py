@@ -22,7 +22,7 @@ Tests internal storage comparison, float rounding equality, and unhashability.
 
 import pytest
 
-from dd_core import BoundingBox
+from dd_core.datapoint import BoundingBox
 
 
 class TestBBoxEquality:

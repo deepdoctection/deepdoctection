@@ -8,10 +8,9 @@ Init file for deepdoctection package. This file is used to import all submodules
 import sys
 from typing import TYPE_CHECKING, Dict, List
 
-from dd_core.utils.file_utils import _LazyModule
 from dd_core.utils.env_info import collect_env_info
-from dd_core.utils.logger import logger, LoggingRecord
-
+from dd_core.utils.file_utils import _LazyModule
+from dd_core.utils.logger import LoggingRecord, logger
 
 __version__ = "1.0"
 
@@ -137,7 +136,8 @@ logger.debug(LoggingRecord(msg=env_info))
 _extra_objects: Dict[str, object] = {"__version__": __version__}
 
 # Re-export all public attributes from dd_core under deepdoctection namespace
-import dd_core
+import dd_core  # pylint: disable=C0413
+
 for _name in dir(dd_core):
     if _name.startswith("_"):
         continue
@@ -148,14 +148,14 @@ for _name in dir(dd_core):
 
 # Direct imports for type-checking
 if TYPE_CHECKING:
-    from .analyzer import *
-    from .eval import *
-    from .extern import *
-    from .pipe import *
-    from .train import *
-
     from dd_core import *
     from dd_datasets import *
+
+    from .analyzer import *
+    from .eval import *
+    from .extern import *  # type: ignore
+    from .pipe import *
+    from .train import *
 
 else:
     sys.modules[__name__] = _LazyModule(
@@ -163,5 +163,5 @@ else:
         globals()["__file__"],
         _IMPORT_STRUCTURE,
         module_spec=globals().get("__spec__"),
-        extra_objects=_extra_objects
+        extra_objects=_extra_objects,
     )

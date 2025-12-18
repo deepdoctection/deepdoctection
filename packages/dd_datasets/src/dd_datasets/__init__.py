@@ -20,41 +20,34 @@ Dataset base classes, dataflows, adapters etc.
 """
 
 import sys
-
 from typing import TYPE_CHECKING
 
-from dd_core.utils.file_utils import pytorch_available, _LazyModule
-
+from dd_core.utils.file_utils import _LazyModule, pytorch_available
 
 __version__ = "1.0"
 
 _IMPORT_STRUCTURE = {
-    "base": ["DatasetBase",
-             "SplitDataFlow",
-             "MergeDataset",
-             "DatasetCard",
-             "CustomDataset"],
+    "base": ["DatasetBase", "SplitDataFlow", "MergeDataset", "DatasetCard", "CustomDataset"],
     "dataflow_builder": [
-             "DataFlowBaseBuilder",
-             ],
-    "info": ["DatasetInfo",
-             "DatasetCategories",
-             "get_merged_categories"],
-    "registry": ["get_dataset",
-                 "print_dataset_infos"],
+        "DataFlowBaseBuilder",
+    ],
+    "info": ["DatasetInfo", "DatasetCategories", "get_merged_categories"],
+    "registry": ["get_dataset", "print_dataset_infos"],
     "save": ["dataflow_to_json"],
-    "instances": ["DocLayNet",
-                  "DocLayNetSeq",
-                  "Fintabnet",
-                  "Funsd",
-                  "IIITar13K",
-                  "LayoutTest",
-                  "Publaynet",
-                  "Pubtables1MDet",
-                  "Pubtables1MStruct",
-                  "Pubtabnet",
-                  "Rvlcdip",
-                  "Xfund"]
+    "instances": [
+        "DocLayNet",
+        "DocLayNetSeq",
+        "Fintabnet",
+        "Funsd",
+        "IIITar13K",
+        "LayoutTest",
+        "Publaynet",
+        "Pubtables1MDet",
+        "Pubtables1MStruct",
+        "Pubtabnet",
+        "Rvlcdip",
+        "Xfund",
+    ],
 }
 
 if pytorch_available():
@@ -66,9 +59,9 @@ if TYPE_CHECKING:
     from .base import *
     from .dataflow_builder import *
     from .info import *
+    from .instances import *
     from .registry import *
     from .save import *
-    from .instances import *
 
 else:
     sys.modules[__name__] = _LazyModule(
