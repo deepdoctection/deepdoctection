@@ -19,7 +19,7 @@ If you are using TensorFlow, tensorpack must be installed instead.
 
 !!! warning ""
 
-    TensorFlow will not be supported anymore starting from Python 3.11 in **deep**doctection. But also for lower 
+    TensorFlow will not be supported anymore starting from Python 3.10 in **deep**doctection. But also for lower 
     versions, we recommend not using the TensorFlow anymore.
 
 First, we instantiate the **deep**doctection analyzer. We will be using the default configuration.

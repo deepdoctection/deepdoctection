@@ -60,6 +60,9 @@ __all__ = [
     "pdf_to_np_array",
     "split_pdf",
     "load_bytes_from_pdf_file",
+    "PopplerError",
+    "pdf_to_np_array_poppler",
+    "pdf_to_np_array_pdfmium"
 ]
 
 

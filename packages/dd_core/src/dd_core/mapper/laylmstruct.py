@@ -49,6 +49,7 @@ __all__ = [
     "raw_features_to_layoutlm_features",
     "LayoutLMDataCollator",
     "image_to_layoutlm_features",
+    "layoutlm_features_to_pt_tensors",
     "DataCollator",
     "LayoutLMFeatures",
     "image_to_raw_lm_features",

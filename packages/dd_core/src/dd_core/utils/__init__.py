@@ -23,6 +23,8 @@ from .transform import *
 from .utils import *  # only imports defined  in _global_import
 from .viz import *
 
+_logger_mod = importlib.import_module("dd_core.utils.logger")
+
 __all__ = []
 
 
@@ -63,7 +65,7 @@ _global_import("env_info", prefix=("collect_env_info", "SETTINGS"))
 __all__.extend(context.__all__)  # type: ignore
 __all__.extend(fs.__all__)  # type: ignore
 __all__.extend(identifier.__all__)  # type: ignore
-__all__.extend(["logger", "set_logger_dir", "auto_set_dir", "get_logger_dir"])
+__all__.extend(_logger_mod.__all__)  # type: ignore
 __all__.extend(pdf_utils.__all__)  # type: ignore
 __all__.extend(["get_tqdm"])
 __all__.extend(transform.__all__)  # type: ignore
