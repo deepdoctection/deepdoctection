@@ -1,0 +1,55 @@
+# Conda/Mamba environment for deepdoctection with TensorFlow backend
+# This environment includes TensorFlow and related dependencies for deep learning
+#
+# Usage:
+#   conda env create -f environment-tensorflow.yml
+#   conda activate deepdoctection-tensorflow
+#   pip install deepdoctection[tf]
+
+name: deepdoctection-tensorflow
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python>=3.9,<3.12  # TensorFlow compatibility
+  # TensorFlow from conda-forge
+  - tensorflow>=2.10
+  - tensorflow-hub
+  # Core scientific packages from conda-forge
+  - numpy>=2.0
+  - scipy>=1.13.1
+  - pillow>=10.0.0
+  - opencv>=4.8.0
+  - lxml>=4.9.1
+  - networkx>=2.7.1
+  - pyyaml>=6.0.1
+  - packaging>=20.0
+  # Data handling
+  - jsonlines>=3.1.0
+  - tabulate>=0.7.7
+  - tqdm>=4.64.0
+  # Development tools
+  - pip
+  - pip:
+    # Core deepdoctection dependencies
+    - catalogue==2.0.10
+    - huggingface_hub>=0.26.0
+    - lazy-imports==0.3.1
+    - mock==4.0.3
+    - termcolor>=1.1
+    - pypdf>=6.0.0
+    - pypdfium2>=4.30.0
+    - pycocotools>=2.0.2
+    # TensorFlow specific dependencies
+    - protobuf==3.20.1
+    - tensorpack==0.11
+    - tensorflow-addons>=0.17.1
+    - tf2onnx>=1.9.2
+    - python-doctr==0.10.0
+    # Additional utilities
+    - apted==1.0.3
+    - distance==0.1.3
+    - boto3==1.34.102
+    - pdfplumber>=0.11.0
+    - jdeskew>=0.2.2
+    - pyzmq>=16
