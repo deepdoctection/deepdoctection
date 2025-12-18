@@ -110,10 +110,10 @@ def d2_predict_image(
     ]
     return results
 
-def d2_torch_predict_image(torch_img: torch.Tensor,
-                           predictor: nn.Module,
-                           resizer: InferenceResize,
-                           nms_thresh_class_agnostic: float) -> list[DetectionResult]:
+
+def d2_torch_predict_image(
+    torch_img: torch.Tensor, predictor: nn.Module, resizer: InferenceResize, nms_thresh_class_agnostic: float
+) -> list[DetectionResult]:
     """
     Run detection on an image using a torch tensor input. It will also handle the preprocessing internally which
     is using a custom resizing within some bounds. Moreover, and different from the setting where D2 is used
@@ -173,7 +173,6 @@ def d2_torch_jit_predict_image(
     height, width = torch_img.shape[1:3]
     resized_img = resizer.get_transform(torch_img).apply_torch_image(torch_img)
     new_height, new_width = resized_img.shape[:2]
-
 
     image = resized_img.permute(2, 0, 1).to(dtype=torch.float32)
 
@@ -428,8 +427,6 @@ class D2FrcnnDetector(D2FrcnnDetectorMixin):
             self.cfg.NMS_THRESH_CLASS_AGNOSTIC,
         )
         return self._map_category_names(detection_results)
-
-
 
     @classmethod
     def get_requirements(cls) -> list[Requirement]:

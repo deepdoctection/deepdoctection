@@ -25,9 +25,10 @@ from collections import defaultdict
 from dataclasses import dataclass, field
 from os import environ, fspath
 from pathlib import Path
-from typing import Any, Callable, Sequence, TypedDict, Union, Optional
+from typing import Any, Callable, Optional, Sequence, TypedDict, Union
 
 import numpy as np
+from lazy_imports import try_import
 from numpy import uint8
 from pydantic import BaseModel, Field, PrivateAttr, field_validator, model_serializer, model_validator
 
@@ -35,11 +36,18 @@ from ..utils.error import AnnotationError, BoundingBoxError, ImageError
 from ..utils.identifier import get_uuid, is_uuid_like
 from ..utils.logger import LoggingRecord, logger
 from ..utils.object_types import ObjectTypes, SummaryType, get_type
-from ..utils.types import ImageDict, PathLikeOrStr, PixelValues
+from ..utils.types import BoxCoordinate, ImageDict, PathLikeOrStr, PixelValues
 from .annotation import Annotation, AnnotationMap, BoundingBox, CategoryAnnotation, ImageAnnotation
-from .box import BoxCoordinate, crop_box_from_image, global_to_local_coords, intersection_box
-from .convert import (convert_b64_to_np_array, convert_np_array_to_b64,
-                      convert_pdf_bytes_to_np_array_v2, convert_np_array_to_torch)
+from .box import crop_box_from_image, global_to_local_coords, intersection_box
+from .convert import (
+    convert_b64_to_np_array,
+    convert_np_array_to_b64,
+    convert_np_array_to_torch,
+    convert_pdf_bytes_to_np_array_v2,
+)
+
+with try_import() as import_guard:
+    import torch
 
 
 class MetaAnnotationDict(TypedDict):
@@ -100,11 +108,11 @@ class ImageFormats:
     as long as the owning Image instance is alive.
     """
 
-    _owner: Image  # type: ignore[name-defined]
+    _owner: Image
 
     _np: Optional[PixelValues] = None
     _b64: Optional[str] = None
-    _torch_by_device: dict[str, "torch.Tensor"] = field(default_factory=dict)  # type: ignore[name-defined]
+    _torch_by_device: dict[str, torch.Tensor] = field(default_factory=dict)
 
     def _current_np(self) -> Optional[PixelValues]:
         # Prefer cached np, otherwise use owner's live storage.
@@ -145,14 +153,10 @@ class ImageFormats:
         self._b64 = convert_np_array_to_b64(np_img)
         return self._b64
 
-    def to_torch(self, device: Optional["torch.device"] = None) -> "torch.Tensor":  # type: ignore[name-defined]
+    def to_torch(self, device: Optional[torch.device] = None) -> torch.Tensor:
         """
         Return image as torch tensor on the requested device, caching per device.
         """
-        try:
-            import torch  # local import to align with optional dependency
-        except Exception as exc:  # pragma: no cover
-            raise ImportError("torch is not installed.") from exc
 
         if device is None:
             device = torch.device("cpu")
@@ -177,6 +181,7 @@ class ImageFormats:
         self._np = None
         self._b64 = None
         self._torch_by_device.clear()
+
 
 class Image(BaseModel):
     """
@@ -961,48 +966,6 @@ class Image(BaseModel):
             cached = ImageFormats(self)
             object.__setattr__(self, "_image_formats", cached)
         return cached
-
-    def get_image(self) -> Img:  # type: ignore # pylint: disable=E0602
-        """
-        Get the image either in base64 string representation or as `np.array`.
-
-        Example:
-            ```python
-            image.get_image().to_np_array()
-            ```
-
-            or
-
-            ```python
-            image.get_image().to_b64()
-            ```
-
-        Returns:
-            Desired image encoding representation
-        """
-
-        class Img:
-            """Wrapper for image pixel data with simple converters.
-
-            Args:
-                img: Optional numpy array of image pixels.
-            """
-
-            def __init__(self, img: Optional[PixelValues]):
-                """Store optional image pixel array."""
-                self.img = img
-
-            def to_np_array(self) -> Optional[PixelValues]:
-                """Return the stored image as a numpy array or None."""
-                return self.img
-
-            def to_b64(self) -> Optional[str]:
-                """Return the stored image encoded as a base64 string, or None if absent."""
-                if self.img is not None:
-                    return convert_np_array_to_b64(self.img)
-                return self.img
-
-        return Img(self.image)
 
     def save(
         self,

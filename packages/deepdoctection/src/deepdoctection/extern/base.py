@@ -1,4 +1,4 @@
- # -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 # File: base.py
 
 # Copyright 2021 Dr. Janis Meyer. All rights reserved.
@@ -30,7 +30,6 @@ from typing import TYPE_CHECKING, Any, Literal, Mapping, Optional, Sequence, Uni
 import numpy as np
 from lazy_imports import try_import
 
-from dd_core.datapoint.image import ImageFormats
 from dd_core.utils.identifier import get_uuid_from_str
 from dd_core.utils.logger import logger
 from dd_core.utils.object_types import (

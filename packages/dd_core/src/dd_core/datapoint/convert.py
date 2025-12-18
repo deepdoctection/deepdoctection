@@ -27,10 +27,10 @@ from typing import Optional, no_type_check
 from lazy_imports import try_import
 from numpy import uint8
 
+from ..utils.file_utils import pytorch_available
 from ..utils.pdf_utils import pdf_to_np_array
 from ..utils.types import PixelValues
 from ..utils.viz import viz_handler
-from ..utils.file_utils import pytorch_available
 
 with try_import() as pypdf_import_guard:
     from pypdf import PdfReader
