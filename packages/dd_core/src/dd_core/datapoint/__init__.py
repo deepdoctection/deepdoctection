@@ -34,5 +34,5 @@ After all, the point here is not to provide an optimal processing environment.
 from .annotation import *
 from .box import *
 from .convert import *
-from .image import Image, MetaAnnotation, ImageFormats
+from .image import Image, ImageFormats, MetaAnnotation
 from .view import *

@@ -34,7 +34,8 @@ from .utils.file_utils import _LazyModule
 
 __version__ = "1.0"
 
-_IMPORT_STRUCTURE = {"dataflow": [
+_IMPORT_STRUCTURE = {
+    "dataflow": [
         "DataFlowReentrantGuard",
         "DataFlow",
         "RNGDataFlow",
@@ -292,14 +293,12 @@ _IMPORT_STRUCTURE = {"dataflow": [
         "partition_list",
         "draw_boxes",
         "interactive_imshow",
-        "viz_handler"
-    ],}
+        "viz_handler",
+    ],
+}
 
 if TYPE_CHECKING:
-    from . import dataflow
-    from . import datapoint
-    from . import mapper
-    from . import utils
+    from . import dataflow, datapoint, mapper, utils
 
 sys.modules[__name__] = _LazyModule(
     __name__,
