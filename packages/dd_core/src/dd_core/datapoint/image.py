@@ -25,7 +25,7 @@ from collections import defaultdict
 from dataclasses import dataclass, field
 from os import environ, fspath
 from pathlib import Path
-from typing import Any, Callable, Optional, Sequence, TypedDict, Union
+from typing import Any, Callable, Sequence, TypedDict, Union, Optional
 
 import numpy as np
 from numpy import uint8
@@ -38,7 +38,8 @@ from ..utils.object_types import ObjectTypes, SummaryType, get_type
 from ..utils.types import ImageDict, PathLikeOrStr, PixelValues
 from .annotation import Annotation, AnnotationMap, BoundingBox, CategoryAnnotation, ImageAnnotation
 from .box import BoxCoordinate, crop_box_from_image, global_to_local_coords, intersection_box
-from .convert import convert_b64_to_np_array, convert_np_array_to_b64, convert_pdf_bytes_to_np_array_v2
+from .convert import (convert_b64_to_np_array, convert_np_array_to_b64,
+                      convert_pdf_bytes_to_np_array_v2, convert_np_array_to_torch)
 
 
 class MetaAnnotationDict(TypedDict):
@@ -89,6 +90,93 @@ class MetaAnnotation:
             "summaries": [obj.value for obj in self.summaries],
         }
 
+
+@dataclass
+class ImageFormats:
+    """
+    Lazy cache for multiple image representations for a single Image instance.
+
+    Cached representations are created only when requested and then retained
+    as long as the owning Image instance is alive.
+    """
+
+    _owner: Image  # type: ignore[name-defined]
+
+    _np: Optional[PixelValues] = None
+    _b64: Optional[str] = None
+    _torch_by_device: dict[str, "torch.Tensor"] = field(default_factory=dict)  # type: ignore[name-defined]
+
+    def _current_np(self) -> Optional[PixelValues]:
+        # Prefer cached np, otherwise use owner's live storage.
+        if self._np is not None:
+            return self._np
+        return self._owner.image
+
+    def to_np_array(self) -> Optional[PixelValues]:
+        """
+        Return image as numpy array, caching it if it can be derived.
+        """
+        if self._np is not None:
+            return self._np
+
+        np_img = self._owner.image
+        if np_img is not None:
+            self._np = np_img
+            return self._np
+
+        # If there is no numpy image stored, attempt to derive from a cached b64 (if any).
+        if self._b64 is not None:
+            self._np = convert_b64_to_np_array(self._b64)
+            return self._np
+
+        return None
+
+    def to_b64(self) -> Optional[str]:
+        """
+        Return image as base64 string, caching it if needed.
+        """
+        if self._b64 is not None:
+            return self._b64
+
+        np_img = self.to_np_array()
+        if np_img is None:
+            return None
+
+        self._b64 = convert_np_array_to_b64(np_img)
+        return self._b64
+
+    def to_torch(self, device: Optional["torch.device"] = None) -> "torch.Tensor":  # type: ignore[name-defined]
+        """
+        Return image as torch tensor on the requested device, caching per device.
+        """
+        try:
+            import torch  # local import to align with optional dependency
+        except Exception as exc:  # pragma: no cover
+            raise ImportError("torch is not installed.") from exc
+
+        if device is None:
+            device = torch.device("cpu")
+
+        device_key = str(device)
+        cached = self._torch_by_device.get(device_key)
+        if cached is not None:
+            return cached
+
+        np_img = self.to_np_array()
+        if np_img is None:
+            raise ImageError("Cannot convert to torch: no image pixels available")
+
+        tensor = convert_np_array_to_torch(np_img, device=device)
+        self._torch_by_device[device_key] = tensor
+        return tensor
+
+    def clear(self) -> None:
+        """
+        Clear cached derived representations (does not modify Image.image).
+        """
+        self._np = None
+        self._b64 = None
+        self._torch_by_device.clear()
 
 class Image(BaseModel):
     """
@@ -221,7 +309,7 @@ class Image(BaseModel):
         return out
 
     @model_validator(mode="after")
-    def _setup_ids(self) -> "Image":
+    def _setup_ids(self) -> Image:
         if self._image_id is None:
             if self.external_id is not None:
                 ext = str(self.external_id)
@@ -279,6 +367,9 @@ class Image(BaseModel):
             image: Accepts `np.array`s, `base64` encodings or `bytes` generated from pdf documents.
                    Everything else will be rejected.
         """
+
+        object.__setattr__(self, "_image_formats", None)
+
         if isinstance(image, str):
             self._image = convert_b64_to_np_array(image)
             self.set_width_height(self._image.shape[1], self._image.shape[0])
@@ -857,6 +948,19 @@ class Image(BaseModel):
         if summary_key is not None:
             if annotation.image is not None:
                 annotation.image.summary.remove_sub_category(summary_key)
+
+    def get_image(self) -> ImageFormats:
+        """
+        Get a lazy image format cache bound to this Image instance.
+
+        The returned object caches derived representations (b64, torch tensors)
+        on demand and keeps them until this Image instance is garbage-collected.
+        """
+        cached = getattr(self, "_image_formats", None)
+        if cached is None:
+            cached = ImageFormats(self)
+            object.__setattr__(self, "_image_formats", cached)
+        return cached
 
     def get_image(self) -> Img:  # type: ignore # pylint: disable=E0602
         """
