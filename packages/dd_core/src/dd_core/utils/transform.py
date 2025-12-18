@@ -25,7 +25,7 @@ from __future__ import annotations
 
 import inspect
 from abc import ABC, abstractmethod
-from typing import Literal, Optional, Set, Union
+from typing import Literal, Optional, Set, Union, TYPE_CHECKING
 
 import numpy as np
 import numpy.typing as npt
@@ -34,6 +34,10 @@ from numpy import float32
 from .object_types import ObjectTypes, PageType
 from .types import PixelValues
 from .viz import viz_handler
+from .ptutils import apply_torch_image
+
+if TYPE_CHECKING:
+    import torch
 
 __all__ = [
     "point4_to_box",
@@ -169,6 +173,18 @@ class ResizeTransform(BaseTransform):
         self.new_w = int(new_w)
         self.interp = interp
 
+        # Map interp string to torch mode
+        interp_map = {
+            "NEAREST": "nearest",
+            "INTER_NEAREST": "nearest",
+            "BILINEAR": "bilinear",
+            "INTER_LINEAR": "bilinear",
+            "BICUBIC": "bicubic",
+            "INTER_AREA": "area",
+            "VIZ": "bilinear",
+        }
+        self.torch_interp = interp_map.get(interp, "bilinear")
+
     def apply_image(self, img: PixelValues) -> PixelValues:
         """
         Apply the resize transformation to the image.
@@ -187,6 +203,21 @@ class ResizeTransform(BaseTransform):
         if img.ndim == 3 and ret.ndim == 2:
             ret = ret[:, :, np.newaxis]
         return ret
+
+    def apply_torch_image(self, img: torch.Tensor) -> torch.Tensor:
+        """
+        Apply the resize transformation to a PyTorch tensor image.
+
+        Args:
+            img: Input image tensor of shape `[H, W]` or `[H, W, C]`, where `H` and `W` must
+                match `self.h` and `self.w`. The tensor is expected to be on a valid device
+                and of a floating or integer type supported by `torch.nn.functional.interpolate`.
+
+        Returns:
+            Resized image tensor of shape `[new_height, new_width]` or
+            `[new_height, new_width, C]`, matching the channel layout of the input.
+        """
+        return apply_torch_image(img, self.h,self.w,self.new_h,self.new_w, self.torch_interp)
 
     def apply_coords(self, coords: npt.NDArray[float32]) -> npt.NDArray[float32]:
         """
@@ -239,7 +270,7 @@ class InferenceResize:
         self.max_size = max_size
         self.interp = interp
 
-    def get_transform(self, img: PixelValues) -> ResizeTransform:
+    def get_transform(self, img: Union[PixelValues, torch.Tensor]) -> ResizeTransform:
         """
         Get the `ResizeTransform` for the image.
 
