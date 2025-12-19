@@ -483,6 +483,9 @@ cfg.USE_LAYOUT_LINK = False
 # (e.g., by grouping orphan text containers). Only applicable if list items were previously grouped.
 cfg.USE_LINE_MATCHER = False
 
+# Enables a language detection pipeline component. We use sequence classification models from Transformers.
+cfg.USE_LM_LANGUAGE_DETECTION = False
+
 # Enables a sequence classification pipeline component, e.g. a LayoutLM or a Bert-like model.
 cfg.USE_LM_SEQUENCE_CLASS = False
 
@@ -843,6 +846,8 @@ cfg.LAYOUT_LINK.PARENTAL_CATEGORIES = [LayoutType.FIGURE, LayoutType.TABLE]
 # These are typically smaller or subordinate elements (e.g., captions).
 cfg.LAYOUT_LINK.CHILD_CATEGORIES = [LayoutType.CAPTION]
 
+# Weights configuration for language detection model.
+cfg.LM_LANGUAGE_DETECT_CLASS.WEIGHTS = None
 
 # Weights configuration for sequence classifier. This will be a fine-tuned version of a LayoutLM, LayoutLMv2,
 # LayoutXLM, LayoutLMv3, LiLT or Roberta base model for sequence classification.

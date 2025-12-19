@@ -46,7 +46,7 @@ from ..extern.hflayoutlm import (
     HFLiltTokenClassifier,
     get_tokenizer_from_model_class,
 )
-from ..extern.hflm import HFLmSequenceClassifier, HFLmTokenClassifier
+from ..extern.hflm import HFLmSequenceClassifier, HFLmTokenClassifier, HFLmLanguageDetector
 from ..extern.model import ModelCatalog, ModelDownloadManager, ModelProfile
 from ..extern.pdftext import PdfPlumberTextDetector
 from ..extern.tessocr import TesseractOcrDetector, TesseractRotationTransformer
@@ -61,6 +61,7 @@ from ..pipe.common import (
     PageParsingService,
 )
 from ..pipe.doctectionpipe import DoctectionPipe
+from ..pipe.language import LanguageDetectionService
 from ..pipe.layout import ImageLayoutService, skip_if_category_or_service_extracted
 from ..pipe.lm import LMSequenceClassifierService, LMTokenClassifierService
 from ..pipe.order import TextOrderService
@@ -75,7 +76,7 @@ with try_import() as image_guard:
 
 if TYPE_CHECKING:
     from ..extern.hflayoutlm import LayoutSequenceModels, LayoutTokenModels
-    from ..extern.hflm import LmSequenceModels, LmTokenModels
+    from ..extern.hflm import LmSequenceModels, LmTokenModels, HFLmLanguageDetector
 
     RotationTransformer = Union[TesseractRotationTransformer, DocTrRotationTransformer]
 
@@ -1245,6 +1246,111 @@ class ServiceFactory:
         return ServiceFactory._build_text_order_service(**text_order_service_kwargs)
 
     @staticmethod
+    def _get_language_detector_kwargs_from_config(config: AttrDict) -> dict[str, Any]:
+        """
+        Extracting language detector kwargs from config.
+
+        Args:
+            config: Configuration object.
+        """
+        config_path = ModelCatalog.get_full_path_configs(config.LM_LANGUAGE_DETECT_CLASS.WEIGHTS)
+        weights_path = ModelDownloadManager.maybe_download_weights_and_configs(
+            config.LM_LANGUAGE_DETECT_CLASS.WEIGHTS
+        )
+        profile = ModelCatalog.get_profile(config.LM_LANGUAGE_DETECT_CLASS.WEIGHTS)
+        categories = profile.categories if profile.categories is not None else {}
+        use_xlm_tokenizer = "xlm_tokenizer" == profile.architecture
+
+        return {
+            "config_path": config_path,
+            "weights_path": weights_path,
+            "categories": categories,
+            "device": config.DEVICE,
+            "use_xlm_tokenizer": use_xlm_tokenizer,
+            "model_wrapper": profile.model_wrapper,
+        }
+
+    @staticmethod
+    def _build_language_detector(
+        config_path: str,
+        weights_path: str,
+        categories: Mapping[int, Union[ObjectTypes, str]],
+        device: Literal["cuda", "cpu"],
+        use_xlm_tokenizer: bool,
+        model_wrapper: str,
+    ) -> HFLmLanguageDetector:
+        """
+        Builds and returns a language detector instance.
+
+        Args:
+            config_path: Path to model configuration.
+            weights_path: Path to model weights.
+            categories: Model categories mapping.
+            device: Device to run model on.
+            use_xlm_tokenizer: Whether to use XLM tokenizer.
+            model_wrapper: Model wrapper class name.
+
+        Returns:
+            A language detector instance.
+        """
+        if model_wrapper in ("HFLmLanguageDetector",):
+
+            return HFLmLanguageDetector(
+                path_config_json=config_path,
+                path_weights=weights_path,
+                categories=categories,
+                device=device,
+                use_xlm_tokenizer=use_xlm_tokenizer,
+            )
+
+        raise ValueError(f"Unsupported language detector model wrapper: {model_wrapper}")
+
+
+    @staticmethod
+    def build_language_detector(config: AttrDict) -> HFLmLanguageDetector:
+        """
+        Builds and returns a language detector instance.
+
+        Args:
+            config: Configuration object that determines the type of language detector to construct.
+
+        Returns:
+            A language detector instance constructed according to the specified configuration.
+        """
+        language_detector_kwargs = ServiceFactory._get_language_detector_kwargs_from_config(config)
+        return ServiceFactory._build_language_detector(**language_detector_kwargs)
+
+
+    @staticmethod
+    def _build_language_detection_service(language_detector: Any) -> LanguageDetectionService:
+        """
+        Building a language detection service.
+
+        Args:
+            language_detector: Language detector instance.
+
+        Returns:
+            LanguageDetectionService: Language detection service instance.
+        """
+
+        return LanguageDetectionService(language_detector=language_detector)
+
+    @staticmethod
+    def build_language_detection_service(config: AttrDict) -> LanguageDetectionService:
+        """
+        Building a language detection service.
+
+        Args:
+            config: Configuration object.
+
+        Returns:
+            LanguageDetectionService: Language detection service instance.
+        """
+        language_detector = ServiceFactory.build_language_detector(config)
+        return ServiceFactory._build_language_detection_service(language_detector)
+
+
+    @staticmethod
     def _get_sequence_classifier_kwargs_from_config(config: AttrDict) -> dict[str, Any]:
         """
         Extracting sequence classifier kwargs from config.
@@ -1694,6 +1800,10 @@ class ServiceFactory:
         if config.USE_LINE_MATCHER:
             line_list_matching_service = ServiceFactory.build_line_matching_service(config)
             pipe_component_list.append(line_list_matching_service)
+
+        if config.USE_LM_LANGUAGE_DETECTION:
+            language_detection_service = ServiceFactory.build_language_detection_service(config)
+            pipe_component_list.append(language_detection_service)
 
         if config.USE_LM_SEQUENCE_CLASS:
             sequence_classifier = ServiceFactory.build_sequence_classifier(config)
