@@ -57,6 +57,12 @@ qa: analyze check-lint-and-format ## Run full QA suite (types, lint, format)
 format: ## Auto-format all Python code. Set R=1 to recreate tox envs
 	tox -c packages/tox.ini -e py310-format-all $(TOX_R)
 
+install-dd: check-venv ## Install editable packages with extras
+	pip install --no-build-isolation "detectron2 @ git+https://github.com/deepdoctection/detectron2.git"
+	pip install -e ./packages/dd_core[full]
+	pip install -e ./packages/dd_datasets[full]
+	pip install -e ./packages/deepdoctection[full]
+
 install-dd-dev: check-venv ## Install dev editable packages with extras
 	pip install --no-build-isolation "detectron2 @ git+https://github.com/deepdoctection/detectron2.git"
 	pip install -e ./packages/dd_core[full,dev,test]
