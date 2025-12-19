@@ -10,6 +10,11 @@ build:
     os: ubuntu-24.04
     tools:
         python: "3.10"
+    apt_packages:
+      - git-lfs
+    commands:
+      - git lfs install
+      - git lfs pull
 
 # Build documentation in the docs/ directory with Mkdocs
 mkdocs:
