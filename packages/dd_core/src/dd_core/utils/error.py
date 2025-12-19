@@ -92,3 +92,20 @@ class TesseractError(RuntimeError):
         self.status = status
         self.message = message
         self.args = (status, message)
+
+
+class PopplerError(RuntimeError):
+    """
+    Poppler Error.
+    """
+
+    def __init__(self, status: int, message: str) -> None:
+        """
+        Args:
+            status: Error status code.
+            message: Error message.
+        """
+        super().__init__()
+        self.status = status
+        self.message = message
+        self.args = (status, message)

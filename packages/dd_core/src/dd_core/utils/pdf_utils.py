@@ -36,7 +36,7 @@ from numpy import uint8
 
 from .context import save_tmp_file, timeout_manager
 from .env_info import ENV_VARS_TRUE
-from .error import DependencyError, FileExtensionError
+from .error import DependencyError, FileExtensionError, PopplerError
 from .file_utils import pdf_to_cairo_available, pdf_to_ppm_available, pypdf_available, qpdf_available
 from .logger import LoggingRecord, logger
 from .types import B64, PathLikeOrStr, PixelValues
@@ -291,23 +291,6 @@ def _input_to_cli_str(
         cmd_args.extend(["-scale-to-y", str(size[1])])
 
     return cmd_args
-
-
-class PopplerError(RuntimeError):
-    """
-    Poppler Error.
-    """
-
-    def __init__(self, status: int, message: str) -> None:
-        """
-        Args:
-            status: Error status code.
-            message: Error message.
-        """
-        super().__init__()
-        self.status = status
-        self.message = message
-        self.args = (status, message)
 
 
 def _run_poppler(poppler_args: list[str]) -> None:

@@ -66,7 +66,7 @@ OCR:
   USE_TESSERACT: false
   USE_TEXTRACT: false
   WEIGHTS:
-    DOCTR_RECOGNITION: doctr/crnn_vgg16_bn/crnn_vgg16_bn-9762b0b0.pt
+    DOCTR_RECOGNITION: doctr/crnn_vgg16_bn/crnn_vgg16_bn-0417f351.pt
     DOCTR_WORD: doctr/db_resnet50/db_resnet50-ac60cadc.pt
 PDF_MINER:
   X_TOLERANCE: 3
