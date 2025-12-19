@@ -220,6 +220,15 @@ class ImageAnnotationBaseView:
         return None
 
     @property
+    def np_image(self) -> Optional[PixelValues]:
+        """
+        Returns:
+            np.array of the image if available, otherwise None.
+        """
+        if self._image_annotation.image is not None:
+            return self._image_annotation.image.image
+
+    @property
     def bbox(self) -> list[float]:
         """
         Get the bounding box as list and in absolute `xyxy`-coordinates of the base page.
@@ -1450,10 +1459,13 @@ class Page:
             )
 
         if debug_kwargs:
-            anns = self.get_annotation(category_names=list(debug_kwargs.keys()))
+            if "annotation_ids" in debug_kwargs:
+                anns = self.get_annotation(annotation_ids=debug_kwargs["annotation_ids"])
+            else:
+                anns = self.get_annotation(category_names=list(debug_kwargs.keys()))
             for ann in anns:
                 box_stack.append(self._ann_viz_bbox(ann))
-                val = str(getattr(ann, debug_kwargs[ann.category_name]))
+                val = str(getattr(ann, debug_kwargs.get(ann.category_name, "category_name")))
                 category_names_list.append((val, val))
 
         if show_layouts and not debug_kwargs:

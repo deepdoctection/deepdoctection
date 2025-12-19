@@ -96,7 +96,7 @@ def get_dd_analyzer(
         device = None
 
     cfg.freeze(freezed=False)
-    if load_default_config_file:
+    if load_default_config_file or path_config_file:
         # Set up of the configuration and logging
         file_cfg = set_config_by_yaml(os.environ["DD_ONE_CONFIG"] if not path_config_file else path_config_file)
         cfg.overwrite_config(file_cfg)

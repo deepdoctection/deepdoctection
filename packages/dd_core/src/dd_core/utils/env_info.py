@@ -16,56 +16,125 @@
 # limitations under the License.
 
 """
-Function for collecting environment information.
+Utilities for collecting runtime and environment information and for centralizing
+deepdoctection settings.
 
-This is also the place where we give an overview of some environment variables.
+Environment variable usage
+--------------------------
+Settings are loaded from the environment (and from a `.env` file by default).
+Boolean-like environment values are interpreted using the allowed true values:
 
-For env variables with boolean character, use one of the following values:
+    {"1", "True", "TRUE", "true", "yes"}
 
-```python
-{"1", "True", "TRUE", "true", "yes"}
-```
+After `EnvSettings` is created, `SETTINGS.export_to_environ()` writes the
+effective values back to `os.environ` using the mapping below. The mapping
+controls what legacy modules see; booleans are exported as the strings
+`"True"`/`"False"`, and `None` values are not exported.
 
-```python
-USE_PYTORCH
-USE_CUDA
-USE_MPS
-```
+Exported environment variables (names and meaning)
+- `LOG_LEVEL` (str)
+    Global logging level (default: `INFO`). Use `DEBUG` for a verbose logging.
 
-are responsible for selecting the predictors based on the installed DL framework and available devices.
-It is not recommended to touch them.
+- `LOG_PROPAGATE` (bool)
+    Whether log records should propagate to parent loggers (default: `False`).
 
-```python
-USE_DD_PILLOW
-USE_DD_OPENCV
-```
+- `FILTER_THIRD_PARTY_LIB` (bool)
+    Whether to filter third-party library output in logs (default: `False`).
 
-decide what image processing library the `viz_handler` should use. The default library is PIL and OpenCV need
-to be installed separately. However, if both libraries have been detected `viz_handler` will opt for OpenCV.
-Use the variables to let choose `viz_handler` according to your preferences.
+- `STD_OUT_VERBOSE` (bool)
+    Increase verbosity for stdout output (default: `False`). Especially useful to
+    understand, if the `DatapointManager` has issues to add `Annotation`s to an `Image`.
 
-```python
-USE_DD_POPPLER
-USE_DD_PDFIUM
-```
+- `HF_CREDENTIALS` (Secret / sensitive)
+    Hugging Face credentials used by the `ModelDownloadManager`. Treated as a secret.
 
-For PDF rendering we use PyPDFium2 as default but for legacy reasons, we also support Poppler. If you want to enforce
-Poppler set one to `USE_DD_POPPLER=True` and `USE_DD_PDFIUM=False` the other to `False`.
+- `MODEL_CATALOG` (str / path)
+    Optional path to a `.jsonl` model catalog (default: `None`). This will add your (custom)
+    models to the `ModelCatalog`. Do not confuse with `MODEL_CATALOG_BASE`.
 
-```python
-HF_CREDENTIALS
-```
+- `DD_USE_TORCH` (bool)
+    Internal toggle to prefer deepdoctection's Torch-based predictors (default: auto).
+    Mainly there, for historical reasons.
 
-will be used by the `ModelDownloadManager` to pass your credentials if you have a model registered that resides in a
-private repo.
+- `USE_TORCH` (bool)
+    Whether Torch should be used (default: enabled when PyTorch is available). Also
+    used in other Libs, so do not touch.
 
-```python
-MODEL_CATALOG
-```
+- `PYTORCH_AVAILABLE` (bool)
+    Read-only detection of whether PyTorch is installed.
 
-can store an (absolute) path to a `.jsonl` file.
+- `USE_CUDA` (bool)
+    Whether to prefer CUDA devices (default: auto-detected from PyTorch). This will be
+    set to `True`, if a GPU can be found.
+
+- `USE_MPS` (bool)
+    Whether to prefer Apple's MPS backend (default: auto-detected from PyTorch).
+    This will be set to `True`, if available.
+
+- `USE_DD_PILLOW` (bool)
+    Prefer Pillow for viz handling (default: `True` unless OpenCV detected). Pillow will be installed by default
+
+
+- `USE_DD_OPENCV` (bool)
+    Prefer OpenCV for viz handling (default: `True` when OpenCV is available).
+    Note, that OpenCV will have to be installed independently.
+
+- `USE_DD_PDFIUM` (bool)
+    Prefer PyPDFium2 for PDF rendering (default: auto-detected when available). This is also the default choice.
+
+
+- `USE_DD_POPPLER` (bool)
+    Prefer Poppler-based rendering (legacy option; used if pdfium not available). Note, that Poppler wheels cannot
+    by installed by any Python package and have to be installed separately.
+
+- `DPI` (int)
+    Default DPI used for rendering (default: `300`). The default setting is very high and for historical
+    reasons we will be keeping this value, even though we recommend 200
+
+- `IMAGE_WIDTH` (int)
+    Optional default image width (default: `0`). Only relevant when rendering with Poppler.
+
+- `IMAGE_HEIGHT` (int)
+    Optional default image height (default: `0`). Only relevant when rendering with Poppler.
+
+- `MODEL_CATALOG_BASE` (path)
+    Path computed as `CONFIGS_DIR / profiles target` (exported for compatibility). There is no need to adjust
+    this path.
+
+- `DD_ONE_CONFIG` (path)
+    Path to the `dd_analyzer` configuration in the configs directory (exported for compatibility).
+
+- `DEEPDOCTECTION_CACHE` (path)
+    Root cache directory for deepdoctection (default: `~/.cache/deepdoctection`).
+
+- `MODEL_DIR` (path)
+    Directory for downloaded model weights (default: `DEEPDOCTECTION_CACHE/weights`).
+
+- `CONFIGS_DIR` (path)
+    Directory for config files (default: `DEEPDOCTECTION_CACHE/configs`).
+
+- `DATASET_DIR` (path)
+    Directory for datasets (default: `DEEPDOCTECTION_CACHE/datasets`).
+
+- `PATH_DD_PACKAGE` (path)
+    Filesystem path to the installed deepdoctection package root.
+
+Notes and behavior
+- The pydantic settings loader reads `.env` by default (see `EnvSettings.model_config`).
+- If a user explicitly sets a setting via environment or `.env`, that value is respected;
+  otherwise runtime detection (e.g., presence of PyTorch, OpenCV, pdf backends) will
+  determine defaults.
+- When exporting, boolean values are written as the strings `True`/`False`. `None` is not exported.
+- Secret values (e.g., `HF_CREDENTIALS`) are treated as sensitive and are redacted by helper
+  text-dumping utilities.
+- To customize behavior you may set any of the above variables in your shell, for example:
+
+    export LOG_LEVEL=DEBUG
+    export USE_DD_OPENCV=true
+    export DEEPDOCTECTION_CACHE=/path/to/cache
 
 """
+
 from __future__ import annotations
 
 import importlib

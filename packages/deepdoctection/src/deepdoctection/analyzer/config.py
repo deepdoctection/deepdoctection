@@ -438,8 +438,7 @@ cfg = AttrDict()
 # Note: models must be downloaded in advance.
 cfg.LANGUAGE = None
 
-# Deep learning framework. Choose either 'TF' (TensorFlow) or 'PT' (PyTorch).
-# Selection is made via environment variables: DD_USE_TF or DD_USE_PT.
+# Deep learning framework. Choose 'PT' (PyTorch) or None.
 cfg.LIB = None
 
 # Device configuration.
@@ -452,7 +451,7 @@ cfg.DEVICE = None
 cfg.USE_ROTATOR = False
 
 # Enables layout analysis component (second in the pipeline) for either full document layout analysis (DLA)
-# or single-object detection. Additional configurations via PT.LAYOUT.*, TF.LAYOUT.*, and PT.ENFORCE_WEIGHTS.LAYOUT.
+# or single-object detection. Additional configurations via LAYOUT.*, LAYOUT.*, and ENFORCE_WEIGHTS.LAYOUT.
 cfg.USE_LAYOUT = True
 
 # Enables optional fine-grained Non-Maximum Suppression (NMS) after layout detection.
@@ -461,7 +460,7 @@ cfg.USE_LAYOUT_NMS = True
 
 # Enables table segmentation (third and later pipeline components).
 # Applies row/column detection, optional cell detection, and segmentation services.
-# Configure sub-services via PT.ITEM.*, TF.ITEM.*, PT.CELL.*, TF.CELL.*, and SEGMENTATION.*
+# Configure sub-services via ITEM.*, ITEM.*, CELL.*, CELL.*, and SEGMENTATION.*
 cfg.USE_TABLE_SEGMENTATION = True
 
 # Enables optional refinement of table structure to ensure valid HTML generation.
@@ -497,9 +496,9 @@ cfg.ROTATOR.MODEL = "tesseract"
 # Relevant when LIB = PT. Allows selection between two model formats:
 # 1. Standard PyTorch weights (.pt or .safetensors), or
 # 2. TorchScript weights (.ts), which require only the Torch runtime and not the model implementation.
-# If PT.ENFORCE_WEIGHTS.LAYOUT is set to True, PT.LAYOUT.WEIGHTS will take precedence.
-# The get_dd_analyzer() function will set PT.ENFORCE_WEIGHTS.LAYOUT = False automatically
-# if Detectron2 is not installed or PT.LAYOUT.WEIGHTS is None.
+# If ENFORCE_WEIGHTS.LAYOUT is set to True, LAYOUT.WEIGHTS will take precedence.
+# The get_dd_analyzer() function will set ENFORCE_WEIGHTS.LAYOUT = False automatically
+# if Detectron2 is not installed or LAYOUT.WEIGHTS is None.
 cfg.ENFORCE_WEIGHTS.LAYOUT = True
 
 # Specifies the PyTorch layout detection model (standard weights).
@@ -664,7 +663,7 @@ cfg.SEGMENTATION.THRESHOLD_ROWS = 0.4
 cfg.SEGMENTATION.THRESHOLD_COLS = 0.4
 
 # Removes overlapping rows based on an IoU threshold.
-# Helps prevent multiple row spans caused by overlapping detections.
+# Helps to prevent multiple row spans caused by overlapping detections.
 # Note: for better alignment, SEGMENTATION.FULL_TABLE_TILING can be enabled.
 # Using a low threshold here may result in a very coarse grid.
 cfg.SEGMENTATION.REMOVE_IOU_THRESHOLD_ROWS = 0.2
