@@ -79,12 +79,7 @@ def _mk_dummy_tokenizer() -> Any:
 @REQUIRES_PT_AND_TR
 def test_hflm_sequence_predict_basic(monkeypatch: pytest.MonkeyPatch) -> None:
     """test sequence classification using mocked tokenizers and models."""
-    # Avoid network tokenizer download during ctor
-    monkeypatch.setattr(
-        "deepdoctection.extern.hflm.get_tokenizer_from_model_class",
-        lambda cls, use_xlm: _mk_dummy_tokenizer(),
-        raising=True,
-    )
+
     # Mock model construction (no real weights/model)
     monkeypatch.setattr(
         "deepdoctection.extern.hflm.HFLmSequenceClassifier.get_wrapped_model",
@@ -119,11 +114,7 @@ def test_hflm_sequence_predict_basic(monkeypatch: pytest.MonkeyPatch) -> None:
 @REQUIRES_PT_AND_TR
 def test_hflm_token_predict_basic(monkeypatch: pytest.MonkeyPatch) -> None:
     """test token classification using mocked tokenizers and models."""
-    monkeypatch.setattr(
-        "deepdoctection.extern.hflm.get_tokenizer_from_model_class",
-        lambda cls, use_xlm: _mk_dummy_tokenizer(),
-        raising=True,
-    )
+
     monkeypatch.setattr(
         "deepdoctection.extern.hflm.HFLmTokenClassifier.get_wrapped_model",
         MagicMock(return_value=MagicMock()),
@@ -150,7 +141,6 @@ def test_hflm_token_predict_basic(monkeypatch: pytest.MonkeyPatch) -> None:
         "path/to/weights",
         categories=categories,
         device="cpu",
-        use_xlm_tokenizer=True,
     )
 
     inputs = {
@@ -193,7 +183,7 @@ def test_hflm_language_predict_basic(monkeypatch: pytest.MonkeyPatch) -> None:
     """test language detection using mocked tokenizers and models."""
     # Avoid network tokenizer download during ctor
     monkeypatch.setattr(
-        "transformers.XLMRobertaTokenizerFast.from_pretrained",
+        "transformers.AutoTokenizer.from_pretrained",
         lambda *args, **kwargs: _mk_dummy_fast_tokenizer(),
         raising=True,
     )
@@ -226,12 +216,7 @@ def test_hflm_language_predict_basic(monkeypatch: pytest.MonkeyPatch) -> None:
 @REQUIRES_PT_AND_TR
 def test_hflm_sequence_validate_encodings_errors(monkeypatch: pytest.MonkeyPatch) -> None:
     """test sequence classification using mocked tokenizers and models."""
-    # Avoid tokenizer resolution during ctor (model class is MagicMock)
-    monkeypatch.setattr(
-        "deepdoctection.extern.hflm.get_tokenizer_from_model_class",
-        lambda cls, use_xlm: _mk_dummy_tokenizer(),
-        raising=True,
-    )
+
     # Mock model construction
     monkeypatch.setattr(
         "deepdoctection.extern.hflm.HFLmSequenceClassifier.get_wrapped_model",
@@ -254,12 +239,7 @@ def test_hflm_sequence_validate_encodings_errors(monkeypatch: pytest.MonkeyPatch
 @REQUIRES_PT_AND_TR
 def test_hflm_token_validate_encodings_errors(monkeypatch: pytest.MonkeyPatch) -> None:
     """test token classification using mocked tokenizers and models."""
-    # Avoid tokenizer resolution during ctor (model class is MagicMock)
-    monkeypatch.setattr(
-        "deepdoctection.extern.hflm.get_tokenizer_from_model_class",
-        lambda cls, use_xlm: _mk_dummy_tokenizer(),
-        raising=True,
-    )
+
     # Mock model construction
     monkeypatch.setattr(
         "deepdoctection.extern.hflm.HFLmTokenClassifier.get_wrapped_model",

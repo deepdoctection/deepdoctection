@@ -21,6 +21,7 @@
 
 import os
 from dataclasses import asdict, dataclass, field
+from pathlib import Path
 from typing import Any, Mapping, Optional, Union
 
 import jsonlines
@@ -178,6 +179,26 @@ class ModelCatalog:
         return (SETTINGS.CONFIGS_DIR / name).as_posix()
 
     @staticmethod
+    def get_full_path_configs_dir(name: PathLikeOrStr) -> PathLikeOrStr:
+        """
+        Retrieves the full path of the configurations directory for the given name.
+
+        This method checks if the inferred parent directory of the specified name
+        exists as a directory. If it does, it returns the full path in string format.
+        Otherwise, it raises a NotADirectoryError.
+
+        Args:
+            name: model name
+
+        Returns:
+            Absolute path to the config directory
+        """
+        maybe_configs_dir = Path(ModelCatalog.get_full_path_configs(name)).parent
+        if maybe_configs_dir.exists():
+            return maybe_configs_dir.as_posix()
+        raise NotADirectoryError(f"No configs directory found for {name}")
+
+    @staticmethod
     def get_full_path_preprocessor_configs(name: Union[str]) -> PathLikeOrStr:
         """
         Return the absolute path of preprocessor configs for some given weights. Preprocessor are occasionally provided
@@ -304,7 +325,6 @@ ModelCatalog.load_profiles_from_file(os.environ["MODEL_CATALOG_BASE"])
 
 # Additional profiles can be added
 ModelCatalog.load_profiles_from_file(os.environ.get("MODEL_CATALOG"))
-
 
 
 def print_model_infos(add_description: bool = True, add_config: bool = True, add_categories: bool = True) -> None:

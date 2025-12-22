@@ -62,12 +62,7 @@ def _mk_dummy_tokenizer() -> Any:
 @REQUIRES_PT_AND_TR
 def test_layoutlm_sequence_predict_basic(monkeypatch: pytest.MonkeyPatch) -> None:
     """Test basic sequence prediction with a mocked LayoutLM model."""
-    # Avoid network tokenizer download during ctor
-    monkeypatch.setattr(
-        "deepdoctection.extern.hflayoutlm.get_tokenizer_from_model_class",
-        lambda cls, use_xlm: _mk_dummy_tokenizer(),
-        raising=True,
-    )
+
     # Mock model construction (no real weights/model)
     monkeypatch.setattr(
         "deepdoctection.extern.hflayoutlm.HFLayoutLmSequenceClassifier.get_wrapped_model",
@@ -109,11 +104,7 @@ def test_layoutlm_sequence_predict_basic(monkeypatch: pytest.MonkeyPatch) -> Non
 @REQUIRES_PT_AND_TR
 def test_layoutlm_v2_sequence_predict_basic(monkeypatch: pytest.MonkeyPatch) -> None:
     """Test basic sequence prediction with a mocked LayoutLM model."""
-    monkeypatch.setattr(
-        "deepdoctection.extern.hflayoutlm.get_tokenizer_from_model_class",
-        lambda cls, use_xlm: _mk_dummy_tokenizer(),
-        raising=True,
-    )
+
     monkeypatch.setattr(
         "deepdoctection.extern.hflayoutlm.HFLayoutLmv2SequenceClassifier.get_wrapped_model",
         MagicMock(return_value=MagicMock()),
@@ -154,11 +145,7 @@ def test_layoutlm_v2_sequence_predict_basic(monkeypatch: pytest.MonkeyPatch) -> 
 @REQUIRES_PT_AND_TR
 def test_layoutlm_v3_sequence_predict_basic(monkeypatch: pytest.MonkeyPatch) -> None:
     """Test basic sequence prediction with a mocked LayoutLM model."""
-    monkeypatch.setattr(
-        "deepdoctection.extern.hflayoutlm.get_tokenizer_from_model_class",
-        lambda cls, use_xlm: _mk_dummy_tokenizer(),
-        raising=True,
-    )
+
     monkeypatch.setattr(
         "deepdoctection.extern.hflayoutlm.HFLayoutLmv3SequenceClassifier.get_wrapped_model",
         MagicMock(return_value=MagicMock()),
@@ -199,11 +186,7 @@ def test_layoutlm_v3_sequence_predict_basic(monkeypatch: pytest.MonkeyPatch) -> 
 @REQUIRES_PT_AND_TR
 def test_layoutlm_token_predict_basic(monkeypatch: pytest.MonkeyPatch) -> None:
     """Test basic token prediction with a mocked LayoutLM model."""
-    monkeypatch.setattr(
-        "deepdoctection.extern.hflayoutlm.get_tokenizer_from_model_class",
-        lambda cls, use_xlm: _mk_dummy_tokenizer(),
-        raising=True,
-    )
+
     monkeypatch.setattr(
         "deepdoctection.extern.hflayoutlm.HFLayoutLmTokenClassifier.get_wrapped_model",
         MagicMock(return_value=MagicMock()),
@@ -253,11 +236,7 @@ def test_layoutlm_token_predict_basic(monkeypatch: pytest.MonkeyPatch) -> None:
 @REQUIRES_PT_AND_TR
 def test_layoutlm_v2_token_predict_basic(monkeypatch: pytest.MonkeyPatch) -> None:
     """Test basic token prediction with a mocked LayoutLM model."""
-    monkeypatch.setattr(
-        "deepdoctection.extern.hflayoutlm.get_tokenizer_from_model_class",
-        lambda cls, use_xlm: _mk_dummy_tokenizer(),
-        raising=True,
-    )
+
     monkeypatch.setattr(
         "deepdoctection.extern.hflayoutlm.HFLayoutLmv2TokenClassifier.get_wrapped_model",
         MagicMock(return_value=MagicMock()),
@@ -307,11 +286,7 @@ def test_layoutlm_v2_token_predict_basic(monkeypatch: pytest.MonkeyPatch) -> Non
 @REQUIRES_PT_AND_TR
 def test_layoutlm_v3_token_predict_basic(monkeypatch: pytest.MonkeyPatch) -> None:
     """Test basic token prediction with a mocked LayoutLM model."""
-    monkeypatch.setattr(
-        "deepdoctection.extern.hflayoutlm.get_tokenizer_from_model_class",
-        lambda cls, use_xlm: _mk_dummy_tokenizer(),
-        raising=True,
-    )
+
     monkeypatch.setattr(
         "deepdoctection.extern.hflayoutlm.HFLayoutLmv3TokenClassifier.get_wrapped_model",
         MagicMock(return_value=MagicMock()),
@@ -362,11 +337,7 @@ def test_layoutlm_v3_token_predict_basic(monkeypatch: pytest.MonkeyPatch) -> Non
 @REQUIRES_PT_AND_TR
 def test_lilt_token_and_sequence_predict_basic(monkeypatch: pytest.MonkeyPatch) -> None:
     """Test basic token and sequence prediction with a mocked Lilt model."""
-    monkeypatch.setattr(
-        "deepdoctection.extern.hflayoutlm.get_tokenizer_from_model_class",
-        lambda cls, use_xlm: _mk_dummy_tokenizer(),
-        raising=True,
-    )
+
     monkeypatch.setattr(
         "deepdoctection.extern.hflayoutlm.HFLiltTokenClassifier.get_wrapped_model",
         MagicMock(return_value=MagicMock()),
@@ -445,12 +416,7 @@ def test_lilt_token_and_sequence_predict_basic(monkeypatch: pytest.MonkeyPatch) 
 @REQUIRES_PT_AND_TR
 def test_sequence_validate_encodings_errors(monkeypatch: pytest.MonkeyPatch) -> None:
     """Test sequence validation errors."""
-    # Keep ctor offline
-    monkeypatch.setattr(
-        "deepdoctection.extern.hflayoutlm.get_tokenizer_from_model_class",
-        lambda cls, use_xlm: _mk_dummy_tokenizer(),
-        raising=True,
-    )
+
     monkeypatch.setattr(
         "deepdoctection.extern.hflayoutlm.HFLayoutLmSequenceClassifier.get_wrapped_model",
         MagicMock(return_value=MagicMock()),
@@ -472,11 +438,7 @@ def test_sequence_validate_encodings_errors(monkeypatch: pytest.MonkeyPatch) -> 
 @REQUIRES_PT_AND_TR
 def test_token_validate_encodings_errors(monkeypatch: pytest.MonkeyPatch) -> None:
     """Test token validation errors."""
-    monkeypatch.setattr(
-        "deepdoctection.extern.hflayoutlm.get_tokenizer_from_model_class",
-        lambda cls, use_xlm: _mk_dummy_tokenizer(),
-        raising=True,
-    )
+
     monkeypatch.setattr(
         "deepdoctection.extern.hflayoutlm.HFLayoutLmTokenClassifier.get_wrapped_model",
         MagicMock(return_value=MagicMock()),

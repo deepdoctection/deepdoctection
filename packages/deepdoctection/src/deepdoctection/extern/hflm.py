@@ -44,7 +44,6 @@ from .base import (
     SequenceClassResult,
     TokenClassResult,
 )
-from .hflayoutlm import get_tokenizer_from_model_class
 
 with try_import() as pt_import_guard:
     import torch
@@ -52,10 +51,12 @@ with try_import() as pt_import_guard:
 
 with try_import() as tr_import_guard:
     from transformers import (
-        PretrainedConfig,
+        AutoConfig,
+        AutoModelForSequenceClassification,
+        AutoModelForTokenClassification,
+        AutoTokenizer,
         XLMRobertaForSequenceClassification,
         XLMRobertaForTokenClassification,
-        XLMRobertaTokenizerFast,
     )
 
 
@@ -141,7 +142,6 @@ class HFLmTokenClassifierBase(LMTokenClassifier, ABC):
         categories_bio: Optional[Sequence[TypeOrStr]] = None,
         categories: Optional[Mapping[int, TypeOrStr]] = None,
         device: Optional[Union[Literal["cpu", "cuda"], torch.device]] = None,
-        use_xlm_tokenizer: bool = False,
     ):
         """
         Args:
@@ -154,8 +154,6 @@ class HFLmTokenClassifierBase(LMTokenClassifier, ABC):
                            consistent with detectors use only `values>0`. Conversion will be done internally.
             categories: If you have a pre-trained model you can pass a complete dict of NER categories
             device: The device (cpu,"cuda"), where to place the model.
-            use_xlm_tokenizer: True if one uses the `LayoutXLM` or a lilt model built with a xlm language model, e.g.
-                              `info-xlm` or `roberta-xlm`. (`LayoutXLM` cannot be distinguished from LayoutLMv2).
         """
 
         if categories is None:
@@ -170,7 +168,6 @@ class HFLmTokenClassifierBase(LMTokenClassifier, ABC):
             init_categories=categories, categories_semantics=categories_semantics, categories_bio=categories_bio
         )
         self.device = get_torch_device(device)
-        self.use_xlm_tokenizer = use_xlm_tokenizer
 
     @classmethod
     def get_requirements(cls) -> list[Requirement]:
@@ -227,28 +224,12 @@ class HFLmTokenClassifierBase(LMTokenClassifier, ABC):
             self.categories.categories_bio,
             self.categories.get_categories(),
             self.device,
-            self.use_xlm_tokenizer,
         )
 
     @staticmethod
     def get_name(path_weights: PathLikeOrStr, architecture: str) -> str:
         """Returns the name of the model"""
         return f"Transformers_{architecture}_" + "_".join(Path(path_weights).parts[-2:])
-
-    @staticmethod
-    def get_tokenizer_class_name(model_class_name: str, use_xlm_tokenizer: bool) -> str:
-        """
-        A refinement for adding the tokenizer class name to the model configs.
-
-        Args:
-            model_class_name: The model name, e.g. `model.__class__.__name__`
-            use_xlm_tokenizer: Whether to use a `XLM` tokenizer.
-
-        Returns:
-            The name of the tokenizer class.
-        """
-        tokenizer = get_tokenizer_from_model_class(model_class_name, use_xlm_tokenizer)
-        return tokenizer.__class__.__name__
 
     @staticmethod
     def image_to_raw_features_mapping() -> str:
@@ -302,7 +283,6 @@ class HFLmTokenClassifier(HFLmTokenClassifierBase):
         categories_bio: Optional[Sequence[TypeOrStr]] = None,
         categories: Optional[Mapping[int, TypeOrStr]] = None,
         device: Optional[Union[Literal["cpu", "cuda"], torch.device]] = None,
-        use_xlm_tokenizer: bool = True,
     ):
         """
         Args:
@@ -318,16 +298,11 @@ class HFLmTokenClassifier(HFLmTokenClassifierBase):
             use_xlm_tokenizer: Do not change this value unless you pre-trained a bert-like model with a different
                               Tokenizer.
         """
-        super().__init__(
-            path_config_json, path_weights, categories_semantics, categories_bio, categories, device, use_xlm_tokenizer
-        )
+        super().__init__(path_config_json, path_weights, categories_semantics, categories_bio, categories, device)
         self.name = self.get_name(path_weights, "bert-like-token-classification")
         self.model_id = self.get_model_id()
         self.model = self.get_wrapped_model(path_config_json, path_weights)
         self.model.to(self.device)
-        self.model.config.tokenizer_class = self.get_tokenizer_class_name(
-            self.model.__class__.__name__, self.use_xlm_tokenizer
-        )
 
     def predict(self, **encodings: Union[list[list[str]], torch.Tensor]) -> list[TokenClassResult]:
         """
@@ -363,8 +338,8 @@ class HFLmTokenClassifier(HFLmTokenClassifierBase):
         Returns:
             `nn.Module`
         """
-        config = PretrainedConfig.from_pretrained(pretrained_model_name_or_path=os.fspath(path_config_json))
-        return XLMRobertaForTokenClassification.from_pretrained(
+        config = AutoConfig.from_pretrained(pretrained_model_name_or_path=os.fspath(path_config_json))
+        return AutoModelForTokenClassification.from_pretrained(
             pretrained_model_name_or_path=os.fspath(path_weights), config=config
         )
 
@@ -437,21 +412,6 @@ class HFLmSequenceClassifierBase(LMSequenceClassifier, ABC):
         return f"Transformers_{architecture}_" + "_".join(Path(path_weights).parts[-2:])
 
     @staticmethod
-    def get_tokenizer_class_name(model_class_name: str, use_xlm_tokenizer: bool) -> str:
-        """
-        A refinement for adding the tokenizer class name to the model configs.
-
-        Args:
-            model_class_name: The model name, e.g. `model.__class__.__name__`
-            use_xlm_tokenizer: Whether to use a `XLM` tokenizer.
-
-        Returns:
-            str: Tokenizer class name
-        """
-        tokenizer = get_tokenizer_from_model_class(model_class_name, use_xlm_tokenizer)
-        return tokenizer.__class__.__name__
-
-    @staticmethod
     def image_to_raw_features_mapping() -> str:
         """
         Returns the mapping function to convert images into raw features.
@@ -511,17 +471,12 @@ class HFLmSequenceClassifier(HFLmSequenceClassifierBase):
         path_weights: PathLikeOrStr,
         categories: Mapping[int, TypeOrStr],
         device: Optional[Union[Literal["cpu", "cuda"], torch.device]] = None,
-        use_xlm_tokenizer: bool = True,
     ):
         super().__init__(path_config_json, path_weights, categories, device)
         self.name = self.get_name(path_weights, "bert-like-sequence-classification")
         self.model_id = self.get_model_id()
         self.model = self.get_wrapped_model(path_config_json, path_weights)
         self.model.to(self.device)
-        self.use_xlm_tokenizer = use_xlm_tokenizer
-        self.model.config.tokenizer_class = self.get_tokenizer_class_name(
-            self.model.__class__.__name__, use_xlm_tokenizer
-        )
 
     def predict(self, **encodings: Union[list[list[str]], torch.Tensor]) -> SequenceClassResult:
         input_ids, attention_mask, token_type_ids = self._validate_encodings(**encodings)
@@ -551,9 +506,9 @@ class HFLmSequenceClassifier(HFLmSequenceClassifierBase):
         Returns:
             `XLMRobertaForSequenceClassification`
         """
-        config = PretrainedConfig.from_pretrained(pretrained_model_name_or_path=path_config_json)
-        return XLMRobertaForSequenceClassification.from_pretrained(
-            pretrained_model_name_or_path=path_weights, config=config
+        config = AutoConfig.from_pretrained(pretrained_model_name_or_path=os.fspath(path_config_json))
+        return AutoModelForSequenceClassification.from_pretrained(
+            pretrained_model_name_or_path=os.fspath(path_weights), config=config
         )
 
     @staticmethod
@@ -586,17 +541,16 @@ class HFLmLanguageDetector(LanguageDetector):
         path_weights: PathLikeOrStr,
         categories: Mapping[int, TypeOrStr],
         device: Optional[Union[Literal["cpu", "cuda"], torch.device]] = None,
-        use_xlm_tokenizer: bool = True,
+        tokenizer_config_dir: Optional[PathLikeOrStr] = None,
     ):
         super().__init__()
         self.path_config = Path(path_config_json)
         self.path_weights = Path(path_weights)
         self.categories = ModelCategories(init_categories=categories)
         self.device = get_torch_device(device)
-        self.use_xlm_tokenizer = use_xlm_tokenizer
         self.model = self.get_wrapped_model(path_config_json, path_weights)
         self.model.to(self.device)
-        self.tokenizer = XLMRobertaTokenizerFast.from_pretrained("xlm-roberta-base")
+        self.tokenizer = AutoTokenizer.from_pretrained(pretrained_model_name_or_path=tokenizer_config_dir)
         self.name = self.get_name(path_weights, "bert-like-language-detection")
         self.model_id = self.get_model_id()
 
@@ -660,15 +614,13 @@ class HFLmLanguageDetector(LanguageDetector):
         Returns:
             `XLMRobertaForSequenceClassification`
         """
-        config = PretrainedConfig.from_pretrained(pretrained_model_name_or_path=path_config_json)
-        return XLMRobertaForSequenceClassification.from_pretrained(
-            pretrained_model_name_or_path=path_weights, config=config
+        config = AutoConfig.from_pretrained(pretrained_model_name_or_path=os.fspath(path_config_json))
+        return AutoModelForSequenceClassification.from_pretrained(
+            pretrained_model_name_or_path=os.fspath(path_weights), config=config
         )
 
     def clone(self) -> HFLmLanguageDetector:
-        return self.__class__(
-            self.path_config, self.path_weights, self.categories.get_categories(), self.device, self.use_xlm_tokenizer
-        )
+        return self.__class__(self.path_config, self.path_weights, self.categories.get_categories(), self.device)
 
     @staticmethod
     def get_name(path_weights: PathLikeOrStr, architecture: str) -> str:

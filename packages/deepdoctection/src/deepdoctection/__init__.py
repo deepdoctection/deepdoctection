@@ -146,13 +146,15 @@ for _name in dir(dd_core):
     #     continue
     _extra_objects[_name] = getattr(dd_core, _name)
 
+try:
+    import dd_datasets
 
-import dd_datasets  # pylint: disable=C0413
-
-for _name in dir(dd_datasets):
-    if _name.startswith("_"):
-        continue
-    _extra_objects[_name] = getattr(dd_datasets, _name)
+    for _name in dir(dd_datasets):
+        if _name.startswith("_"):
+            continue
+        _extra_objects[_name] = getattr(dd_datasets, _name)
+except ImportError:
+    pass
 
 # Direct imports for type-checking
 if TYPE_CHECKING:

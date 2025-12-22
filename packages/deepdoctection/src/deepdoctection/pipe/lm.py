@@ -272,12 +272,6 @@ class LMTokenClassifierService(PipelineComponent):
         return f"lm_token_class_{self.language_model.name}"
 
     def _init_sanity_checks(self) -> None:
-        tokenizer_class_name = self.language_model.model.config.tokenizer_class
-        if tokenizer_class_name != self.tokenizer.__class__.__name__:
-            raise TypeError(
-                f"You want to use {type(self.tokenizer)} but you should use {tokenizer_class_name} "
-                f"in this framework"
-            )
         func_params = inspect.signature(self.mapping_to_lm_input_func).parameters
         self.required_kwargs = {k: v for k, v in self.required_kwargs.items() if k in func_params}
 
@@ -372,7 +366,6 @@ class LMSequenceClassifierService(PipelineComponent):
             "return_tensors": "pt",
         }
         self.required_kwargs.update(self.language_model.default_kwargs_for_image_to_features_mapping())
-        self._init_sanity_checks()
 
     def serve(self, dp: Image) -> None:
         """
@@ -391,7 +384,7 @@ class LMSequenceClassifierService(PipelineComponent):
                 class_id = self.language_model.categories.get_categories(as_dict=True, name_as_key=True).get(
                     TokenClasses.OTHER, 1
                 )
-                lm_output = SequenceClassResult(class_name=TokenClasses.OTHER, class_id=class_id, score=-1.0)
+                lm_output = SequenceClassResult(class_name=TokenClasses.OTHER, class_id=class_id)
         else:
             lm_output = self.language_model.predict(**lm_input)
         if lm_output:
@@ -415,14 +408,6 @@ class LMSequenceClassifierService(PipelineComponent):
 
     def _get_name(self) -> str:
         return f"lm_sequence_class_{self.language_model.name}"
-
-    def _init_sanity_checks(self) -> None:
-        tokenizer_class_name = self.language_model.model.config.tokenizer_class
-        if tokenizer_class_name != self.tokenizer.__class__.__name__:
-            raise TypeError(
-                f"You want to use {type(self.tokenizer)} but you should use {tokenizer_class_name} "
-                f"in this framework"
-            )
 
     @staticmethod
     def image_to_features_func(mapping_str: str) -> Callable[..., Callable[[Image], Optional[Any]]]:

@@ -24,9 +24,9 @@ the Huggingface Trainer and custom evaluation. It supports LayoutLM, LayoutLMv2,
 from __future__ import annotations
 
 import copy
-import json
 import os
 import pprint
+from pathlib import Path
 from typing import Any, Optional, Sequence, Type, Union
 
 from lazy_imports import try_import
@@ -54,9 +54,8 @@ from ..extern.hflayoutlm import (
     HFLayoutLmv3TokenClassifier,
     HFLiltSequenceClassifier,
     HFLiltTokenClassifier,
-    get_tokenizer_from_model_class,
 )
-from ..extern.hflm import HFLmSequenceClassifier
+from ..extern.hflm import HFLmSequenceClassifier, HFLmTokenClassifier
 from ..pipe.base import PipelineComponent
 from ..pipe.registry import pipeline_component_registry
 
@@ -66,20 +65,12 @@ with try_import() as pt_import_guard:
 
 with try_import() as tr_import_guard:
     from transformers import (
+        AutoConfig,
+        AutoModelForSequenceClassification,
+        AutoModelForTokenClassification,
+        AutoTokenizer,
         IntervalStrategy,
-        LayoutLMForSequenceClassification,
-        LayoutLMForTokenClassification,
-        LayoutLMv2Config,
-        LayoutLMv2ForSequenceClassification,
-        LayoutLMv2ForTokenClassification,
-        LayoutLMv3Config,
-        LayoutLMv3ForSequenceClassification,
-        LayoutLMv3ForTokenClassification,
-        LiltForSequenceClassification,
-        LiltForTokenClassification,
-        PretrainedConfig,
         PreTrainedModel,
-        XLMRobertaForSequenceClassification,
     )
     from transformers.trainer import Trainer, TrainingArguments
 
@@ -87,77 +78,70 @@ with try_import() as wb_import_guard:
     import wandb
 
 
-def get_model_architectures_and_configs(model_type: str, dataset_type: DatasetType) -> tuple[Any, Any, Any]:
+def get_automodel_architecture(dataset_type: DatasetType) -> Any:
     """
     Gets the model architecture, model wrapper, and config class for a given `model_type` and `dataset_type`.
 
     Args:
-        model_type: The model type.
         dataset_type: The dataset type.
 
     Returns:
-        Tuple of model architecture, model wrapper, and config class.
+        Autmodel class for sequence or token classification.
     """
     return {
-        ("layoutlm", DatasetType.SEQUENCE_CLASSIFICATION): (
-            LayoutLMForSequenceClassification,
-            HFLayoutLmSequenceClassifier,
-            PretrainedConfig,
-        ),
-        ("layoutlm", DatasetType.TOKEN_CLASSIFICATION): (
-            LayoutLMForTokenClassification,
-            HFLayoutLmTokenClassifier,
-            PretrainedConfig,
-        ),
-        ("layoutlmv2", DatasetType.SEQUENCE_CLASSIFICATION): (
-            LayoutLMv2ForSequenceClassification,
-            HFLayoutLmv2SequenceClassifier,
-            LayoutLMv2Config,
-        ),
-        ("layoutlmv2", DatasetType.TOKEN_CLASSIFICATION): (
-            LayoutLMv2ForTokenClassification,
-            HFLayoutLmv2TokenClassifier,
-            LayoutLMv2Config,
-        ),
-        ("layoutlmv3", DatasetType.SEQUENCE_CLASSIFICATION): (
-            LayoutLMv3ForSequenceClassification,
-            HFLayoutLmv3SequenceClassifier,
-            LayoutLMv3Config,
-        ),
-        ("layoutlmv3", DatasetType.TOKEN_CLASSIFICATION): (
-            LayoutLMv3ForTokenClassification,
-            HFLayoutLmv3TokenClassifier,
-            LayoutLMv3Config,
-        ),
-        ("lilt", DatasetType.TOKEN_CLASSIFICATION): (
-            LiltForTokenClassification,
-            HFLiltTokenClassifier,
-            PretrainedConfig,
-        ),
-        ("lilt", DatasetType.SEQUENCE_CLASSIFICATION): (
-            LiltForSequenceClassification,
-            HFLiltSequenceClassifier,
-            PretrainedConfig,
-        ),
-        ("xlm-roberta", DatasetType.SEQUENCE_CLASSIFICATION): (
-            XLMRobertaForSequenceClassification,
-            HFLmSequenceClassifier,
-            PretrainedConfig,
-        ),
-    }[(model_type, dataset_type)]
+        DatasetType.SEQUENCE_CLASSIFICATION: AutoModelForSequenceClassification,
+        DatasetType.TOKEN_CLASSIFICATION: AutoModelForTokenClassification,
+    }[dataset_type]
 
 
-def maybe_remove_bounding_box_features(model_type: str) -> bool:
+def get_model_wrapper(model: str) -> Any:
+    """Get deepdoctection model wrapper for a given model name.
+
+    Args:
+        model: model name.
+
+    Returns:
+        deepdoctection model wrapper.
+    """
+    output = {
+        "LayoutLMForSequenceClassification": HFLayoutLmSequenceClassifier,
+        "LayoutLMForTokenClassification": HFLayoutLmTokenClassifier,
+        "LayoutLMv2ForSequenceClassification": HFLayoutLmv2SequenceClassifier,
+        "LayoutLMv2ForTokenClassification": HFLayoutLmv2TokenClassifier,
+        "LayoutLMv3ForSequenceClassification": HFLayoutLmv3SequenceClassifier,
+        "LayoutLMv3ForTokenClassification": HFLayoutLmv3TokenClassifier,
+        "LiltForSequenceClassification": HFLiltSequenceClassifier,
+        "LiltForTokenClassification": HFLiltTokenClassifier,
+    }.get(model, model)
+    if not isinstance(output, str):
+        return output
+    if "SequenceClassification" in output:
+        return HFLmSequenceClassifier
+    return HFLmTokenClassifier
+
+
+def maybe_remove_bounding_box_features(model: str) -> bool:
     """
     Lists models that do not need bounding box features.
 
     Args:
-        model_type: The model type.
+        model: model.
 
     Returns:
         Whether the model does not need bounding box features.
     """
-    return {"xlm-roberta": True}.get(model_type, False)
+    if model in (
+        HFLayoutLmSequenceClassifier,
+        HFLayoutLmTokenClassifier,
+        HFLayoutLmv2SequenceClassifier,
+        HFLayoutLmv2TokenClassifier,
+        HFLayoutLmv3SequenceClassifier,
+        HFLayoutLmv3TokenClassifier,
+        HFLiltSequenceClassifier,
+        HFLiltTokenClassifier,
+    ):
+        return False
+    return True
 
 
 class LayoutLMTrainer(Trainer):
@@ -256,22 +240,6 @@ class LayoutLMTrainer(Trainer):
         return scores
 
 
-def _get_model_class_and_tokenizer(
-    path_config_json: PathLikeOrStr, dataset_type: DatasetType, use_xlm_tokenizer: bool
-) -> tuple[Any, Any, Any, Any, Any]:
-    with open(path_config_json, "r", encoding="UTF-8") as file:
-        config_json = json.load(file)
-
-    if model_type := config_json.get("model_type"):
-        model_cls, model_wrapper_cls, config_cls = get_model_architectures_and_configs(model_type, dataset_type)
-        remove_box_features = maybe_remove_bounding_box_features(model_type)
-    else:
-        raise KeyError("model_type not available in configs. It seems that the config is not valid")
-
-    tokenizer_fast = get_tokenizer_from_model_class(model_cls.__name__, use_xlm_tokenizer)
-    return config_cls, model_cls, model_wrapper_cls, tokenizer_fast, remove_box_features
-
-
 def get_image_to_raw_features_mapping(input_str: str) -> Any:
     """Replacing eval functions"""
     return {
@@ -291,7 +259,6 @@ def train_hf_layoutlm(
     build_val_config: Optional[Sequence[str]] = None,
     metric: Optional[Union[Type[ClassificationMetric], ClassificationMetric]] = None,
     pipeline_component_name: Optional[str] = None,
-    use_xlm_tokenizer: bool = False,
     use_token_tag: bool = True,
     segment_positions: Optional[Union[LayoutType, Sequence[LayoutType]]] = None,
 ) -> None:
@@ -354,8 +321,6 @@ def train_hf_layoutlm(
         metric: A metric to choose for validation.
         pipeline_component_name: A pipeline component name to use for validation (e.g. `LMSequenceClassifierService` or
                                     LMTokenClassifierService.
-        use_xlm_tokenizer: This is only necessary if you pass weights of LayoutXLM. The config cannot distinguish
-                              between Layoutlmv2 and LayoutXLM, so you need to pass this info explicitly.
         use_token_tag: Will only be used for `dataset_type="token_classification"`. If `use_token_tag=True`, will use
                           labels from sub category `WordType.token_tag` (with `B,I,O` suffix), otherwise
                           `WordType.token_class`.
@@ -407,9 +372,19 @@ def train_hf_layoutlm(
     else:
         raise UserWarning("Dataset type not supported for training")
 
-    config_cls, model_cls, model_wrapper_cls, tokenizer_fast, remove_box_features = _get_model_class_and_tokenizer(
-        path_config_json, dataset_type, use_xlm_tokenizer
+    # config_cls, model_cls, model_wrapper_cls, tokenizer_fast, remove_box_features = _get_model_class_and_tokenizer(
+    #    path_config_json, dataset_type, use_xlm_tokenizer
+    # )
+
+    id2label = {int(k) - 1: v for v, k in categories_dict_name_as_key.items()}
+    config = AutoConfig.from_pretrained(pretrained_model_name_or_path=path_config_json, id2label=id2label)
+    model = get_automodel_architecture(dataset_type).from_pretrained(
+        pretrained_model_name_or_path=path_weights, config=config
     )
+    path_config_dir = Path(path_config_json).parent
+    tokenizer_fast = AutoTokenizer.from_pretrained(pretrained_model_name_or_path=path_config_dir)
+    model_wrapper_cls = get_model_wrapper(model.__name__)
+
     image_to_raw_features_func = get_image_to_raw_features_mapping(model_wrapper_cls.image_to_raw_features_mapping())
     image_to_raw_features_kwargs = {"dataset_type": dataset_type, "use_token_tag": use_token_tag}
     if segment_positions:
@@ -496,22 +471,18 @@ def train_hf_layoutlm(
     arguments = TrainingArguments(**conf_dict)  # pylint: disable=E1123
     logger.info(LoggingRecord(f"Config: \n {arguments.to_dict()}", arguments.to_dict()))
 
-    id2label = {int(k) - 1: v for v, k in categories_dict_name_as_key.items()}
-
     logger.info(
         LoggingRecord(
             f"Will setup a head with the following classes\n " f"{pprint.pformat(id2label, width=100, compact=True)}"
         )
     )
 
-    config = config_cls.from_pretrained(pretrained_model_name_or_path=path_config_json, id2label=id2label)
-    model = model_cls.from_pretrained(pretrained_model_name_or_path=path_weights, config=config)
     data_collator = LayoutLMDataCollator(
         tokenizer_fast,
         return_tensors="pt",
         sliding_window_stride=sliding_window_stride,  # type: ignore
         max_batch_size=max_batch_size,  # type: ignore
-        remove_bounding_box_features=remove_box_features,
+        remove_bounding_box_features=maybe_remove_bounding_box_features(model),
     )
     trainer = LayoutLMTrainer(model, arguments, data_collator, dataset, eval_dataset=dataset_val)
 
@@ -535,7 +506,6 @@ def train_hf_layoutlm(
             path_weights=path_weights,
             categories=categories,
             device=get_torch_device(),
-            use_xlm_tokenizer=use_xlm_tokenizer,
         )
         pipeline_component_cls = pipeline_component_registry.get(pipeline_component_name)
         if dataset_type == DatasetType.SEQUENCE_CLASSIFICATION:

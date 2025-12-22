@@ -92,7 +92,6 @@ def test_hflm_sequence_slow_build_and_predict(tmp_path: PathLikeOrStr) -> None:
         path_weights=os.fspath(tmp_path),
         categories=categories,
         device="cpu",
-        use_xlm_tokenizer=True,
     )
 
     L = 5
@@ -120,7 +119,6 @@ def test_hflm_token_slow_build_and_predict(tmp_path: PathLikeOrStr) -> None:
         path_weights=os.fspath(tmp_path),
         categories=categories,
         device="cpu",
-        use_xlm_tokenizer=True,
     )
 
     L = 4
@@ -160,7 +158,6 @@ def test_hflm_language_slow_build_and_predict(tmp_path: PathLikeOrStr, monkeypat
         path_weights=os.fspath(tmp_path),
         categories=categories,
         device="cpu",
-        use_xlm_tokenizer=True,
     )
 
     res = det.predict("Sample text for language detection.")

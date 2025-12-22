@@ -278,7 +278,6 @@ class Evaluator:
             df_pr = MapData(df_pr, remove_cats(sub_categories=sub_cats_to_remove))
         else:
             raise NotImplementedError()
-
         return df_pr
 
     def compare(self, interactive: bool = False, **kwargs: Union[str, int]) -> Generator[PixelValues, None, None]:

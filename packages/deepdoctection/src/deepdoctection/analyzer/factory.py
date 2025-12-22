@@ -24,6 +24,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Literal, Mapping, Optional, Sequence, Union
 
 from lazy_imports import try_import
+from transformers import AutoTokenizer
 
 from dd_core.utils.env_info import SETTINGS
 from dd_core.utils.error import DependencyError
@@ -44,9 +45,8 @@ from ..extern.hflayoutlm import (
     HFLayoutLmv3TokenClassifier,
     HFLiltSequenceClassifier,
     HFLiltTokenClassifier,
-    get_tokenizer_from_model_class,
 )
-from ..extern.hflm import HFLmSequenceClassifier, HFLmTokenClassifier, HFLmLanguageDetector
+from ..extern.hflm import HFLmLanguageDetector, HFLmSequenceClassifier, HFLmTokenClassifier
 from ..extern.model import ModelCatalog, ModelDownloadManager, ModelProfile
 from ..extern.pdftext import PdfPlumberTextDetector
 from ..extern.tessocr import TesseractOcrDetector, TesseractRotationTransformer
@@ -76,7 +76,7 @@ with try_import() as image_guard:
 
 if TYPE_CHECKING:
     from ..extern.hflayoutlm import LayoutSequenceModels, LayoutTokenModels
-    from ..extern.hflm import LmSequenceModels, LmTokenModels, HFLmLanguageDetector
+    from ..extern.hflm import LmSequenceModels, LmTokenModels
 
     RotationTransformer = Union[TesseractRotationTransformer, DocTrRotationTransformer]
 
@@ -1254,20 +1254,18 @@ class ServiceFactory:
             config: Configuration object.
         """
         config_path = ModelCatalog.get_full_path_configs(config.LM_LANGUAGE_DETECT_CLASS.WEIGHTS)
-        weights_path = ModelDownloadManager.maybe_download_weights_and_configs(
-            config.LM_LANGUAGE_DETECT_CLASS.WEIGHTS
-        )
+        weights_path = ModelDownloadManager.maybe_download_weights_and_configs(config.LM_LANGUAGE_DETECT_CLASS.WEIGHTS)
         profile = ModelCatalog.get_profile(config.LM_LANGUAGE_DETECT_CLASS.WEIGHTS)
+        config_dir = ModelCatalog.get_full_path_configs_dir(config.LM_LANGUAGE_DETECT_CLASS.WEIGHTS)
         categories = profile.categories if profile.categories is not None else {}
-        use_xlm_tokenizer = "xlm_tokenizer" == profile.architecture
 
         return {
             "config_path": config_path,
             "weights_path": weights_path,
             "categories": categories,
             "device": config.DEVICE,
-            "use_xlm_tokenizer": use_xlm_tokenizer,
             "model_wrapper": profile.model_wrapper,
+            "tokenizer_config_dir": config_dir,
         }
 
     @staticmethod
@@ -1276,8 +1274,8 @@ class ServiceFactory:
         weights_path: str,
         categories: Mapping[int, Union[ObjectTypes, str]],
         device: Literal["cuda", "cpu"],
-        use_xlm_tokenizer: bool,
         model_wrapper: str,
+        tokenizer_config_dir: str,
     ) -> HFLmLanguageDetector:
         """
         Builds and returns a language detector instance.
@@ -1287,7 +1285,6 @@ class ServiceFactory:
             weights_path: Path to model weights.
             categories: Model categories mapping.
             device: Device to run model on.
-            use_xlm_tokenizer: Whether to use XLM tokenizer.
             model_wrapper: Model wrapper class name.
 
         Returns:
@@ -1300,11 +1297,10 @@ class ServiceFactory:
                 path_weights=weights_path,
                 categories=categories,
                 device=device,
-                use_xlm_tokenizer=use_xlm_tokenizer,
+                tokenizer_config_dir=tokenizer_config_dir,
             )
 
         raise ValueError(f"Unsupported language detector model wrapper: {model_wrapper}")
-
 
     @staticmethod
     def build_language_detector(config: AttrDict) -> HFLmLanguageDetector:
@@ -1319,7 +1315,6 @@ class ServiceFactory:
         """
         language_detector_kwargs = ServiceFactory._get_language_detector_kwargs_from_config(config)
         return ServiceFactory._build_language_detector(**language_detector_kwargs)
-
 
     @staticmethod
     def _build_language_detection_service(language_detector: Any) -> LanguageDetectionService:
@@ -1349,7 +1344,6 @@ class ServiceFactory:
         language_detector = ServiceFactory.build_language_detector(config)
         return ServiceFactory._build_language_detection_service(language_detector)
 
-
     @staticmethod
     def _get_sequence_classifier_kwargs_from_config(config: AttrDict) -> dict[str, Any]:
         """
@@ -1362,14 +1356,12 @@ class ServiceFactory:
         weights_path = ModelDownloadManager.maybe_download_weights_and_configs(config.LM_SEQUENCE_CLASS.WEIGHTS)
         profile = ModelCatalog.get_profile(config.LM_SEQUENCE_CLASS.WEIGHTS)
         categories = profile.categories if profile.categories is not None else {}
-        use_xlm_tokenizer = "xlm_tokenizer" == profile.architecture
 
         return {
             "config_path": config_path,
             "weights_path": weights_path,
             "categories": categories,
             "device": config.DEVICE,
-            "use_xlm_tokenizer": use_xlm_tokenizer,
             "model_wrapper": profile.model_wrapper,
         }
 
@@ -1379,7 +1371,6 @@ class ServiceFactory:
         weights_path: str,
         categories: Mapping[int, Union[ObjectTypes, str]],
         device: Literal["cuda", "cpu"],
-        use_xlm_tokenizer: bool,
         model_wrapper: str,
     ) -> Union[LayoutSequenceModels, LmSequenceModels]:
         """
@@ -1390,7 +1381,6 @@ class ServiceFactory:
             weights_path: Path to model weights.
             categories: Model categories mapping.
             device: Device to run model on.
-            use_xlm_tokenizer: Whether to use XLM tokenizer.
             model_wrapper: Model wrapper class name.
 
         Returns:
@@ -1402,7 +1392,6 @@ class ServiceFactory:
                 path_weights=weights_path,
                 categories=categories,
                 device=device,
-                use_xlm_tokenizer=use_xlm_tokenizer,
             )
         if model_wrapper in ("HFLayoutLmv2SequenceClassifier",):
             return HFLayoutLmv2SequenceClassifier(
@@ -1410,7 +1399,6 @@ class ServiceFactory:
                 path_weights=weights_path,
                 categories=categories,
                 device=device,
-                use_xlm_tokenizer=use_xlm_tokenizer,
             )
         if model_wrapper in ("HFLayoutLmv3SequenceClassifier",):
             return HFLayoutLmv3SequenceClassifier(
@@ -1418,7 +1406,6 @@ class ServiceFactory:
                 path_weights=weights_path,
                 categories=categories,
                 device=device,
-                use_xlm_tokenizer=use_xlm_tokenizer,
             )
         if model_wrapper in ("HFLiltSequenceClassifier",):
             return HFLiltSequenceClassifier(
@@ -1426,7 +1413,6 @@ class ServiceFactory:
                 path_weights=weights_path,
                 categories=categories,
                 device=device,
-                use_xlm_tokenizer=use_xlm_tokenizer,
             )
         if model_wrapper in ("HFLmSequenceClassifier",):
             return HFLmSequenceClassifier(
@@ -1434,7 +1420,6 @@ class ServiceFactory:
                 path_weights=weights_path,
                 categories=categories,
                 device=device,
-                use_xlm_tokenizer=use_xlm_tokenizer,
             )
         raise ValueError(f"Unsupported model wrapper: {model_wrapper}")
 
@@ -1460,27 +1445,30 @@ class ServiceFactory:
         Args:
             config: Configuration object.
         """
+        config_dir = ModelCatalog.get_full_path_configs_dir(config.LM_SEQUENCE_CLASS.WEIGHTS)
+        tokenizer_fast = AutoTokenizer.from_pretrained(pretrained_model_name_or_path=config_dir)
         return {
+            "tokenizer_fast": tokenizer_fast,
             "use_other_as_default_category": config.LM_SEQUENCE_CLASS.USE_OTHER_AS_DEFAULT_CATEGORY,
         }
 
     @staticmethod
     def _build_sequence_classifier_service(
-        sequence_classifier: Union[LayoutSequenceModels, LmSequenceModels], use_other_as_default_category: bool
+        sequence_classifier: Union[LayoutSequenceModels, LmSequenceModels],
+        tokenizer_fast: Any,
+        use_other_as_default_category: bool,
     ) -> LMSequenceClassifierService:
         """
         Building a sequence classifier service.
 
         Args:
             sequence_classifier: Sequence classifier instance.
+            tokenizer_fast: Fast Tokenizer instance.
             use_other_as_default_category: Whether to use other as default category.
 
         Returns:
             LMSequenceClassifierService: Text order service instance.
         """
-        tokenizer_fast = get_tokenizer_from_model_class(
-            sequence_classifier.model.__class__.__name__, sequence_classifier.use_xlm_tokenizer
-        )
 
         return LMSequenceClassifierService(
             tokenizer=tokenizer_fast,
@@ -1519,14 +1507,12 @@ class ServiceFactory:
         weights_path = ModelDownloadManager.maybe_download_weights_and_configs(config.LM_TOKEN_CLASS.WEIGHTS)
         profile = ModelCatalog.get_profile(config.LM_TOKEN_CLASS.WEIGHTS)
         categories = profile.categories if profile.categories is not None else {}
-        use_xlm_tokenizer = "xlm_tokenizer" == profile.architecture
 
         return {
             "config_path": config_path,
             "weights_path": weights_path,
             "categories": categories,
             "device": config.DEVICE,
-            "use_xlm_tokenizer": use_xlm_tokenizer,
             "model_wrapper": profile.model_wrapper,
         }
 
@@ -1536,7 +1522,6 @@ class ServiceFactory:
         weights_path: str,
         categories: Mapping[int, Union[ObjectTypes, str]],
         device: Literal["cpu", "cuda"],
-        use_xlm_tokenizer: bool,
         model_wrapper: str,
     ) -> Union[LayoutTokenModels, LmTokenModels]:
         """
@@ -1547,7 +1532,6 @@ class ServiceFactory:
             weights_path: Path to model weights.
             categories: Model categories mapping.
             device: Device to run model on.
-            use_xlm_tokenizer: Whether to use XLM tokenizer.
             model_wrapper: Model wrapper class name.
 
         Returns:
@@ -1559,7 +1543,6 @@ class ServiceFactory:
                 path_weights=weights_path,
                 categories=categories,
                 device=device,
-                use_xlm_tokenizer=use_xlm_tokenizer,
             )
         if model_wrapper in ("HFLayoutLmv2TokenClassifier",):
             return HFLayoutLmv2TokenClassifier(
@@ -1612,7 +1595,10 @@ class ServiceFactory:
         Args:
             config: Configuration object.
         """
+        config_dir = ModelCatalog.get_full_path_configs_dir(config.LM_TOKEN_CLASS.WEIGHTS)
+        tokenizer_fast = AutoTokenizer.from_pretrained(pretrained_model_name_or_path=config_dir)
         return {
+            "tokenizer_fast": tokenizer_fast,
             "use_other_as_default_category": config.LM_TOKEN_CLASS.USE_OTHER_AS_DEFAULT_CATEGORY,
             "segment_positions": config.LM_TOKEN_CLASS.SEGMENT_POSITIONS,
             "sliding_window_stride": config.LM_TOKEN_CLASS.SLIDING_WINDOW_STRIDE,
@@ -1621,6 +1607,7 @@ class ServiceFactory:
     @staticmethod
     def _build_token_classifier_service(
         token_classifier: Union[LayoutTokenModels, LmTokenModels],
+        tokenizer_fast: Any,
         use_other_as_default_category: bool,
         segment_positions: Union[LayoutType, Sequence[LayoutType], None],
         sliding_window_stride: int,
@@ -1637,9 +1624,6 @@ class ServiceFactory:
         Returns:
              A LMTokenClassifierService instance.
         """
-        tokenizer_fast = get_tokenizer_from_model_class(
-            token_classifier.model.__class__.__name__, token_classifier.use_xlm_tokenizer
-        )
 
         return LMTokenClassifierService(
             tokenizer=tokenizer_fast,

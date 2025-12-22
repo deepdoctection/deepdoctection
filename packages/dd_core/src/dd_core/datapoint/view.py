@@ -227,6 +227,7 @@ class ImageAnnotationBaseView:
         """
         if self._image_annotation.image is not None:
             return self._image_annotation.image.image
+        return None
 
     @property
     def bbox(self) -> list[float]:
