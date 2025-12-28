@@ -210,7 +210,7 @@ class Image(BaseModel):
     All `ImageAnnotations` of the image are saved in the list annotations. Other types of annotation are
     not permitted.
 
-    Args:
+    Attributes:
         file_name: Should be equal to the name of a physical file representing the image. If the image is part
                    of a larger document (e.g. pdf-document) the file_name should be populated as a concatenation of
                    the document file and its page number.

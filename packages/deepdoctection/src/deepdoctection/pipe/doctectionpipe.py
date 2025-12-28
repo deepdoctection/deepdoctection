@@ -356,17 +356,18 @@ class DoctectionPipe(Pipeline):
     ) -> DataFlow:
         """
         Args:
-            `kwargs:
-                 dataset_dataflow (Dataflow):` Transfer a dataflow of a dataset via its dataflow builder
-                 path (TypeOrStr):` A path to a directory in which either image documents or pdf files are located. It
+            kwargs:
+                 dataset_dataflow: Transfer a dataflow of a dataset via its dataflow builder
+                 path: A path to a directory in which either image documents or pdf files are located. It
                                is assumed that the pdf documents consist of only one page. If there are multiple pages,
                                only the first page is processed through the pipeline.
                                Alternatively, a path to a pdf document with multiple pages.
-                 bytes:` A bytes object of an image
-                 file_type:` Selection of the file type, if: args:`file_type` is passed
-                 max_datapoints:` Stops processing as soon as max_datapoints images have been processed
+                 bytes: A bytes object of an image
+                 file_type: Selection of the file type, if: args:`file_type` is passed
+                 max_datapoints: Stops processing as soon as max_datapoints images have been processed
 
-        :return: dataflow
+        Returns:
+            dataflow
         """
 
         output = kwargs.get("output", "page")

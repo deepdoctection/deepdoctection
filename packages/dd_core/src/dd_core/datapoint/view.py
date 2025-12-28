@@ -122,6 +122,11 @@ class ImageAnnotationBaseView:
         self.base_page = base_page
         self.text_container: Optional[ObjectTypes] = text_container
 
+    @property
+    def image_annotation(self) -> ImageAnnotation:
+        """property image_annotation"""
+        return self._image_annotation
+
     # Pass-through properties for filtering and inspection
     @property
     def category_name(self) -> str | ObjectTypes:
@@ -261,26 +266,46 @@ class ImageAnnotationBaseView:
             return np_image
         raise AnnotationError(f"base_page.image is None for {self.annotation_id}")
 
-    def __getattr__(self, item: str) -> Optional[Union[str, int, float, list[str], list["ImageAnnotationBaseView"]]]:
+    def __getattr__(self, item: str) -> Optional[Union[str, int, float, list[str], list[ImageAnnotationBaseView]],
+    CategoryAnnotation]:
         """
-        Get attributes defined by registered `self.get_attribute_names()` in a multi-step process:
+        Resolve dynamic attributes (user-facing summary).
 
-        - Unregistered attributes will raise an `AttributeError`.
-        - Registered attribute will look for a corresponding sub category. If the sub category does not exist `Null`
-          will be returned.
-        - If the sub category exists it will return `category_name` provided that the attribute is not equal to the
-          `category_name` otherwise
-        - Check if the sub category is a `ContainerAnnotation` in which case the `value` will be returned otherwise
-          `category_id` will be returned.
-        - If nothing works, look at `self.image.summary` if the item exist. Follow the same logic as for ordinary sub
-          categories.
-
-        Args:
-            item: attribute name
+        - Accepted attributes: those returned by `self.get_attribute_names()` and the view properties.
+        - Attributes ending with a double trailing underscore (e.g. `text__`):
+            - Base name = `item[:-2]`.
+            - If base name is not registered, raises `AnnotationError(f"Attribute {item} is not supported for {type(self)}")`.
+            - If registered, returns the raw `CategoryAnnotation` from `self.sub_categories` or, if absent, from the sibling image's `summary.sub_categories`.
+            - Relationship lookups are not performed in this special-case. Returns `None` if not found.
+        - Normal resolution (unchanged):
+            - Check `self.sub_categories` (return `category_name`, `ContainerAnnotation.value`, or `category_id`).
+            - Then `self.relationships` (return related annotations).
+            - Then sibling image `summary.sub_categories` (same logic as sub-categories).
+            - Return `None` if nothing matches.
 
         Returns:
-            Value according to the logic described above
+            - For the `__` special-case: `CategoryAnnotation` or `None`.
+            - For the normal case: `str`, `int`, `float`, `list[str]`, `list[ImageAnnotationBaseView]`, `CategoryAnnotation`, or `None`.
         """
+
+        if item.endswith("__"):
+            base_item = item[:-2]
+            if base_item not in self.get_attribute_names():
+                raise AnnotationError(f"Attribute {item} is not supported for {type(self)}")
+
+            base_item = get_type(base_item)
+            # check sub_categories and return the CategoryAnnotation object directly
+            if base_item in self.sub_categories:
+                return self.get_sub_category(base_item)
+
+            # check summary.sub_categories (if sibling image present) and return the CategoryAnnotation object
+            if self._image_annotation.image is not None:
+                if base_item in self._image_annotation.image.summary.sub_categories:
+                    return self.get_summary(base_item)
+
+            return None
+
+        # original logic for non-double-underscore attributes
         if item not in self.get_attribute_names():
             raise AnnotationError(f"Attribute {item} is not supported for {type(self)}")
 

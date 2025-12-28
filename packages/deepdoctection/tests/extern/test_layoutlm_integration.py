@@ -106,21 +106,15 @@ def _mk_dummy_tokenizer() -> Any:
 def test_sequence_slow_build_and_predict(
     tmp_path: PathLikeOrStr,
     monkeypatch: pytest.MonkeyPatch,
-    wrapper_cls: type,
-    model_cls: type | None,
-    cfg_cls: type | None,
+    wrapper_cls: Any,
+    model_cls: Any,
+    cfg_cls: Any,
     needs_img: bool,
     img_key: Optional[str],
 ) -> None:
     """
     Build a tiny model, save it locally, load via wrapped classifier and run one inference.
     """
-    # Avoid tokenizer network calls
-    monkeypatch.setattr(
-        "deepdoctection.extern.hflayoutlm.get_tokenizer_from_model_class",
-        lambda cls, use_xlm: _mk_dummy_tokenizer(),
-        raising=True,
-    )
 
     if wrapper_cls is HFLayoutLmSequenceClassifier:
         cfg_cls = LayoutLMConfig  # pylint:disable=E0606
@@ -194,21 +188,15 @@ def test_sequence_slow_build_and_predict(
 def test_token_slow_build_and_predict(
     tmp_path: PathLikeOrStr,
     monkeypatch: pytest.MonkeyPatch,
-    wrapper_cls: type,
-    model_cls: type | None,
-    cfg_cls: type | None,
+    wrapper_cls: Any,
+    model_cls: Any,
+    cfg_cls: Any,
     needs_img: bool,
     img_key: Optional[str],
 ) -> None:
     """
     Build a tiny token model, save/load weights, and run one inference end-to-end.
     """
-    # Avoid tokenizer network calls
-    monkeypatch.setattr(
-        "deepdoctection.extern.hflayoutlm.get_tokenizer_from_model_class",
-        lambda cls, use_xlm: _mk_dummy_tokenizer(),
-        raising=True,
-    )
 
     # Resolve config/model classes per wrapper
     if wrapper_cls is HFLayoutLmTokenClassifier:

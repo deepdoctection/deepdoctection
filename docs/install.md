@@ -3,10 +3,9 @@
 
 ## Requirements
 
-![](./tutorials/_imgs/install_01.png)
+![](./_imgs/install_01.png)
 
-Everything in the overview listed below the **deep**doctection layer are necessary requirements and have to be installed 
-by the user.
+Everything in the overview listed below the **deep**doctection layer are necessary requirements. 
 
 - Linux, macOS and Windows should work. We haven't tried on Windows but there is a [Dockerfile](https://github.com/deepdoctection/deepdoctection/tree/master/docker/gpu/Dockerfile) available.
 - Python >= 3.10
@@ -41,23 +40,13 @@ by the user.
     [here](https://detectron2.readthedocs.io/en/latest/tutorials/install.html) for more information.
 
 
-The following overview shows the availability of the models in conjunction with the DL framework.
-
-| Task                                        | PyTorch | Torchscript    |
-|---------------------------------------------|:-------:|----------------|
-| Layout detection via Detectron2             |    ✅    | ✅ (CPU only)   |
-| Table recognition via Detectron2            |    ✅    | ✅ (CPU only)   |
-| Table transformer via Transformers          |    ✅    | ❌              |
-| Deformable-Detr                             |    ✅    | ❌              |
-| DocTr                                       |    ✅    | ❌              | 
-| LayoutLM (v1, v2, v3, XLM) via Transformers |    ✅    | ❌              |
-
-
 ## Install with package manager
 
 We recommend using a virtual environment. You can install **deep**doctection from PyPi or from source. 
 
 ### Minimal setup
+
+To run a simple **deep**doctection pipeline with default configuration, you can install the minimal dependencies with:
 
 ```
 uv pip install timm
@@ -69,18 +58,16 @@ uv pip install deepdoctection
 
 ### Full setup
 
-Install [**Detectron2**](https://detectron2.readthedocs.io/en/latest/tutorials/install.html) separately as it is not distributed via PyPi. Note that PyTorch must be installed first.
-
-You can use our fork:
+Install [**Detectron2**](https://detectron2.readthedocs.io/en/latest/tutorials/install.html) separately as it is not distributed via PyPi or use our fork:
 
 ```
-pip install detectron2@git+https://github.com/deepdoctection/detectron2.git --no-build-isolation
+uv pip install detectron2@git+https://github.com/deepdoctection/detectron2.git --no-build-isolation
 ```
 
 Then install all remaining dependencies with:
 
 ```
-pip install deepdoctection[full]
+uv pip install deepdoctection[full]
 ```
 
 !!! info 

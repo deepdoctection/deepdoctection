@@ -578,8 +578,8 @@ class ImageAnnotation(CategoryAnnotation):
     def get_annotation_map(self) -> defaultdict[str, list[AnnotationMap]]:
         """
         Returns:
-             A `defaultdict` with `annotation_id`s as keys and a list of `AnnotationMap` instances as values for all
-             sub categories, relationships and image summaries.
+            A `defaultdict` with `annotation_id`s as keys and a list of `AnnotationMap` instances as values for all
+            sub categories, relationships and image summaries.
         """
         annotation_id_dict = defaultdict(list)
         annotation_id_dict[self.annotation_id].append(AnnotationMap(image_annotation_id=self.annotation_id))
@@ -704,7 +704,7 @@ class ContainerAnnotation(CategoryAnnotation):
 
         Args:
             value_type: One of `"str"`, `"int"`, `"float"`, or `"list[str]"`. (The current implementation rejects
-             `None`.)
+            `None`.)
 
         Raises:
             ValueError: If `type` is `None` or not one of the allowed values.

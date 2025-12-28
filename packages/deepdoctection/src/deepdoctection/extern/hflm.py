@@ -295,8 +295,6 @@ class HFLmTokenClassifier(HFLmTokenClassifierBase):
                            consistent with detectors use only values>0. Conversion will be done internally.
             categories: If you have a pre-trained model you can pass a complete dict of NER categories
             device: The device (cpu,"cuda"), where to place the model.
-            use_xlm_tokenizer: Do not change this value unless you pre-trained a bert-like model with a different
-                              Tokenizer.
         """
         super().__init__(path_config_json, path_weights, categories_semantics, categories_bio, categories, device)
         self.name = self.get_name(path_weights, "bert-like-token-classification")
@@ -362,7 +360,6 @@ class HFLmSequenceClassifierBase(LMSequenceClassifier, ABC):
         self.path_config = Path(path_config_json)
         self.path_weights = Path(path_weights)
         self.categories = ModelCategories(init_categories=categories)
-
         self.device = get_torch_device(device)
 
     @classmethod

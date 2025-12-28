@@ -31,15 +31,14 @@ import deepdoctection as dd
 ## Adding the model wrapper for YOLO
 
 ```python
-from __future__ import annotations
+from __future__ import annotations 
 
 from typing import Mapping
-from deepdoctection.utils.types import PixelValues, PathLikeOrStr
-from deepdoctection.utils.object_types import TypeOrStr
-from deepdoctection.utils.file_utils import Requirement
+from dd_core.utils.types import PixelValues, PathLikeOrStr
+from dd_core.utils.object_types import TypeOrStr
+from dd_core.utils.file_utils import Requirement
 
 from ultralytics import YOLO
-
 
 def _yolo_to_detectresult(results, categories) -> list[dd.DetectionResult]:
     """
@@ -54,18 +53,19 @@ def _yolo_to_detectresult(results, categories) -> list[dd.DetectionResult]:
 
     categories_name = categories.get_categories(as_dict=True)
 
+            
     # Use inference speed as the confidence score (e.g., using 'inference' time as a proxy)
     confidence = results.speed.get('inference', 0) / 100  # Normalize by 100 if you want a scale between 0-1
-
+    
     # Loop through each detected box
     for i, box in enumerate(results.boxes):
         # Extract and normalize bounding box coordinates
         x1, y1, x2, y2 = box.xyxy.tolist()[0]
-
+        
         # Assign class_id based on detection order or results.boxes.cls if available
-        class_id = int(box.cls) + 1  # Get class ID based on available keys
-        class_name = categories_name.get(class_id, "Unknown")  # Directly retrieve the class name from categories
-
+        class_id = int(box.cls)+1  # Get class ID based on available keys
+        class_name = categories_name.get(class_id, "Unknown") # Directly retrieve the class name from categories
+        
         # Create a DetectionResult object with inferred confidence
         detection = dd.DetectionResult(
             box=[x1, y1, x2, y2],
@@ -73,17 +73,16 @@ def _yolo_to_detectresult(results, categories) -> list[dd.DetectionResult]:
             class_id=class_id,
             class_name=class_name
         )
-
+        
         # Append the DetectionResult to the list
         all_results.append(detection)
 
     return all_results
 
-
-def predict_yolo(np_img: PixelValues,
-                 model,
-                 conf_threshold: float,
-                 iou_threshold: float,
+def predict_yolo(np_img: PixelValues, 
+                 model, 
+                 conf_threshold: float, 
+                 iou_threshold: float, 
                  categories: dd.ModelCategories) -> list[dd.DetectionResult]:
     """
     Run inference using the YOLO model.
@@ -97,13 +96,12 @@ def predict_yolo(np_img: PixelValues,
     """
     # Run the model
     results = model(source=np_img, conf=conf_threshold, iou=iou_threshold)[0]
-
+    
     # Convert results to DetectionResult format
     all_results = _yolo_to_detectresult(results, categories)
-
+    
     return all_results
-
-
+    
 class YoloDetector(dd.ObjectDetector):
     """
     Document detector using YOLO engine for layout analysis.
@@ -112,11 +110,10 @@ class YoloDetector(dd.ObjectDetector):
     
     The detector predicts different categories of document elements such as text, tables, figures, headers, etc.
     """
-
-    def __init__(self,
-                 conf_threshold: float,
-                 iou_threshold: float,
-                 model_weights: PathLikeOrStr,
+    def __init__(self, 
+                 conf_threshold: float, 
+                 iou_threshold: float, 
+                 model_weights: PathLikeOrStr, 
                  categories: Mapping[int, TypeOrStr]) -> None:
         """
         :param conf_threshold: Confidence threshold for YOLO detections.
@@ -134,8 +131,8 @@ class YoloDetector(dd.ObjectDetector):
 
         if categories is None:
             raise ValueError("A dictionary of category mappings must be provided.")
-        self.categories = dd.ModelCategories(init_categories=categories)
-
+        self.categories =dd.ModelCategories(init_categories=categories)
+        
     def predict(self, np_img: PixelValues) -> list[dd.DetectionResult]:
         """
         Perform inference on a document image using YOLOv10 and return detection results.
@@ -155,10 +152,10 @@ class YoloDetector(dd.ObjectDetector):
         """
         Clone the current detector instance.
         """
-        return self.__class__(conf_threshold=self.conf_threshold,
-                              iou_threshold=self.iou_threshold,
+        return self.__class__(conf_threshold=self.conf_threshold, 
+                              iou_threshold=self.iou_threshold, 
                               model_weights=self.model.model_path,
-                              categories=self.categories)
+                              categories = self.categories)
 
     def get_category_names(self) -> tuple[ObjectTypes, ...]:
         """
@@ -169,11 +166,13 @@ class YoloDetector(dd.ObjectDetector):
 
 ## Adding the model to the `ModelCatalog`
 
-Next, we need to register the model artifact. Registering the model will make it much easier to use the later with the Analyzer. We use the `yolov10x_best.pt` checkpoint from [here](https://huggingface.co/omoured/YOLOv10-Document-Layout-Analysis).
+Next, we need to register the model artifact. Registering the model will make it much easier to use the later with the
+Analyzer. We use the `yolov10x_best.pt` checkpoint from [here](https://huggingface.co/omoured/YOLOv10-Document-Layout-Analysis).
 
 By the way, the source code for training this model can be found [here](https://github.com/moured/YOLOv10-Document-Layout-Analysis.git).
 
-Save the model under `dd.get_weights_dir_path() / "yolo/yolov10x_best.pt"`. Alternatively, provide `hf_repo_id`, `hf_model_name`. This model does not require a config file.
+Save the model under `os.environ["CONFIGS_DIR"] `. 
+Alternatively, provide `hf_repo_id`, `hf_model_name`. This model does not require a config file.
 
 
 ```python
@@ -239,15 +238,18 @@ model_weights = dd.ModelDownloadManager.maybe_download_weights_and_configs("yolo
 
 ## Running the Analyzer with the YoloDetector
 
-Next we want to build the Analyzer with the new layout model. We change `PT.LAYOUT.WEIGHTS` to `yolo/yolov10x_best.pt` and switch everything else off for demo purposes.
+Next we want to build the Analyzer with the new layout model. We change `LAYOUT.WEIGHTS` to `yolo/yolov10x_best.pt`
+and switch everything else off for demo purposes.
 
-One additional but not very obvious configuration step is crucial though: In order to show all layout sections the model is able to detect,
-we need to list them in `TEXT_ORDERING.FLOATING_TEXT_BLOCK_CATEGORIES`. Otherwise, we will only display the default layout sections which are those defined by the `Publaynet` dataset: `text,title,list,table,figure`. 
+One additional but not very obvious configuration step is crucial though: In order to show all layout sections the
+model is able to detect, we need to list them in `TEXT_ORDERING.FLOATING_TEXT_BLOCK_CATEGORIES`. Otherwise, we will
+only display the default layout sections which are those defined by the `Publaynet` dataset:
+`text,title,list,table,figure`. 
 
 
 
 ```python
-config_overwrite = ["PT.LAYOUT.WEIGHTS=yolo/yolov10x_best.pt",
+config_overwrite = ["LAYOUT.WEIGHTS=yolo/yolov10x_best.pt",
                     "USE_TABLE_SEGMENTATION=False",
                     "USE_OCR=False",
                     "TEXT_ORDERING.FLOATING_TEXT_BLOCK_CATEGORIES=
@@ -261,9 +263,11 @@ config_overwrite = ["PT.LAYOUT.WEIGHTS=yolo/yolov10x_best.pt",
 					 'section_header',
 					 'table',
 					 'text',
-					 'title']"]
+					 'title']"] # (1)
 analyzer = dd.get_dd_analyzer(config_overwrite=config_overwrite)
 ```
+
+1. Updating `TEXT_ORDERING.FLOATING_TEXT_BLOCK_CATEGORIES` is just for visualisation purposes.
 
 
 ```python
@@ -285,4 +289,4 @@ plt.axis('off')
 plt.imshow(img)
 ```
 
-![png](./_imgs/analyzer_doclaynet_with_yolo_01.png)
+![png](../_imgs/analyzer_doclaynet_with_yolo_01.png)

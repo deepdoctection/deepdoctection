@@ -243,6 +243,7 @@ _IMPORT_STRUCTURE = {
         "save_config_to_yaml",
         "config_to_cli_str",
         "ObjectTypes",
+        "object_types_registry",
         "DefaultType",
         "PageType",
         "SummaryType",

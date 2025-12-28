@@ -38,6 +38,8 @@ from deepdoctection.extern.hflm import (
     HFLmSequenceClassifier,
     HFLmTokenClassifier,
 )
+from deepdoctection.extern.model import ModelCatalog, ModelDownloadManager
+
 
 if pytorch_available() and transformers_available():
     import torch
@@ -137,27 +139,22 @@ def test_hflm_token_slow_build_and_predict(tmp_path: PathLikeOrStr) -> None:
 
 @REQUIRES_PT_AND_TR
 @pytest.mark.slow
-def test_hflm_language_slow_build_and_predict(tmp_path: PathLikeOrStr, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_hflm_language_slow_build_and_predict() -> None:
     """Test language detection using a tiny model."""
-    # Build a tiny language detection model (sequence classification head)
-    cfg = XLMRobertaConfig(num_labels=3)
-    model = XLMRobertaForSequenceClassification(cfg)
-    model.save_pretrained(tmp_path)
-    cfg.save_pretrained(tmp_path)
+    # Use xlm-roberta model  as example
+    weights = "papluca/xlm-roberta-base-language-detection/model.safetensors"
+    weights_path = ModelDownloadManager.maybe_download_weights_and_configs(weights)
+    config_path = ModelCatalog.get_full_path_configs(weights)
+    categories = ModelCatalog.get_profile(weights).categories
+    config_dir = ModelCatalog.get_full_path_configs_dir(weights)
+    assert categories is not None
 
-    # Avoid network tokenizer download
-    monkeypatch.setattr(
-        "transformers.XLMRobertaTokenizerFast.from_pretrained",
-        lambda *args, **kwargs: _dummy_tokenizer(),
-        raising=True,
-    )
-
-    categories = {1: "eng", 2: "deu", 3: "fre"}
     det = HFLmLanguageDetector(
-        path_config_json=os.fspath(tmp_path),
-        path_weights=os.fspath(tmp_path),
+        path_config_json=config_path,
+        path_weights=weights_path,
         categories=categories,
         device="cpu",
+        tokenizer_config_dir=config_dir,
     )
 
     res = det.predict("Sample text for language detection.")

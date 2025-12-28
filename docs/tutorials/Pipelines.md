@@ -22,6 +22,7 @@ If you go to the get started notebook and scroll to the cell where the image pro
 
 ??? Info "Output"
 
+    <pre>
     [0523 22:14.35 @doctectionpipe.py:103]  INF  Processing sample_2.png
     [0523 22:14.37 @context.py:133]         INF  ImageLayoutService total: 2.3095 sec.
     [0523 22:14.37 @context.py:133]         INF  AnnotationNmsService total: 0.002 sec.
@@ -31,6 +32,7 @@ If you go to the get started notebook and scroll to the cell where the image pro
     [0523 22:14.39 @context.py:133]         INF  TextExtractionService total: 0.9374 sec.
     [0523 22:14.39 @context.py:133]         INF  MatchingService total: 0.0059 sec.
     [0523 22:14.39 @context.py:133]         INF  TextOrderService total: 0.0301 sec.
+    </pre>
 
 
 The logs reveal which pipeline component the image passed through and how much time each component took to process it. 
@@ -38,7 +40,7 @@ Some pipeline components have been deactivated by configuration.
 
 A pipeline is built as a sequence of tasks. These tasks are called pipeline components or services.
 
-![pipelines](./_imgs/pipelines_01.png)
+![pipelines](../_imgs/pipelines_01.png)
 
 Once a pipeline is defined, images or documents can be processed. These are either pure image files (like JPG, PNG, 
 TIFF) or PDF files. PDF files are read and processed page by page. Each page is converted into a numpy array because 
@@ -104,29 +106,25 @@ analyzer = dd.get_dd_analyzer()
             'USE_DOCTR': True,
             'USE_TESSERACT': False,
             'USE_TEXTRACT': False,
-            'WEIGHTS': {'DOCTR_RECOGNITION': 
-                        {'PT': 'doctr/crnn_vgg16_bn/pt/crnn_vgg16_bn-9762b0b0.pt',
-                         'TF': 'doctr/crnn_vgg16_bn/tf/crnn_vgg16_bn-76b7f2c6.zip'},
-                        'DOCTR_WORD': 
-                        {'PT': 'doctr/db_resnet50/pt/db_resnet50-ac60cadc.pt',
-                         'TF': 'doctr/db_resnet50/tf/db_resnet50-adcafc63.zip'}}},
+            'WEIGHTS': {'DOCTR_RECOGNITION': 'doctr/crnn_vgg16_bn/crnn_vgg16_bn-9762b0b0.pt',
+                        'DOCTR_WORD': 'doctr/db_resnet50/db_resnet50-ac60cadc.pt'}},
     'PDF_MINER': {'X_TOLERANCE': 3, 'Y_TOLERANCE': 3},
-    'PT': {'CELL': {'FILTER': None,
-                    'PAD': {'BOTTOM': 60, 'LEFT': 60, 'RIGHT': 60, 'TOP': 60},
-                    'PADDING': False,
-                    'WEIGHTS': 'cell/d2_model_1849999_cell_inf_only.pt',
-                    'WEIGHTS_TS': 'cell/d2_model_1849999_cell_inf_only.ts'},
-           'ENFORCE_WEIGHTS': {'CELL': True, 'ITEM': True, 'LAYOUT': True},
-           'ITEM': {'FILTER': ['table'],
-                    'PAD': {'BOTTOM': 60, 'LEFT': 60, 'RIGHT': 60, 'TOP': 60},
-                    'PADDING': False,
-                    'WEIGHTS': 'deepdoctection/tatr_tab_struct_v2/pytorch_model.bin',
-                    'WEIGHTS_TS': 'item/d2_model_1639999_item_inf_only.ts'},
-           'LAYOUT': {'FILTER': None,
-                      'PAD': {'BOTTOM': 0, 'LEFT': 0, 'RIGHT': 0, 'TOP': 0},
-                      'PADDING': False,
-                      'WEIGHTS': 'Aryn/deformable-detr-DocLayNet/model.safetensors',
-                      'WEIGHTS_TS': 'layout/d2_model_0829999_layout_inf_only.ts'}},
+    'CELL': {'FILTER': None,
+             'PAD': {'BOTTOM': 60, 'LEFT': 60, 'RIGHT': 60, 'TOP': 60},
+             'PADDING': False,
+             'WEIGHTS': 'cell/d2_model_1849999_cell_inf_only.pt',
+             'WEIGHTS_TS': 'cell/d2_model_1849999_cell_inf_only.ts',
+             'ENFORCE_WEIGHTS': {'CELL': True, 'ITEM': True, 'LAYOUT': True},
+    'ITEM': {'FILTER': ['table'],
+             'PAD': {'BOTTOM': 60, 'LEFT': 60, 'RIGHT': 60, 'TOP': 60},
+             'PADDING': False,
+             'WEIGHTS': 'deepdoctection/tatr_tab_struct_v2/pytorch_model.bin',
+             'WEIGHTS_TS': 'item/d2_model_1639999_item_inf_only.ts'},
+    'LAYOUT': {'FILTER': None,
+               'PAD': {'BOTTOM': 0, 'LEFT': 0, 'RIGHT': 0, 'TOP': 0},
+               'PADDING': False,
+               'WEIGHTS': 'Aryn/deformable-detr-DocLayNet/model.safetensors',
+               'WEIGHTS_TS': 'layout/d2_model_0829999_layout_inf_only.ts'},
     'SEGMENTATION': {'ASSIGNMENT_RULE': 'ioa',
                      'CELL_NAMES': ['CellType.HEADER', 
                                     'CellType.BODY', 
@@ -172,12 +170,6 @@ analyzer = dd.get_dd_analyzer()
                                                 'LayoutType.FIGURE', 
                                                 'CellType.SPANNING',
                                                 'LayoutType.CELL')},
-    'TF': {'CELL': {'FILTER': None, 
-                    'WEIGHTS': 'cell/model-1800000_inf_only.data-00000-of-00001'},
-           'ITEM': {'FILTER': None, 
-                    'WEIGHTS': 'item/model-1620000_inf_only.data-00000-of-00001'},
-           'LAYOUT': {'FILTER': None, 
-                      'WEIGHTS': 'layout/model-800000_inf_only.data-00000-of-00001'}},
     'USE_LAYOUT': True,
     'USE_LAYOUT_LINK': False,
     'USE_LAYOUT_NMS': True,
@@ -208,7 +200,7 @@ analyzer = dd.get_dd_analyzer()
 
 Let's take a closer look at the **deep**doctection analyzer. 
 
-![pipeline](./_imgs/pipelines_02.png)
+![pipeline](../_imgs/pipelines_02.png)
 
 The architecture is modular, and a pipeline consists of individual components, each typically performing a single 
 processing step. We have already explored the [**configuration**](Analyzer_Configuration.md) options. When the analyzer 
@@ -278,7 +270,7 @@ analyzer.get_pipeline_info()
      '1cedc14d': 'text_extract_doctr_crnn_vgg16_bnpt_crnn_vgg16_bn-9762b0b0.pt',
      'd6219eba': 'matching',
      'f10aa678': 'text_order'}
-	</pre>
+    </pre>
 
 
 ```python
@@ -330,7 +322,7 @@ df = analyzer.analyze(path=pdf_path,
 					  session_id="9999z99z", 
 					  max_datapoints=3) # (1) 
 df.reset_state()
-all_results = [dp for dp in df]
+all_results = list(df)
 
 page_2 = all_results[1]
 
@@ -371,8 +363,7 @@ stores the reading order information.
 
 !!! Info
 
-    We can find more information about the data structure in the [**Data structure tutorial**]
-    (Data_Structure.md).
+    We can find more information about the data structure in the [**Data structure tutorial**](../concepts/Data_Structure.md).
 
 
 
@@ -474,14 +465,14 @@ identified by the DocTr text detection model.
 
 ```python
 text_detection_component = analyzer.get_pipeline_component(service_id="01a15bff")
-df = dd.DataFromList([dp.image_orig for dp in all_results]) # (1) 
+df = dd.DataFromList([dp.base_image for dp in all_results]) # (1) 
 df = text_detection_component.undo(df)
 df.reset_state()
 
 all_results_modified = [dp for dp in df]
 ```
 
-1. Check the notebook [Data_structure](Data_Structure.md)  in order to understand why we use `dp.image_orig`.
+1. Check the notebook [Data_structure](../concepts/Data_Structure.md)  in order to understand why we use `dp.base_image`.
 
 !!! Info
 

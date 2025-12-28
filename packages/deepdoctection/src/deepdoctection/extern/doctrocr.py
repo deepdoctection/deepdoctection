@@ -308,7 +308,6 @@ class DoctrTextRecognizer(TextRecognizer):
                           <https://github.com/mindee/doctr/blob/main/doctr/models/recognition/zoo.py#L16>.
             path_weights: Path to the weights of the model
             device: "cpu" or "cuda". Will default to "cuda" if the required hardware is available.
-            lib: "TF" or "PT" or `None`. If `None`, env variables `USE_TENSORFLOW`, `USE_PYTORCH` will be used.
             path_config_json: Path to a `JSON` file containing the configuration of the model. Useful, if you have
                               a model trained on custom vocab.
         """
@@ -408,7 +407,6 @@ class DoctrTextRecognizer(TextRecognizer):
                           <https://github.com/mindee/doctr/blob/main/doctr/models/recognition/zoo.py#L16>.
             path_weights: Path to the weights of the model
             device: "cpu" or "cuda". Will default to "cuda" if the required hardware is available.
-            lib: "TF" or "PT" or None. If None, env variables USE_TENSORFLOW, USE_PYTORCH will be used.
             path_config_json: Path to a `JSON` file containing the configuration of the model. Useful, if you have
                               a model trained on custom vocab.
 

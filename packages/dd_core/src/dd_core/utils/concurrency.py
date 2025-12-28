@@ -155,7 +155,7 @@ def enable_death_signal(_warn: bool = True) -> None:
 
 
 @no_type_check
-def start_proc_mask_signal(proc):
+def start_proc_mask_signal(proc: Any):
     """
     Start process(es) with `SIGINT` ignored.
 

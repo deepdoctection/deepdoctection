@@ -552,10 +552,6 @@ def append_settings_to_env_data(data: KeyValEnvInfos) -> KeyValEnvInfos:
     return data
 
 
-# In 'collect_env_info()' add before pt_info/third-party info:
-# data = _append_settings_to_env_data(data)
-
-
 def collect_torch_env() -> str:
     """
     Wrapper for `torch.utils.collect_env.get_pretty_env_info`.

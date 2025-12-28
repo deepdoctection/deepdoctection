@@ -822,7 +822,8 @@ class ServiceFactory:
         Building a table segmentation refinement service.
 
         Args:
-            config: Configuration object.
+            table_names: Names of the table object types.
+            cell_names: Names of the cell object types.
 
         Returns:
             TableSegmentationRefinementService: Refinement service instance.

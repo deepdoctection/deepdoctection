@@ -13,6 +13,7 @@
 Version `v.1.0` includes a major refactoring.  Key changes include:
 
 * PyTorch-only support for all deep learning models.
+* Support for many more fine-tuned models from the Huggingface Hub (Bert, RobertA, LayoutLM, LiLT, ...)
 * Decomposition into small sub-packages: dd-core, dd-datasets and deepdoctection
 * Type validations of core data structures
 * New test suite
@@ -27,10 +28,8 @@ Version `v.1.0` includes a major refactoring.  Key changes include:
 
 
 **deep**doctection is a Python library that orchestrates Scan and PDF document layout analysis, OCR and document 
-and token classification. Build and run a pipeline for your document extraction tasks, devlop your own document
-extraction workflow and use pre-trained models for inference.
-
-It also provides a framework for training, evaluating and inferencing Document AI models.
+and token classification. Build and run a pipeline for your document extraction tasks, develop your own document
+extraction workflow, fine-tune pre-trained models and use them seamlessly for inference.
 
 # Overview
 
@@ -40,8 +39,8 @@ It also provides a framework for training, evaluating and inferencing Document A
 - OCR with support of [**Tesseract**](https://github.com/tesseract-ocr/tesseract), [**DocTr**](https://github.com/mindee/doctr) and 
   [**AWS Textract**](https://aws.amazon.com/textract/),
 - Document and token classification with the [**LayoutLM**](https://github.com/microsoft/unilm) family,
-  [**LiLT**](https://github.com/jpWang/LiLT) and selected
-  [**Bert**](https://huggingface.co/docs/transformers/model_doc/xlm-roberta)-style including features like sliding windows.
+  [**LiLT**](https://github.com/jpWang/LiLT) and and many
+  [**Bert**](https://huggingface.co/docs/transformers/model_doc/xlm-roberta)-style models including features like sliding windows.
 - Text mining for native PDFs with [**pdfplumber**](https://github.com/jsvine/pdfplumber),
 - Language detection with with transformer based `papluca/xlm-roberta-base-language-detection`. 
 - Deskewing and rotating images with [**jdeskew**](https://github.com/phamquiluan/jdeskew) or [**Tesseract**](https://github.com/tesseract-ocr/tesseract).
@@ -61,7 +60,7 @@ Check the demo of a document layout analysis pipeline with OCR on 🤗
 
 --------------------------------------------------------------------------------------------------------
 
-# Example
+# Example 
 
 The following example shows how to use the built-in analyzer to decompose a PDF document into its layout structures.
 
@@ -108,6 +107,7 @@ alt="text" width="40%">
 </p>
 
 
+
 -----------------------------------------------------------------------------------------
 
 # Requirements
@@ -117,15 +117,6 @@ alt="text" width="40%">
 - Python >= 3.10
 - PyTorch >= 2.6
 - To fine-tune models, a GPU is recommended.
-
-| Task | PyTorch | Torchscript |
-|---------------------------------------------|:-------:|----------------|
-| Layout detection via Detectron2 | ✅ | ✅ (CPU only) |
-| Table recognition via Detectron2 | ✅ | ✅ (CPU only) |
-| Table transformer via Transformers | ✅ | ❌ |
-| Deformable-Detr | ✅ | ❌ |
-| DocTr | ✅ | ❌ |
-| LayoutLM (v1, v2, v3, XLM) via Transformers | ✅ | ❌ |
 
 ------------------------------------------------------------------------------------------
 
@@ -138,10 +129,10 @@ We recommend using a virtual environment.
 For a simple setup which is enough to parse documents with the default setting, install the following
 
 ```
-pip install timm  # needed for the default setup
-pip install transformers
-pip install python-doctr
-pip install deepdoctection
+uv pip install timm  # needed for the default setup
+uv pip install transformers
+uv pip install python-doctr
+uv pip install deepdoctection
 ```
 
 This setup is sufficient to run the [**introduction notebook**](https://github.com/deepdoctection/notebooks/blob/main/Get_Started.ipynb).
@@ -155,13 +146,13 @@ First install **Detectron2** separately as it is not distributed via PyPi. Check
 [here](https://detectron2.readthedocs.io/en/latest/tutorials/install.html) or try:
 
 ```
-pip install --no-build-isolation detectron2@git+https://github.com/deepdoctection/detectron2.git
+uv pip install --no-build-isolation detectron2@git+https://github.com/deepdoctection/detectron2.git
 ```
 
 Then install **deep**doctection with all its dependencies:
 
 ```
-pip install deepdoctection[full]
+uv pip install deepdoctection[full]
 ```
 
 

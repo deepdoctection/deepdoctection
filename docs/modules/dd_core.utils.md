@@ -14,5 +14,4 @@
             - "!__getattr__"
             - "!__setattr__"
             - "!__str__"
-            - "!PopplerError"
 
