@@ -105,7 +105,6 @@ def _mk_dummy_tokenizer() -> Any:
 )
 def test_sequence_slow_build_and_predict(
     tmp_path: PathLikeOrStr,
-    monkeypatch: pytest.MonkeyPatch,
     wrapper_cls: Any,
     model_cls: Any,
     cfg_cls: Any,
@@ -187,7 +186,6 @@ def test_sequence_slow_build_and_predict(
 )
 def test_token_slow_build_and_predict(
     tmp_path: PathLikeOrStr,
-    monkeypatch: pytest.MonkeyPatch,
     wrapper_cls: Any,
     model_cls: Any,
     cfg_cls: Any,

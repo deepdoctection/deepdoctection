@@ -40,7 +40,6 @@ from deepdoctection.extern.hflm import (
 )
 from deepdoctection.extern.model import ModelCatalog, ModelDownloadManager
 
-
 if pytorch_available() and transformers_available():
     import torch
     from transformers import (

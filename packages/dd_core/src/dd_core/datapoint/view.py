@@ -266,16 +266,19 @@ class ImageAnnotationBaseView:
             return np_image
         raise AnnotationError(f"base_page.image is None for {self.annotation_id}")
 
-    def __getattr__(self, item: str) -> Optional[Union[str, int, float, list[str], list[ImageAnnotationBaseView]],
-    CategoryAnnotation]:
+    def __getattr__(
+        self, item: str
+    ) -> Optional[Union[str, int, float, list[str], list[ImageAnnotationBaseView], CategoryAnnotation]]:
         """
         Resolve dynamic attributes (user-facing summary).
 
         - Accepted attributes: those returned by `self.get_attribute_names()` and the view properties.
         - Attributes ending with a double trailing underscore (e.g. `text__`):
             - Base name = `item[:-2]`.
-            - If base name is not registered, raises `AnnotationError(f"Attribute {item} is not supported for {type(self)}")`.
-            - If registered, returns the raw `CategoryAnnotation` from `self.sub_categories` or, if absent, from the sibling image's `summary.sub_categories`.
+            - If base name is not registered, raises `AnnotationError(f"Attribute {item} is not supported for
+              {type(self)}")`.
+            - If registered, returns the raw `CategoryAnnotation` from `self.sub_categories` or, if absent, from the
+              sibling image's `summary.sub_categories`.
             - Relationship lookups are not performed in this special-case. Returns `None` if not found.
         - Normal resolution (unchanged):
             - Check `self.sub_categories` (return `category_name`, `ContainerAnnotation.value`, or `category_id`).
@@ -285,7 +288,8 @@ class ImageAnnotationBaseView:
 
         Returns:
             - For the `__` special-case: `CategoryAnnotation` or `None`.
-            - For the normal case: `str`, `int`, `float`, `list[str]`, `list[ImageAnnotationBaseView]`, `CategoryAnnotation`, or `None`.
+            - For the normal case: `str`, `int`, `float`, `list[str]`, `list[ImageAnnotationBaseView]`,
+             `CategoryAnnotation`, or `None`.
         """
 
         if item.endswith("__"):
