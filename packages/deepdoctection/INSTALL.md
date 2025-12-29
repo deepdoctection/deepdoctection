@@ -70,6 +70,16 @@ pip install deepdoctection[full]
 
 This includes additional dependencies (timm, transformers, accelerate, python-doctr, detectron2), but **PyTorch must still be installed separately** as described above.
 
+#### Conda/Mamba Installation (Full)
+
+From the repository root:
+
+```bash
+mamba env create -f environment.yml
+mamba activate deepdoctection-full
+python -c "import deepdoctection as dd; print(dd.__version__)"
+````
+
 ### 4. Development Installation
 
 For development work on the package:

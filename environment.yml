@@ -1,0 +1,10 @@
+name: deepdoctection-full
+channels:
+  - pytorch
+  - conda-forge
+dependencies:
+  - python>=3.10,<3.13
+  - pip>=23
+  - pip:
+      # Install the package with "full" extras
+      - deepdoctection[full]
