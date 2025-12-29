@@ -41,6 +41,8 @@ sys.path.insert(0, ROOT)
 # that need to be installed separately
 _DEPS = [
     # the minimum requirements to run pipelines without considering DL models specific dependencies
+    "pydantic>=2.0",
+    "pydantic-settings",
     "apted==1.0.3",
     "catalogue==2.0.10",
     "distance==0.1.3",
@@ -48,9 +50,8 @@ _DEPS = [
     "jsonlines==3.1.0",
     "lazy-imports==0.3.1",
     "lxml>=4.9.1",
-    "mock==4.0.3",
     "networkx>=2.7.1",
-    "numpy>2.0",  # When using fasttext-wheel, downgrading to numpy<1.x is required
+    "numpy>2.0",
     "opencv-python==4.8.0.76",  # this is not required anymore, but we keep its version as a reference
     "packaging>=20.0",
     "Pillow>=10.0.0",
@@ -72,9 +73,6 @@ _DEPS = [
     "types-Pillow>=10.2.0.20240406",
     "types-urllib3>=1.26.25.14",
     "lxml-stubs>=0.5.1",
-    # Tensorflow related dependencies
-    "protobuf==3.20.1",
-    "tensorpack==0.11",
     # PyTorch related dependencies
     "timm>=0.9.16",
     "transformers>=4.48.0",
@@ -86,13 +84,8 @@ _DEPS = [
     "jdeskew>=0.2.2",
     "boto3==1.34.102",
     "pdfplumber>=0.11.0",
-    "tensorflow-addons>=0.17.1",
-    "tf2onnx>=1.9.2",
     "python-doctr==0.10.0",
-    # fasttext-wheel is not compatible with numpy v2. Downgrading to numpy<1.x is required
-    # "fasttext-wheel==0.9.2",
     # dev dependencies
-    "python-dotenv==1.0.0",
     "click",  # version will not break black
     "black==23.7.0",
     "isort==5.13.2",
@@ -122,55 +115,53 @@ def deps_list(*pkgs: str):
 
 # pypi dependencies without considering DL models specific dependencies
 dist_deps = deps_list(
-    "catalogue",
-    "huggingface_hub",
-    "jsonlines",
-    "lazy-imports",
-    "mock",
-    "numpy",
-    "packaging",
-    "Pillow",
-    "pypdf",
-    "pypdfium2",
-    "pyyaml",
-    "scipy",
-    "termcolor",
-    "tabulate",
-    "tqdm",
+    "catalogue", # dd-core
+    "huggingface_hub", # deepdoctection
+    "jsonlines", # dd-datasets
+    "lazy-imports", # dd-core
+    "numpy", # dd-core
+    "packaging", # dd-core
+    "Pillow", # dd-core
+    "pydantic", # dd-core
+    "pydantic-settings", # dd-core
+    "pypdf", # dd-core[full]
+    "pypdfium2", # dd-core[full]
+    "pyyaml", # dd-core
+    "scipy", # dd-core[full]
+    "termcolor", # dd-core
+    "tabulate", # dd-core
+    "tqdm", # dd-core
 )
 
 
 # remaining dependencies to use models that neither require TF nor PyTorch
 additional_deps = deps_list(
-    "boto3",
-    "pdfplumber",
-    # "fasttext-wheel",
-    "pyzmq",
-    "jdeskew",
-    "apted",
-    "distance",
-    "lxml",
-    "networkx",
+    "boto3", # deepdoctection[full]
+    "pdfplumber", # deepdoctection[full]
+    "pyzmq", # optional full multithreading dataflows
+    "jdeskew", # deepdoctection[full]
+    "apted", # deepdoctection[full]
+    "distance", # deepdoctection[full]
+    "lxml", # dd-datasets[full]
+    "networkx", # deepdoctection[full]
 )
 
-tf_deps = deps_list("tensorpack", "protobuf", "tensorflow-addons", "tf2onnx", "python-doctr", "pycocotools")
-
 # PyTorch dependencies
-pt_deps = deps_list("timm", "transformers", "accelerate", "python-doctr", "pycocotools")
+pt_deps = deps_list("timm", # deepdoctection[full]
+                    "transformers",  # deepdoctection[full]
+                    "accelerate", # deepdoctection[full]
+                    "python-doctr",  # deepdoctection[full]
+                    "pycocotools") # deepdoctection[full]
 
-# Putting all together
-tf_deps = dist_deps + tf_deps + additional_deps
 pt_deps = dist_deps + pt_deps + additional_deps
 
 
 # dependencies for rtd. Only needed to create requirements.txt
 docs_deps = deps_list(
-    "tensorpack",
     "boto3",
     "transformers",
     "accelerate",
     "pdfplumber",
-    "lxml",
     "lxml-stubs",
     "jdeskew",
     "jinja2",
@@ -185,7 +176,6 @@ test_deps = deps_list("pytest", "pytest-cov")
 
 # dev dependencies
 dev_deps = deps_list(
-    "python-dotenv",
     "click",
     "black",
     "isort",
@@ -206,7 +196,6 @@ dev_deps = deps_list(
 # when uploading to pypi first comment all source extra dependencies so that there are no dependencies to dataflow
 
 EXTRA_DEPS = {
-    "tf": tf_deps,
     "pt": pt_deps,
     "docs": docs_deps,
     "dev": dev_deps,

@@ -1,0 +1,6 @@
+dd_datapoint/tests/assets/a8d0e15c-7463-378a-a3e5-28590a4440ab.json filter=lfs diff=lfs merge=lfs -text
+dd_datapoint/tests/assets/sample_document_image.png filter=lfs diff=lfs merge=lfs -text
+deepdoctection/tests/assets/deskew/skewed_gt_opencv.png filter=lfs diff=lfs merge=lfs -text
+deepdoctection/tests/assets/deskew/skewed_gt_pil.png filter=lfs diff=lfs merge=lfs -text
+dd_core/tests/assets/sample_document_image.png filter=lfs diff=lfs merge=lfs -text
+deepdoctection/tests/assets/deskew/skewed_input.png filter=lfs diff=lfs merge=lfs -text

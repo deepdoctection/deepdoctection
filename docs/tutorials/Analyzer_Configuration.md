@@ -6,11 +6,13 @@
 
 # Analyzer Configuration
 
-In this overview, we aim to take a closer look at the configuration and show how components can be activated and models 
-can be exchanged. The configuration options are extensive, and changes in some areas often require adjustments in others. 
-It is not possible to cover all configuration options in this context. 
 
-For further details, we refer to the [Config reference](../modules/deepdoctection.analyzer.md).
+**deep**doctection's analyzer comes equipped with extensive configurations that allows:
+
+- to add and remove processing steps 
+- to swap models for layout analysis or ocr
+- to adjust config setting for rule based processes
+- to configure the output structure
 
 ## How to change configuration
 
@@ -43,9 +45,9 @@ There is a configuration file that can be used to set the default parameters. Th
 `~/.cache/deepdoctection/configs/dd/conf_dd_one.yaml`.
 
 !!! info "Cache directory"
-    **deep**doctection creates a cache directory the first time `dd.get_dd_analyzer()` is called. This cache directory 
-    stores all models and configurations that are used at any point in time.  The configuration file is located at 
-    `~/.cache/deepdoctection`.
+
+    The configuration file can be found at `os.environ["DD_ONE_CONFIG"]`. You can adjust the config file and load the
+    new config.
 
 The config file will be used once we set `dd.get_dd_analyzer(load_default_config_file=True)`.  
 
@@ -68,9 +70,11 @@ USE_PDF_MINER: False, # (6)
 USE_OCR: True, # (7) 
 USE_LAYOUT_LINK: False, # (8)
 USE_LINE_MATCHER: False, # (9)
+USE_LM_SEQUENCE_CLASS: False # (10)
+USE_LM_TOKEN_CLASS: False # (11)
 ```
 
-1. Determining the orientation of a page and rotating the page accordingly (requires Tesseract)
+1. Enables the initial pipeline component using TesseractRotationTransformer to auto-rotate pages by 90-degree increments.
 2. Segmenting a page into layout sections. We can choose various object detection models
 3. Layout NMS by pairs of layout sections (e.g. 'table' and 'title'). Reduces significantly false positives.
 4. This will determine cells and rows/column of a detected table
@@ -79,6 +83,13 @@ USE_LINE_MATCHER: False, # (9)
 7. Whether to use an OCR engine
 8. Whether to link layout sections, e.g. figure and caption
 9. Only relevant for very specific layout models
+10. Enables a sequence classification pipeline component, e.g. a LayoutLM or a Bert-like model.
+11. Enables a token classification pipeline component, e.g. a LayoutLM or Bert-like model
+
+## Rotator models
+
+There are two approaches available: One that uses `Tesseract` and a second method based on `DocTr`. Set 
+`ROTATOR.MODEL=tesseract` or `ROTATOR.MODEL=doctr`. 
 
 ## Layout models
 
@@ -86,31 +97,28 @@ Once `USE_LAYOUT=True` we can configure the layout pipeline component further.
 
 !!! info "Layout models"
 
-    Layout detection uses either Tensorpack's Cascade-RCNN, Deformable-Detr, Detectron2 Cascade-RCNN or Table-Transformer, 
-    depending on which DL framework PyTorch or Tensorflow has been installed. Models have been trained on different datasets 
-    and therefore return different layout sections. 
+    Layout detection uses either  Deformable-Detr, Detectron2 Cascade-RCNN or Table-Transformer. Models have been 
+    trained on different datasets and therefore return different layout sections. Use 
+    `layout/d2_model_0829999_layout_inf_only.pt` for scientific articles, 
+    `microsoft/table-transformer-detection/model.safetensors` if you are only interested in table detection. 
+    `Aryn/deformable-detr-DocLayNet/model.safetensors` is more general and can be used for financial reports, patents, 
+    manuals or laws and regulation documents.
 
-We can choose between `layout/d2_model_0829999_layout_inf_only.pt`, 
-`microsoft/table-transformer-detection/pytorch_model.bin`, 
-`Aryn/deformable-detr-DocLayNet/model.safetensors`. What works best on your use-case is up to you to check. For 
-instance, we can switch between Pytorch models like this:
+ For instance, we can switch between models like this:
 
 ```yaml
-PT:
-   LAYOUT:
-      FILTER:
-         - figure
-      PAD:
-         BOTTOM: 0
-         LEFT: 0
-         RIGHT: 0
-         TOP: 0
-       PADDING: false
-       WEIGHTS: layout/d2_model_0829999_layout_inf_only.pt
-       WEIGHTS_TS: layout/d2_model_0829999_layout_inf_only.ts
+LAYOUT:
+  FILTER:
+     - figure
+  PAD:
+     BOTTOM: 0
+     LEFT: 0
+     RIGHT: 0
+     TOP: 0
+  PADDING: false
+  WEIGHTS: layout/d2_model_0829999_layout_inf_only.pt
+  WEIGHTS_TS: layout/d2_model_0829999_layout_inf_only.ts
 ```
-
-Here, we are using the `model layout/d2_model_0829999_layout_inf_only.pt` for PyTorch. With
 
 ```yaml
 FILTER:
@@ -127,9 +135,7 @@ we instruct the system to filter out all figure objects.
     the model.
 
     ```python
-    from dataclasses import asdict
-
-    asdict(dd.ModelCatalog.get_profile("layout/d2_model_0829999_layout_inf_only.pt"))
+    dd.ModelCatalog.get_profile("layout/d2_model_0829999_layout_inf_only.pt")
     ```
 
     !!! info "Output"
@@ -156,6 +162,48 @@ we instruct the system to filter out all figure objects.
         'padding': None}
 
 
+## Layout Non-Maximum-Supression
+
+This is relevant if `USE_LAYOUT_NMS=True`.
+
+Layout models often produce overlapping layout sections. These can be removed using Non-Maximum Suppression (NMS). 
+Suppose a large and complex table is detected — it's not uncommon for a text block or a title to be mistakenly
+recognized within the table as well, potentially even with a high confidence score. In such cases, you may still want
+to retain the table at all costs.
+
+Using the `LAYOUT_NMS_PAIRS` configuration, you can define pairs of layout sections that should be subjected to NMS
+once a certain overlap threshold is exceeded. Additionally, you can set a priority to specify which category should be
+favored when overlaps occur.
+
+In `.yaml`-terms, the configuration consists of three parts:
+
+```yaml
+LAYOUT_NMS_PAIRS:
+  COMBINATIONS:  # (1)
+    - - table
+      - title
+  PRIORITY:  # (2)
+    - table
+  THRESHOLDS:  # (3)
+    - 0.001
+```
+
+1. Pairs of layout categories to be checked for NMS.
+2. Preferred category when overlap occurs. If set to `None`, NMS uses the confidence score.
+3. IoU overlap threshold. Pairs with lower IoU will be ignored.
+
+
+Using Python, the config looks as follows:
+
+```python
+config_overwrite=["LAYOUT_NMS_PAIRS.COMBINATIONS=['table','title']",
+                  "LAYOUT_NMS_PAIRS.PRIORITY=['table']",
+                  "LAYOUT_NMS_PAIRS.THRESHOLDS=[0.001]"]
+```
+
+This allows fine-grained control over which layout sections should be retained and which should be suppressed during
+postprocessing.
+
 
 ### Table transformer
 
@@ -163,7 +211,7 @@ We can use the [table transformer model](https://github.com/microsoft/table-tran
 
 
 ```python
-asdict(dd.ModelCatalog.get_profile("microsoft/table-transformer-detection/pytorch_model.bin"))
+dd.ModelCatalog.get_profile("microsoft/table-transformer-detection/pytorch_model.bin")
 ```
 
 
@@ -188,14 +236,13 @@ asdict(dd.ModelCatalog.get_profile("microsoft/table-transformer-detection/pytorc
 
 
 ```yaml
-PT:
-   LAYOUT:
-      WEIGHTS: microsoft/table-transformer-detection/pytorch_model.bin
-   PAD:
-      TOP: 60
-      RIGHT: 60
-      BOTTOM: 60
-      LEFT: 60
+LAYOUT:
+  WEIGHTS: microsoft/table-transformer-detection/pytorch_model.bin
+PAD:
+  TOP: 60
+  RIGHT: 60
+  BOTTOM: 60
+  LEFT: 60
 ```
 
 Table transformer requires image padding for more accurate results. The default padding provided might not be optimal. 
@@ -208,38 +255,6 @@ We can tweak and change it according to our needs.
 
     A custom model can be added as well, but it needs to be registered. The same holds true for some special categories. 
     We refer to [this notebook](Analyzer_Model_Registry_And_New_Models.md) for adding your own or third party models.
-
-## Layout Non-Maximum-Supression
-
-This is relevant if `USE_LAYOUT_NMS=True`.
-
-
-!!! info 
-    
-    Layout models often produce overlapping layout sections. These can be removed using Non-Maximum Suppression (NMS). 
-    However, experience has shown that NMS often needs to be fine-tuned. For example, it can be useful to exclude tables 
-    from the NMS process.
-
-    Suppose a large and complex table is detected — it's not uncommon for a text block or a title to be mistakenly 
-    recognized within the table as well, potentially even with a high confidence score. In such cases, you may still want 
-    to retain the table at all costs.
-
-Using the `LAYOUT_NMS_PAIRS` configuration, we can define pairs of layout sections that should be subject to NMS 
-once a certain overlap threshold is exceeded. Additionally, we can set a priority to specify which category should 
-be favored when overlaps occur.
-
-The configuration consists of three parts:
-
-```yaml
-LAYOUT_NMS_PAIRS:
-  COMBINATIONS:  # Pairs of layout categories to be checked for NMS
-    - - table
-      - title
-  PRIORITY:  # Preferred category when overlap occurs. If set to `None`, NMS uses the confidence score.
-    - table
-  THRESHOLDS:  # IoU overlap threshold. Pairs with lower IoU will be ignored.
-    - 0.001
-```
 
 
 ## Table Segmentation in **deep**doctection
@@ -273,11 +288,9 @@ multi-spanning cells where appropriate.
 
 Finally, each cell is assigned its row and column number.
 
-!!! note
-    
-    Table Transformer is only available with **PyTorch**.
 
 !!! info
+
     In practice, we have observed that the recognition of multi-spanning cells is **less reliable** for non-scientific 
     tables (e.g., tables not originating from medical articles). If multi-spanning headers are not essential, we 
     recommend filtering them out. The result is a table structure consisting only of simple cells, i.e., cells 
@@ -315,26 +328,6 @@ SEGMENTATION:
     The more accurate the underlying detectors are for your specific use case, the higher the thresholds (e.g., 
     `THRESHOLD_ROWS`, `THRESHOLD_COLS`) should be set to take full advantage of the predictions.
 
-### Filtering Redundant Detections
-
-The Table Transformer may detect redundant table structures and headers. To filter those out, apply the following:
-
-```yaml
-PT:
-  ITEM:
-    WEIGHTS: microsoft/table-transformer-structure-recognition/pytorch_model.bin
-    FILTER:
-      - table
-      - column_header
-      - projected_row_header
-      - spanning
-```
-
-!!! note
-
-    This ensures that only relevant cell structures are retained, improving clarity and reducing noise in the 
-    segmentation output.
-
 
 ## Text extraction
 
@@ -349,11 +342,25 @@ If we try to pass images through this pipeline, we will run into an error.
 USE_PDF_MINER: True
 ```
 
+PDF Miners need to group character like objects into words. This task is rule based and can be further customized:
+
+```python
+PDF_MINER.X_TOLERANCE=3 # (1)
+PDF_MINER.Y_TOLERANCE=3 # (2)
+```
+
+1. Horizontal tolerance when merging characters into words. Characters that are horizontally closer than this value
+   will be grouped into a single word.
+2. Vertical tolerance when grouping characters into lines. Characters within this vertical range will be considered
+   part of the same line.
+
+### OCR
+
 The remaining three are all OCR methods. If we want to use an OCR engine, we need to set `USE_OCR=True`.
 
 !!! info
 
-    It is possible to select PdfPlumber in combination with an OCR. If no text was extracted with PdfPlumber, the OCR 
+    It is possible to select PdfPlumber in combination with an OCR. If no text was extracted with `PdfPlumber`, the OCR 
     service will be called, otherwise it will be omitted. 
 
 !!! info
@@ -370,6 +377,10 @@ OCR:
   USE_TEXTRACT: False
 ```
 
+
+**To activate one OCR engine, you also must ensure to deactivate the other two.**
+
+
 ### DocTr
 
 DocTr is a powerful library that provides models for both TensorFlow and PyTorch. What makes it particularly valuable 
@@ -383,30 +394,22 @@ interest.
 
     For **DOCTR_WORD**, the following models are registered in the ModelCatalog:
 
-    * For PyTorch: `doctr/db_resnet50/pt/db_resnet50-ac60cadc.pt`
-    * For TensorFlow: `doctr/db_resnet50/tf/db_resnet50-adcafc63.zip`
+    * `doctr/db_resnet50/db_resnet50-ac60cadc.pt`
 
     For **DOCTR_RECOGNITION**, you can choose from the following PyTorch models:
 
-     * `doctr/crnn_vgg16_bn/pt/crnn_vgg16_bn-9762b0b0.pt`
-     * `Felix92/doctr-torch-parseq-multilingual-v1/pytorch_model.bin`
-     * `doctr/crnn_vgg16_bn/pt/master-fde31e4a.pt`
+    * `doctr/crnn_vgg16_bn/crnn_vgg16_bn-0417f351.pt`
+    * `Felix92/doctr-torch-parseq-multilingual-v1/pytorch_model.bin`
+    * `doctr/crnn_vgg16_bn/master-fde31e4a.pt`
 
-     For TensorFlow, only one model is currently registered:
-
-     * `doctr/crnn_vgg16_bn/tf/crnn_vgg16_bn-76b7f2c6.zip`
  
 To use DocTr set `OCR.USE_OCR=True` and select the model for word detection and text recognition.
 
 ```yaml
 OCR:
   WEIGHTS:
-    DOCTR_WORD:
-      TF: doctr/db_resnet50/tf/db_resnet50-adcafc63.zip
-      PT: doctr/db_resnet50/pt/db_resnet50-ac60cadc.pt
-    DOCTR_RECOGNITION:
-      TF: doctr/crnn_vgg16_bn/tf/crnn_vgg16_bn-76b7f2c6.zip
-      PT: doctr/crnn_vgg16_bn/pt/crnn_vgg16_bn-9762b0b0.pt
+    DOCTR_WORD: doctr/db_resnet50/pt/db_resnet50-ac60cadc.pt
+    DOCTR_RECOGNITION: doctr/crnn_vgg16_bn/crnn_vgg16_bn-0417f351.pt
 ```
 
 ### Tesseract
@@ -437,7 +440,14 @@ is a paid service and requires an AWS account. You also need to install `boto3`.
 to access the service via API.
 
 To use the API, credentials must be provided. We can either use the AWS CLI with its built-in secret management, or 
-set the environment variables at the beginning: `AWS_ACCESS_KEY`, `AWS_SECRET_KEY`, and `AWS_REGION`.
+set the environment variables at the beginning:
+
+
+```
+AWS_ACCESS_KEY_ID=your-aws-key
+AWS_SECRET_ACCESS_KEY=your-secret-key
+AWS_REGION=your-region
+```
 
 To use Textract within the analyzer, configure as follows:
 
@@ -504,7 +514,7 @@ task is handled by the `TextOrderService` component.
     * columns within a block from **left to right**, and
     * contiguous blocks from **top to bottom**.
 
-    ![pipelines](./_imgs/analyzer_configuration_01.png)
+    ![pipelines](../_imgs/analyzer_configuration_01.png)
 
 It’s important to note that this method imposes an **artificial reading order**, which may not align with the true 
 semantic structure of more complex or unconventional layouts.

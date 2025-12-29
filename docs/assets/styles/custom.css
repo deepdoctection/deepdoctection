@@ -1,11 +1,24 @@
 /* custom.css */
+/* Button style */
 .md-button {
   display: inline-block;
-  width: 230px; /* Einheitliche Breite */
+  width: 230px; /* Uniform width */
   text-align: center;
   height: 50px;
-  /* background-color: #007BFF;  Optional: Hintergrundfarbe */
-  color: white; /* Optional: Textfarbe */
-  border-radius: 5px; /* Optional: Abgerundete Ecken */
-  text-decoration: none; /* Entfernt Unterstreichung */
+  /* background-color: #007BFF;  Optional: background color */
+  color: white; /* Optional: text color */
+  border-radius: 5px; /* Optional: rounded corners */
+  text-decoration: none; /* Removes underline */
+}
+
+/* Ensure syntax-highlighting spans stay inline and preserve whitespace (Chrome fix) */
+pre code span,
+code span,
+.md-typeset pre code span,
+.md-typeset code span,
+.highlight span,
+.highlight pre span {
+  display: inline !important;
+  white-space: pre !important;
+  vertical-align: baseline !important;
 }

@@ -57,8 +57,8 @@ Document AI relies on datasets, but labeled data is rare:
 * Annotation is expensive and domain-specific.
 
 While **deep**doctection does not provide labeling tools, it supports converting your labeled data into a structured 
-[**dataset format**](./tutorials/Datasets.md) for training and evaluation. Templates exist for several public datasets 
-such as [Publaynet][deepdoctection.datasets.instances.publaynet] or [XFUND][deepdoctection.datasets.instances.xfund], 
+[**dataset format**](./concepts/Datasets.md) for training and evaluation. Templates exist for several public datasets 
+such as [Publaynet][dd_datasets.instances.publaynet] or [XFUND][dd_datasets.instances.xfund], 
 which can serve as blueprints.
 
 ## Fine-tuning
@@ -67,7 +67,7 @@ Pretrained models may not generalize well to your documents. But with **transfer
 limited labeled data.
 
 **deep**doctection provides [training scripts][deepdoctection.train] and an 
-[evaluator](./tutorials/Evaluation.md) to train and validate models on custom datasets.
+[evaluator](./concepts/Evaluation.md) to train and validate models on custom datasets.
 
 ## Large Language Models (LLMs) and Vision-Language Models (VLLMs)
 

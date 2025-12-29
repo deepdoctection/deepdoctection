@@ -30,14 +30,13 @@ import deepdoctection as dd
 
 ## Adding the model wrapper for YOLO
 
-
 ```python
 from __future__ import annotations 
 
 from typing import Mapping
-from deepdoctection.utils.types import PixelValues, PathLikeOrStr
-from deepdoctection.utils.settings import TypeOrStr
-from deepdoctection.utils.file_utils import Requirement
+from dd_core.utils.types import PixelValues, PathLikeOrStr
+from dd_core.utils.object_types import TypeOrStr
+from dd_core.utils.file_utils import Requirement
 
 from ultralytics import YOLO
 
@@ -167,11 +166,13 @@ class YoloDetector(dd.ObjectDetector):
 
 ## Adding the model to the `ModelCatalog`
 
-Next, we need to register the model artifact. Registering the model will make it much easier to use the later with the Analyzer. We use the `yolov10x_best.pt` checkpoint from [here](https://huggingface.co/omoured/YOLOv10-Document-Layout-Analysis).
+Next, we need to register the model artifact. Registering the model will make it much easier to use the later with the
+Analyzer. We use the `yolov10x_best.pt` checkpoint from [here](https://huggingface.co/omoured/YOLOv10-Document-Layout-Analysis).
 
 By the way, the source code for training this model can be found [here](https://github.com/moured/YOLOv10-Document-Layout-Analysis.git).
 
-Save the model under `dd.get_weights_dir_path() / "yolo/yolov10x_best.pt"`. Alternatively, provide `hf_repo_id`, `hf_model_name`. This model does not require a config file.
+Save the model under `os.environ["CONFIGS_DIR"] `. 
+Alternatively, provide `hf_repo_id`, `hf_model_name`. This model does not require a config file.
 
 
 ```python
@@ -237,15 +238,18 @@ model_weights = dd.ModelDownloadManager.maybe_download_weights_and_configs("yolo
 
 ## Running the Analyzer with the YoloDetector
 
-Next we want to build the Analyzer with the new layout model. We change `PT.LAYOUT.WEIGHTS` to `yolo/yolov10x_best.pt` and switch everything else off for demo purposes.
+Next we want to build the Analyzer with the new layout model. We change `LAYOUT.WEIGHTS` to `yolo/yolov10x_best.pt`
+and switch everything else off for demo purposes.
 
-One additional but not very obvious configuration step is crucial though: In order to show all layout sections the model is able to detect,
-we need to list them in `TEXT_ORDERING.FLOATING_TEXT_BLOCK_CATEGORIES`. Otherwise, we will only display the default layout sections which are those defined by the `Publaynet` dataset: `text,title,list,table,figure`. 
+One additional but not very obvious configuration step is crucial though: In order to show all layout sections the
+model is able to detect, we need to list them in `TEXT_ORDERING.FLOATING_TEXT_BLOCK_CATEGORIES`. Otherwise, we will
+only display the default layout sections which are those defined by the `Publaynet` dataset:
+`text,title,list,table,figure`. 
 
 
 
 ```python
-config_overwrite = ["PT.LAYOUT.WEIGHTS=yolo/yolov10x_best.pt",
+config_overwrite = ["LAYOUT.WEIGHTS=yolo/yolov10x_best.pt",
                     "USE_TABLE_SEGMENTATION=False",
                     "USE_OCR=False",
                     "TEXT_ORDERING.FLOATING_TEXT_BLOCK_CATEGORIES=
@@ -259,9 +263,11 @@ config_overwrite = ["PT.LAYOUT.WEIGHTS=yolo/yolov10x_best.pt",
 					 'section_header',
 					 'table',
 					 'text',
-					 'title']"]
+					 'title']"] # (1)
 analyzer = dd.get_dd_analyzer(config_overwrite=config_overwrite)
 ```
+
+1. Updating `TEXT_ORDERING.FLOATING_TEXT_BLOCK_CATEGORIES` is just for visualisation purposes.
 
 
 ```python
@@ -283,4 +289,4 @@ plt.axis('off')
 plt.imshow(img)
 ```
 
-![png](./_imgs/analyzer_doclaynet_with_yolo_01.png)
+![png](../_imgs/analyzer_doclaynet_with_yolo_01.png)
