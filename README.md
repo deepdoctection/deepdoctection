@@ -112,7 +112,7 @@ alt="text" width="40%">
 
 # Requirements
 
-![requirements](https://github.com/deepdoctection/deepdoctection/raw/master/docs/tutorials/_imgs/install_01.png)
+![requirements](https://github.com/deepdoctection/deepdoctection/raw/master/docs/_imgs/install_01.png)
 
 - Python >= 3.10
 - PyTorch >= 2.6
