@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "dd-core"
-version = "1.0.0a"
+version = "1.0.0"
 authors = [
     {name = "Dr. Janis Meyer"}
 ]

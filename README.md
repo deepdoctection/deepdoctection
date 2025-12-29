@@ -84,7 +84,7 @@ plt.imshow(image)
 ```
 
 <p align="center">
-  <img src="https://github.com/deepdoctection/deepdoctection/raw/master/docs/tutorials/_imgs/dd_rm_sample.png" 
+  <img src="https://github.com/deepdoctection/deepdoctection/raw/master/docs/_imgs/dd_rm_sample.png" 
 alt="sample" width="40%">
 </p>
 
@@ -93,7 +93,7 @@ HTML(page.tables[0].html)
 ```
 
 <p align="center">
-  <img src="https://github.com/deepdoctection/deepdoctection/raw/master/docs/tutorials/_imgs/dd_rm_table.png" 
+  <img src="https://github.com/deepdoctection/deepdoctection/raw/master/docs/_imgs/dd_rm_table.png" 
 alt="table" width="40%">
 </p>
 
@@ -102,7 +102,7 @@ print(page.text)
 ```
 
 <p align="center">
-  <img src="https://github.com/deepdoctection/deepdoctection/raw/master/docs/tutorials/_imgs/dd_rm_text.png" 
+  <img src="https://github.com/deepdoctection/deepdoctection/raw/master/docs/_imgs/dd_rm_text.png" 
 alt="text" width="40%">
 </p>
 

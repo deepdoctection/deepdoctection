@@ -23,7 +23,7 @@ What it updates:
 
 Usage:
 - From repository root:
-    python deepdoctection/scripts/bump_versions.py 1.0.1
+    python scripts/bump_version.py 1.0.1
 
 - From anywhere:
     python /path/to/repo/deepdoctection/scripts/bump_versions.py 1.0.1
