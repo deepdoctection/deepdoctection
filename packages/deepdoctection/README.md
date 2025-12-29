@@ -28,7 +28,7 @@ For training, evaluating as well as running all available models, the full packa
 For inference use cases, install the base package:
 
 ```bash
-(uv) pip install deepdoctection
+uv pip install deepdoctection
 ```
 
 **Important**: Various dependencies must be installed separately:
@@ -59,7 +59,7 @@ you prefer to use OpenCV, you can install it:
 For a one large install with all dependencies (except PyTorch), run:
 
 ```bash
-(uv) pip install deepdoctection[full]
+uv pip install deepdoctection[full]
 ```
 
 ### Development Installation

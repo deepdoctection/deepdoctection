@@ -19,13 +19,13 @@ It includes:
 ## Installation
 
 ```bash
-(uv) pip install dd-datasets
+uv pip install dd-datasets
 ```
 
 For using all datasets including those that require the xml-parsing tool lxml:
 
 ```bash
-(uv) pip install dd-datasets[full]
+uv pip install dd-datasets[full]
 ```
 
 ## License

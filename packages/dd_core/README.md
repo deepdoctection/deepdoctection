@@ -20,13 +20,13 @@ Core data structures, utilities, mapper and dataflows for the deepdoctection eco
 ## Installation
 
 ```bash
-(uv) pip install dd-core
+uv pip install dd-core
 ```
 
 To install with PDF processing support:
 
 ```bash
-(uv) pip install dd-core[full]
+uv pip install dd-core[full]
 ```
 
 
