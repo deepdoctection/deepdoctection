@@ -24,7 +24,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Literal, Mapping, Optional, Sequence, Union
 
 from lazy_imports import try_import
-from transformers import AutoTokenizer
 
 from dd_core.utils.env_info import SETTINGS
 from dd_core.utils.error import DependencyError
@@ -71,8 +70,11 @@ from ..pipe.sub_layout import DetectResultGenerator, SubImageLayoutService
 from ..pipe.text import TextExtractionService
 from ..pipe.transform import SimpleTransformService
 
-with try_import() as image_guard:
+with try_import() as boto_guard:
     from botocore.config import Config  # type: ignore
+
+with try_import() as transformer_guard:
+    from transformers import AutoTokenizer
 
 if TYPE_CHECKING:
     from ..extern.hflayoutlm import LayoutSequenceModels, LayoutTokenModels
@@ -487,7 +489,7 @@ class ServiceFactory:
         ocr_config_path = None
         weights = None
         languages = None
-        credentials_kwargs = None
+        credentials_kwargs = {}
         use_tesseract = False
         use_doctr = False
         use_textract = False

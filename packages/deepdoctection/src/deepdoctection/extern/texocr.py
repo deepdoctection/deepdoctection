@@ -138,6 +138,8 @@ class TextractOcrDetector(ObjectDetector):
         self.model_id = self.get_model_id()
 
         self.text_lines = text_lines
+
+        credentials_kwargs = self._maybe_resolve_secret(**credentials_kwargs)
         self.client = boto3.client("textract", **credentials_kwargs)
         if self.text_lines:
             self.categories = ModelCategories(init_categories={1: LayoutType.WORD, 2: LayoutType.LINE})
@@ -166,3 +168,10 @@ class TextractOcrDetector(ObjectDetector):
 
     def get_category_names(self) -> tuple[ObjectTypes, ...]:
         return self.categories.get_categories(as_dict=False)
+
+    def _maybe_resolve_secret(self, **credentials_kwargs: str) -> dict[str, str]:
+        for key, value in credentials_kwargs.items():
+            if value is not None:
+                if hasattr(value, "get_secret_value"):
+                    credentials_kwargs[key] = value.get_secret_value()
+        return credentials_kwargs
