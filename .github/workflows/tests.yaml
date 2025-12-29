@@ -12,7 +12,7 @@ permissions:
 
 jobs:
   core-and-datasets-tests:
-    if: "contains(github.event.head_commit.message, '[force ci]') || github.ref == 'refs/heads/master' || github.event_name == 'pull_request'"
+    if: "(contains(github.event.head_commit.message, '[force ci]') || github.ref == 'refs/heads/master' || github.event_name == 'pull_request') && !contains(github.event.head_commit.message, '[skip test]')"
     name: ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
     strategy:
@@ -70,7 +70,7 @@ jobs:
         run: make test
 
   deepdoctection-tests:
-    if: "contains(github.event.head_commit.message, '[force ci]') || github.ref == 'refs/heads/master' || github.event_name == 'pull_request'"
+    if: "(contains(github.event.head_commit.message, '[force ci]') || github.ref == 'refs/heads/master' || github.event_name == 'pull_request') && !contains(github.event.head_commit.message, '[skip test]')"
     name: ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
     strategy:
@@ -124,7 +124,7 @@ jobs:
         run: make test
 
   all-and-slow-tests:
-    if: "contains(github.event.head_commit.message, '[force ci]') || github.ref == 'refs/heads/master' || github.event_name == 'pull_request'"
+    if: "(contains(github.event.head_commit.message, '[force ci]') || github.ref == 'refs/heads/master' || github.event_name == 'pull_request') && !contains(github.event.head_commit.message, '[skip test]')"
     name: ${{ matrix.name }}
     runs-on: docker_image_build_runner
     strategy:
