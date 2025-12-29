@@ -27,11 +27,19 @@ jobs:
           python -m pip install --upgrade pip==${{ matrix.pip }}
           pip install setuptools wheel twine
 
-      - name: Build venv via make
-        run: make venv
-
-      - name: Build all packages via make
-        run: make package_actions
+      - name: Build packages in venv
+        shell: bash
+        run: |
+          make venv
+          if [ -f .venv/bin/activate ]; then
+            source .venv/bin/activate
+          elif [ -f venv/bin/activate ]; then
+            source venv/bin/activate
+          else
+            echo "No virtualenv activate script found"
+            exit 1
+          fi
+          make package_actions
 
       - name: Upload dd_core, dd_datasets, deepdoctection to TestPyPI
         env:
