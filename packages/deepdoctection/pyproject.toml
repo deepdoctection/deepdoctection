@@ -75,7 +75,7 @@ test = [
 docs = [
     "mkdocs-material==9.7.0",
     "mkdocstrings-python==1.19.0",
-    "griffe==0.25.0"
+    "griffe==1.13"
 ]
 
 [project.urls]
