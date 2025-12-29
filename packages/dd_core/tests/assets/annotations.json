@@ -1,0 +1,1956 @@
+{
+  "layout_detect_results": [
+    {
+      "box": [
+        100.0,
+        160.0,
+        200.0,
+        260.0
+      ],
+      "class_id": 2,
+      "score": 0.63,
+      "mask": null,
+      "absolute_coords": true,
+      "class_name": "title",
+      "text": null,
+      "block": null,
+      "line": null,
+      "uuid": null,
+      "relationships": null,
+      "angle": null,
+      "image_width": null,
+      "image_height": null
+    },
+    {
+      "box": [
+        120.0,
+        120.0,
+        140.0,
+        120.0
+      ],
+      "class_id": 5,
+      "score": 0.03,
+      "mask": null,
+      "absolute_coords": true,
+      "class_name": "figure",
+      "text": null,
+      "block": null,
+      "line": null,
+      "uuid": null,
+      "relationships": null,
+      "angle": null,
+      "image_width": null,
+      "image_height": null
+    },
+    {
+      "box": [
+        50.0,
+        50.0,
+        150.0,
+        200.0
+      ],
+      "class_id": 4,
+      "score": 0.97,
+      "mask": null,
+      "absolute_coords": true,
+      "class_name": "table",
+      "text": null,
+      "block": null,
+      "line": null,
+      "uuid": null,
+      "relationships": null,
+      "angle": null,
+      "image_width": null,
+      "image_height": null
+    },
+    {
+      "box": [
+        100.0,
+        320.0,
+        150.0,
+        350.0
+      ],
+      "class_id": 1,
+      "score": 0.53,
+      "mask": null,
+      "absolute_coords": true,
+      "class_name": "text",
+      "text": null,
+      "block": null,
+      "line": null,
+      "uuid": null,
+      "relationships": null,
+      "angle": null,
+      "image_width": null,
+      "image_height": null
+    },
+    {
+      "box": [
+        200.0,
+        50.0,
+        250.0,
+        200.0
+      ],
+      "class_id": 4,
+      "score": 0.83,
+      "mask": null,
+      "absolute_coords": true,
+      "class_name": "table",
+      "text": null,
+      "block": null,
+      "line": null,
+      "uuid": null,
+      "relationships": null,
+      "angle": null,
+      "image_width": null,
+      "image_height": null
+    }
+  ],
+  "layout_anns": [
+    {
+      "active": true,
+      "external_id": null,
+      "service_id": "d0b8e9f3",
+      "model_id": "test_model",
+      "session_id": null,
+      "category_name": "title",
+      "category_id": 2,
+      "score": 0.63,
+      "sub_categories": {},
+      "relationships": {},
+      "bounding_box": {
+        "absolute_coords": true,
+        "ulx": 100,
+        "uly": 160,
+        "lrx": 200,
+        "lry": 260
+      },
+      "image": null
+    },
+    {
+      "active": true,
+      "external_id": null,
+      "service_id": "d0b8e9f3",
+      "model_id": "test_model",
+      "session_id": null,
+      "category_name": "table",
+      "category_id": 4,
+      "score": 0.97,
+      "sub_categories": {},
+      "relationships": {},
+      "bounding_box": {
+        "absolute_coords": true,
+        "ulx": 50,
+        "uly": 50,
+        "lrx": 150,
+        "lry": 200
+      },
+      "image": null
+    },
+    {
+      "active": true,
+      "external_id": null,
+      "service_id": "d0b8e9f3",
+      "model_id": "test_model",
+      "session_id": null,
+      "category_name": "text",
+      "category_id": 1,
+      "score": 0.53,
+      "sub_categories": {},
+      "relationships": {},
+      "bounding_box": {
+        "absolute_coords": true,
+        "ulx": 100,
+        "uly": 320,
+        "lrx": 150,
+        "lry": 350
+      },
+      "image": null
+    },
+    {
+      "active": true,
+      "external_id": null,
+      "service_id": "d0b8e9f3",
+      "model_id": "test_model",
+      "session_id": null,
+      "category_name": "table",
+      "category_id": 4,
+      "score": 0.83,
+      "sub_categories": {},
+      "relationships": {},
+      "bounding_box": {
+        "absolute_coords": true,
+        "ulx": 200,
+        "uly": 50,
+        "lrx": 250,
+        "lry": 200
+      },
+      "image": null
+    }
+  ],
+  "caption_anns": [
+    {
+      "active": true,
+      "external_id": null,
+      "service_id": "d0b8e9f3",
+      "model_id": "test_model",
+      "session_id": null,
+      "category_name": "caption",
+      "category_id": 7,
+      "score": 0.83,
+      "sub_categories": {},
+      "relationships": {},
+      "bounding_box": {
+        "absolute_coords": true,
+        "ulx": 60,
+        "uly": 90,
+        "lrx": 65,
+        "lry": 110
+      },
+      "image": null
+    },
+        {
+      "active": true,
+      "external_id": null,
+      "service_id": "d0b8e9f3",
+      "model_id": "test_model",
+      "session_id": null,
+      "category_name": "caption",
+      "category_id": 7,
+      "score": 0.32,
+      "sub_categories": {},
+      "relationships": {},
+      "bounding_box": {
+        "absolute_coords": true,
+        "ulx": 550,
+        "uly": 380,
+        "lrx": 570,
+        "lry": 395
+      },
+      "image": null
+    }
+  ],
+  "layout_ann_for_ordering": [
+    {
+      "active": true,
+      "external_id": null,
+      "service_id": "test_service",
+      "model_id": "test_model",
+      "session_id": null,
+      "category_name": "title",
+      "category_id": 2,
+      "score": 0.9,
+      "sub_categories": {},
+      "relationships": {},
+      "bounding_box": {
+        "absolute_coords": true,
+        "ulx": 100,
+        "uly": 160,
+        "lrx": 200,
+        "lry": 260
+      },
+      "image": null
+    },
+    {
+      "active": true,
+      "external_id": null,
+      "service_id": "test_service",
+      "model_id": "test_model",
+      "session_id": null,
+      "category_name": "text",
+      "category_id": 1,
+      "score": 0.8,
+      "sub_categories": {},
+      "relationships": {},
+      "bounding_box": {
+        "absolute_coords": true,
+        "ulx": 100,
+        "uly": 300,
+        "lrx": 250,
+        "lry": 350
+      },
+      "image": null
+    }
+  ],
+  "cell_detect_results": [
+    [
+      {
+        "box": [
+          20.0,
+          20.0,
+          25.0,
+          30.0
+        ],
+        "class_id": 1,
+        "score": 0.8,
+        "mask": null,
+        "absolute_coords": true,
+        "class_name": "column_header",
+        "text": null,
+        "block": null,
+        "line": null,
+        "uuid": null,
+        "relationships": null,
+        "angle": null,
+        "image_width": null,
+        "image_height": null
+      },
+      {
+        "box": [
+          40.0,
+          40.0,
+          50.0,
+          50.0
+        ],
+        "class_id": 2,
+        "score": 0.53,
+        "mask": null,
+        "absolute_coords": true,
+        "class_name": "body",
+        "text": null,
+        "block": null,
+        "line": null,
+        "uuid": null,
+        "relationships": null,
+        "angle": null,
+        "image_width": null,
+        "image_height": null
+      }
+    ],
+    [
+      {
+        "box": [
+          15.0,
+          20.0,
+          20.0,
+          30.0
+        ],
+        "class_id": 1,
+        "score": 0.4,
+        "mask": null,
+        "absolute_coords": true,
+        "class_name": "body",
+        "text": null,
+        "block": null,
+        "line": null,
+        "uuid": null,
+        "relationships": null,
+        "angle": null,
+        "image_width": null,
+        "image_height": null
+      }
+    ]
+  ],
+  "cell_layout_anns": [
+    [
+      {
+        "active": true,
+        "external_id": null,
+        "service_id": "test_service",
+        "model_id": "test_model",
+        "session_id": null,
+        "category_name": "column_header",
+        "category_id": 1,
+        "score": 0.8,
+        "sub_categories": {},
+        "relationships": {},
+        "bounding_box": {
+          "absolute_coords": true,
+          "ulx": 20,
+          "uly": 20,
+          "lrx": 25,
+          "lry": 30
+        },
+        "image": null
+      },
+      {
+        "active": true,
+        "external_id": null,
+        "service_id": "test_service",
+        "model_id": "test_model",
+        "session_id": null,
+        "category_name": "body",
+        "category_id": 2,
+        "score": 0.53,
+        "sub_categories": {},
+        "relationships": {},
+        "bounding_box": {
+          "absolute_coords": true,
+          "ulx": 40,
+          "uly": 40,
+          "lrx": 50,
+          "lry": 50
+        },
+        "image": null
+      }
+    ],
+    [
+      {
+        "active": true,
+        "external_id": null,
+        "service_id": "test_service",
+        "model_id": "test_model",
+        "session_id": null,
+        "category_name": "body",
+        "category_id": 1,
+        "score": 0.4,
+        "sub_categories": {},
+        "relationships": {},
+        "bounding_box": {
+          "absolute_coords": true,
+          "ulx": 15,
+          "uly": 20,
+          "lrx": 20,
+          "lry": 30
+        },
+        "image": null
+      }
+    ]
+  ],
+  "global_cell_boxes": [
+    [
+      {
+        "absolute_coords": true,
+        "ulx": 70,
+        "uly": 70,
+        "lrx": 75,
+        "lry": 80
+      },
+      {
+        "absolute_coords": true,
+        "ulx": 90,
+        "uly": 90,
+        "lrx": 100,
+        "lry": 100
+      }
+    ],
+    [
+      {
+        "absolute_coords": true,
+        "ulx": 215,
+        "uly": 70,
+        "lrx": 220,
+        "lry": 80
+      }
+    ]
+  ],
+  "table_layout_ann": [
+    {
+      "active": true,
+      "external_id": null,
+      "service_id": "test_service",
+      "model_id": "test_model",
+      "session_id": null,
+      "category_name": "table",
+      "category_id": 2,
+      "score": 0.97,
+      "sub_categories": {},
+      "relationships": {},
+      "bounding_box": {
+        "absolute_coords": true,
+        "ulx": 100,
+        "uly": 100,
+        "lrx": 200,
+        "lry": 400
+      },
+      "image": null
+    }
+  ],
+  "cell_layout_anns_one_table": [
+    {
+      "active": true,
+      "external_id": null,
+      "service_id": "test_service",
+      "model_id": "test_model",
+      "session_id": null,
+      "category_name": "cell",
+      "category_id": 3,
+      "score": 0.8,
+      "sub_categories": {},
+      "relationships": {},
+      "bounding_box": {
+        "absolute_coords": true,
+        "ulx": 10,
+        "uly": 100,
+        "lrx": 20,
+        "lry": 150
+      },
+      "image": null
+    },
+    {
+      "active": true,
+      "external_id": null,
+      "service_id": "test_service",
+      "model_id": "test_model",
+      "session_id": null,
+      "category_name": "cell",
+      "category_id": 3,
+      "score": 0.7,
+      "sub_categories": {},
+      "relationships": {},
+      "bounding_box": {
+        "absolute_coords": true,
+        "ulx": 10,
+        "uly": 200,
+        "lrx": 20,
+        "lry": 250
+      },
+      "image": null
+    },
+    {
+      "active": true,
+      "external_id": null,
+      "service_id": "test_service",
+      "model_id": "test_model",
+      "session_id": null,
+      "category_name": "cell",
+      "category_id": 3,
+      "score": 0.6,
+      "sub_categories": {},
+      "relationships": {},
+      "bounding_box": {
+        "absolute_coords": true,
+        "ulx": 40,
+        "uly": 100,
+        "lrx": 50,
+        "lry": 150
+      },
+      "image": null
+    },
+    {
+      "active": true,
+      "external_id": null,
+      "service_id": "test_service",
+      "model_id": "test_model",
+      "session_id": null,
+      "category_name": "cell",
+      "category_id": 3,
+      "score": 0.5,
+      "sub_categories": {},
+      "relationships": {},
+      "bounding_box": {
+        "absolute_coords": true,
+        "ulx": 40,
+        "uly": 200,
+        "lrx": 50,
+        "lry": 250
+      },
+      "image": null
+    },
+    {
+      "active": true,
+      "external_id": null,
+      "service_id": "test_service",
+      "model_id": "test_model",
+      "session_id": null,
+      "category_name": "cell",
+      "category_id": 3,
+      "score": 0.4,
+      "sub_categories": {},
+      "relationships": {},
+      "bounding_box": {
+        "absolute_coords": true,
+        "ulx": 80,
+        "uly": 260,
+        "lrx": 90,
+        "lry": 280
+      },
+      "image": null
+    }
+  ],
+  "row_layout_anns": [
+    {
+      "active": true,
+      "external_id": null,
+      "service_id": "test_service",
+      "model_id": "test_model",
+      "session_id": null,
+      "category_name": "row",
+      "category_id": 6,
+      "score": 0.8,
+      "sub_categories": {},
+      "relationships": {},
+      "bounding_box": {
+        "absolute_coords": true,
+        "ulx": 15,
+        "uly": 100,
+        "lrx": 60,
+        "lry": 150
+      },
+      "image": null
+    },
+    {
+      "active": true,
+      "external_id": null,
+      "service_id": "test_service",
+      "model_id": "test_model",
+      "session_id": null,
+      "category_name": "row",
+      "category_id": 6,
+      "score": 0.7,
+      "sub_categories": {},
+      "relationships": {},
+      "bounding_box": {
+        "absolute_coords": true,
+        "ulx": 15,
+        "uly": 200,
+        "lrx": 70,
+        "lry": 240
+      },
+      "image": null
+    }
+  ],
+  "row_box_tiling_table": [
+    {
+      "absolute_coords": true,
+      "ulx": 101,
+      "uly": 101,
+      "lrx": 199,
+      "lry": 250
+    },
+    {
+      "absolute_coords": true,
+      "ulx": 101,
+      "uly": 250,
+      "lrx": 199,
+      "lry": 399
+    }
+  ],
+  "col_layout_anns": [
+    {
+      "active": true,
+      "external_id": null,
+      "service_id": "test_service",
+      "model_id": "test_model",
+      "session_id": null,
+      "category_name": "column",
+      "category_id": 7,
+      "score": 0.3,
+      "sub_categories": {},
+      "relationships": {},
+      "bounding_box": {
+        "absolute_coords": true,
+        "ulx": 10,
+        "uly": 50,
+        "lrx": 20,
+        "lry": 250
+      },
+      "image": null
+    },
+    {
+      "active": true,
+      "external_id": null,
+      "service_id": "test_service",
+      "model_id": "test_model",
+      "session_id": null,
+      "category_name": "column",
+      "category_id": 7,
+      "score": 0.2,
+      "sub_categories": {},
+      "relationships": {},
+      "bounding_box": {
+        "absolute_coords": true,
+        "ulx": 40,
+        "uly": 20,
+        "lrx": 50,
+        "lry": 240
+      },
+      "image": null
+    }
+  ],
+  "col_box_tiling_table": [
+    {
+      "absolute_coords": true,
+      "ulx": 101,
+      "uly": 101,
+      "lrx": 120,
+      "lry": 399
+    },
+    {
+      "absolute_coords": true,
+      "ulx": 120,
+      "uly": 101,
+      "lrx": 199,
+      "lry": 399
+    }
+  ],
+  "row_sub_cats": [
+    {
+      "active": true,
+      "external_id": null,
+      "service_id": "dbf4f87c",
+      "model_id": null,
+      "session_id": null,
+      "category_name": "row_number",
+      "category_id": 1,
+      "score": null,
+      "sub_categories": {},
+      "relationships": {}
+    },
+    {
+      "active": true,
+      "external_id": null,
+      "service_id": "dbf4f87c",
+      "model_id": null,
+      "session_id": null,
+      "category_name": "row_number",
+      "category_id": 2,
+      "score": null,
+      "sub_categories": {},
+      "relationships": {}
+    }
+  ],
+  "col_sub_cats": [
+    {
+      "active": true,
+      "external_id": null,
+      "service_id": "dbf4f87c",
+      "model_id": null,
+      "session_id": null,
+      "category_name": "column_number",
+      "category_id": 1,
+      "score": null,
+      "sub_categories": {},
+      "relationships": {}
+    },
+    {
+      "active": true,
+      "external_id": null,
+      "service_id": "dbf4f87c",
+      "model_id": null,
+      "session_id": null,
+      "category_name": "column_number",
+      "category_id": 2,
+      "score": null,
+      "sub_categories": {},
+      "relationships": {}
+    }
+  ],
+  "cell_sub_cats": [
+    [
+      {
+        "active": true,
+        "external_id": null,
+        "service_id": "dbf4f87c",
+        "model_id": null,
+        "session_id": null,
+        "category_name": "row_number",
+        "category_id": 1,
+        "score": null,
+        "sub_categories": {},
+        "relationships": {}
+      },
+      {
+        "active": true,
+        "external_id": null,
+        "service_id": "dbf4f87c",
+        "model_id": null,
+        "session_id": null,
+        "category_name": "column_number",
+        "category_id": 1,
+        "score": null,
+        "sub_categories": {},
+        "relationships": {}
+      },
+      {
+        "active": true,
+        "external_id": null,
+        "service_id": "dbf4f87c",
+        "model_id": null,
+        "session_id": null,
+        "category_name": "row_span",
+        "category_id": 1,
+        "score": null,
+        "sub_categories": {},
+        "relationships": {}
+      },
+      {
+        "active": true,
+        "external_id": null,
+        "service_id": "dbf4f87c",
+        "model_id": null,
+        "session_id": null,
+        "category_name": "column_span",
+        "category_id": 1,
+        "score": null,
+        "sub_categories": {},
+        "relationships": {}
+      }
+    ],
+    [
+      {
+        "active": true,
+        "external_id": null,
+        "service_id": "dbf4f87c",
+        "model_id": null,
+        "session_id": null,
+        "category_name": "row_number",
+        "category_id": 2,
+        "score": null,
+        "sub_categories": {},
+        "relationships": {}
+      },
+      {
+        "active": true,
+        "external_id": null,
+        "service_id": "dbf4f87c",
+        "model_id": null,
+        "session_id": null,
+        "category_name": "column_number",
+        "category_id": 1,
+        "score": null,
+        "sub_categories": {},
+        "relationships": {}
+      },
+      {
+        "active": true,
+        "external_id": null,
+        "service_id": "dbf4f87c",
+        "model_id": null,
+        "session_id": null,
+        "category_name": "row_span",
+        "category_id": 1,
+        "score": null,
+        "sub_categories": {},
+        "relationships": {}
+      },
+      {
+        "active": true,
+        "external_id": null,
+        "service_id": "dbf4f87c",
+        "model_id": null,
+        "session_id": null,
+        "category_name": "column_span",
+        "category_id": 1,
+        "score": null,
+        "sub_categories": {},
+        "relationships": {}
+      }
+    ],
+    [
+      {
+        "active": true,
+        "external_id": null,
+        "service_id": "dbf4f87c",
+        "model_id": null,
+        "session_id": null,
+        "category_name": "row_number",
+        "category_id": 1,
+        "score": null,
+        "sub_categories": {},
+        "relationships": {}
+      },
+      {
+        "active": true,
+        "external_id": null,
+        "service_id": "dbf4f87c",
+        "model_id": null,
+        "session_id": null,
+        "category_name": "column_number",
+        "category_id": 2,
+        "score": null,
+        "sub_categories": {},
+        "relationships": {}
+      },
+      {
+        "active": true,
+        "external_id": null,
+        "service_id": "dbf4f87c",
+        "model_id": null,
+        "session_id": null,
+        "category_name": "row_span",
+        "category_id": 1,
+        "score": null,
+        "sub_categories": {},
+        "relationships": {}
+      },
+      {
+        "active": true,
+        "external_id": null,
+        "service_id": "dbf4f87c",
+        "model_id": null,
+        "session_id": null,
+        "category_name": "column_span",
+        "category_id": 1,
+        "score": null,
+        "sub_categories": {},
+        "relationships": {}
+      }
+    ],
+    [
+      {
+        "active": true,
+        "external_id": null,
+        "service_id": "dbf4f87c",
+        "model_id": null,
+        "session_id": null,
+        "category_name": "row_number",
+        "category_id": 2,
+        "score": null,
+        "sub_categories": {},
+        "relationships": {}
+      },
+      {
+        "active": true,
+        "external_id": null,
+        "service_id": "dbf4f87c",
+        "model_id": null,
+        "session_id": null,
+        "category_name": "column_number",
+        "category_id": 2,
+        "score": null,
+        "sub_categories": {},
+        "relationships": {}
+      },
+      {
+        "active": true,
+        "external_id": null,
+        "service_id": "dbf4f87c",
+        "model_id": null,
+        "session_id": null,
+        "category_name": "row_span",
+        "category_id": 1,
+        "score": null,
+        "sub_categories": {},
+        "relationships": {}
+      },
+      {
+        "active": true,
+        "external_id": null,
+        "service_id": "dbf4f87c",
+        "model_id": null,
+        "session_id": null,
+        "category_name": "column_span",
+        "category_id": 1,
+        "score": null,
+        "sub_categories": {},
+        "relationships": {}
+      }
+    ],
+    [
+      {
+        "active": true,
+        "external_id": null,
+        "service_id": "dbf4f87c",
+        "model_id": null,
+        "session_id": null,
+        "category_name": "row_number",
+        "category_id": 0,
+        "score": null,
+        "sub_categories": {},
+        "relationships": {}
+      },
+      {
+        "active": true,
+        "external_id": null,
+        "service_id": "dbf4f87c",
+        "model_id": null,
+        "session_id": null,
+        "category_name": "column_number",
+        "category_id": 0,
+        "score": null,
+        "sub_categories": {},
+        "relationships": {}
+      },
+      {
+        "active": true,
+        "external_id": null,
+        "service_id": "dbf4f87c",
+        "model_id": null,
+        "session_id": null,
+        "category_name": "row_span",
+        "category_id": 0,
+        "score": null,
+        "sub_categories": {},
+        "relationships": {}
+      },
+      {
+        "active": true,
+        "external_id": null,
+        "service_id": "dbf4f87c",
+        "model_id": null,
+        "session_id": null,
+        "category_name": "column_span",
+        "category_id": 0,
+        "score": null,
+        "sub_categories": {},
+        "relationships": {}
+      }
+    ]
+  ],
+  "cell_sub_cats_when_table_fully_tiled": [
+    [
+      {
+        "active": true,
+        "external_id": null,
+        "service_id": "dbf4f87c",
+        "model_id": null,
+        "session_id": null,
+        "category_name": "row_number",
+        "category_id": 1,
+        "score": null,
+        "sub_categories": {},
+        "relationships": {}
+      },
+      {
+        "active": true,
+        "external_id": null,
+        "service_id": "dbf4f87c",
+        "model_id": null,
+        "session_id": null,
+        "category_name": "column_number",
+        "category_id": 1,
+        "score": null,
+        "sub_categories": {},
+        "relationships": {}
+      },
+      {
+        "active": true,
+        "external_id": null,
+        "service_id": "dbf4f87c",
+        "model_id": null,
+        "session_id": null,
+        "category_name": "row_span",
+        "category_id": 1,
+        "score": null,
+        "sub_categories": {},
+        "relationships": {}
+      },
+      {
+        "active": true,
+        "external_id": null,
+        "service_id": "dbf4f87c",
+        "model_id": null,
+        "session_id": null,
+        "category_name": "column_span",
+        "category_id": 1,
+        "score": null,
+        "sub_categories": {},
+        "relationships": {}
+      }
+    ],
+    [
+      {
+        "active": true,
+        "external_id": null,
+        "service_id": "dbf4f87c",
+        "model_id": null,
+        "session_id": null,
+        "category_name": "row_number",
+        "category_id": 2,
+        "score": null,
+        "sub_categories": {},
+        "relationships": {}
+      },
+      {
+        "active": true,
+        "external_id": null,
+        "service_id": "dbf4f87c",
+        "model_id": null,
+        "session_id": null,
+        "category_name": "column_number",
+        "category_id": 1,
+        "score": null,
+        "sub_categories": {},
+        "relationships": {}
+      },
+      {
+        "active": true,
+        "external_id": null,
+        "service_id": "dbf4f87c",
+        "model_id": null,
+        "session_id": null,
+        "category_name": "row_span",
+        "category_id": 1,
+        "score": null,
+        "sub_categories": {},
+        "relationships": {}
+      },
+      {
+        "active": true,
+        "external_id": null,
+        "service_id": "dbf4f87c",
+        "model_id": null,
+        "session_id": null,
+        "category_name": "column_span",
+        "category_id": 1,
+        "score": null,
+        "sub_categories": {},
+        "relationships": {}
+      }
+    ],
+    [
+      {
+        "active": true,
+        "external_id": null,
+        "service_id": "dbf4f87c",
+        "model_id": null,
+        "session_id": null,
+        "category_name": "row_number",
+        "category_id": 1,
+        "score": null,
+        "sub_categories": {},
+        "relationships": {}
+      },
+      {
+        "active": true,
+        "external_id": null,
+        "service_id": "dbf4f87c",
+        "model_id": null,
+        "session_id": null,
+        "category_name": "column_number",
+        "category_id": 2,
+        "score": null,
+        "sub_categories": {},
+        "relationships": {}
+      },
+      {
+        "active": true,
+        "external_id": null,
+        "service_id": "dbf4f87c",
+        "model_id": null,
+        "session_id": null,
+        "category_name": "row_span",
+        "category_id": 1,
+        "score": null,
+        "sub_categories": {},
+        "relationships": {}
+      },
+      {
+        "active": true,
+        "external_id": null,
+        "service_id": "dbf4f87c",
+        "model_id": null,
+        "session_id": null,
+        "category_name": "column_span",
+        "category_id": 1,
+        "score": null,
+        "sub_categories": {},
+        "relationships": {}
+      }
+    ],
+    [
+      {
+        "active": true,
+        "external_id": null,
+        "service_id": "dbf4f87c",
+        "model_id": null,
+        "session_id": null,
+        "category_name": "row_number",
+        "category_id": 2,
+        "score": null,
+        "sub_categories": {},
+        "relationships": {}
+      },
+      {
+        "active": true,
+        "external_id": null,
+        "service_id": "dbf4f87c",
+        "model_id": null,
+        "session_id": null,
+        "category_name": "column_number",
+        "category_id": 2,
+        "score": null,
+        "sub_categories": {},
+        "relationships": {}
+      },
+      {
+        "active": true,
+        "external_id": null,
+        "service_id": "dbf4f87c",
+        "model_id": null,
+        "session_id": null,
+        "category_name": "row_span",
+        "category_id": 1,
+        "score": null,
+        "sub_categories": {},
+        "relationships": {}
+      },
+      {
+        "active": true,
+        "external_id": null,
+        "service_id": "dbf4f87c",
+        "model_id": null,
+        "session_id": null,
+        "category_name": "column_span",
+        "category_id": 1,
+        "score": null,
+        "sub_categories": {},
+        "relationships": {}
+      }
+    ],
+    [
+      {
+        "active": true,
+        "external_id": null,
+        "service_id": "dbf4f87c",
+        "model_id": null,
+        "session_id": null,
+        "category_name": "row_number",
+        "category_id": 2,
+        "score": null,
+        "sub_categories": {},
+        "relationships": {}
+      },
+      {
+        "active": true,
+        "external_id": null,
+        "service_id": "dbf4f87c",
+        "model_id": null,
+        "session_id": null,
+        "category_name": "column_number",
+        "category_id": 2,
+        "score": null,
+        "sub_categories": {},
+        "relationships": {}
+      },
+      {
+        "active": true,
+        "external_id": null,
+        "service_id": "dbf4f87c",
+        "model_id": null,
+        "session_id": null,
+        "category_name": "row_span",
+        "category_id": 1,
+        "score": null,
+        "sub_categories": {},
+        "relationships": {}
+      },
+      {
+        "active": true,
+        "external_id": null,
+        "service_id": "dbf4f87c",
+        "model_id": null,
+        "session_id": null,
+        "category_name": "column_span",
+        "category_id": 1,
+        "score": null,
+        "sub_categories": {},
+        "relationships": {}
+      }
+    ]
+  ],
+  "summary_sub_cat_when_table_fully_tiled": [
+    {
+      "active": true,
+      "external_id": null,
+      "service_id": "dbf4f87c",
+      "model_id": null,
+      "session_id": null,
+      "category_name": "number_of_rows",
+      "category_id": 2,
+      "score": null,
+      "sub_categories": {},
+      "relationships": {}
+    },
+    {
+      "active": true,
+      "external_id": null,
+      "service_id": "dbf4f87c",
+      "model_id": null,
+      "session_id": null,
+      "category_name": "number_of_columns",
+      "category_id": 2,
+      "score": null,
+      "sub_categories": {},
+      "relationships": {}
+    },
+    {
+      "active": true,
+      "external_id": null,
+      "service_id": "dbf4f87c",
+      "model_id": null,
+      "session_id": null,
+      "category_name": "max_row_span",
+      "category_id": 1,
+      "score": null,
+      "sub_categories": {},
+      "relationships": {}
+    },
+    {
+      "active": true,
+      "external_id": null,
+      "service_id": "dbf4f87c",
+      "model_id": null,
+      "session_id": null,
+      "category_name": "max_col_span",
+      "category_id": 1,
+      "score": null,
+      "sub_categories": {},
+      "relationships": {}
+    }
+  ],
+  "summary_htab_sub_cat": {
+    "active": true,
+    "external_id": null,
+    "service_id": null,
+    "model_id": null,
+    "session_id": null,
+    "category_name": "html",
+    "category_id": -1,
+    "score": null,
+    "sub_categories": {},
+    "relationships": {},
+    "value": "<table><tr><td></td><td></td></tr><tr><td></td><td></td></tr></table>"
+  },
+  "word_results_list": [
+    {
+      "box": [
+        10.0,
+        10.0,
+        24.0,
+        23.0
+      ],
+      "class_id": 1,
+      "score": 0.8,
+      "mask": null,
+      "absolute_coords": true,
+      "class_name": "word",
+      "text": "foo",
+      "block": "1",
+      "line": "2",
+      "uuid": null,
+      "relationships": null,
+      "angle": null,
+      "image_width": null,
+      "image_height": null
+    },
+    {
+      "box": [
+        30.0,
+        20.0,
+        38.0,
+        25.0
+      ],
+      "class_id": 1,
+      "score": 0.2,
+      "mask": null,
+      "absolute_coords": true,
+      "class_name": "word",
+      "text": "bak",
+      "block": "4",
+      "line": "5",
+      "uuid": null,
+      "relationships": null,
+      "angle": null,
+      "image_width": null,
+      "image_height": null
+    }
+  ],
+  "word_layout_ann": [
+    {
+      "active": true,
+      "external_id": null,
+      "service_id": null,
+      "model_id": null,
+      "session_id": null,
+      "category_name": "word",
+      "category_id": 1,
+      "score": 0.8,
+      "sub_categories": {},
+      "relationships": {},
+      "bounding_box": {
+        "absolute_coords": true,
+        "ulx": 10,
+        "uly": 10,
+        "lrx": 24,
+        "lry": 23
+      },
+      "image": null
+    },
+    {
+      "active": true,
+      "external_id": null,
+      "service_id": null,
+      "model_id": null,
+      "session_id": null,
+      "category_name": "word",
+      "category_id": 1,
+      "score": 0.2,
+      "sub_categories": {},
+      "relationships": {},
+      "bounding_box": {
+        "absolute_coords": true,
+        "ulx": 30,
+        "uly": 20,
+        "lrx": 38,
+        "lry": 25
+      },
+      "image": null
+    }
+  ],
+  "word_layout_ann_for_matching": [
+    {
+      "active": true,
+      "external_id": null,
+      "service_id": null,
+      "model_id": null,
+      "session_id": null,
+      "category_name": "word",
+      "category_id": 8,
+      "score": 0.9,
+      "sub_categories": {},
+      "relationships": {},
+      "bounding_box": {
+        "absolute_coords": true,
+        "ulx": 112,
+        "uly": 210,
+        "lrx": 119,
+        "lry": 220
+      },
+      "image": null
+    },
+    {
+      "active": true,
+      "external_id": null,
+      "service_id": null,
+      "model_id": null,
+      "session_id": null,
+      "category_name": "word",
+      "category_id": 8,
+      "score": 0.95,
+      "sub_categories": {},
+      "relationships": {},
+      "bounding_box": {
+        "absolute_coords": true,
+        "ulx": 145,
+        "uly": 210,
+        "lrx": 155,
+        "lry": 220
+      },
+      "image": null
+    }
+  ],
+  "word_layout_for_ordering": [
+    {
+      "active": true,
+      "external_id": null,
+      "service_id": "test_service_word",
+      "model_id": null,
+      "session_id": null,
+      "category_name": "word",
+      "category_id": 8,
+      "score": 0.9,
+      "sub_categories": {},
+      "relationships": {},
+      "bounding_box": {
+        "absolute_coords": true,
+        "ulx": 110,
+        "uly": 165,
+        "lrx": 130,
+        "lry": 180
+      },
+      "image": null
+    },
+    {
+      "active": true,
+      "external_id": null,
+      "service_id": "test_service_word",
+      "model_id": null,
+      "session_id": null,
+      "category_name": "word",
+      "category_id": 8,
+      "score": 0.8,
+      "sub_categories": {},
+      "relationships": {},
+      "bounding_box": {
+        "absolute_coords": true,
+        "ulx": 140,
+        "uly": 162,
+        "lrx": 180,
+        "lry": 180
+      },
+      "image": null
+    },
+    {
+      "active": true,
+      "external_id": null,
+      "service_id": "test_service_word",
+      "model_id": null,
+      "session_id": null,
+      "category_name": "word",
+      "category_id": 8,
+      "score": 0.7,
+      "sub_categories": {},
+      "relationships": {},
+      "bounding_box": {
+        "absolute_coords": true,
+        "ulx": 100,
+        "uly": 320,
+        "lrx": 130,
+        "lry": 340
+      },
+      "image": null
+    },
+    {
+      "active": true,
+      "external_id": null,
+      "service_id": "test_service_word",
+      "model_id": null,
+      "session_id": null,
+      "category_name": "word",
+      "category_id": 8,
+      "score": 0.6,
+      "sub_categories": {},
+      "relationships": {},
+      "bounding_box": {
+        "absolute_coords": true,
+        "ulx": 175,
+        "uly": 320,
+        "lrx": 205,
+        "lry": 340
+      },
+      "image": null
+    }
+  ],
+  "word_sub_cats": [
+    [
+      {
+        "active": true,
+        "external_id": null,
+        "service_id": null,
+        "model_id": null,
+        "session_id": null,
+        "category_name": "characters",
+        "category_id": -1,
+        "score": null,
+        "sub_categories": {},
+        "relationships": {},
+        "value": "foo"
+      },
+      {
+        "active": true,
+        "external_id": null,
+        "service_id": null,
+        "model_id": null,
+        "session_id": null,
+        "category_name": "block",
+        "category_id": 1,
+        "score": null,
+        "sub_categories": {},
+        "relationships": {}
+      },
+      {
+        "active": true,
+        "external_id": null,
+        "service_id": null,
+        "model_id": null,
+        "session_id": null,
+        "category_name": "text_line",
+        "category_id": 2,
+        "score": null,
+        "sub_categories": {},
+        "relationships": {}
+      }
+    ],
+    [
+      {
+        "active": true,
+        "external_id": null,
+        "service_id": null,
+        "model_id": null,
+        "session_id": null,
+        "category_name": "characters",
+        "category_id": -1,
+        "score": null,
+        "sub_categories": {},
+        "relationships": {},
+        "value": "bak"
+      },
+      {
+        "active": true,
+        "external_id": null,
+        "service_id": null,
+        "model_id": null,
+        "session_id": null,
+        "category_name": "block",
+        "category_id": 4,
+        "score": null,
+        "sub_categories": {},
+        "relationships": {}
+      },
+      {
+        "active": true,
+        "external_id": null,
+        "service_id": null,
+        "model_id": null,
+        "session_id": null,
+        "category_name": "text_line",
+        "category_id": 5,
+        "score": null,
+        "sub_categories": {},
+        "relationships": {}
+      }
+    ]
+  ],
+  "word_sub_cats_for_ordering": [
+    [
+      {
+        "active": true,
+        "external_id": null,
+        "service_id": null,
+        "model_id": null,
+        "session_id": null,
+        "category_name": "characters",
+        "category_id": -1,
+        "score": null,
+        "sub_categories": {},
+        "relationships": {},
+        "value": "hello"
+      },
+      {
+        "active": true,
+        "external_id": null,
+        "service_id": null,
+        "model_id": null,
+        "session_id": null,
+        "category_name": "block",
+        "category_id": 1,
+        "score": null,
+        "sub_categories": {},
+        "relationships": {}
+      },
+      {
+        "active": true,
+        "external_id": null,
+        "service_id": null,
+        "model_id": null,
+        "session_id": null,
+        "category_name": "text_line",
+        "category_id": 1,
+        "score": null,
+        "sub_categories": {},
+        "relationships": {}
+      }
+    ],
+    [
+      {
+        "active": true,
+        "external_id": null,
+        "service_id": null,
+        "model_id": null,
+        "session_id": null,
+        "category_name": "characters",
+        "category_id": -1,
+        "score": null,
+        "sub_categories": {},
+        "relationships": {},
+        "value": "world"
+      },
+      {
+        "active": true,
+        "external_id": null,
+        "service_id": null,
+        "model_id": null,
+        "session_id": null,
+        "category_name": "block",
+        "category_id": 1,
+        "score": null,
+        "sub_categories": {},
+        "relationships": {}
+      },
+      {
+        "active": true,
+        "external_id": null,
+        "service_id": null,
+        "model_id": null,
+        "session_id": null,
+        "category_name": "text_line",
+        "category_id": 2,
+        "score": null,
+        "sub_categories": {},
+        "relationships": {}
+      }
+    ],
+    [
+      {
+        "active": true,
+        "external_id": null,
+        "service_id": null,
+        "model_id": null,
+        "session_id": null,
+        "category_name": "characters",
+        "category_id": -1,
+        "score": null,
+        "sub_categories": {},
+        "relationships": {},
+        "value": "bye"
+      },
+      {
+        "active": true,
+        "external_id": null,
+        "service_id": null,
+        "model_id": null,
+        "session_id": null,
+        "category_name": "block",
+        "category_id": 2,
+        "score": null,
+        "sub_categories": {},
+        "relationships": {}
+      },
+      {
+        "active": true,
+        "external_id": null,
+        "service_id": null,
+        "model_id": null,
+        "session_id": null,
+        "category_name": "text_line",
+        "category_id": 2,
+        "score": null,
+        "sub_categories": {},
+        "relationships": {}
+      }
+    ],
+    [
+      {
+        "active": true,
+        "external_id": null,
+        "service_id": null,
+        "model_id": null,
+        "session_id": null,
+        "category_name": "characters",
+        "category_id": -1,
+        "score": null,
+        "sub_categories": {},
+        "relationships": {},
+        "value": "world"
+      },
+      {
+        "active": true,
+        "external_id": null,
+        "service_id": null,
+        "model_id": null,
+        "session_id": null,
+        "category_name": "block",
+        "category_id": 2,
+        "score": null,
+        "sub_categories": {},
+        "relationships": {}
+      },
+      {
+        "active": true,
+        "external_id": null,
+        "service_id": null,
+        "model_id": null,
+        "session_id": null,
+        "category_name": "text_line",
+        "category_id": 2,
+        "score": null,
+        "sub_categories": {},
+        "relationships": {}
+      }
+    ]
+  ],
+  "word_box_global": [
+    {
+      "absolute_coords": true,
+      "ulx": 60,
+      "uly": 60,
+      "lrx": 74,
+      "lry": 73
+    },
+    {
+      "absolute_coords": true,
+      "ulx": 80,
+      "uly": 70,
+      "lrx": 88,
+      "lry": 75
+    },
+    {
+      "absolute_coords": true,
+      "ulx": 210,
+      "uly": 60,
+      "lrx": 224,
+      "lry": 73
+    },
+    {
+      "absolute_coords": true,
+      "ulx": 230,
+      "uly": 70,
+      "lrx": 238,
+      "lry": 75
+    }
+  ],
+  "annotation_maps": {
+    "51fca38d-b181-3ea2-9c97-7e265febcc86": [
+      {
+        "image_annotation_id": "51fca38d-b181-3ea2-9c97-7e265febcc86",
+        "sub_category_key": null,
+        "relationship_key": null,
+        "summary_key": null
+      }
+    ],
+    "e9c4b3e7-0b2c-3d45-89f3-db6e3ef864ad": [
+      {
+        "image_annotation_id": "51fca38d-b181-3ea2-9c97-7e265febcc86",
+        "sub_category_key": null,
+        "relationship_key": "child",
+        "summary_key": null
+      },
+      {
+        "image_annotation_id": "e9c4b3e7-0b2c-3d45-89f3-db6e3ef864ad",
+        "sub_category_key": null,
+        "relationship_key": null,
+        "summary_key": null
+      }
+    ],
+    "44ef758d-92f5-3f57-b6a3-aa95b9606f70": [
+      {
+        "image_annotation_id": "51fca38d-b181-3ea2-9c97-7e265febcc86",
+        "sub_category_key": null,
+        "relationship_key": "child",
+        "summary_key": null
+      },
+      {
+        "image_annotation_id": "44ef758d-92f5-3f57-b6a3-aa95b9606f70",
+        "sub_category_key": null,
+        "relationship_key": null,
+        "summary_key": null
+      }
+    ],
+    "a94ba1d6-c5de-31c0-aa83-90673ad89f21": [
+      {
+        "image_annotation_id": "a94ba1d6-c5de-31c0-aa83-90673ad89f21",
+        "sub_category_key": null,
+        "relationship_key": null,
+        "summary_key": null
+      }
+    ],
+    "1413d499-ce19-3a50-861c-7d8c5a7ba772": [
+      {
+        "image_annotation_id": "a94ba1d6-c5de-31c0-aa83-90673ad89f21",
+        "sub_category_key": null,
+        "relationship_key": "child",
+        "summary_key": null
+      },
+      {
+        "image_annotation_id": "1413d499-ce19-3a50-861c-7d8c5a7ba772",
+        "sub_category_key": null,
+        "relationship_key": null,
+        "summary_key": null
+      }
+    ],
+    "fd78767a-227d-3c17-83cb-586d24cb0c55": [
+      {
+        "image_annotation_id": "a94ba1d6-c5de-31c0-aa83-90673ad89f21",
+        "sub_category_key": null,
+        "relationship_key": "child",
+        "summary_key": null
+      },
+      {
+        "image_annotation_id": "fd78767a-227d-3c17-83cb-586d24cb0c55",
+        "sub_category_key": null,
+        "relationship_key": null,
+        "summary_key": null
+      }
+    ],
+    "84688fa8-4d71-3306-a1b7-7620b2f3c128": [
+      {
+        "image_annotation_id": "e9c4b3e7-0b2c-3d45-89f3-db6e3ef864ad",
+        "sub_category_key": "characters",
+        "relationship_key": null,
+        "summary_key": null
+      }
+    ],
+    "2ffe9461-631f-3878-80c0-2e747d4206be": [
+      {
+        "image_annotation_id": "e9c4b3e7-0b2c-3d45-89f3-db6e3ef864ad",
+        "sub_category_key": "block",
+        "relationship_key": null,
+        "summary_key": null
+      }
+    ],
+    "5b125232-8d17-3322-8621-786c829e3da3": [
+      {
+        "image_annotation_id": "e9c4b3e7-0b2c-3d45-89f3-db6e3ef864ad",
+        "sub_category_key": "line",
+        "relationship_key": null,
+        "summary_key": null
+      }
+    ],
+    "483da457-1f0d-3901-8b43-e6a722105180": [
+      {
+        "image_annotation_id": "44ef758d-92f5-3f57-b6a3-aa95b9606f70",
+        "sub_category_key": "characters",
+        "relationship_key": null,
+        "summary_key": null
+      }
+    ],
+    "ac83d5ca-8177-310c-8ea3-28c5288c80c2": [
+      {
+        "image_annotation_id": "44ef758d-92f5-3f57-b6a3-aa95b9606f70",
+        "sub_category_key": "block",
+        "relationship_key": null,
+        "summary_key": null
+      }
+    ],
+    "7bb1262d-1856-3485-b61d-8a8aa324b3f5": [
+      {
+        "image_annotation_id": "44ef758d-92f5-3f57-b6a3-aa95b9606f70",
+        "sub_category_key": "line",
+        "relationship_key": null,
+        "summary_key": null
+      }
+    ],
+    "6582bfb8-bc1a-3b2f-bf87-9d9902e72e36": [
+      {
+        "image_annotation_id": "1413d499-ce19-3a50-861c-7d8c5a7ba772",
+        "sub_category_key": "characters",
+        "relationship_key": null,
+        "summary_key": null
+      }
+    ],
+    "e00c3dac-b781-36b2-a9a8-76e34acfe258": [
+      {
+        "image_annotation_id": "1413d499-ce19-3a50-861c-7d8c5a7ba772",
+        "sub_category_key": "block",
+        "relationship_key": null,
+        "summary_key": null
+      }
+    ],
+    "466256d9-9432-3249-80c0-160b969feb0a": [
+      {
+        "image_annotation_id": "1413d499-ce19-3a50-861c-7d8c5a7ba772",
+        "sub_category_key": "line",
+        "relationship_key": null,
+        "summary_key": null
+      }
+    ],
+    "0b334162-6597-376f-a3bc-8d9e8c41a30f": [
+      {
+        "image_annotation_id": "fd78767a-227d-3c17-83cb-586d24cb0c55",
+        "sub_category_key": "characters",
+        "relationship_key": null,
+        "summary_key": null
+      }
+    ],
+    "494728fc-07b5-3f65-b3dc-1bd52cae1a14": [
+      {
+        "image_annotation_id": "fd78767a-227d-3c17-83cb-586d24cb0c55",
+        "sub_category_key": "block",
+        "relationship_key": null,
+        "summary_key": null
+      }
+    ],
+    "97a2ab8b-a3de-3beb-801d-13a12de402a8": [
+      {
+        "image_annotation_id": "fd78767a-227d-3c17-83cb-586d24cb0c55",
+        "sub_category_key": "line",
+        "relationship_key": null,
+        "summary_key": null
+      }
+    ]
+  },
+  "service_id_to_ann_id": {
+    "test_service": [
+      "51fca38d-b181-3ea2-9c97-7e265febcc86",
+      "a94ba1d6-c5de-31c0-aa83-90673ad89f21"
+    ],
+    "test_service_word": [
+      "e9c4b3e7-0b2c-3d45-89f3-db6e3ef864ad",
+      "44ef758d-92f5-3f57-b6a3-aa95b9606f70",
+      "1413d499-ce19-3a50-861c-7d8c5a7ba772",
+      "fd78767a-227d-3c17-83cb-586d24cb0c55"
+    ]
+  }
+}

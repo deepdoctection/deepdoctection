@@ -24,7 +24,8 @@ analyzer = dd.get_dd_analyzer(config_overwrite=['USE_LAYOUT_LINK=True']) # (1)
 df = analyzer.analyze(path="/path/to/dir/2312.13560.pdf")
 df.reset_state()
 doc=iter(df)
-page = next(doc)
+pages = list(doc) # (2)
+page = pages[0]
 
 plt.figure(figsize = (25,17))
 plt.axis('off')
@@ -32,9 +33,9 @@ plt.imshow(page.viz())
 ```
 
 1. We set the `USE_LAYOUT_LINK` parameter to `True`. This enables the analyzer to link captions to figures and tables.
-
+2. Will process the whole document.
     
-![png](./_imgs/analyzer_more_on_parsing_01.png)
+![png](../_imgs/analyzer_more_on_parsing_01.png)
 
 
 !!! info "Note"
@@ -58,7 +59,7 @@ plt.imshow(page.viz(page_header="category_name",
 1. Pass the layout section`s category_name as argument. It`s value is the value we want to display, in this case it`s 
    `category_name`. You can also display other attributes, e.g. `annotation_id`.
 
-![png](./_imgs/analyzer_more_on_parsing_02.png)
+![png](../_imgs/analyzer_more_on_parsing_02.png)
     
 
 !!! info "Note"
@@ -134,7 +135,7 @@ plt.imshow(figure.image.viz()) # (1)
 1. `figure.image.viz()` returns a NumPy array containing the image segment enclosed by the bounding box.
  
 
-![png](./_imgs/analyzer_more_on_parsing_04.png)
+![png](../_imgs/analyzer_more_on_parsing_04.png)
     
 We can save the figure as a single `.png`. 
 

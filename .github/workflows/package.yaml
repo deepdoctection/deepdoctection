@@ -8,8 +8,13 @@ on:
 
 jobs:
   build_and_upload:
-    name: build_push_pypi_package
+    name: build_push_pypi_packages
     runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        python: [3.10]
+        pip: [25.3]
 
     steps:
       - name: Checkout Repository
@@ -18,15 +23,22 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.9"
+          python-version: ${{ matrix.python }}
 
-      - name: Install dependencies
-        run: pip install setuptools wheel twine
+      - name: Install build tooling
+        run: |
+          python -m pip install --upgrade pip==${{ matrix.pip }}
+          pip install setuptools wheel twine
 
-      - name: Build package
-        run: make package
+      - name: Build all packages via make
+        run: make package_actions
 
-      - name: Upload to PyPI
+      - name: Upload dd_core, dd_datasets, deepdoctection to PyPI
         env:
           PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
-        run: twine upload dist/* --verbose -u __token__ -p "$PYPI_TOKEN"
+        run: |
+          twine upload \
+            packages/dd_core/dist/* \
+            packages/dd_datasets/dist/* \
+            packages/deepdoctection/dist/* \
+            --verbose -u __token__ -p "$PYPI_TOKEN"

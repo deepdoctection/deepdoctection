@@ -3,20 +3,21 @@ name: style
 on:
   push:
     branches:
-        - "*"
+      - "*"
   pull_request:
     branches: [master]
 
 jobs:
-  lint:
+  analyze:
     if: "contains(github.event.head_commit.message, '[force ci]') || github.ref == 'refs/heads/master' || github.event_name == 'pull_request'"
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-latest]
-        python: [3.9]
-        dll: ["torch torchvision --extra-index-url https://download.pytorch.org/whl/cpu"]
-        pip: [24.0]
+        python: ["3.10"]
+        pip: [25.3]
+        tox: [4.32.0]
+
     steps:
       - uses: actions/checkout@v2
 
@@ -26,28 +27,24 @@ jobs:
           python-version: ${{ matrix.python }}
           architecture: x64
 
-      - name: Install DL library
+      - name: Install tox
         run: |
-             python -m pip install pip==${{ matrix.pip }}
-             pip install ${{ matrix.dll }}
+          python -m pip install --upgrade pip==${{ matrix.pip }}
+          pip install tox==${{ matrix.tox }}
 
-      - name: Install dependencies
-        run: |
-          python -m pip install wheel
-          pip install --no-build-isolation detectron2@git+https://github.com/facebookresearch/detectron2.git
-          pip install -e ".[pt]"
-          pip install -e ".[dev, test]"
+      - name: Run analyze
+        run: make analyze
 
-      - name: Run linter
-        run: make lint
-
-  black:
+  check-lint-and-format:
     if: "contains(github.event.head_commit.message, '[force ci]') || github.ref == 'refs/heads/master' || github.event_name == 'pull_request'"
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-latest]
-        python: [3.9]
+        python: ["3.10"]
+        pip: [25.3]
+        tox: [4.32.0]
+
     steps:
       - uses: actions/checkout@v2
 
@@ -57,62 +54,10 @@ jobs:
           python-version: ${{ matrix.python }}
           architecture: x64
 
-      - name: Run black
+      - name: Install tox
         run: |
-          pip install black==23.7.0
-          make black
+          python -m pip install --upgrade pip==${{ matrix.pip }}
+          pip install tox==${{ matrix.tox }}
 
-  isort:
-    if: "contains(github.event.head_commit.message, '[force ci]') || github.ref == 'refs/heads/master' || github.event_name == 'pull_request'"
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
-        python: [3.9]
-    steps:
-      - uses: actions/checkout@v2
-
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: ${{ matrix.python }}
-          architecture: x64
-
-      - name: Run isort
-        run: |
-          pip install isort==5.13.2
-          make isort
-
-  mypy:
-    if: "contains(github.event.head_commit.message, '[force ci]') || github.ref == 'refs/heads/master' || github.event_name == 'pull_request'"
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
-        python: [3.9]
-        dll: ["torch torchvision --extra-index-url https://download.pytorch.org/whl/cpu"]
-        pip: [24.0]
-    steps:
-      - uses: actions/checkout@v2
-
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: ${{ matrix.python }}
-          architecture: x64
-
-      - name: Install DL library
-        run: |
-           python -m pip install pip==${{ matrix.pip }}
-           pip install ${{ matrix.dll }}
-
-      - name: Install dependencies
-        run: |
-          python -m pip install wheel
-          pip install --no-build-isolation detectron2@git+https://github.com/facebookresearch/detectron2.git
-          pip install -e ".[pt]"
-          pip install -e ".[dev, test]"
-
-      - name: Run mypy
-        run: |
-          make analyze
+      - name: Run check-lint-and-format
+        run: make check-lint-and-format

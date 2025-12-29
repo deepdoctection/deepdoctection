@@ -54,8 +54,8 @@ markdown_extensions:
           case: lower
       alternate_style: true
   - pymdownx.emoji:
-      emoji_index: !!python/name:pymdownx.emoji.twemoji
-      emoji_generator: !!python/name:pymdownx.emoji.to_svg
+      emoji_index: !!python/name:materialx.emoji.twemoji
+      emoji_generator: !!python/name:materialx.emoji.to_svg
 
 
 nav:
@@ -69,30 +69,30 @@ nav:
           - Model Registry And New Models: ./tutorials/Analyzer_Model_Registry_And_New_Models.md
           - Doclaynet With A YOLO Predictor: ./tutorials/Analyzer_Doclaynet_With_YOLO.md
           - Pipelines: ./tutorials/Pipelines.md
-          - Data Structures: ./tutorials/Data_Structure.md
-          - Datasets: ./tutorials/Datasets.md
-          - Architecture: ./tutorials/Architecture.md
-          - Evaluation: ./tutorials/Evaluation.md
-          - Training And Fine Tuning: ./tutorials/Training_And_Fine_Tuning.md
+    - Concepts:
+          - Settings: ./concepts/Base_Settings.md
+          - Data Structures: ./concepts/Data_Structure.md
+          - Datasets: ./concepts/Datasets.md
+          - Architecture: ./concepts/Architecture.md
+          - Evaluation: ./concepts/Evaluation.md
+          - Training And Fine Tuning: ./concepts/Training_And_Fine_Tuning.md
     - Projects:
-          - Training A Model On Several Datasets: ./tutorials/Project_Training.md
-          - Custom Pipeline: ./tutorials/Custom_Pipeline.md
-          - LayoutLM For Sequence Classification: ./tutorials/LayoutLM_For_Seq_Class.md
-          - LayoutLM For Custom Token Classification: ./tutorials/LayoutLM_For_Custom_Token_Class.md
+          - Training A Model On Several Datasets: ./projects/Project_Training.md
+          #- Custom Pipeline: ./projects/Custom_Pipeline.md
+          - LayoutLM For Sequence Classification: ./projects/LayoutLM_For_Seq_Class.md
+          - LayoutLM For Custom Token Classification: ./projects/LayoutLM_For_Custom_Token_Class.md
     - API:
         - Analyzer: ./modules/deepdoctection.analyzer.md
-        - Dataflow: ./modules/deepdoctection.dataflow.md
-        - Datapoint: ./modules/deepdoctection.datapoint.md
-        - Datasets: ./modules/deepdoctection.datasets.md
-        - Datasets Instances: ./modules/deepdoctection.datasets.instances.md
+        - Dataflow: ./modules/dd_core.dataflow.md
+        - Datapoint: ./modules/dd_core.datapoint.md
+        - Datasets: ./modules/dd_datasets.md
+        - Datasets Instances: ./modules/dd_datasets.instances.md
         - Eval: ./modules/deepdoctection.eval.md
         - Extern: ./modules/deepdoctection.extern.md
-        - Extern PT: ./modules/deepdoctection.extern.pt.md
-        - Extern TP: ./modules/deepdoctection.extern.tp.md
-        - Mapper: ./modules/deepdoctection.mapper.md
+        - Mapper: ./modules/dd_core.mapper.md
         - Pipe: ./modules/deepdoctection.pipe.md
         - Train: ./modules/deepdoctection.train.md
-        - Utils: ./modules/deepdoctection.utils.md
+        - Utils: ./modules/dd_core.utils.md
 
 
 plugins:
@@ -101,6 +101,13 @@ plugins:
     - mkdocstrings:
         handlers:
           python:
+            selection:
+              filters:
+                - "^_[^_]"
+            paths:
+              - packages/dd_core/src
+              - packages/dd_datasets/src
+              - packages/deepdoctection/src
             options:
               parameter_headings: true
               line_length: 120
@@ -113,4 +120,6 @@ plugins:
 
 # to watch lib files in mkdocs server. Uncomment, if update docs locally
 watch:
-    - deepdoctection
+  - packages/dd_core/src
+  - packages/dd_datasets/src
+  - packages/deepdoctection/src
