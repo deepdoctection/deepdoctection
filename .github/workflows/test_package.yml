@@ -27,6 +27,9 @@ jobs:
           python -m pip install --upgrade pip==${{ matrix.pip }}
           pip install setuptools wheel twine
 
+      - name: Build venv via make
+        run: make venv
+
       - name: Build all packages via make
         run: make package_actions
 
