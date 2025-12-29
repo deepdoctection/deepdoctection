@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://github.com/deepdoctection/deepdoctection/raw/master/docs/tutorials/_imgs/dd_logo.png" alt="Deep Doctection Logo" width="60%">
+  <img src="https://github.com/deepdoctection/deepdoctection/raw/master/docs/_imgs/dd_logo.png" alt="Deep Doctection Logo" width="60%">
   <h3 align="center">
   </h3>
 </p>
@@ -15,12 +15,10 @@ Compared to most other parsers, **deep**doctection offers extensive configurabil
 
 This section will introduce you to the essential basics of document parsing with **deep**doctection.
 
-If you are using TensorFlow, tensorpack must be installed instead. 
-
 !!! warning ""
 
-    TensorFlow will not be supported anymore starting from Python 3.11 in **deep**doctection. But also for lower 
-    versions, we recommend not using the TensorFlow anymore.
+    TensorFlow will not be supported anymore starting from **deep**doctection version `1.0.0` 
+    Python 3.10 in **deep**doctection. But also for lower versions, we recommend not using the TensorFlow anymore.
 
 First, we instantiate the **deep**doctection analyzer. We will be using the default configuration.
 
@@ -64,7 +62,7 @@ PDF-document or outputs of another **deep**doctection pipeline.
     df.reset_state() # (1)
     ```
 
-    1. Necessary to initialize the Dataflow. Throws an error if not called before iteration.
+    1. Necessary to initialize the `Dataflow`. Throws an error if not called before iteration.
 
 === "JSON"
 
@@ -164,7 +162,7 @@ Some attributes do not have values because the pipeline component is either deac
 
 ## Layout segments
 
-We can visualize detected layout segments. 
+We can visualize detected layout segments like `text`, `title` or `line`.  
 
 
 ```python
@@ -178,7 +176,7 @@ page.viz(interactive=True,
 1. If you set `interactive=True` a viewer will pop up. Use `+` and `-` to zoom out/in. Use `q` to close the page. If you
    set `interactive=False` the image will be returned as a numpy array. You can visualize it e.g. with matplotlib.
 
-![title](./_imgs/analyzer_get_started_02.png)
+![title](../_imgs/analyzer_get_started_02.png)
 
 We can get layout segments from the `layouts` attribute.
 
@@ -207,6 +205,8 @@ for layout in page.layouts:
           und die negative Stimmung unter den Anlegern, vor allem am europàischen Retail-Markt. Auch die DWS Gruppe 
           blieb von dieser Entwicklung nicht verschont.
     ```
+
+
 
 There are other layout segments that have their own attributes. They depend on one hand side on the type of sections 
 that a layout model is able to detect, on the other hand they depend on the analyzer configuration.  
@@ -316,7 +316,7 @@ print(f" number of rows: {table.number_of_rows} \n
        pd.DataFrame(table.csv, columns=["Key", "Value"])
        ```
 
-    ```
+    <pre>
     [['Jahresdurchschnitt der Mitarbeiterzahl ', '139 '],
      ['Gesamtvergutung? ', 'EUR 15.315. .952 '],
      ['Fixe Vergutung ', 'EUR 13.151.856 '],
@@ -325,7 +325,7 @@ print(f" number of rows: {table.number_of_rows} \n
      ['Gesamtvergutung fur Senior Management ', 'EUR 1.468.434 '],
      ['Gesamtvergutung fûr sonstige Risikotrâger ', 'EUR 324.229 '],
      ['Gesamtvergutung fur Mitarbeiter mit Kontrollfunktionen ', 'EUR 554.046 ']]
-    ```
+    </pre>
 
 === "html"
 
@@ -425,6 +425,7 @@ word.get_attribute_names()
 
 ??? info "Output"
 
+    <pre>
     {'bbox',
      'block',
      'character_type',
@@ -438,6 +439,19 @@ word.get_attribute_names()
      'text_line',
      'token_class',
      'token_tag'}
+    </pre>
+
+As already mentioned, the reading order determines the position of text in a larger text block. There are two levels of
+reading orders: 
+
+- Reading order at the level of words in layout sections. 
+- Reading order at the level of layout section in a page.
+
+Ordering text is a huge challenge, especially when ordering layout sections. Documents can have a very complex layout
+structure and if you use a heuristic ordering approach you need to compromise to some extent. Reading order at the level
+of layout sections is basically ordering words in a rectangle. This is easier.
+
+Let's look at some more attributes.
 
 ```python
 
@@ -490,6 +504,6 @@ page = dd.Page.from_file(file_path="path/to/dir/sample.json")
 ```
 
 <div class="grid cards" markdown>
-- :material-arrow-right-bold:[More about parsing](Analyzer_More_On_Parsing.md)
-- :material-arrow-right-bold:[Analyzer Configuration](Analyzer_Configuration.md)  
+- :material-arrow-right-bold: [More about parsing](Analyzer_More_On_Parsing.md)
+- :material-arrow-right-bold: [Analyzer Configuration](Analyzer_Configuration.md)  
 </div>

@@ -1,123 +1,126 @@
-.PHONY: clean clean-test clean-pyc clean-build develop help venv start pytest test
+.PHONY: clean clean-test clean-pyc clean-build develop help venv start pytest test install-dd
 
 UNAME_S := $(shell uname -s)
 
-
 PYTHON=python3
 
-black:
-	black --line-length 120 deepdoctection tests setup.py
+# optional: R=1 enables --recreate (-r) for tox
+ifdef R
+TOX_R = -r
+endif
 
-analyze:
-	mypy -p deepdoctection -p tests -p tests_d2
+help: ## Show this help message
+	@grep -E '^[a-zA-Z0-9_-]+:.*##' Makefile | sed 's/:.*##/: /' | sort
 
-check-format:
-	black --line-length 120 --check deepdoctection tests setup.py
-	isort --check tests setup.py
+analyze: ## Run type checks for all packages. Set R=1 to recreate tox envs
+	tox -c packages/tox.ini -e py310-type-all $(TOX_R)
 
-clean: clean-build clean-pyc clean-test
+check-lint-and-format: ## Run lint and format checks for all packages. Set R=1 to recreate tox envs
+	tox -c packages/tox.ini -e py310-check-format-and-lint-all $(TOX_R)
 
-clean-build:
-	rm -fr build/
-	rm -fr dist/
-	rm -fr .eggs/
+clean: clean-build clean-pyc clean-test ## Clean build, Python, and test artifacts
+
+clean-build: ## Remove build artifacts
+	rm -fr build/ dist/ .eggs/
 	find . -name '*.egg-info' -exec rm -fr {} +
-	find . -name '*.egg' -exec rm -f {} +
+	find . -name '*.egg' -exec rm -rf {} +
 
-clean-pyc:
-	find . -name '*.pyc' -exec rm -f {} +
-	find . -name '*.pyo' -exec rm -f {} +
-	find . -name '*~' -exec rm -f {} +
-	find . -name '__pycache__' -exec rm -fr {} +
+clean-pyc: ## Remove Python bytecode and cache files
+	# remove .pyc/.pyo and editor backups
+	find . -type f -name '*.pyc' -delete 2>/dev/null || true
+	find . -type f -name '*.pyo' -delete 2>/dev/null || true
+	find . -type f -name '*~' -delete 2>/dev/null || true
+	# remove __pycache__ dirs without descending to avoid races
+	find . -type d -name '__pycache__' -prune -exec rm -rf {} + 2>/dev/null || true
 
-clean-test:
-	rm -fr .tox/
-	rm -f .coverage
-	rm -fr htmlcov/
-	rm -fr .pytest_cache
+clean-test: ## Remove test and coverage artifacts (top-level and packages)
+	# top-level
+	rm -fr .coverage coverage htmlcov .pytest_cache
+	rm -fr .hypothesis
+	# everything under packages (dd_core, dd_datasets, deepdoctection, etc.)
+	find packages -maxdepth 3 -type d \( \
+		-name '.tox' -o \
+		-name '.hypothesis' -o \
+		-name '.pytest_cache' -o \
+		-name 'coverage' -o \
+		-name 'htmlcov' -o \
+		-name 'dist' -o \
+		-name 'build' \
+	\) -exec rm -rf {} +
+	find packages -maxdepth 4 -type f \( \
+		-name '.coverage' -o \
+		-name 'coverage.xml' \
+	\) -exec rm -f {} +
 
-format-and-qa: format lint analyze
+qa: analyze check-lint-and-format ## Run full QA suite (types, lint, format)
 
-format: black isort
+format: ## Auto-format all Python code. Set R=1 to recreate tox envs
+	tox -c packages/tox.ini -e py310-format-all $(TOX_R)
 
-install-dd-dev-pt: check-venv
-	@echo "--> Installing pt"
-	pip install -e ".[pt]"
-	@echo "--> Installing dev, test dependencies"
-	pip install -e ".[dev, test]"
-	@echo "--> Done installing dev, test dependencies"
-	pip install -e ".[docs]"
-	@echo "--> Done installing docs dependencies"
-	@echo ""
+install-dd: check-venv ## Install editable packages with extras
+	pip install --no-build-isolation "detectron2 @ git+https://github.com/deepdoctection/detectron2.git"
+	pip install -e ./packages/dd_core[full]
+	pip install -e ./packages/dd_datasets[full]
+	pip install -e ./packages/deepdoctection[full]
 
-install-dd-dev-tf: check-venv
-	@echo "--> Installing source-all-tf"
-	pip install -e ".[tf]"
-	@echo "--> Installing dev, test dependencies"
-	pip install -e ".[dev, test]"
-	@echo "--> Done installing dev, test dependencies"
-	pip install -e ".[docs]"
-	@echo "--> Done installing docs dependencies"
-	@echo ""
+install-dd-dev: check-venv ## Install dev editable packages with extras
+	pip install --no-build-isolation "detectron2 @ git+https://github.com/deepdoctection/detectron2.git"
+	pip install -e ./packages/dd_core[full,dev,test]
+	pip install -e ./packages/dd_datasets[full,dev,test]
+	pip install -e ./packages/deepdoctection[full,dev,test]
 
-isort:
-	isort  deepdoctection tests setup.py
-
-lint:
-	pylint deepdoctection tests tests_d2
-
-package:
-	@echo "--> Generating package"
+package_actions: check-venv ## Build packages for dd_core, dd_datasets, deepdoctection.
+	@echo "--> Generating packages for dd_core, dd_datasets, deepdoctection"
 	pip install --upgrade build
-	$(PYTHON) -m build
+	cd packages/dd_core && $(PYTHON) -m build
+	cd packages/dd_datasets && $(PYTHON) -m build
+	cd packages/deepdoctection && $(PYTHON) -m build
 
-package_actions: check-venv
-	@echo "--> Generating package"
-	pip install --upgrade build
-	$(PYTHON) -m build
+# default env if ENV is not provided
+TOX_ENV ?= py310-core-test
 
-# all tests - this will never succeed in full due to dependency conflicts
-test:
-	pytest --cov=deepdoctection --cov-branch --cov-report=html tests
-	pytest --cov=deepdoctection --cov-branch --cov-report=html tests_d2
+test: ## Run tests via tox. TOX_ENV selectable and R=1 to recreate tox envs
+	tox -c packages/tox.ini -e $(TOX_ENV) $(TOX_R)
 
-# tests that does only require the basic detup
-test-basic:
-	pytest --cov=deepdoctection --cov-branch --cov-report=html -m basic tests
 
-# tests that require additional dependencies not based on DL libraries
-test-additional: test-basic
-	pytest --cov=deepdoctection --cov-branch --cov-report=html -m additional tests
-
-# analyzer with legacy configurations
-test-pt-legacy:
-	pytest --cov=deepdoctection --cov-branch --cov-report=html -m "pt_legacy" tests
-
-# tests with full TF setup
-test-tf: test-additional
-	pytest --cov=deepdoctection --cov-branch --cov-report=html -m "tf_deps" tests
-
-# tests with full PT setup
-test-pt: test-additional
-	pytest --cov=deepdoctection --cov-branch --cov-report=html -m "pt_deps" tests
-	pytest --cov=deepdoctection --cov-branch --cov-report=html tests_d2
-
-test-gpu:
-	pytest --cov=deepdoctection --cov-branch --cov-report=html -m "requires_gpu" tests
-
-up-req: check-venv
-	@echo "--> Updating Python requirements"
-	pip-compile  --output-file requirements.txt  setup.py
+up-req: check-venv ## Update requirements.txt for all packages from pyproject.toml
+	@echo "--> Updating Python requirements from pyproject.toml"
+	pip-compile \
+		--output-file packages/dd_core/requirements.txt \
+		--resolver=backtracking \
+		--extra full \
+		--extra dev \
+		--extra test \
+		packages/dd_core/pyproject.toml -c /dev/null
+	# dd_datasets: full+dev+test
+	pip-compile \
+		--output-file packages/dd_datasets/requirements.txt \
+		--resolver=backtracking \
+		--extra full \
+		--extra dev \
+		--extra test \
+		packages/dd_datasets/pyproject.toml -c /dev/null
+	# deepdoctection: full+dev+test
+	pip-compile \
+		--output-file packages/deepdoctection/requirements.txt \
+		--resolver=backtracking \
+		--extra full \
+		--extra dev \
+		--extra test \
+		packages/deepdoctection/pyproject.toml -c /dev/null
 	@echo "--> Done updating Python requirements"
 
-up-req-docs: check-venv
-	@echo "--> Updating Python requirements"
-	pip-compile  --output-file docs/requirements.txt  --extra docs  setup.py
-	@echo "--> Done updating Python requirements"
+up-req-docs: check-venv ## Update docs requirements from deepdoctection extras
+	@echo "--> Updating docs requirements from pyproject.toml"
+	pip-compile \
+		--output-file docs/requirements.txt \
+		--resolver=backtracking \
+		--extra docs \
+		packages/deepdoctection/pyproject.toml -c /dev/null
+	@echo "--> Done updating docs requirements"
 
 
-
-venv:
+venv: ## Create a virtual environment in ./venv
 	$(PYTHON) -m venv venv --system-site-packages
 
 check-venv:

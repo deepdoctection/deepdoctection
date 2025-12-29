@@ -1,0 +1,142 @@
+annotations:
+  path: dd_core/tests/assets/annotations.json
+  sha256: d4d85b04867eb0c6db4977495606ada598b0980060944473332bf5b0d3e547fa
+  size: 45268
+  license: Apache-2.0
+  description: Annotations for mapper und pipe unittests
+coco_like:
+  path: dd_core/tests/assets/coco_like.json
+  sha256: 40d2efc6a7d36c8722e0999958eb935c8c814b89a44c309d5c964b6d9dcfd35b
+  size: 22652
+  license: Apache-2.0
+  description: Excerpt from Publaynet train GT
+deskewed_gt_opencv:
+  path: deepdoctection/tests/assets/deskew/skewed_gt_opencv.png
+  sha256: e32b1c80a82e38376bdb5c54ddb1a96558d104514ce05904d5211067193540e7
+  size: 176758
+  license: Apache-2.0
+  description: Deskewed image using OpenCV
+deskewed_gt_pil:
+  path: deepdoctection/tests/assets/deskew/skewed_gt_pil.png
+  sha256: e29d466203708e716b636cb3841de3315dcde59abd4012547defa03783b2b2b9
+  size: 118079
+  license: Apache-2.0
+  description: Deskewed image using Pillow
+doclaynet:
+  path: dd_datasets/tests/assets/datasets/DocLayNet_core/test_doclaynet.json
+  sha256: 55881b7818a4377ad49b12bbb12686483a3300a3eb8dde5313b944ee0834a80e
+  size: 11345
+  license: Apache-2.0
+  description: Doclaynet annotations, two samples
+fintabnet:
+  path: dd_datasets/tests/assets/datasets/fintabnet/FinTabNet_1.0.0_table_val.jsonl
+  sha256: 68f0682e3b658a78ea815d6a0a2e2289dde1cec0bd61ec13c1704b7fcf6e221c
+  size: 22384
+  license: Apache-2.0
+  description: Fintabnet annotations, four samples
+funsd:
+  path: dd_datasets/tests/assets/datasets/funsd/annotations/1234.json
+  sha256: e89724ad3b5fc8acbf5b06208c49310dc1eea89c36c42d70e5894de9dee74df1
+  size: 69984
+  license: Apache-2.0
+  description: Funsd annotation, one samples
+iiitar13k:
+  path: dd_datasets/tests/assets/datasets/iiitar13k/ar_alstom_2015_noneng_123.xml
+  sha256: 592796619622109eb1be3aae2b62c4643ea40012e4f41d4eded0bd42a35867f9
+  size: 633
+  license: Apache-2.0
+  description: IIItar13K annotation, one sample
+invoice_pdf:
+  path: deepdoctection/tests/assets/pdf_dir/sample_invoice.pdf
+  sha256: eb946849d228d56dfc68aff2652a766d79742815bea9ad9ae6a6e3c6dc7cdb0c
+  size: 163434
+  license: Apache-2.0
+invoice_rotated_pdf:
+  path: deepdoctection/tests/assets/pdf_dir/sample_invoice_rotated.pdf
+  sha256: 1ae42e7a75b5d9af128e882e92d171dc7182721273d58b102e82c1fa203d57e0
+  size: 13870
+  license: Apache-2.0
+page_json:
+  path: dd_core/tests/assets/a8d0e15c-7463-378a-a3e5-28590a4440ab.json
+  sha256: ae8e68f2b06624986ef959feb38b7431c8b666927442dbfe9abc263ca00d3286
+  size: 3564716
+  license: Apache-2.0
+  description: Sample JSON for generating dd.Page
+pdf_file_two_pages:
+  path: dd_core/tests/assets/test_file.pdf
+  sha256: 8decc8571946d4cd70a024949e033a2a2a54377fe9f1c1b944c20f9ee11a9e51
+  size: 3028
+  license: Apache-2.0
+  description: pdf sample with two pages
+publaynet:
+  path: dd_datasets/tests/assets/datasets/publaynet/publaynet.json
+  sha256: 40d2efc6a7d36c8722e0999958eb935c8c814b89a44c309d5c964b6d9dcfd35b
+  size: 22652
+  license: Apache-2.0
+  description: Publaynet annotation, 20 samples
+pubtables1M_det:
+  path: dd_datasets/tests/assets/datasets/PubTables1M/PubTables1M-Detection-PASCAL-VOC/val/PMC493268_7.xml
+  sha256: 50c41c651b0f81e890c844ca9e2a81ac894bf931d15bd0921ebf7ffcd0523420
+  size: 695
+  license: Apache-2.0
+  description: Pubtables1M detection annotation, one sample
+pubtables1M_struct_ann:
+  path: dd_datasets/tests/assets/datasets/PubTables1M/PubTables-1M-Structure_Annotations_Val/PMC497045_table_2.xml
+  sha256: f4f3aaa6273b37925eab18c8e631658fc88108e01dc08f36e7b1447b951c6f05
+  size: 14057
+  license: Apache-2.0
+  description: Pubtables1M structure annotation, one sample
+pubtabnet:
+  path: dd_datasets/tests/assets/datasets/pubtabnet/PubTabNet_2.0.0.jsonl
+  sha256: 606b4957e41ce717576e3bc849755f4f7dd35c06de477fc5d0be6875026f8cc4
+  size: 11429
+  license: Apache-2.0
+  description: Pubtabnet annotation, three sample
+pubtabnet_like:
+  path: dd_core/tests/assets/pubtabnet_like.json
+  sha256: b570cb58922405d08d89907a2db6a1279ae204bc260b08c9724d45227a8acd14
+  size: 19201
+  license: Apache-2.0
+  description: Sample Pubtabnet GT sample
+rvlcdip:
+  path: dd_datasets/tests/assets/datasets/rvl-cdip/labels/val.txt
+  sha256: df0f36eec9b5d4905af65db3df540b616102ed5cc57896a6e6d8fd1837483f39
+  size: 206
+  license: Apache-2.0
+  description: Rvl-CDIP, five sample
+sample_document_image:
+  path: dd_core/tests/assets/sample_document_image.png
+  sha256: a55679ce5cad22ffbea912eea1973bf5c1032abdce7105662844a936f7cd910d
+  size: 458046
+  license: Prop-Corpoorate-Doc
+  description: PNG of a page from some DB financial report
+sample_image:
+  path: deepdoctection/tests/assets/image_dir/sample_image.png
+  sha256: a55679ce5cad22ffbea912eea1973bf5c1032abdce7105662844a936f7cd910d
+  size: 458046
+  license: Apache-2.0
+  description: Sample PNG with DPI=300
+skewed_input:
+  path: deepdoctection/tests/assets/deskew/skewed_input.png
+  sha256: 675ff47da7dbe47e3e2e3d8072d76bfbe96066ca5028db5f0bae918a5147edce
+  size: 114606
+  license: Apache-2.0
+  description: Skewed image for testing
+testlayout:
+  path: dd_datasets/tests/assets/datasets/testlayout/test_layout.jsonl
+  sha256: f00ac10b4180404d9e4633d53d4b53095a1bbc524f164105d07f1b61c1cc839e
+  size: 5709
+  license: Apache-2.0
+  description: Layout test file with two samples
+text_file:
+  path: dd_core/tests/assets/test_text_file.txt
+  sha256: df0f36eec9b5d4905af65db3df540b616102ed5cc57896a6e6d8fd1837483f39
+  size: 206
+  license: Apache-2.0
+  description: Text file with RVLCDIP sample files
+textract_sample:
+  path: deepdoctection/tests/assets/textract.json
+  sha256: a3d940d465c9684514cc66871d79d1f11d3dfcb360890d405af1720b1805fcb8
+  size: 46277
+  license: Apache-2.0
+  description: Textract JSON sample

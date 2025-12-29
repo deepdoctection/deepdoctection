@@ -1,0 +1,107 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "deepdoctection"
+version = "1.0"
+authors = [
+    {name = "Dr. Janis Meyer"}
+]
+description = "Repository for Document AI - server/inference core package"
+readme = "README.md"
+license = {text = "Apache License 2.0"}
+requires-python = ">=3.10"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "License :: OSI Approved :: Apache Software License",
+    "Natural Language :: English",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+
+dependencies = [
+    #"dd-core[full]>=1.0",
+    "huggingface_hub>=0.26.0",
+]
+
+[project.optional-dependencies]
+full = [
+    #"dd-datasets[full]>=1.0",
+    # Additional dependencies/ Non DL predictors
+    "boto3==1.34.102",
+    "pdfplumber>=0.11.0",
+    "jdeskew>=0.2.2",
+    "networkx>=2.7.1",
+    # Some libs for evals
+    "apted==1.0.3",
+    "distance==0.1.3",
+    "lxml>=4.9.1",
+    "pycocotools>=2.0.2",
+    # DL dependencies
+    "timm>=0.9.16",
+    "transformers>=4.48.0,<5.0.0",
+    "accelerate>=0.29.1",
+    "python-doctr>=1.0.0",
+]
+
+types = [
+    "lxml-stubs>=0.5.1",
+]
+
+dev = [
+    "black==25.11.0",
+    "isort==7.0.0",
+    "pylint==4.0.2",
+    "mypy==1.4.1",
+    "types-PyYAML>=6.0.12.12",
+    "types-termcolor>=1.1.3",
+    "types-tabulate>=0.9.0.3",
+    "types-tqdm>=4.66.0.5",
+    "types-Pillow>=10.2.0.20240406",
+    "types-urllib3>=1.26.25.14",
+    "lxml-stubs>=0.5.1",
+]
+
+test = [
+    "pytest==9.0.1",
+    "pytest-cov",
+]
+
+docs = [
+    "mkdocs-material==9.7.0",
+    "mkdocstrings-python==1.19.0",
+    "griffe==0.25.0"
+]
+
+[project.urls]
+Homepage = "https://github.com/deepdoctection/deepdoctection"
+Documentation = "https://deepdoctection.readthedocs.io"
+Repository = "https://github.com/deepdoctection/deepdoctection"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+deepdoctection = ["py.typed", "configs/*.yaml", "configs/*.jsonl"]
+
+[tool.black]
+line-length = 120
+target-version = ['py310']
+
+[tool.isort]
+profile = "black"
+line_length = 120
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+ignore_missing_imports = true
+

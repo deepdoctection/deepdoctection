@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://github.com/deepdoctection/deepdoctection/raw/master/docs/tutorials/_imgs/dd_logo.png" alt="Deep Doctection Logo" width="60%">
+  <img src="https://github.com/deepdoctection/deepdoctection/raw/master/docs/_imgs/dd_logo.png" alt="Deep Doctection Logo" width="60%">
   <h3 align="center">
   </h3>
 </p>
@@ -42,10 +42,7 @@ dd.ModelCatalog.get_profile_list()
 ??? info "Output"
 
     <pre>
-    ['layout/model-800000_inf_only.data-00000-of-00001',
-     'cell/model-1800000_inf_only.data-00000-of-00001',
-     'item/model-1620000_inf_only.data-00000-of-00001',
-     'layout/d2_model_0829999_layout_inf_only.pt',
+    ['layout/d2_model_0829999_layout_inf_only.pt',
      'layout/d2_model_0829999_layout_inf_only.ts',
      'cell/d2_model_1849999_cell_inf_only.pt',
      'cell/d2_model_1849999_cell_inf_only.ts',
@@ -59,21 +56,17 @@ dd.ModelCatalog.get_profile_list()
      'microsoft/layoutlmv2-base-uncased/pytorch_model.bin',
      'microsoft/layoutxlm-base/pytorch_model.bin',
      'microsoft/layoutlmv3-base/pytorch_model.bin',
-     'microsoft/table-transformer-detection/pytorch_model.bin',
-     'microsoft/table-transformer-structure-recognition/pytorch_model.bin',
-     'doctr/db_resnet50/pt/db_resnet50-ac60cadc.pt',
-     'doctr/db_resnet50/tf/db_resnet50-adcafc63.zip',
-     'doctr/crnn_vgg16_bn/pt/crnn_vgg16_bn-9762b0b0.pt',
-     'doctr/crnn_vgg16_bn/tf/crnn_vgg16_bn-76b7f2c6.zip',
+     'microsoft/table-transformer-detection/model.safetensors',
+     'microsoft/table-transformer-structure-recognition/model.safetensors',
+     'doctr/db_resnet50/db_resnet50-ac60cadc.pt',
+     'doctr/crnn_vgg16_bn/crnn_vgg16_bn-0417f351.pt',
      'FacebookAI/xlm-roberta-base/pytorch_model.bin',
-     'fasttext/lid.176.bin',
      'deepdoctection/tatr_tab_struct_v2/pytorch_model.bin',
-     'layout/d2_model_0829999_layout.pth',
-     'cell/d2_model_1849999_cell.pth',
-     'item/d2_model_1639999_item.pth',
      'Felix92/doctr-torch-parseq-multilingual-v1/pytorch_model.bin',
-     'doctr/crnn_vgg16_bn/pt/master-fde31e4a.pt',
-     'Aryn/deformable-detr-DocLayNet/model.safetensors']
+     'doctr/crnn_vgg16_bn/master-fde31e4a.pt',
+     'Aryn/deformable-detr-DocLayNet/model.safetensors',
+     'deepdoctection/tatr_tab_struct_v2/model.safetensors',
+     'papluca/xlm-roberta-base-language-detection/model.safetensors']
 	 </pre>
 
 
@@ -101,9 +94,7 @@ dd.ModelCatalog.get_full_path_configs('layout/d2_model_0829999_layout_inf_only.p
 
 
 ```python
-from dataclasses import asdict
-
-asdict(dd.ModelCatalog.get_profile('layout/d2_model_0829999_layout_inf_only.pt'))
+dd.ModelCatalog.get_profile('layout/d2_model_0829999_layout_inf_only.pt')
 ```
 
 ??? info "Output"
@@ -140,8 +131,8 @@ We now demonstrate how to register a pre-trained model and subsequently use it w
 For this purpose, we use a pre-trained model from the [**Layout-Parser**](https://layout-parser.github.io) repository.
 This model is supported by Detectron2. The model weights can be found [**here**](https://www.dropbox.com/s/6ewh6g8rqt2ev3a/model_final.pth?dl=1), 
 and the model configuration [**here**](https://www.dropbox.com/s/6ewh6g8rqt2ev3a/model_final.pth?dl=1). The model has been pre-trained on a historical newspaper dataset and
-detects the following layout segments: PHOTOGRAPH, ILLUSTRATION, MAP, COMIC, EDITORIAL_CARTOON, HEADLINE, and
-ADVERTISEMENT. These categories do not yet exist in the **deep**doctection ecosystem and must be registered beforehand.
+detects the following layout segments: `PHOTOGRAPH, ILLUSTRATION, MAP, COMIC, EDITORIAL_CARTOON, HEADLINE`, and
+`ADVERTISEMENT`. These categories do not yet exist in the **deep**doctection ecosystem and must be registered beforehand.
 
 
 ### Registering the new layout categories
@@ -216,7 +207,7 @@ plt.axis('off')
 plt.imshow(image)
 ```
 
-![layoutparser_3.png](./_imgs/analyzer_model_registry_and_new_models_01.png)
+![layoutparser_3.png](../_imgs/analyzer_model_registry_and_new_models_01.png)
 
 
 ```python

@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://github.com/deepdoctection/deepdoctection/raw/master/docs/tutorials/_imgs/dd_logo.png" alt="Deep Doctection Logo" width="60%">
+  <img src="https://github.com/deepdoctection/deepdoctection/raw/master/docs/_imgs/dd_logo.png" alt="Deep Doctection Logo" width="60%">
   <h3 align="center">
   </h3>
 </p>
@@ -50,7 +50,7 @@ plt.imshow(np_image)
 3. Default threshold is at 0.1
 
     
-![png](./_imgs/analyzer_configuration_samples_01.png)
+![png](../_imgs/analyzer_configuration_samples_01.png)
 
 
 ```python
@@ -72,7 +72,7 @@ plt.imshow(np_image)
 ```
 
     
-![png](./_imgs/analyzer_configuration_samples_02.png)
+![png](../_imgs/analyzer_configuration_samples_02.png)
     
 
 
@@ -83,13 +83,14 @@ dp.tables[0].csv
 
 ??? info "Output"
 
+    <pre>
     [['Dataset ', 'A-1 ', 'A-2 ', 'Libri-Adapt ', 'Avg. '],
      ['CTC ', '5.18 ', '6.18 ', '12.81 ', '8.06 '],
      ['KNN-CTC (full) ', '4.81 ', '5.53 ', '12.42 ', '7.59 '],
      ['Datastore size (G) ', '7.12 ', '47.12 ', '4.82 ', '19.69 '],
      ['KNN-CTC (pruned) ', '4.73 ', '5.46 ', '12.66 ', '7.62 '],
      ['Datastore size (G) ', '0.99 ', '6.65 ', '1.49 ', '3.04 ']]
-
+    </pre>
 
 
 
@@ -117,7 +118,7 @@ plt.imshow(np_image)
 
 
     
-![png](./_imgs/analyzer_configuration_samples_03.png)
+![png](../_imgs/analyzer_configuration_samples_03.png)
     
 
 
@@ -186,7 +187,7 @@ plt.imshow(np_image)
 
 
     
-![png](./_imgs/analyzer_configuration_samples_04.png)
+![png](../_imgs/analyzer_configuration_samples_04.png)
     
 
 
