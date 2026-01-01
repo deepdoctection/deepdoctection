@@ -68,6 +68,7 @@ nav:
           - Configuration Samples: ./tutorials/Analyzer_Configuration_Samples.md
           - Model Registry And New Models: ./tutorials/Analyzer_Model_Registry_And_New_Models.md
           - Doclaynet With A YOLO Predictor: ./tutorials/Analyzer_Doclaynet_With_YOLO.md
+          - Anonymization: ./tutorials/Anonymization.md
           - Pipelines: ./tutorials/Pipelines.md
     - Concepts:
           - Settings: ./concepts/Base_Settings.md
