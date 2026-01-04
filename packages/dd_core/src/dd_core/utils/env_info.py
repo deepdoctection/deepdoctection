@@ -234,6 +234,7 @@ def resolve_config_source(
        that path is returned.
     2. Walk up the parents of the current module and for each `(pkg, subdir)` in `pkg_subdirs`
        check `parent / pkg / "src" / pkg / subdir / filename` and return the first existing file.
+       Otherwise check `parent / pkg / subdir / filename` and return the first existing file.
     3. Check the legacy location `here.parents[1] / "configs" / filename` and return it if it exists.
     4. If nothing is found, return the legacy location as a fallback (it may not exist).
 
@@ -256,6 +257,9 @@ def resolve_config_source(
     for parent in here.parents:
         for pkg, subdir in pkg_subdirs:
             candidate = parent / pkg / "src" / pkg / subdir / filename
+            if candidate.is_file():
+                return candidate
+            candidate = parent / pkg / subdir / filename
             if candidate.is_file():
                 return candidate
 

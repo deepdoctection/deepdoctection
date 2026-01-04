@@ -30,7 +30,6 @@ from .types import PathLikeOrStr, Requirement
 
 _GENERIC_ERR_MSG = "Please check the required version either in the docs or in the setup file"
 
-
 # Pytorch related dependencies
 _PYTORCH_AVAILABLE = importlib.util.find_spec("torch") is not None
 _PYTORCH_ERR_MSG = f"Pytorch must be installed. {_GENERIC_ERR_MSG}"

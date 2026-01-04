@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "dd-core"
-version = "1.0.0"
+version = "1.0.1"
 authors = [
     {name = "Dr. Janis Meyer"}
 ]
@@ -79,4 +79,4 @@ package-dir = {"" = "src"}
 where = ["src"]
 
 [tool.setuptools.package-data]
-dd_datapoint = ["py.typed"]
+dd_core = ["py.typed"]
