@@ -558,9 +558,10 @@ def get_boto3_requirement() -> Requirement:
 
 
 # Azure Document Intelligence related dependencies
-_AZURE_DI_AVAILABLE = importlib.util.find_spec("azure") is not None \
-    and importlib.util.find_spec("azure.ai") is not None \
-    and importlib.util.find_spec("azure.ai.documentintelligence") is not None
+try:
+    _AZURE_DI_AVAILABLE = importlib.util.find_spec("azure.ai.documentintelligence") is not None
+except ValueError:
+    _AZURE_DI_AVAILABLE = False
 _AZURE_DI_ERR_MSG = "azure-ai-documentintelligence is not installed. Install it with: pip install azure-ai-documentintelligence"
 
 
