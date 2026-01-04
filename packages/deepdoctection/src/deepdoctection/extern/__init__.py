@@ -30,3 +30,4 @@ from .model import *
 from .pdftext import *
 from .tessocr import *
 from .texocr import *  # type: ignore
+from .azurediocr import *  # type: ignore

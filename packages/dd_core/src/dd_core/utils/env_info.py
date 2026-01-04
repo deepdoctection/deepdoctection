@@ -354,6 +354,10 @@ class EnvSettings(BaseSettings):
     AWS_SECRET_ACCESS_KEY: Optional[SecretStr] = None
     AWS_REGION: Optional[str] = None
 
+    # Azure settings
+    AZURE_DI_ENDPOINT: Optional[str] = None
+    AZURE_DI_KEY: Optional[SecretStr] = None
+
     # Pydantic Settings config
     model_config = SettingsConfigDict(
         env_file=".env",

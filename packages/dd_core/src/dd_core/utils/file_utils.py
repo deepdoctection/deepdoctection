@@ -557,6 +557,33 @@ def get_boto3_requirement() -> Requirement:
     return "boto3", boto3_available(), _BOTO3_ERR_MSG
 
 
+# Azure Document Intelligence related dependencies
+_AZURE_DI_AVAILABLE = importlib.util.find_spec("azure") is not None \
+    and importlib.util.find_spec("azure.ai") is not None \
+    and importlib.util.find_spec("azure.ai.documentintelligence") is not None
+_AZURE_DI_ERR_MSG = "azure-ai-documentintelligence is not installed. Install it with: pip install azure-ai-documentintelligence"
+
+
+def azure_di_available() -> bool:
+    """
+    Returns whether `azure-ai-documentintelligence` is installed.
+
+    Returns:
+        bool: `True` if `azure-ai-documentintelligence` is installed, `False` otherwise.
+    """
+    return bool(_AZURE_DI_AVAILABLE)
+
+
+def get_azure_di_requirement() -> Requirement:
+    """
+    Returns the `azure-ai-documentintelligence` requirement.
+
+    Returns:
+        tuple: A tuple containing the package name, whether the requirement is satisfied, and an error message.
+    """
+    return "azure-ai-documentintelligence", azure_di_available(), _AZURE_DI_ERR_MSG
+
+
 def aws_available() -> bool:
     """
     Returns whether AWS CLI is installed.
