@@ -61,15 +61,17 @@ def _azure_di_to_detectresult(result: Any, width: int, height: int, text_lines: 
         # Process words
         if hasattr(page, 'words') and page.words:
             for word in page.words:
-                # Azure polygon: [x1,y1,x2,y2,x3,y3,x4,y4] normalized 0-1
-                # We take top-left (x1,y1) and bottom-right (x3,y3) for bounding box
+                # Azure polygon: [x1,y1,x2,y2,x3,y3,x4,y4] in pixels (for images)
                 if hasattr(word, 'polygon') and len(word.polygon) >= 8:
+                    # robust bounding box calculation for rotated text
+                    x_coords = word.polygon[0::2]
+                    y_coords = word.polygon[1::2]
                     word_result = DetectionResult(
                         box=[
-                            word.polygon[0] * width,   # x1
-                            word.polygon[1] * height,  # y1
-                            word.polygon[4] * width,   # x3
-                            word.polygon[5] * height,  # y3
+                            min(x_coords),  # x_min
+                            min(y_coords),  # y_min
+                            max(x_coords),  # x_max
+                            max(y_coords),  # y_max
                         ],
                         score=word.confidence if hasattr(word, 'confidence') and word.confidence else 1.0,
                         text=word.content if hasattr(word, 'content') else "",
@@ -82,12 +84,14 @@ def _azure_di_to_detectresult(result: Any, width: int, height: int, text_lines: 
         if text_lines and hasattr(page, 'lines') and page.lines:
             for line in page.lines:
                 if hasattr(line, 'polygon') and len(line.polygon) >= 8:
+                    x_coords = line.polygon[0::2]
+                    y_coords = line.polygon[1::2]
                     line_result = DetectionResult(
                         box=[
-                            line.polygon[0] * width,   # x1
-                            line.polygon[1] * height,  # y1
-                            line.polygon[4] * width,   # x3
-                            line.polygon[5] * height,  # y3
+                            min(x_coords),  # x_min
+                            min(y_coords),  # y_min
+                            max(x_coords),  # x_max
+                            max(y_coords),  # y_max
                         ],
                         score=line.confidence if hasattr(line, 'confidence') and line.confidence else 1.0,
                         text=line.content if hasattr(line, 'content') else "",
