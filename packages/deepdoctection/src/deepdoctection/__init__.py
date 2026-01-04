@@ -12,7 +12,7 @@ from dd_core.utils.env_info import collect_env_info
 from dd_core.utils.file_utils import _LazyModule
 from dd_core.utils.logger import LoggingRecord, logger
 
-__version__ = "1.0.0"
+__version__ = "1.0.1"
 _IMPORT_STRUCTURE = {
     "analyzer": ["config_sanity_checks", "get_dd_analyzer", "ServiceFactory", "update_cfg_from_defaults"],
     "eval": [

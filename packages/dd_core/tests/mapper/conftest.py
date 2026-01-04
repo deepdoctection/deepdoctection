@@ -39,7 +39,7 @@ from dd_core.datapoint.image import Image
 from dd_core.mapper.cats import filter_cat
 from dd_core.mapper.xfundstruct import xfund_to_image
 
-from ..conftest import XFundSample
+from ..conftest import XFundSample  # pylint: disable=E0611
 from .data import IIITAR13K_DATAPOINT, PRODIGY_DATAPOINT, XFUND_LAYOUTLM_FEATURES, XFUND_RAW_LAYOUTLM_FEATURES
 
 

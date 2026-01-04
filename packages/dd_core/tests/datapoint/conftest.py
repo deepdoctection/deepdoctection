@@ -24,7 +24,7 @@ from __future__ import annotations
 
 from pytest import fixture
 
-from ..conftest import TestPdfPage, WhiteImage
+from ..conftest import TestPdfPage, WhiteImage  # pylint: disable=E0611
 from ..data import PDF_BYTES
 
 
