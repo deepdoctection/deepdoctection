@@ -53,7 +53,7 @@ def config_sanity_checks() -> None:
         if cfg.OCR.USE_TESSERACT + cfg.OCR.USE_DOCTR + cfg.OCR.USE_TEXTRACT + cfg.OCR.USE_AZURE_DI != 1:
             raise ValueError(
                 "Choose either OCR.USE_TESSERACT=True or OCR.USE_DOCTR=True or OCR.USE_TEXTRACT=True "
-                "and set the other two to False. Only one OCR system can be activated."
+                "or OCR.USE_AZURE_DI=True and set the other three to False. Only one OCR system can be activated."
             )
 
 
