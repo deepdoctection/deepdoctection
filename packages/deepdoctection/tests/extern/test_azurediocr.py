@@ -51,5 +51,5 @@ def test_azure_di_ocr_predict_words_basic(
     results = det.predict(sample_np_img)
 
     assert isinstance(results, list)
-    assert len(results) == 12
+    assert len(results) == 15
     assert any("consolidated" in r.text.lower() for r in results if hasattr(r, "text") and r.text is not None)

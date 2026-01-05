@@ -163,14 +163,23 @@ class AzureDocIntelOcrDetector(ObjectDetector):
 
     Example:
 
+        Credentials can be passed directly:
+
         ```python
-        azure_predictor = AzureDocIntelOcrDetector()
+        azure_predictor = AzureDocIntelOcrDetector(
+            endpoint="https://your-resource.cognitiveservices.azure.com/",
+            api_key="your-api-key"
+        )
         detection_result = azure_predictor.predict(bgr_image_as_np_array)
         ```
 
-        or
+        Or via environment variables `AZURE_DI_ENDPOINT` and `AZURE_DI_KEY`:
 
         ```python
+        import os
+        os.environ["AZURE_DI_ENDPOINT"] = "https://your-resource.cognitiveservices.azure.com/"
+        os.environ["AZURE_DI_KEY"] = "your-api-key"
+
         azure_predictor = AzureDocIntelOcrDetector()
         text_extract = TextExtractionService(azure_predictor)
 
@@ -183,7 +192,7 @@ class AzureDocIntelOcrDetector(ObjectDetector):
 
     """
 
-    def __init__(self, text_lines: bool = False, **credentials_kwargs: str) -> None:
+    def __init__(self, text_lines: bool = True, **credentials_kwargs: str) -> None:
         """
         Args:
             text_lines: If `True`, it will return `DetectionResult`s of Text lines as well.
@@ -198,6 +207,16 @@ class AzureDocIntelOcrDetector(ObjectDetector):
 
         endpoint = credentials_kwargs.get("endpoint")
         api_key = credentials_kwargs.get("api_key")
+        
+        if not endpoint or not api_key:
+            raise ValueError(
+                "Azure Document Intelligence requires 'endpoint' and 'api_key'. "
+                "Pass them as keyword arguments: AzureDocIntelOcrDetector(endpoint='...', api_key='...')"
+            )
+        
+        # Store for clone
+        self._endpoint = endpoint
+        self._api_key = api_key
 
         self.client = DocumentIntelligenceClient(
             endpoint=endpoint,
@@ -227,7 +246,7 @@ class AzureDocIntelOcrDetector(ObjectDetector):
         return [get_azure_di_requirement()]
 
     def clone(self) -> AzureDocIntelOcrDetector:
-        return self.__class__()
+        return self.__class__(text_lines=self.text_lines, endpoint=self._endpoint, api_key=self._api_key)
 
     def get_category_names(self) -> tuple[ObjectTypes, ...]:
         return self.categories.get_categories(as_dict=False)
