@@ -124,21 +124,23 @@ def predict_text(np_img: PixelValues, client: DocumentIntelligenceClient, text_l
         # Azure uses async poller pattern
         poller = client.begin_analyze_document(
             model_id="prebuilt-read",
-            analyze_request=b_img,
+            body=b_img,
             content_type="application/octet-stream"
         )
         result = poller.result()
     except:  # pylint: disable=W0702
         _, exc_val, exc_tb = sys.exc_info()
         frame_summary = traceback.extract_tb(exc_tb)[0]
+        error_type = type(exc_val).__name__
+        error_msg = str(exc_val)
         log_dict = {
             "file_name": "NN",
-            "error_type": type(exc_val).__name__,
-            "error_msg": str(exc_val),
+            "error_type": error_type,
+            "error_msg": error_msg,
             "orig_module": frame_summary.filename,
             "line": frame_summary.lineno,
         }
-        logger.warning(LoggingRecord("Azure Document Intelligence Exception", log_dict))  # type: ignore
+        logger.warning(LoggingRecord(f"Azure Document Intelligence Exception ({error_type}): {error_msg}", log_dict))  # type: ignore
         result = None
 
     all_results = _azure_di_to_detectresult(result, width, height, text_lines) if result else []
