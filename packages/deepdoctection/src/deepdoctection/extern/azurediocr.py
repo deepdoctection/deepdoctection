@@ -77,6 +77,7 @@ def _azure_di_to_detectresult(result: Any, width: int, height: int, text_lines: 
                         text=word.content if hasattr(word, 'content') else "",
                         class_id=1,
                         class_name=LayoutType.WORD,
+                        absolute_coords=True,
                     )
                     all_results.append(word_result)
 
@@ -97,6 +98,7 @@ def _azure_di_to_detectresult(result: Any, width: int, height: int, text_lines: 
                         text=line.content if hasattr(line, 'content') else "",
                         class_id=2,
                         class_name=LayoutType.LINE,
+                        absolute_coords=True,
                     )
                     all_results.append(line_result)
 
