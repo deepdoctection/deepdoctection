@@ -212,7 +212,7 @@ def asset_path(key: str, verify: bool = True) -> Path:
             expected_hash = info["sha256"].lower()
             actual_hash = _compute_sha256(abs_path)
             if actual_hash != expected_hash:
-                 # On Windows, CRLF line endings can cause hash mismatches for text files.
+                # On Windows, CRLF line endings can cause hash mismatches for text files.
                 warnings.warn(
                     f"Asset '{key}' SHA-256 mismatch:\n"
                     f"  Expected: {expected_hash}\n"
