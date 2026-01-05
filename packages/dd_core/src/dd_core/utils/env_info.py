@@ -369,7 +369,7 @@ class EnvSettings(BaseSettings):
         """
         Apply availability and rule-based overrides, but only when user did not explicitly set the variable.
         """
-        fields_set: set[str] = getattr(self, "__fields_set__", set())
+        fields_set: set[str] = self.model_fields_set
 
         # 0) Derive dirs from DEEPDOCTECTION_CACHE unless explicitly set by user/.env
         if "MODEL_DIR" not in fields_set:

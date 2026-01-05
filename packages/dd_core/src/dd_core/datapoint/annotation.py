@@ -84,6 +84,7 @@ class Annotation(BaseModel, ABC):
     model_config = {
         "arbitrary_types_allowed": True,
         "validate_assignment": True,
+        "protected_namespaces": (),
     }
 
     active: bool = Field(default=True)
