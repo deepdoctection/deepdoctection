@@ -527,9 +527,9 @@ and should always be kept in mind.
 The `TextOrderService` can be configured using four key parameters:
 
 - `TEXT_CONTAINER`: defines the category containing textual elements, such as `word`. Technically speaking, a text
-- container is an `ImageAnnotation` with the subcategory `WordType.CHARACTERS`. In most cases, this refers to
-- individual words. However, there are also OCR systems that return their results line by line, using the layout
-- type `LayoutType.LINE`.
+  container is an `ImageAnnotation` with the subcategory `WordType.CHARACTERS`. In most cases, this refers to
+  individual words. However, there are also OCR systems that return their results line by line, using the layout
+  type `LayoutType.LINE`.
 - `TEXT_ORDERING.TEXT_BLOCK_CATEGORIES`: lists the layout segments to which words have been assigned and which should
   be ordered. In general you should list layout segments that have been added to
   `TEXT_ORDERING.WORD_MATCHING.PARENTAL_CATEGORIES`.
