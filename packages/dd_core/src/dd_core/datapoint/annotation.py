@@ -24,9 +24,9 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from dataclasses import dataclass
-from typing import Any, Literal, Optional, Type, TypeVar, Union, Callable
+from typing import Any, Callable, Literal, Optional, Type, TypeVar, Union
 
-from pydantic import BaseModel, Field, PrivateAttr, field_validator, model_validator, model_serializer
+from pydantic import BaseModel, Field, PrivateAttr, field_validator, model_serializer, model_validator
 
 from ..utils.error import AnnotationError, UUIDError
 from ..utils.identifier import get_uuid, is_uuid_like
