@@ -1,12 +1,14 @@
 name: Publish Docker image
 
 on:
-  release:
-    types: [published]
+  workflow_run:
+    workflows: ["Release"]
+    types: [completed]
   workflow_dispatch:
 
 jobs:
   push_to_registry:
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     name: Build and push Docker image to Docker Hub
     runs-on: docker_image_build_runner
     steps:
