@@ -24,9 +24,9 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from dataclasses import dataclass
-from typing import Any, Literal, Optional, Type, TypeVar, Union
+from typing import Any, Literal, Optional, Type, TypeVar, Union, Callable
 
-from pydantic import BaseModel, Field, PrivateAttr, field_validator, model_validator
+from pydantic import BaseModel, Field, PrivateAttr, field_validator, model_validator, model_serializer
 
 from ..utils.error import AnnotationError, UUIDError
 from ..utils.identifier import get_uuid, is_uuid_like
@@ -166,6 +166,18 @@ class Annotation(BaseModel, ABC):
         attributes_values = [str(getattr(annotation, attribute)) for attribute in attributes]
 
         return get_uuid(*attributes_values, *filtered_context)
+
+    @model_serializer(mode="wrap")
+    def _serialize(self, handler: Callable[[Any], Any]) -> Any:
+        """
+        Serialize all public + subclass fields via Pydantic, then inject private `_annotation_id`.
+        This makes `Image._serialize()` + `model_dump()` include `_annotation_id` everywhere.
+        """
+        data = handler(self)
+
+        # Ensure private id is present in exported dict
+        data["_annotation_id"] = getattr(self, "_annotation_id", None)
+        return data
 
     def as_dict(self) -> AnnotationDict:
         """Return the model as dict."""

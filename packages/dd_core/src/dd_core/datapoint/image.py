@@ -669,6 +669,7 @@ class Image(BaseModel):
         data["_bbox"] = self._bbox.as_dict() if self._bbox else None
         data["_image"] = convert_np_array_to_b64(self._image) if self._image is not None else None
         data["_summary"] = self._summary.as_dict() if self._summary is not None else None
+        data["_image_id"] = self._image_id
 
         if "location" in data:
             data["location"] = fspath(data["location"])

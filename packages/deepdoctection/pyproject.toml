@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "deepdoctection"
-version = "1.0.1"
+version = "1.0.2"
 authors = [
     {name = "Dr. Janis Meyer"}
 ]
@@ -30,7 +30,7 @@ dependencies = [
 
 [project.optional-dependencies]
 full = [
-    "dd-datasets[full]>=1.0",
+    "dd-datasets[full]>=1.0.2",
     # Additional dependencies/ Non DL predictors
     "boto3==1.34.102",
     "pdfplumber>=0.11.0",
