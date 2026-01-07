@@ -144,7 +144,7 @@ class ImageAnnotationBaseView:
         return self._image_annotation.category_id
 
     @property
-    def score(self) -> float:
+    def score(self) -> float | None:
         """property score"""
         return self._image_annotation.score
 
