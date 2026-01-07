@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "dd-datasets"
-version = "1.0.2"
+version = "1.0.3"
 authors = [
     {name = "Dr. Janis Meyer"}
 ]

@@ -139,6 +139,16 @@ class ImageAnnotationBaseView:
         return self._image_annotation.annotation_id
 
     @property
+    def category_id(self) -> int:
+        """property category_id"""
+        return self._image_annotation.category_id
+
+    @property
+    def score(self) -> float:
+        """property score"""
+        return self._image_annotation.score
+
+    @property
     def service_id(self) -> Optional[str]:
         """property service_id"""
         return self._image_annotation.service_id
