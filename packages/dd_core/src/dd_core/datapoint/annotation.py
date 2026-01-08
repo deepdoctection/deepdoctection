@@ -26,7 +26,7 @@ from collections import defaultdict
 from dataclasses import dataclass
 from typing import Any, Callable, Literal, Optional, Type, TypeVar, Union
 
-from pydantic import BaseModel, Field, PrivateAttr, field_validator, model_serializer, model_validator, SerializeAsAny
+from pydantic import BaseModel, Field, PrivateAttr, SerializeAsAny, field_validator, model_serializer, model_validator
 
 from ..utils.error import AnnotationError, UUIDError
 from ..utils.identifier import get_uuid, is_uuid_like
