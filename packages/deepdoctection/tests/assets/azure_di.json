@@ -1,0 +1,113 @@
+{
+  "apiVersion": "2024-02-29-preview",
+  "modelId": "prebuilt-read",
+  "stringIndexType": "textElements",
+  "content": "CONSOLIDATED STATEMENTS OF COMPREHENSIVE INCOME NOTES to Consolidated Financial Statements Unaudited Three",
+  "pages": [
+    {
+      "pageNumber": 1,
+      "angle": 0,
+      "width": 1700,
+      "height": 2200,
+      "unit": "pixel",
+      "words": [
+        {
+          "content": "CONSOLIDATED",
+          "polygon": [0.1, 0.05, 0.25, 0.05, 0.25, 0.07, 0.1, 0.07],
+          "confidence": 0.995,
+          "span": {"offset": 0, "length": 12}
+        },
+        {
+          "content": "STATEMENTS",
+          "polygon": [0.26, 0.05, 0.38, 0.05, 0.38, 0.07, 0.26, 0.07],
+          "confidence": 0.998,
+          "span": {"offset": 13, "length": 10}
+        },
+        {
+          "content": "OF",
+          "polygon": [0.39, 0.05, 0.42, 0.05, 0.42, 0.07, 0.39, 0.07],
+          "confidence": 0.999,
+          "span": {"offset": 24, "length": 2}
+        },
+        {
+          "content": "COMPREHENSIVE",
+          "polygon": [0.43, 0.05, 0.58, 0.05, 0.58, 0.07, 0.43, 0.07],
+          "confidence": 0.996,
+          "span": {"offset": 27, "length": 13}
+        },
+        {
+          "content": "INCOME",
+          "polygon": [0.59, 0.05, 0.68, 0.05, 0.68, 0.07, 0.59, 0.07],
+          "confidence": 0.997,
+          "span": {"offset": 41, "length": 6}
+        },
+        {
+          "content": "NOTES",
+          "polygon": [0.753, 0.0298, 0.7827, 0.0298, 0.7827, 0.0380, 0.753, 0.0380],
+          "confidence": 0.8173,
+          "span": {"offset": 48, "length": 5}
+        },
+        {
+          "content": "to",
+          "polygon": [0.7826, 0.0296, 0.7962, 0.0296, 0.7962, 0.0379, 0.7826, 0.0379],
+          "confidence": 0.9872,
+          "span": {"offset": 54, "length": 2}
+        },
+        {
+          "content": "Consolidated",
+          "polygon": [0.797, 0.0295, 0.858, 0.0295, 0.858, 0.0378, 0.797, 0.0378],
+          "confidence": 0.994,
+          "span": {"offset": 57, "length": 12}
+        },
+        {
+          "content": "Financial",
+          "polygon": [0.859, 0.0294, 0.912, 0.0294, 0.912, 0.0377, 0.859, 0.0377],
+          "confidence": 0.996,
+          "span": {"offset": 70, "length": 9}
+        },
+        {
+          "content": "Statements",
+          "polygon": [0.1, 0.08, 0.18, 0.08, 0.18, 0.10, 0.1, 0.10],
+          "confidence": 0.997,
+          "span": {"offset": 80, "length": 10}
+        },
+        {
+          "content": "Unaudited",
+          "polygon": [0.19, 0.08, 0.26, 0.08, 0.26, 0.10, 0.19, 0.10],
+          "confidence": 0.993,
+          "span": {"offset": 91, "length": 9}
+        },
+        {
+          "content": "Three",
+          "polygon": [0.27, 0.08, 0.32, 0.08, 0.32, 0.10, 0.27, 0.10],
+          "confidence": 0.998,
+          "span": {"offset": 101, "length": 5}
+        }
+      ],
+      "lines": [
+        {
+          "content": "CONSOLIDATED STATEMENTS OF COMPREHENSIVE INCOME",
+          "polygon": [0.1, 0.05, 0.68, 0.05, 0.68, 0.07, 0.1, 0.07],
+          "spans": [{"offset": 0, "length": 47}]
+        },
+        {
+          "content": "NOTES to Consolidated Financial",
+          "polygon": [0.753, 0.0294, 0.912, 0.0294, 0.912, 0.0380, 0.753, 0.0380],
+          "spans": [{"offset": 48, "length": 31}]
+        },
+        {
+          "content": "Statements Unaudited Three",
+          "polygon": [0.1, 0.08, 0.32, 0.08, 0.32, 0.10, 0.1, 0.10],
+          "spans": [{"offset": 80, "length": 26}]
+        }
+      ]
+    }
+  ],
+  "styles": [],
+  "languages": [
+    {
+      "locale": "en",
+      "confidence": 0.99
+    }
+  ]
+}
