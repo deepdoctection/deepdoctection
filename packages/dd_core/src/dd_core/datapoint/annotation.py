@@ -26,7 +26,7 @@ from collections import defaultdict
 from dataclasses import dataclass
 from typing import Any, Callable, Literal, Optional, Type, TypeVar, Union
 
-from pydantic import BaseModel, Field, PrivateAttr, field_validator, model_serializer, model_validator
+from pydantic import BaseModel, Field, PrivateAttr, field_validator, model_serializer, model_validator, SerializeAsAny
 
 from ..utils.error import AnnotationError, UUIDError
 from ..utils.identifier import get_uuid, is_uuid_like
@@ -271,7 +271,7 @@ class CategoryAnnotation(Annotation):
     category_name: TypeOrStr = Field(default=DefaultType.DEFAULT_TYPE)
     category_id: int = Field(default=DEFAULT_CATEGORY_ID)
     score: Optional[float] = Field(default=None)
-    sub_categories: dict[ObjectTypes, CategoryAnnotation] = Field(default_factory=dict)
+    sub_categories: dict[ObjectTypes, SerializeAsAny[CategoryAnnotation]] = Field(default_factory=dict)
     relationships: dict[ObjectTypes, list[str]] = Field(default_factory=dict)
 
     @field_validator("category_name", mode="before")

@@ -24,7 +24,7 @@ from typing import TYPE_CHECKING
 
 from dd_core.utils.file_utils import _LazyModule, pytorch_available
 
-__version__ = "1.0.3"
+__version__ = "1.0.4"
 _IMPORT_STRUCTURE = {
     "base": ["DatasetBase", "SplitDataFlow", "MergeDataset", "DatasetCard", "CustomDataset"],
     "dataflow_builder": [
