@@ -20,7 +20,7 @@ Datapoint manager
 """
 from collections import deque
 from dataclasses import asdict
-from typing import Optional, Sequence, Union, Any
+from typing import Any, Optional, Sequence, Union
 
 import numpy as np
 
@@ -57,10 +57,13 @@ class DatapointManager:
     The manager is part of each `PipelineComponent`.
     """
 
-    def __init__(self, service_id: str,
-                       model_id: Optional[str] = None,
-                       num_cached_datapoints: int = 0,
-                       remove_pixel_values_from_cache: bool = True) -> None:
+    def __init__(
+        self,
+        service_id: str,
+        model_id: Optional[str] = None,
+        num_cached_datapoints: int = 0,
+        remove_pixel_values_from_cache: bool = True,
+    ) -> None:
         self._datapoint: Optional[Image] = None
         self._cache_anns: dict[str, ImageAnnotation] = {}
         self.datapoint_is_passed: bool = False
@@ -397,7 +400,7 @@ class DatapointManager:
             summary_annotation={
                 "summary_key": summary_key.value,
                 "summary_name": summary_name.value,
-                "summary_value": summary_value,
+                "summary_value": str(summary_value),
                 "annotation_id": annotation_id,
             },
         ) as annotation_context:

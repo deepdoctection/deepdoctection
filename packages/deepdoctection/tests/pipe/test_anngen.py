@@ -26,9 +26,8 @@ categories.
 
 """
 
-import pytest
-
 import numpy as np
+import pytest
 
 from dd_core.datapoint import ContainerAnnotation, Image
 from dd_core.utils.object_types import Relationships, get_type
@@ -149,6 +148,7 @@ def test_errors_assert_and_type() -> None:
     with pytest.raises(TypeError, match="must be of type list or np.ndarray"):
         mgr.set_image_annotation(bad_dr)
 
+
 def test_datapoint_cache_fifo_and_bounded() -> None:
     """test datapoint caching fifo and bounded size"""
     mgr = DatapointManager(service_id="svc", num_cached_datapoints=2, remove_pixel_values_from_cache=False)
@@ -178,15 +178,14 @@ def test_datapoint_cache_does_not_store_none() -> None:
     assert len(mgr._cached_datapoints) == 0  # noqa: SLF001
 
 
-def test_datapoint_cache_calls_pixel_cleanup_when_enabled(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_datapoint_cache_calls_pixel_cleanup_when_enabled() -> None:
     """test datapoint caching calls pixel cleanup when enabled"""
     mgr = DatapointManager(service_id="svc", num_cached_datapoints=1, remove_pixel_values_from_cache=True)
 
     img1 = Image(file_name="img1.jpg")
     img2 = Image(file_name="img2.jpg")
-    img1.image =  np.ones([400, 600, 3], dtype=np.float32)
+    img1.image = np.ones([400, 600, 3], dtype=np.float32)
     img2.image = np.ones([400, 600, 3], dtype=np.float32)
-
 
     mgr.datapoint = img1
     mgr.datapoint = img2
@@ -195,14 +194,14 @@ def test_datapoint_cache_calls_pixel_cleanup_when_enabled(monkeypatch: pytest.Mo
     assert img1.image is None
 
 
-def test_datapoint_cache_no_pixel_cleanup_when_disabled(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_datapoint_cache_no_pixel_cleanup_when_disabled() -> None:
     """test datapoint caching does not call pixel cleanup when disabled"""
     mgr = DatapointManager(service_id="svc", num_cached_datapoints=1, remove_pixel_values_from_cache=False)
 
     img1 = Image(file_name="img1.jpg")
     img2 = Image(file_name="img2.jpg")
 
-    img1.image =  np.ones([400, 600, 3], dtype=np.float32)
+    img1.image = np.ones([400, 600, 3], dtype=np.float32)
     img2.image = np.ones([400, 600, 3], dtype=np.float32)
 
     mgr.datapoint = img1
@@ -263,9 +262,7 @@ def test_get_cached_datapoints_last_k_exceeds_size_returns_all_and_does_not_muta
 
 def test_get_cached_datapoints_zero_returns_empty_and_does_not_mutate() -> None:
     """last_k == 0 returns empty snapshot and must not mutate the cache"""
-    mgr = DatapointManager(service_id="svc",
-                           num_cached_datapoints=2,
-                           remove_pixel_values_from_cache=False)
+    mgr = DatapointManager(service_id="svc", num_cached_datapoints=2, remove_pixel_values_from_cache=False)
 
     img1 = Image(file_name="img1.jpg")
     img2 = Image(file_name="img2.jpg")
@@ -277,15 +274,13 @@ def test_get_cached_datapoints_zero_returns_empty_and_does_not_mutate() -> None:
     before = list(mgr._cached_datapoints)
     got = mgr.get_cached_datapoints(0)
 
-    assert list(got) == []
+    assert not list(got)
     assert list(mgr._cached_datapoints) == before
 
 
 def test_get_cached_datapoints_negative_raises_and_does_not_mutate() -> None:
     """last_k < 0 raises and must not mutate the cache"""
-    mgr = DatapointManager(service_id="svc",
-                           num_cached_datapoints=2,
-                           remove_pixel_values_from_cache=False)
+    mgr = DatapointManager(service_id="svc", num_cached_datapoints=2, remove_pixel_values_from_cache=False)
 
     img1 = Image(file_name="img1.jpg")
     img2 = Image(file_name="img2.jpg")

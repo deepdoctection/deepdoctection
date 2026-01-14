@@ -640,8 +640,9 @@ class ContainerAnnotation(CategoryAnnotation):
     """
 
     value: Optional[Union[list[str], str, int, float]] = Field(default=None)
-    value_type: Optional[Literal["str", "int", "float", "list[str]", "dict[str,Any]"]] =\
-        Field(default=None, exclude=True)
+    value_type: Optional[Literal["str", "int", "float", "list[str]", "dict[str,Any]"]] = Field(
+        default=None, exclude=True
+    )
 
     @model_validator(mode="after")
     def _coerce_or_infer_value_validator(self) -> ContainerAnnotation:
