@@ -640,7 +640,9 @@ class ContainerAnnotation(CategoryAnnotation):
     """
 
     value: Optional[Union[list[str], str, int, float]] = Field(default=None)
-    value_type: Optional[Literal["str", "int", "float", "list[str]"]] = Field(default=None, exclude=True)
+    value_type: Optional[Literal["str", "int", "float", "list[str]", "dict[str,Any]"]] = Field(
+        default=None, exclude=True
+    )
 
     @model_validator(mode="after")
     def _coerce_or_infer_value_validator(self) -> ContainerAnnotation:
@@ -664,6 +666,8 @@ class ContainerAnnotation(CategoryAnnotation):
                 else:
                     object.__setattr__(self, "value", [str(el) for el in self.value])
                     self.value_type = "list[str]"
+            elif isinstance(self.value, dict):
+                self.value_type = "dict[str,Any]"
             return self
 
         # Explicit type: enforce / convert
@@ -708,6 +712,9 @@ class ContainerAnnotation(CategoryAnnotation):
                 object.__setattr__(self, "value", [str(el) for el in self.value])
             return self
 
+        if effective_type == "dict[str,Any]":
+            if not isinstance(self.value, dict):
+                raise TypeError("value must be dict[str,Any] when type='dict[str,Any]'")
         raise ValueError(f"Unsupported type {effective_type}")
 
     def set_type(self, value_type: Literal["str", "int", "float", "list[str]"]) -> None:

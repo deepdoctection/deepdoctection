@@ -512,6 +512,7 @@ class TokenClassResult:
        bio_tag: bio tag
        score: prediction score
        successor_uuid: uuid of the next token in the sequence
+       ambiguous: boolean flag indicating whether this token is ambiguous
     """
 
     uuid: str
@@ -523,6 +524,7 @@ class TokenClassResult:
     score: Optional[float] = None
     token_id: Optional[int] = None
     successor_uuid: Optional[str] = None
+    ambiguous: bool = False
 
 
 @dataclass

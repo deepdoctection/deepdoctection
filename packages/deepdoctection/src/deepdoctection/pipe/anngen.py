@@ -18,8 +18,9 @@
 """
 Datapoint manager
 """
+from collections import deque
 from dataclasses import asdict
-from typing import Optional, Sequence, Union
+from typing import Any, Optional, Sequence, Union
 
 import numpy as np
 
@@ -40,16 +41,56 @@ class DatapointManager:
     When the image is transferred, the annotations are stored in a cache dictionary so that access via the annotation ID
     can be performed efficiently.
 
+    Datapoint caching (FIFO):
+        The manager can keep a bounded FIFO cache of previously assigned datapoints. The cache is controlled by
+        `num_cached_datapoints`:
+        - If `num_cached_datapoints` is 0, caching is disabled.
+        - If `num_cached_datapoints` is > 0, whenever a new datapoint is assigned via the `datapoint` setter, the
+          previously set datapoint (if any) is appended to an internal FIFO cache.
+        - If the cache grows beyond `num_cached_datapoints`, the oldest cached datapoints are evicted first (FIFO).
+
+        When `remove_pixel_values_from_cache` is True, an `Image` being added to the cache is light-weighted to reduce
+        memory usage by calling:
+        - `image.clear_image()`
+        - `image.remove_image_from_lower_hierarchy(pixel_values_only=True)`
+
     The manager is part of each `PipelineComponent`.
     """
 
-    def __init__(self, service_id: str, model_id: Optional[str] = None) -> None:
+    def __init__(
+        self,
+        service_id: str,
+        model_id: Optional[str] = None,
+        num_cached_datapoints: int = 0,
+        remove_pixel_values_from_cache: bool = True,
+    ) -> None:
         self._datapoint: Optional[Image] = None
         self._cache_anns: dict[str, ImageAnnotation] = {}
         self.datapoint_is_passed: bool = False
         self.service_id = service_id
         self.model_id = model_id
         self.session_id: Optional[str] = None
+
+        if num_cached_datapoints < 0:
+            raise ValueError("num_cached_datapoints must be >= 0")
+        self.num_cached_datapoints = num_cached_datapoints
+        self.remove_pixel_values_from_cache = remove_pixel_values_from_cache
+        self._cached_datapoints: deque[Image] = deque()
+
+    def _maybe_cache_datapoint(self, image: Optional[Image]) -> None:
+        if image is None:
+            return
+        if self.num_cached_datapoints <= 0:
+            return
+
+        if self.remove_pixel_values_from_cache:
+            image.clear_image()
+            image.remove_image_from_lower_hierarchy(pixel_values_only=True)
+
+        self._cached_datapoints.append(image)
+
+        while len(self._cached_datapoints) > self.num_cached_datapoints:
+            self._cached_datapoints.popleft()
 
     @property
     def datapoint(self) -> Image:
@@ -74,6 +115,8 @@ class DatapointManager:
         Args:
             dp: The datapoint to set.
         """
+        self._maybe_cache_datapoint(self._datapoint)
+
         self._datapoint = dp
         self._cache_anns = {ann.annotation_id: ann for ann in dp.get_annotation()}
         self.datapoint_is_passed = True
@@ -323,7 +366,7 @@ class DatapointManager:
         summary_key: ObjectTypes,
         summary_name: ObjectTypes,
         summary_number: Optional[int] = None,
-        summary_value: Optional[str] = None,
+        summary_value: Optional[Union[str, int, float, list[str], dict[str, Any]]] = None,
         summary_score: Optional[float] = None,
         annotation_id: Optional[str] = None,
     ) -> Optional[str]:
@@ -357,7 +400,7 @@ class DatapointManager:
             summary_annotation={
                 "summary_key": summary_key.value,
                 "summary_name": summary_name.value,
-                "summary_value": summary_value,
+                "summary_value": str(summary_value),
                 "annotation_id": annotation_id,
             },
         ) as annotation_context:
@@ -420,3 +463,22 @@ class DatapointManager:
             The `ImageAnnotation` corresponding to the given `annotation_id`.
         """
         return self._cache_anns[annotation_id]
+
+    def get_cached_datapoints(self, last_k: int) -> tuple[Image, ...]:
+        """
+        Returns a snapshot of the last `last_k` cached datapoints without removing them.
+
+        Args:
+            last_k: Number of most recently cached datapoints to return. Must be >= 0.
+
+        Returns:
+            A tuple containing up to the last `last_k` cached `Image` objects, ordered from older -> newer.
+            If `last_k` exceeds the number of cached datapoints, all cached datapoints are returned.
+        """
+        if last_k < 0:
+            raise ValueError("last_k must be >= 0")
+        if last_k == 0 or not self._cached_datapoints:
+            return tuple()
+
+        k = min(last_k, len(self._cached_datapoints))
+        return tuple(list(self._cached_datapoints)[-k:])
