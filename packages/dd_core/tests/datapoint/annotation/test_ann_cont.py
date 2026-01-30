@@ -82,7 +82,7 @@ class TestContainerAnnotation:
     def test_container_annotation_value_dict_infers_type(self) -> None:
         """Test that dict values infer value_type='dict[str,Any]'."""
         payload = {"a": 1, "b": "x", "c": {"nested": True}}
-        container = ContainerAnnotation(category_name="test_cat_dict", value=payload)
+        container = ContainerAnnotation(category_name="test_cat_1", value=payload)
         assert container.value == payload
         assert isinstance(container.value, dict)
         assert container.value_type == "dict[str,Any]"
