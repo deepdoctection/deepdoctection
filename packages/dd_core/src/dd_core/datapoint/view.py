@@ -278,7 +278,7 @@ class ImageAnnotationBaseView:
 
     def __getattr__(
         self, item: str
-    ) -> Optional[Union[str, int, float, list[str], list[ImageAnnotationBaseView], CategoryAnnotation]]:
+    ) -> Optional[Union[str, int, float, list[str], dict[str, Any], list[ImageAnnotationBaseView], CategoryAnnotation]]:
         """
         Resolve dynamic attributes (user-facing summary).
 

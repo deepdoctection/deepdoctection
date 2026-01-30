@@ -79,6 +79,20 @@ class TestContainerAnnotation:
         assert container.value == ["a", "b"]
         container.set_type("list[str]")
 
+    def test_container_annotation_value_dict_infers_type(self) -> None:
+        """Test that dict values infer value_type='dict[str,Any]'."""
+        payload = {"a": 1, "b": "x", "c": {"nested": True}}
+        container = ContainerAnnotation(category_name="test_cat_dict", value=payload)
+        assert container.value == payload
+        assert isinstance(container.value, dict)
+        assert container.value_type == "dict[str,Any]"
+
+    def test_container_annotation_set_type_dict_rejects_non_dict(self) -> None:
+        """Test that setting type to dict[str,Any] rejects non-dict values."""
+        container = ContainerAnnotation(category_name="test_cat_dict", value="not_a_dict")
+        with pytest.raises(TypeError, match=r"value must be dict[str,Any]"):
+            container.set_type("dict[str,Any]")
+
     def test_container_annotation_list_str_rejects_non_str(self) -> None:
         """Test that ContainerAnnotation rejects non-str values in list[str]"""
         with pytest.raises(ValidationError):
