@@ -640,7 +640,7 @@ class ContainerAnnotation(CategoryAnnotation):
     - Calling set_type(None) disables validation and coerces current value to its string (or list[str]) form.
     """
 
-    value: Optional[Union[list[str], str, int, float]] = Field(default=None)
+    value: Optional[Union[list[str], str, int, float, dict[str, Any]]] = Field(default=None)
     value_type: Optional[Literal["str", "int", "float", "list[str]", "dict[str,Any]"]] = Field(
         default=None, exclude=True
     )

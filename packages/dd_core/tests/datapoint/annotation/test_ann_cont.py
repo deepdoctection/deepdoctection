@@ -25,6 +25,8 @@ ensures the integrity of data encapsulated in the annotation
 objects and helps enforce correct behavior under various conditions.
 """
 
+import re
+
 import pytest
 from pydantic import ValidationError
 
@@ -89,8 +91,9 @@ class TestContainerAnnotation:
 
     def test_container_annotation_set_type_dict_rejects_non_dict(self) -> None:
         """Test that setting type to dict[str,Any] rejects non-dict values."""
-        container = ContainerAnnotation(category_name="test_cat_dict", value="not_a_dict")
-        with pytest.raises(TypeError, match=r"value must be dict[str,Any]"):
+        container = ContainerAnnotation(category_name="test_cat_1", value="not_a_dict")
+        msg = "value must be dict[str,Any] or JSON object string when type='dict[str,Any]'"
+        with pytest.raises(TypeError, match=re.escape(msg)):
             container.set_type("dict[str,Any]")
 
     def test_container_annotation_list_str_rejects_non_str(self) -> None:
