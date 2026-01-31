@@ -1,10 +1,14 @@
-name: deepdoctection-full
+name: deepdoctection
 channels:
   - pytorch
   - conda-forge
 dependencies:
   - python>=3.10,<3.13
   - pip>=23
+  - pytorch>=2.6
+  - torchvision
   - pip:
+      # Install Detectron2 (required for full features)
+      - detectron2@git+https://github.com/deepdoctection/detectron2.git
       # Install the package with "full" extras
       - deepdoctection[full]
