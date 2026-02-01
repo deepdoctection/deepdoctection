@@ -86,6 +86,21 @@ uv pip install deepdoctection[full]
     It will also install `dd_datasets` which is necessary for fine-tuning models on custom datasets.
 
 
+### Conda/Mamba
+
+You can install **deep**doctection using Conda or Mamba with the provided `environment.yml`:
+
+```bash
+# Using conda
+conda env create -f environment.yml
+conda activate deepdoctection
+
+# Using mamba (faster)
+mamba env create -f environment.yml
+mamba activate deepdoctection
+```
+
+
 ### Install from source
 
 If you want all files and latest additions etc. then download the repository or clone via

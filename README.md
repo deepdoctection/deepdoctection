@@ -155,6 +155,20 @@ Then install **deep**doctection with all its dependencies:
 uv pip install deepdoctection[full]
 ```
 
+### Installation with Conda or Mamba
+
+You can install **deep**doctection using Conda or Mamba with the provided `environment.yml`:
+
+```bash
+# Using conda
+conda env create -f environment.yml
+conda activate deepdoctection
+
+# Using mamba (faster)
+mamba env create -f environment.yml
+mamba activate deepdoctection
+```
+
 
 For further information, please consult the [**full installation instructions**](https://deepdoctection.readthedocs.io/en/latest/install/).
 

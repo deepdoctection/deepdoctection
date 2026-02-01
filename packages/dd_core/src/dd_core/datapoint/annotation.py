@@ -21,6 +21,7 @@ Dataclass for `Annotation`s and their sub-classes.
 
 from __future__ import annotations
 
+import json
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from dataclasses import dataclass
@@ -639,7 +640,7 @@ class ContainerAnnotation(CategoryAnnotation):
     - Calling set_type(None) disables validation and coerces current value to its string (or list[str]) form.
     """
 
-    value: Optional[Union[list[str], str, int, float]] = Field(default=None)
+    value: Optional[Union[list[str], str, int, float, dict[str, Any]]] = Field(default=None)
     value_type: Optional[Literal["str", "int", "float", "list[str]", "dict[str,Any]"]] = Field(
         default=None, exclude=True
     )
@@ -713,17 +714,30 @@ class ContainerAnnotation(CategoryAnnotation):
             return self
 
         if effective_type == "dict[str,Any]":
-            if not isinstance(self.value, dict):
-                raise TypeError("value must be dict[str,Any] when type='dict[str,Any]'")
+            v = self.value
+            if isinstance(v, dict):
+                return self
+            if isinstance(v, str):
+                try:
+                    parsed = json.loads(v)
+                except json.JSONDecodeError as e:
+                    raise TypeError(
+                        "value must be dict[str,Any] or JSON object string when type='dict[str,Any]'"
+                    ) from e
+                if not isinstance(parsed, dict):
+                    raise TypeError("JSON value must be an object (dict) when type='dict[str,Any]'")
+                object.__setattr__(self, "value", parsed)
+                return self
+            raise TypeError(f"value must be dict[str,Any] when type='dict[str,Any]', got {type(v).__name__}")
+
         raise ValueError(f"Unsupported type {effective_type}")
 
-    def set_type(self, value_type: Literal["str", "int", "float", "list[str]"]) -> None:
+    def set_type(self, value_type: Literal["str", "int", "float", "list[str]", "dict[str,Any]"]) -> None:
         """
         Set and enforce the value type for this ContainerAnnotation and coerce the current value.
 
         Args:
-            value_type: One of `"str"`, `"int"`, `"float"`, or `"list[str]"`. (The current implementation rejects
-            `None`.)
+            value_type: One of `"str"`, `"int"`, `"float"`, `"list[str]"`, or `"dict[str,Any]"`.
 
         Raises:
             ValueError: If `type` is `None` or not one of the allowed values.
@@ -732,7 +746,7 @@ class ContainerAnnotation(CategoryAnnotation):
         if value_type is None:
             raise ValueError(f"type cannot be None, current value_type is {self.value_type}")
 
-        allowed = {"str", "int", "float", "list[str]"}
+        allowed = {"str", "int", "float", "list[str]", "dict[str,Any]"}
         if value_type not in allowed:
             raise ValueError(f"type must be one of {sorted(allowed)}")
         self.value_type = value_type

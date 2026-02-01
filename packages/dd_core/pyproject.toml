@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "dd-core"
-version = "1.0.5"
+version = "1.0.6"
 authors = [
     {name = "Dr. Janis Meyer"}
 ]
@@ -39,7 +39,7 @@ dependencies = [
 
 [project.optional-dependencies]
 full = [
-    "pypdf>=6.0.0",
+    "pypdf>=6.6.2",
     "jsonlines==3.1.0",
     "scipy>=1.13.1",
     "pypdfium2>=4.30.0,<5.0"
