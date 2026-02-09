@@ -55,12 +55,6 @@ with try_import() as doctr_import_guard:
     from doctr.models.recognition.zoo import ARCHS, recognition
 
 
-def _get_doctr_requirements() -> list[Requirement]:
-    if os.environ.get("DD_USE_TORCH", "0") in ENV_VARS_TRUE:
-        return [get_pytorch_requirement(), get_doctr_requirement()]
-    raise ModuleNotFoundError("PyTorch has been installed. Cannot use DoctrTextRecognizer")
-
-
 def _load_model(
     path_weights: PathLikeOrStr,
     doctr_predictor: Union[DetectionPredictor, RecognitionPredictor],
@@ -221,7 +215,7 @@ class DoctrTextlineDetector(DoctrTextlineDetectorMixin):
 
     @classmethod
     def get_requirements(cls) -> list[Requirement]:
-        return _get_doctr_requirements()
+        return [get_pytorch_requirement(), get_doctr_requirement()]
 
     def clone(self) -> DoctrTextlineDetector:
         return self.__class__(self.architecture, self.path_weights, self.categories.get_categories(), self.device)
@@ -341,7 +335,7 @@ class DoctrTextRecognizer(TextRecognizer):
 
     @classmethod
     def get_requirements(cls) -> list[Requirement]:
-        return _get_doctr_requirements()
+        return [get_pytorch_requirement(), get_doctr_requirement()]
 
     def clone(self) -> DoctrTextRecognizer:
         return self.__class__(self.architecture, self.path_weights, self.device, self.path_config_json)
