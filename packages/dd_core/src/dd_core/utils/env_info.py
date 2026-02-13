@@ -274,7 +274,7 @@ def find_env_file() -> Path | None:
 
     value = os.environ.get("DD_ENV_FILE")
     if value is None:
-        return
+        return None
 
     path = Path(value).expanduser()
     if not path.is_absolute():
@@ -373,7 +373,7 @@ class EnvSettings(BaseSettings):
 
     # Pydantic Settings config
     model_config = SettingsConfigDict(
-        env_file= find_env_file() or ".env",
+        env_file=find_env_file() or ".env",
         env_file_encoding="utf-8",
         env_prefix="",
         case_sensitive=False,
