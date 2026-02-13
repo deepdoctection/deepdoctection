@@ -32,7 +32,7 @@ We define a non-root user (`developer`) with a configurable UID and GID.
 
 ### **3️⃣ Define Version Variables**
 ```dockerfile
-ARG DEEPDOCTECTION_VERSION=1.0.0
+ARG DEEPDOCTECTION_VERSION=1.0.7
 ENV DEEPDOCTECTION_VERSION=${DEEPDOCTECTION_VERSION}
 ```
 The DeepDoctection version is set as an environment variable, making it easier to update the version.
