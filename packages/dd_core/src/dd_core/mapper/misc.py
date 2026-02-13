@@ -239,3 +239,49 @@ def xml_to_dict(dp: JsonDict, xslt_obj: etree.XSLT) -> JsonDict:
     dp.pop("xml")
     dp["json"] = ast.literal_eval(output.replace('<?xml version="1.0"?>', ""))
     return dp
+
+
+def merge_datapoints(dp: Image, other_dp: Image) -> Image:
+    """
+    Merge `other_dp` into `dp` in-place.
+
+    - If an annotation id from `other_dp` does not exist in `dp`, dump the annotation into `dp`.
+    - If it exists, dump only missing `sub_categories` from the matching annotation in `dp`.
+
+    Args:
+        dp: Target `Image` datapoint to be mutated.
+        other_dp: Source `Image` datapoint merged into `dp`.
+
+    Returns:
+        The mutated `dp`.
+
+    """
+
+    assert dp.image_id == other_dp.image_id, f"image_id must be equal, got {dp.image_id} != {other_dp.image_id}"
+
+    if not dp.location and other_dp.location:
+        dp.location = other_dp.location
+
+    if not dp.document_id and other_dp.document_id:
+        dp.document_id = other_dp.document_id
+
+    if dp.page_number and other_dp.page_number:
+        dp.page_number = other_dp.page_number
+
+    for k, v in other_dp.embeddings.items():
+        if k not in dp.embeddings:
+            dp.embeddings[k] = v
+
+    for sub_key, sub_ann in other_dp.summary.sub_categories.items():
+        if sub_key not in dp.summary.sub_categories:
+            dp.summary.dump_sub_category(sub_key, sub_ann)
+
+    existing_ids = [ann.annotation_id for ann in dp.get_annotation()]
+    for ann in other_dp.get_annotation():
+        if ann.annotation_id not in existing_ids:
+            dp.dump(ann)
+        else:
+            for sub_key, sub_ann in ann.sub_categories.items():
+                dp.get_annotation(annotation_ids=ann.annotation_id)[0].dump_sub_category(sub_key, sub_ann)
+
+    return dp

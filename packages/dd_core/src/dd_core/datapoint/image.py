@@ -1023,3 +1023,6 @@ class Image(BaseModel):
         with open(path_json, "w", encoding="UTF-8") as file:
             json.dump(export_dict, file, indent=2)
         return path_json
+
+
+

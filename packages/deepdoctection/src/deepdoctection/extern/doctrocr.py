@@ -30,7 +30,6 @@ import numpy as np
 from lazy_imports import try_import
 
 from dd_core.utils import get_torch_device
-from dd_core.utils.env_info import ENV_VARS_TRUE
 from dd_core.utils.file_utils import (
     get_doctr_requirement,
     get_pytorch_requirement,
