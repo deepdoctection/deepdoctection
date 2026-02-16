@@ -41,6 +41,7 @@ with try_import() as pt_import_guard:
 
 with try_import() as tr_import_guard:
     from transformers import (
+        AutoConfig,
         DeformableDetrForObjectDetection,
         DeformableDetrImageProcessorFast,
         DetrImageProcessorFast,
@@ -317,8 +318,14 @@ class HFDetrDerivedDetector(HFDetrDerivedDetectorMixin):
         Returns:
             `PretrainedConfig` instance.
         """
-        config = PretrainedConfig.from_pretrained(pretrained_model_name_or_path=os.fspath(path_config))
-        config.use_timm_backbone = True
+
+        config = AutoConfig.from_pretrained(pretrained_model_name_or_path=os.fspath(path_config))
+
+        # keep older behavior when supported by the concrete config
+        if hasattr(config, "use_timm_backbone"):
+            config.use_timm_backbone = True
+
+        # deepdoctection-specific runtime attributes
         config.threshold = 0.1
         config.nms_threshold = 0.05
         return config

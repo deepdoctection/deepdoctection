@@ -41,7 +41,7 @@ from .common import PageParsingService
 
 def _collect_from_kwargs(
     **kwargs: Union[Optional[str], bytes, DataFlow, bool, int, PathLikeOrStr, Union[str, List[str]]],
-) -> Tuple[Optional[str], Union[str, Sequence[str]], bool, int, str, DataFlow, Optional[bytes]]:
+) -> Tuple[Optional[str], Union[str, Sequence[str]], bool, int, str, DataFlow, Optional[bytes], Optional[str]]:
     """
     Collects and validates keyword arguments for dataflow construction.
 
@@ -94,11 +94,11 @@ def _collect_from_kwargs(
     file_type = kwargs.get(
         "file_type", [".jpg", ".png", ".jpeg", ".tif"] if file_type is None else file_type  # type: ignore
     )
-
+    document_id = kwargs.get("document_id")
     max_datapoints = kwargs.get("max_datapoints")
     if not isinstance(max_datapoints, (int, type(None))):
         raise TypeError(f"max_datapoints must be of type int, but is of type {type(max_datapoints)}")
-    return path, file_type, shuffle, max_datapoints, doc_path, dataset_dataflow, b_bytes  # type: ignore
+    return path, file_type, shuffle, max_datapoints, doc_path, dataset_dataflow, b_bytes, document_id  # type: ignore
 
 
 @curry
@@ -128,7 +128,8 @@ def _to_image(
     dp: Union[str, Mapping[str, Union[str, bytes]]],
     dpi: Optional[int] = None,
     width: Optional[int] = None,
-    height: Optional[int] = None,
+    height: Optional[int] = None,  #
+    document_id: Optional[str] = None,
 ) -> Optional[Image]:
     """
     Converts a data point to an `Image` object.
@@ -142,10 +143,12 @@ def _to_image(
     Returns:
         An `Image` object or None.
     """
-    return to_image(dp, dpi, width, height)
+    return to_image(dp, dpi, width, height, document_id)
 
 
-def _doc_to_dataflow(path: PathLikeOrStr, max_datapoints: Optional[int] = None) -> DataFlow:
+def _doc_to_dataflow(
+    path: PathLikeOrStr, max_datapoints: Optional[int] = None, document_id: Optional[str] = None
+) -> DataFlow:
     """
     Creates a dataflow from a PDF document.
 
@@ -162,7 +165,7 @@ def _doc_to_dataflow(path: PathLikeOrStr, max_datapoints: Optional[int] = None) 
     if not os.path.isfile(path):
         raise FileExistsError(f"{path} not a file")
 
-    df = SerializerPdfDoc.load(path, max_datapoints=max_datapoints)
+    df = SerializerPdfDoc.load(path, max_datapoints=max_datapoints, document_id=document_id)
 
     return df
 
@@ -214,13 +217,15 @@ class DoctectionPipe(Pipeline):
     def _entry(
         self, **kwargs: Union[str, bytes, DataFlow, bool, int, PathLikeOrStr, Union[str, List[str]]]
     ) -> DataFlow:
-        path, file_type, shuffle, max_datapoints, doc_path, dataset_dataflow, b_bytes = _collect_from_kwargs(**kwargs)
+        path, file_type, shuffle, max_datapoints, doc_path, dataset_dataflow, b_bytes, document_id = (
+            _collect_from_kwargs(**kwargs)
+        )
 
         df: DataFlow
 
         if isinstance(b_bytes, bytes):
             df = DoctectionPipe.bytes_to_dataflow(
-                path=doc_path if path is None else path, b_bytes=b_bytes, file_type=file_type
+                path=doc_path if path is None else path, b_bytes=b_bytes, file_type=file_type, document_id=document_id
             )
 
         elif isinstance(path, (str, Path)):
@@ -229,7 +234,9 @@ class DoctectionPipe(Pipeline):
             df = DoctectionPipe.path_to_dataflow(path=path, file_type=file_type, shuffle=shuffle)
         elif isinstance(doc_path, (str, Path)):
             df = DoctectionPipe.doc_to_dataflow(
-                path=doc_path, max_datapoints=int(max_datapoints) if max_datapoints is not None else None
+                path=doc_path,
+                max_datapoints=int(max_datapoints) if max_datapoints is not None else None,
+                document_id=document_id,
             )
         elif dataset_dataflow is not None and isinstance(dataset_dataflow, DataFlow):
             df = dataset_dataflow
@@ -240,7 +247,7 @@ class DoctectionPipe(Pipeline):
         if dataset_dataflow is None:
             dpi = int(os.environ["DPI"])
             if dpi:
-                df = MapData(df, _to_image(dpi=dpi))  # pylint: disable=E1120
+                df = MapData(df, _to_image(dpi=dpi, document_id=document_id))  # pylint: disable=E1120
             else:
                 width, height = int(kwargs.get("width", 0)), int(kwargs.get("height", 0))
                 if not width or not height:
@@ -251,7 +258,9 @@ class DoctectionPipe(Pipeline):
                             "DPI, IMAGE_WIDTH and IMAGE_HEIGHT are all None or 0, but "
                             "either DPI or IMAGE_WIDTH and IMAGE_HEIGHT must be set"
                         )
-                df = MapData(df, _to_image(width=width, height=height))  # pylint: disable=E1120
+                df = MapData(
+                    df, _to_image(width=width, height=height, document_id=document_id)
+                )
         return df
 
     @staticmethod
@@ -282,22 +291,29 @@ class DoctectionPipe(Pipeline):
         return df
 
     @staticmethod
-    def doc_to_dataflow(path: PathLikeOrStr, max_datapoints: Optional[int] = None) -> DataFlow:
+    def doc_to_dataflow(
+        path: PathLikeOrStr, max_datapoints: Optional[int] = None, document_id: Optional[str] = None
+    ) -> DataFlow:
         """
         Processing method for documents.
 
         Args:
             path: Path to the document.
             max_datapoints: Maximum number of data points to consider.
+            document_id: Optional document id.
 
         Returns:
             A `DataFlow` object.
         """
-        return _doc_to_dataflow(path, max_datapoints)
+        return _doc_to_dataflow(path, max_datapoints, document_id)
 
     @staticmethod
     def bytes_to_dataflow(
-        path: str, b_bytes: bytes, file_type: Union[str, Sequence[str]], max_datapoints: Optional[int] = None
+        path: str,
+        b_bytes: bytes,
+        file_type: Union[str, Sequence[str]],
+        max_datapoints: Optional[int] = None,
+        document_id: Optional[str] = None,
     ) -> DataFlow:
         """
         Converts a bytes object to a dataflow.
@@ -307,6 +323,7 @@ class DoctectionPipe(Pipeline):
             b_bytes: Bytes object.
             file_type: File type, e.g., `.pdf`, `.jpg`, or a list of image file types.
             max_datapoints: Maximum number of data points to consider.
+            document_id: Optional document id.
 
         Returns:
             A `DataFlow` object.
@@ -328,7 +345,7 @@ class DoctectionPipe(Pipeline):
                         "file_name": prefix + f"_{dp[1]}" + suffix,
                         "pdf_bytes": dp[0],
                         "page_number": dp[1],
-                        "document_id": get_uuid_from_str(prefix),
+                        "document_id": document_id or get_uuid_from_str(prefix),
                     },
                 )
             else:

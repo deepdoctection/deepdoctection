@@ -632,13 +632,14 @@ class SerializerPdfDoc:
     """
 
     @staticmethod
-    def load(path: PathLikeOrStr, max_datapoints: Optional[int] = None) -> DataFlow:
+    def load(path: PathLikeOrStr, max_datapoints: Optional[int] = None, document_id: Optional[str] = None) -> DataFlow:
         """
         Loads the document page wise and returns a dataflow accordingly.
 
         Args:
             path: Path to the pdf document.
             max_datapoints: The maximum number of pages to stream.
+            document_id: A unique identifier for the document.
 
         Returns:
             A dict with structure `{"path":... ,"file_name": ..., "pdf_bytes": ...}`. The file name is a
@@ -656,7 +657,7 @@ class SerializerPdfDoc:
                 "file_name": prefix + f"_{dp[1]}" + suffix,
                 "pdf_bytes": dp[0],
                 "page_number": dp[1],
-                "document_id": get_uuid_from_str(prefix),
+                "document_id": document_id or get_uuid_from_str(prefix),
             },
         )
         return df
