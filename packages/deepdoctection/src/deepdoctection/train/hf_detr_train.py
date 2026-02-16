@@ -49,10 +49,10 @@ with try_import() as pt_import_guard:
 
 with try_import() as hf_import_guard:
     from transformers import (
+        AutoConfig,
         AutoFeatureExtractor,
         DeformableDetrForObjectDetection,
         IntervalStrategy,
-        AutoConfig,
         PreTrainedModel,
         TableTransformerForObjectDetection,
         Trainer,

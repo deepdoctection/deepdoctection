@@ -258,9 +258,7 @@ class DoctectionPipe(Pipeline):
                             "DPI, IMAGE_WIDTH and IMAGE_HEIGHT are all None or 0, but "
                             "either DPI or IMAGE_WIDTH and IMAGE_HEIGHT must be set"
                         )
-                df = MapData(
-                    df, _to_image(width=width, height=height, document_id=document_id)
-                )
+                df = MapData(df, _to_image(width=width, height=height, document_id=document_id))
         return df
 
     @staticmethod

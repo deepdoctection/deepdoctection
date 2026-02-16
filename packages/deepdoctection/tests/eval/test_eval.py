@@ -36,7 +36,7 @@ from dd_core.utils import DatasetType, get_type
 from deepdoctection.eval import CocoMetric, Evaluator
 from deepdoctection.extern.base import DetectionResult
 from deepdoctection.extern.hfdetr import HFDetrDerivedDetector
-from deepdoctection.extern.model import ModelCatalog
+from deepdoctection.extern.model import ModelCatalog, ModelDownloadManager
 from deepdoctection.pipe.layout import ImageLayoutService
 
 try:
@@ -111,10 +111,12 @@ class TestEvaluator:
         self._dataset.dataflow.build = MagicMock(return_value=DataFromList([dp_image]))
         self._dataset.dataflow.categories = categories
         self._dataset.dataset_info.type = DatasetType.OBJECT_DETECTION
+        ModelDownloadManager.maybe_download_weights_and_configs("Aryn/deformable-detr-DocLayNet/model.safetensors")
         path_config = ModelCatalog.get_full_path_configs("Aryn/deformable-detr-DocLayNet/model.safetensors")
         path_weights = ModelCatalog.get_full_path_weights("Aryn/deformable-detr-DocLayNet/model.safetensors")
-        preprocessor_config = ModelCatalog.get_full_path_preprocessor_configs("Aryn/deformable-detr-"
-                                                                              "DocLayNet/model.safetensors")
+        preprocessor_config = ModelCatalog.get_full_path_preprocessor_configs(
+            "Aryn/deformable-detr-DocLayNet/model.safetensors"
+        )
         self._layout_detector = HFDetrDerivedDetector(
             path_config_json=path_config,
             path_weights=path_weights,
