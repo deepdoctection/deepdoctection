@@ -811,7 +811,7 @@ class TextOrderService(TextLineServiceMixin):
         if self.include_residual_text_container:
             add_category.append(LayoutType.LINE)
 
-        if set(self.floating_text_block_categories) <= set(self.text_block_categories + tuple(add_category)):
+        if not set(self.floating_text_block_categories) <= set(self.text_block_categories + tuple(add_category)):
             logger.warning(
                 "In most cases floating_text_block_categories must be a subset of text_block_categories. "
                 "Adding categories to floating_text_block_categories, that do not belong to "

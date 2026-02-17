@@ -22,6 +22,7 @@ HF Detr and DeformableDetr models.
 from __future__ import annotations
 
 import os
+import warnings
 from abc import ABC
 from pathlib import Path
 from typing import TYPE_CHECKING, Literal, Mapping, Optional, Sequence, Union
@@ -266,14 +267,16 @@ class HFDetrDerivedDetector(HFDetrDerivedDetectorMixin):
         Raises:
             ValueError: If model architecture is not eligible.
         """
-        if "TableTransformerForObjectDetection" in config.architectures:
-            return TableTransformerForObjectDetection.from_pretrained(
-                pretrained_model_name_or_path=os.fspath(path_weights), config=config
-            )
-        if "DeformableDetrForObjectDetection" in config.architectures:
-            return DeformableDetrForObjectDetection.from_pretrained(
-                pretrained_model_name_or_path=os.fspath(path_weights), config=config
-            )
+        with warnings.catch_warnings():
+            warnings.filterwarnings("ignore", message=".*copying from a non-meta parameter.*")
+            if "TableTransformerForObjectDetection" in config.architectures:
+                return TableTransformerForObjectDetection.from_pretrained(
+                    pretrained_model_name_or_path=os.fspath(path_weights), config=config
+                )
+            if "DeformableDetrForObjectDetection" in config.architectures:
+                return DeformableDetrForObjectDetection.from_pretrained(
+                    pretrained_model_name_or_path=os.fspath(path_weights), config=config
+                )
         raise ValueError(
             f"Model architecture {config.architectures} not eligible. Please use either "
             "TableTransformerForObjectDetection or DeformableDetrForObjectDetection."

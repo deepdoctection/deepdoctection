@@ -34,7 +34,7 @@ def collect_datapoint_from_dataflow(
 ) -> List[T]:
     """
     Collect elements from a generator/iterator, optionally calling its reset_state method.
-    :param df: A generator/iterator that may define reset_state\(\)
+    :param df: A generator/iterator that may define reset_state()
     :param max_datapoints: Maximum number of items to collect
     :return: A list of collected items
     """

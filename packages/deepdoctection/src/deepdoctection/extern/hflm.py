@@ -123,7 +123,7 @@ def predict_sequence_classes_from_lm(
 
     outputs = model(input_ids=input_ids, attention_mask=attention_mask, token_type_ids=token_type_ids)
 
-    score = torch.max(F.softmax(outputs.logits)).tolist()
+    score = torch.max(F.softmax(outputs.logits, dim=1)).tolist()
     sequence_class_predictions = outputs.logits.argmax(-1).squeeze().tolist()
 
     return SequenceClassResult(class_id=sequence_class_predictions, score=float(score))
