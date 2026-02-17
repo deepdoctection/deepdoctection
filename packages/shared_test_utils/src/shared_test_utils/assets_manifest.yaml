@@ -140,3 +140,9 @@ textract_sample:
   size: 46277
   license: Apache-2.0
   description: Textract JSON sample
+azure_di_sample:
+  path: deepdoctection/tests/assets/azure_di.json
+  sha256: 5f1d1d515d997bb6a8b7cd20fa67c1a98e6d6559cb96a12b6551a415fc4c87f1
+  size: 3719
+  license: Apache-2.0
+  description: Azure Document Intelligence JSON sample

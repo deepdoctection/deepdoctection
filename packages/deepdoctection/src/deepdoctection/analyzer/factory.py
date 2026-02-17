@@ -50,6 +50,7 @@ from ..extern.model import ModelCatalog, ModelDownloadManager, ModelProfile
 from ..extern.pdftext import PdfPlumberTextDetector
 from ..extern.tessocr import TesseractOcrDetector, TesseractRotationTransformer
 from ..extern.texocr import TextractOcrDetector
+from ..extern.azurediocr import AzureDocIntelOcrDetector
 from ..pipe.base import PipelineComponent
 from ..pipe.common import (
     AnnotationNmsService,
@@ -493,6 +494,7 @@ class ServiceFactory:
         use_tesseract = False
         use_doctr = False
         use_textract = False
+        use_azure_di = False
 
         if config.OCR.USE_TESSERACT:
             use_tesseract = True
@@ -512,11 +514,19 @@ class ServiceFactory:
                     "aws_secret_access_key": SETTINGS.AWS_SECRET_ACCESS_KEY,
                     "config": Config(region_name=SETTINGS.AWS_REGION),
                 }
+        if config.OCR.USE_AZURE_DI:
+            use_azure_di = True
+            if SETTINGS.AZURE_DI_ENDPOINT and SETTINGS.AZURE_DI_KEY:
+                credentials_kwargs = {
+                    "endpoint": SETTINGS.AZURE_DI_ENDPOINT,
+                    "api_key": SETTINGS.AZURE_DI_KEY,
+                }
 
         return {
             "use_tesseract": use_tesseract,
             "use_doctr": use_doctr,
             "use_textract": use_textract,
+            "use_azure_di": use_azure_di,
             "ocr_config_path": ocr_config_path,
             "languages": languages,
             "weights": weights,
@@ -530,13 +540,14 @@ class ServiceFactory:
         use_tesseract: bool,
         use_doctr: bool,
         use_textract: bool,
+        use_azure_di: bool,
         ocr_config_path: str,
         languages: Union[list[str], None],
         weights: str,
         credentials_kwargs: dict[str, Any],
         lib: Literal["PT", None],
         device: Literal["cuda", "cpu"],
-    ) -> Union[TesseractOcrDetector, DoctrTextRecognizer, TextractOcrDetector]:
+    ) -> Union[TesseractOcrDetector, DoctrTextRecognizer, TextractOcrDetector, AzureDocIntelOcrDetector]:
         """
         Building OCR predictor.
 
@@ -544,15 +555,16 @@ class ServiceFactory:
             use_tesseract: Whether to use Tesseract OCR.
             use_doctr: Whether to use Doctr OCR.
             use_textract: Whether to use Textract OCR.
+            use_azure_di: Whether to use Azure Document Intelligence OCR.
             ocr_config_path: Path to OCR config.
             languages: Languages for OCR.
             weights: Weights for Doctr OCR.
-            credentials_kwargs: Credentials for Textract OCR.
+            credentials_kwargs: Credentials for Textract or Azure DI OCR.
             lib: Deep learning library to use.
             device: Device to use for computation.
 
         Returns:
-            Union[TesseractOcrDetector, DoctrTextRecognizer, TextractOcrDetector]: OCR detector instance.
+            Union[TesseractOcrDetector, DoctrTextRecognizer, TextractOcrDetector, AzureDocIntelOcrDetector]: OCR detector instance.
         """
         if use_tesseract:
             return TesseractOcrDetector(
@@ -576,10 +588,12 @@ class ServiceFactory:
             )
         if use_textract:
             return TextractOcrDetector(**credentials_kwargs)
-        raise ValueError("You have set USE_OCR=True but any of USE_TESSERACT, USE_DOCTR, USE_TEXTRACT is set to False")
+        if use_azure_di:
+            return AzureDocIntelOcrDetector(**credentials_kwargs)
+        raise ValueError("You have set USE_OCR=True but any of USE_TESSERACT, USE_DOCTR, USE_TEXTRACT, USE_AZURE_DI is set to False")
 
     @staticmethod
-    def build_ocr_detector(config: AttrDict) -> Union[TesseractOcrDetector, DoctrTextRecognizer, TextractOcrDetector]:
+    def build_ocr_detector(config: AttrDict) -> Union[TesseractOcrDetector, DoctrTextRecognizer, TextractOcrDetector, AzureDocIntelOcrDetector]:
         """
         Building OCR predictor.
 

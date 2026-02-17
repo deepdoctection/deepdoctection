@@ -338,6 +338,11 @@ All other engines must be set to False.
         AWS_ACCESS_KEY, AWS_SECRET_KEY, and AWS_REGION.
         Alternatively, AWS credentials can be configured via the AWS CLI.
 
+    OCR.USE_AZURE_DI:
+        Enables Azure Document Intelligence as the OCR engine.
+        Requires the following environment variables to be set:
+        AZURE_DI_ENDPOINT and AZURE_DI_KEY.
+
 DocTR OCR uses a two-stage process: word detection followed by text recognition.
 The following weights configure each stage for TensorFlow and PyTorch.
 
@@ -768,6 +773,11 @@ cfg.OCR.USE_DOCTR = True
 # AWS_ACCESS_KEY, AWS_SECRET_KEY, and AWS_REGION.
 # Alternatively, AWS credentials can be configured via the AWS CLI.
 cfg.OCR.USE_TEXTRACT = False
+
+# Enables Azure Document Intelligence as the OCR engine.
+# Requires the following environment variables to be set:
+# AZURE_DI_ENDPOINT and AZURE_DI_KEY.
+cfg.OCR.USE_AZURE_DI = False
 
 # DocTR OCR uses a two-stage process: word detection followed by text recognition.
 # The following weights configure each stage for TensorFlow and PyTorch.

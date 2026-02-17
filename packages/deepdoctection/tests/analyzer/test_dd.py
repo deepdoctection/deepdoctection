@@ -139,6 +139,7 @@ def test_dd_analyzer_swap_ocr_engines_and_weights() -> None:
             "OCR.USE_TESSERACT=True",
             "OCR.USE_DOCTR=False",
             "OCR.USE_TEXTRACT=False",
+            "OCR.USE_AZURE_DI=False",
         ]
     )
     df = analyzer.analyze(path=stu.asset_path("invoice_pdf"))

@@ -141,3 +141,21 @@ def textract_json() -> dict[str, Any]:
     """fixture textract_json"""
     with open(stu.asset_path("textract_sample"), "r") as f:  # pylint: disable=W1514
         return json.load(f)
+
+
+def _dict_to_obj(d: Any) -> Any:
+    """Convert dict to object with attribute access"""
+    if isinstance(d, dict):
+        return type('obj', (object,), {k: _dict_to_obj(v) for k, v in d.items()})()
+    elif isinstance(d, list):
+        return [_dict_to_obj(item) for item in d]
+    else:
+        return d
+
+
+@pytest.fixture
+def azure_di_json() -> Any:
+    """fixture azure_di_json"""
+    with open(stu.asset_path("azure_di_sample"), "r") as f:  # pylint: disable=W1514
+        data = json.load(f)
+        return _dict_to_obj(data)
