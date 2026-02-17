@@ -117,7 +117,7 @@ class MappingContextManager:
                     log_dict["type"] = key
                     log_dict.update(value)
             logger.warning(
-                LoggingRecord(f"MappingContextManager error. Will filter {self.filter_level}", log_dict)  # type: ignore
+                LoggingRecord(f"MappingContextManager error ({log_dict.get('error_type', 'Unknown')}): {log_dict.get('error_msg', 'No details')}. Will filter {self.filter_level}", log_dict)  # type: ignore
             )
 
             return True

@@ -8,6 +8,9 @@
 #addopts = "-p tests._shared.plugin_testtypes -p no:warnings -ra"
 testpaths = ["tests", "dd_datapoint/tests", "dd_datasets/tests"]
 xfail_strict = true
+filterwarnings = [
+    "ignore:defusedxml.cElementTree is deprecated:DeprecationWarning:defusedxml",
+]
 
 [tool.black]
 line-length = 120
