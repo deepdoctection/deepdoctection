@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "deepdoctection"
-version = "1.0.7"
+version = "1.1.0"
 authors = [
     {name = "Dr. Janis Meyer"}
 ]
@@ -25,7 +25,7 @@ classifiers = [
 
 dependencies = [
     "dd-core[full]>=1.0.1",
-    "huggingface_hub>=0.26.0",
+    "huggingface_hub>=1.0",
 ]
 
 [project.optional-dependencies]
@@ -43,7 +43,7 @@ full = [
     "pycocotools>=2.0.2",
     # DL dependencies
     "timm>=0.9.16",
-    "transformers>=4.48.0,<5.0.0",
+    "transformers>=5.2.0",
     "accelerate>=0.29.1",
     "python-doctr>=1.0.0",
 ]

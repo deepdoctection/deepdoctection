@@ -43,6 +43,7 @@ def to_image(
     dpi: Optional[int] = None,
     width: Optional[int] = None,
     height: Optional[int] = None,
+    document_id: Optional[str] = None,
 ) -> Optional[Image]:
     """
     Maps an input from `dataflow.SerializerFiles` or similar to an `Image`.
@@ -52,6 +53,7 @@ def to_image(
         dpi: Dot per inch definition for PDF resolution when converting to `np.array`.
         width: Target width of the image. This option only works when using Poppler as PDF renderer.
         height: Target height of the image. This option only works when using Poppler as PDF renderer.
+        document_id: Document id.
 
     Returns:
         Image
@@ -68,12 +70,11 @@ def to_image(
         _, file_name = os.path.split(dp)
         location = dp
         page_number = 0
-        document_id = None
     elif isinstance(dp, dict):
         file_name = str(dp.get("file_name", ""))
         page_number = int(dp.get("page_number", 0))
         location = str(dp.get("location", ""))
-        document_id = dp.get("document_id")
+        document_id = dp.get("document_id") or document_id
         if location == "":
             location = str(dp.get("path", ""))
         image_bytes = dp.get("image_bytes")
