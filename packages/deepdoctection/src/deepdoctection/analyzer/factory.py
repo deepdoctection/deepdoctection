@@ -502,7 +502,7 @@ class ServiceFactory:
         if config.OCR.USE_DOCTR:
             use_doctr = True
             if config.LIB is None:
-                raise DependencyError("At least DD_USE_TORCH must be set.")
+                raise DependencyError("At least config.LIB must be set.")
             weights = config.OCR.WEIGHTS.DOCTR_RECOGNITION
         if config.OCR.USE_TEXTRACT:
             use_textract = True
@@ -534,7 +534,7 @@ class ServiceFactory:
         languages: Union[list[str], None],
         weights: str,
         credentials_kwargs: dict[str, Any],
-        lib: Literal["TF", "PT", None],
+        lib: Literal["PT", None],
         device: Literal["cuda", "cpu"],
     ) -> Union[TesseractOcrDetector, DoctrTextRecognizer, TextractOcrDetector]:
         """
@@ -561,7 +561,7 @@ class ServiceFactory:
             )
         if use_doctr:
             if lib is None:
-                raise DependencyError("At least one of the env variables DD_USE_TF or DD_USE_TORCH must be set.")
+                raise DependencyError("If use_doctr=True, lib must be set.")
             weights_path = ModelDownloadManager.maybe_download_weights_and_configs(weights)
             profile = ModelCatalog.get_profile(weights)
             # get_full_path_configs will complete the path even if the model is not registered

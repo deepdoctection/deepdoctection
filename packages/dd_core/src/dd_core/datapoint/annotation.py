@@ -21,12 +21,13 @@ Dataclass for `Annotation`s and their sub-classes.
 
 from __future__ import annotations
 
+import json
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from dataclasses import dataclass
-from typing import Any, Literal, Optional, Type, TypeVar, Union
+from typing import Any, Callable, Literal, Optional, Type, TypeVar, Union
 
-from pydantic import BaseModel, Field, PrivateAttr, field_validator, model_validator
+from pydantic import BaseModel, Field, PrivateAttr, SerializeAsAny, field_validator, model_serializer, model_validator
 
 from ..utils.error import AnnotationError, UUIDError
 from ..utils.identifier import get_uuid, is_uuid_like
@@ -168,6 +169,18 @@ class Annotation(BaseModel, ABC):
 
         return get_uuid(*attributes_values, *filtered_context)
 
+    @model_serializer(mode="wrap")
+    def _serialize(self, handler: Callable[[Any], Any]) -> Any:
+        """
+        Serialize all public + subclass fields via Pydantic, then inject private `_annotation_id`.
+        This makes `Image._serialize()` + `model_dump()` include `_annotation_id` everywhere.
+        """
+        data = handler(self)
+
+        # Ensure private id is present in exported dict
+        data["_annotation_id"] = getattr(self, "_annotation_id", None)
+        return data
+
     def as_dict(self) -> AnnotationDict:
         """Return the model as dict."""
         return self.model_dump(by_alias=True, exclude_none=False)
@@ -260,7 +273,7 @@ class CategoryAnnotation(Annotation):
     category_name: TypeOrStr = Field(default=DefaultType.DEFAULT_TYPE)
     category_id: int = Field(default=DEFAULT_CATEGORY_ID)
     score: Optional[float] = Field(default=None)
-    sub_categories: dict[ObjectTypes, CategoryAnnotation] = Field(default_factory=dict)
+    sub_categories: dict[ObjectTypes, SerializeAsAny[CategoryAnnotation]] = Field(default_factory=dict)
     relationships: dict[ObjectTypes, list[str]] = Field(default_factory=dict)
 
     @field_validator("category_name", mode="before")
@@ -628,8 +641,10 @@ class ContainerAnnotation(CategoryAnnotation):
     - Calling set_type(None) disables validation and coerces current value to its string (or list[str]) form.
     """
 
-    value: Optional[Union[list[str], str, int, float]] = Field(default=None)
-    value_type: Optional[Literal["str", "int", "float", "list[str]"]] = Field(default=None, exclude=True)
+    value: Optional[Union[list[str], str, int, float, dict[str, Any]]] = Field(default=None)
+    value_type: Optional[Literal["str", "int", "float", "list[str]", "dict[str,Any]"]] = Field(
+        default=None, exclude=True
+    )
 
     @model_validator(mode="after")
     def _coerce_or_infer_value_validator(self) -> ContainerAnnotation:
@@ -653,6 +668,8 @@ class ContainerAnnotation(CategoryAnnotation):
                 else:
                     object.__setattr__(self, "value", [str(el) for el in self.value])
                     self.value_type = "list[str]"
+            elif isinstance(self.value, dict):
+                self.value_type = "dict[str,Any]"
             return self
 
         # Explicit type: enforce / convert
@@ -697,15 +714,31 @@ class ContainerAnnotation(CategoryAnnotation):
                 object.__setattr__(self, "value", [str(el) for el in self.value])
             return self
 
+        if effective_type == "dict[str,Any]":
+            v = self.value
+            if isinstance(v, dict):
+                return self
+            if isinstance(v, str):
+                try:
+                    parsed = json.loads(v)
+                except json.JSONDecodeError as e:
+                    raise TypeError(
+                        "value must be dict[str,Any] or JSON object string when type='dict[str,Any]'"
+                    ) from e
+                if not isinstance(parsed, dict):
+                    raise TypeError("JSON value must be an object (dict) when type='dict[str,Any]'")
+                object.__setattr__(self, "value", parsed)
+                return self
+            raise TypeError(f"value must be dict[str,Any] when type='dict[str,Any]', got {type(v).__name__}")
+
         raise ValueError(f"Unsupported type {effective_type}")
 
-    def set_type(self, value_type: Literal["str", "int", "float", "list[str]"]) -> None:
+    def set_type(self, value_type: Literal["str", "int", "float", "list[str]", "dict[str,Any]"]) -> None:
         """
         Set and enforce the value type for this ContainerAnnotation and coerce the current value.
 
         Args:
-            value_type: One of `"str"`, `"int"`, `"float"`, or `"list[str]"`. (The current implementation rejects
-            `None`.)
+            value_type: One of `"str"`, `"int"`, `"float"`, `"list[str]"`, or `"dict[str,Any]"`.
 
         Raises:
             ValueError: If `type` is `None` or not one of the allowed values.
@@ -714,7 +747,7 @@ class ContainerAnnotation(CategoryAnnotation):
         if value_type is None:
             raise ValueError(f"type cannot be None, current value_type is {self.value_type}")
 
-        allowed = {"str", "int", "float", "list[str]"}
+        allowed = {"str", "int", "float", "list[str]", "dict[str,Any]"}
         if value_type not in allowed:
             raise ValueError(f"type must be one of {sorted(allowed)}")
         self.value_type = value_type

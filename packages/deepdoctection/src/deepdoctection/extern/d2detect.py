@@ -340,7 +340,7 @@ class D2FrcnnDetector(D2FrcnnDetectorMixin):
         path_weights: PathLikeOrStr,
         categories: Mapping[int, TypeOrStr],
         config_overwrite: Optional[list[str]] = None,
-        device: Optional[Union[Literal["cpu", "cuda"], torch.device]] = None,
+        device: Optional[Union[Literal["cpu", "cuda", "mps"], torch.device]] = None,
         filter_categories: Optional[Sequence[TypeOrStr]] = None,
     ):
         """
@@ -369,7 +369,10 @@ class D2FrcnnDetector(D2FrcnnDetectorMixin):
 
         config_overwrite = config_overwrite if config_overwrite else []
         self.config_overwrite = config_overwrite
-        self.device = get_torch_device(device)
+        requested = get_torch_device(device)
+        # We need to change device for mps otherwise inference takes forever:
+        # https://github.com/facebookresearch/detectron2/issues/4888
+        self.device = torch.device("cpu") if requested.type == "mps" else requested
 
         d2_conf_list = self._get_d2_config_list(path_weights, config_overwrite)
         self.cfg = self._set_config(path_yaml, d2_conf_list, self.device)

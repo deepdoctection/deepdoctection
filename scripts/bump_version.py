@@ -105,6 +105,22 @@ def update_init_py_version(init_path: Path, new_version: str, *, dry_run: bool) 
         write_text(init_path, updated)
     return True
 
+def update_dockerfile_version(dockerfile_path: Path, new_version: str, *, dry_run: bool) -> bool:
+    content = read_text(dockerfile_path)
+
+    # Match e.g. `ARG DEEPDOCTECTION_VERSION=1.0.4` with flexible whitespace
+    arg_re = re.compile(r"(?m)^(ARG\s+DEEPDOCTECTION_VERSION\s*=\s*)(\S+)\s*$")
+    if not arg_re.search(content):
+        raise KeyError(f"Missing `ARG DEEPDOCTECTION_VERSION=...` in {dockerfile_path}")
+
+    # Use \g<1> to avoid ambiguity with digits (e.g. "\11" being parsed as group 11).
+    updated = arg_re.sub(rf"\g<1>{new_version}", content, count=1)
+    if updated == content:
+        return False
+
+    if not dry_run:
+        write_text(dockerfile_path, updated)
+    return True
 
 def is_valid_version(v: str) -> bool:
     # Simple PEP 440-ish guard; accepts common forms like 1.0.1, 1.0.1rc1, 1.0.1.dev1
@@ -136,6 +152,7 @@ def main(argv: list[str]) -> int:
         return 3
 
     packages_root = dd_root / "packages"
+    dockerfile_path = dd_root / "docker" / "gpu" / "Dockerfile"
 
     targets_pyproject: list[Path] = []
     targets_init: list[Path] = []
@@ -159,6 +176,8 @@ def main(argv: list[str]) -> int:
         for p in targets_init:
             if update_init_py_version(p, new_version, dry_run=args.dry_run):
                 changed.append(p)
+        if update_dockerfile_version(dockerfile_path, new_version, dry_run=args.dry_run):
+            changed.append(dockerfile_path)
     except KeyError as e:
         print(str(e), file=sys.stderr)
         return 5

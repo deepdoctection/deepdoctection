@@ -63,7 +63,7 @@ class PipelineComponent(ABC):
         Currently, predictors can only process single images. Processing higher number of batches is not planned.
     """
 
-    def __init__(self, name: str, model_id: Optional[str] = None) -> None:
+    def __init__(self, name: str, model_id: Optional[str] = None, service_id: Optional[str] = None) -> None:
         """
         Initializes a `PipelineComponent`.
 
@@ -71,9 +71,10 @@ class PipelineComponent(ABC):
             name: The name of the pipeline component. The name will be used to identify a pipeline component in a
                   pipeline. Use something that describes the task of the pipeline.
             model_id: Optional model identifier.
+            service_id: Optional service identifier override to avoid name collisions.
         """
         self.name = name
-        self.service_id = self.get_service_id()
+        self.service_id = service_id or self.get_service_id()
         self.dp_manager = DatapointManager(self.service_id, model_id)
         self.timer_on = False
         self.filter_func: Callable[[DP], bool] = lambda dp: False

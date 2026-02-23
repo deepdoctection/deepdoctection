@@ -139,6 +139,16 @@ class ImageAnnotationBaseView:
         return self._image_annotation.annotation_id
 
     @property
+    def category_id(self) -> int:
+        """property category_id"""
+        return self._image_annotation.category_id
+
+    @property
+    def score(self) -> float | None:
+        """property score"""
+        return self._image_annotation.score
+
+    @property
     def service_id(self) -> Optional[str]:
         """property service_id"""
         return self._image_annotation.service_id
@@ -268,7 +278,7 @@ class ImageAnnotationBaseView:
 
     def __getattr__(
         self, item: str
-    ) -> Optional[Union[str, int, float, list[str], list[ImageAnnotationBaseView], CategoryAnnotation]]:
+    ) -> Optional[Union[str, int, float, list[str], dict[str, Any], list[ImageAnnotationBaseView], CategoryAnnotation]]:
         """
         Resolve dynamic attributes (user-facing summary).
 
@@ -1489,13 +1499,22 @@ class Page:
             )
 
         if debug_kwargs:
+            ann_id_labels = debug_kwargs.get("annotation_id_labels")
+            if not isinstance(ann_id_labels, dict):
+                ann_id_labels = None
+
             if "annotation_ids" in debug_kwargs:
                 anns = self.get_annotation(annotation_ids=debug_kwargs["annotation_ids"])
             else:
                 anns = self.get_annotation(category_names=list(debug_kwargs.keys()))
             for ann in anns:
                 box_stack.append(self._ann_viz_bbox(ann))
-                val = str(getattr(ann, debug_kwargs.get(ann.category_name, "category_name")))
+                label = ann_id_labels.get(ann.annotation_id) if ann_id_labels is not None else None
+
+                if label is not None:
+                    val = str(label)
+                else:
+                    val = str(getattr(ann, debug_kwargs.get(ann.category_name, "category_name")))
                 category_names_list.append((val, val))
 
         if show_layouts and not debug_kwargs:
