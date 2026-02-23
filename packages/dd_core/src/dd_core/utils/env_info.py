@@ -269,6 +269,23 @@ def resolve_config_source(
     return legacy
 
 
+def find_env_file() -> Path | None:
+    """Injecting a custom env file to EnvSettings."""
+
+    value = os.environ.get("DD_ENV_FILE")
+    if value is None:
+        return None
+
+    path = Path(value).expanduser()
+    if not path.is_absolute():
+        raise ValueError(f"DD_ENV_FILE must be an absolute path, got: {path}")
+
+    if not path.is_file():
+        raise FileNotFoundError(f"DD_ENV_FILE does not point to an existing file: {path}")
+
+    return path
+
+
 class EnvSettings(BaseSettings):
     """
     Central settings manager for deepdoctection.
@@ -360,7 +377,7 @@ class EnvSettings(BaseSettings):
 
     # Pydantic Settings config
     model_config = SettingsConfigDict(
-        env_file=".env",
+        env_file=find_env_file() or ".env",
         env_file_encoding="utf-8",
         env_prefix="",
         case_sensitive=False,
@@ -373,7 +390,7 @@ class EnvSettings(BaseSettings):
         """
         Apply availability and rule-based overrides, but only when user did not explicitly set the variable.
         """
-        fields_set: set[str] = getattr(self, "__fields_set__", set())
+        fields_set: set[str] = self.model_fields_set
 
         # 0) Derive dirs from DEEPDOCTECTION_CACHE unless explicitly set by user/.env
         if "MODEL_DIR" not in fields_set:

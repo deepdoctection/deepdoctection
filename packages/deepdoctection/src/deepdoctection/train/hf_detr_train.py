@@ -49,10 +49,10 @@ with try_import() as pt_import_guard:
 
 with try_import() as hf_import_guard:
     from transformers import (
+        AutoConfig,
         AutoFeatureExtractor,
         DeformableDetrForObjectDetection,
         IntervalStrategy,
-        PretrainedConfig,
         PreTrainedModel,
         TableTransformerForObjectDetection,
         Trainer,
@@ -283,7 +283,7 @@ def train_hf_detr(
     logger.info(LoggingRecord(f"Config: \n {arguments.to_dict()}", arguments.to_dict()))
 
     id2label = {int(k) - 1: v for v, k in categories_dict_name_as_key.items()}
-    config = PretrainedConfig.from_pretrained(
+    config = AutoConfig.from_pretrained(
         pretrained_model_name_or_path=path_config_json,
         num_labels=len(id2label),
     )
