@@ -31,7 +31,7 @@ from dd_core.datapoint.image import Image
 from dd_core.datapoint.view import Page
 from dd_core.utils.file_utils import Requirement, get_apted_requirement, get_distance_requirement, get_lxml_requirement
 from dd_core.utils.logger import LoggingRecord, logger
-from dd_core.utils.object_types import LayoutType
+from dd_core.utils.object_types import LayoutLabel
 from dd_core.utils.types import MetricResults
 
 from .base import MetricBase
@@ -238,9 +238,9 @@ class TedsMetric(MetricBase):
     """
 
     metric = teds_metric
-    mapper: Callable[[Image, LayoutType, list[LayoutType]], Page] = Page.from_image
-    text_container: LayoutType = LayoutType.WORD
-    floating_text_block_categories = [LayoutType.TABLE]
+    mapper: Callable[[Image, LayoutLabel, list[LayoutLabel]], Page] = Page.from_image
+    text_container: LayoutLabel = LayoutLabel.WORD
+    floating_text_block_categories = [LayoutLabel.TABLE]
 
     structure_only = False
 

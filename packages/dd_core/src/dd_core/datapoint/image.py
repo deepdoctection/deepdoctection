@@ -35,7 +35,7 @@ from pydantic import BaseModel, Field, PrivateAttr, field_validator, model_seria
 from ..utils.error import AnnotationError, BoundingBoxError, ImageError
 from ..utils.identifier import get_uuid, is_uuid_like
 from ..utils.logger import LoggingRecord, logger
-from ..utils.object_types import ObjectTypes, SummaryType, get_type
+from ..utils.object_types import ObjectTypes, SummaryKey, get_type
 from ..utils.types import BoxCoordinate, ImageDict, PathLikeOrStr, PixelValues
 from .annotation import Annotation, AnnotationMap, BoundingBox, CategoryAnnotation, ImageAnnotation
 from .box import crop_box_from_image, global_to_local_coords, intersection_box
@@ -402,7 +402,7 @@ class Image(BaseModel):
     def summary(self) -> CategoryAnnotation:
         """summary"""
         if self._summary is None:
-            object.__setattr__(self, "_summary", CategoryAnnotation(category_name=SummaryType.SUMMARY))
+            object.__setattr__(self, "_summary", CategoryAnnotation(category_name=SummaryKey.SUMMARY))
             assert self._summary is not None  # help mypy understand the assignment worked
             if self._summary._annotation_id is None:
                 self._summary.annotation_id = self.define_annotation_id(self._summary)

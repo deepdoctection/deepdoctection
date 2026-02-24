@@ -28,7 +28,7 @@ from lazy_imports import try_import
 from dd_core.datapoint.convert import convert_np_array_to_b64_b
 from dd_core.utils.file_utils import get_boto3_requirement
 from dd_core.utils.logger import LoggingRecord, logger
-from dd_core.utils.object_types import LayoutType, ObjectTypes
+from dd_core.utils.object_types import LayoutLabel, ObjectTypes
 from dd_core.utils.types import JsonDict, PixelValues, Requirement
 
 from .base import DetectionResult, ModelCategories, ObjectDetector
@@ -54,7 +54,7 @@ def _textract_to_detectresult(response: JsonDict, width: int, height: int, text_
                     score=block["Confidence"] / 100,
                     text=block["Text"],
                     class_id=1 if block["BlockType"] == "WORD" else 2,
-                    class_name=LayoutType.WORD if block["BlockType"] == "WORD" else LayoutType.LINE,
+                    class_name=LayoutLabel.WORD if block["BlockType"] == "WORD" else LayoutLabel.LINE,
                 )
                 all_results.append(word)
 
@@ -142,9 +142,9 @@ class TextractOcrDetector(ObjectDetector):
         credentials_kwargs = self._maybe_resolve_secret(**credentials_kwargs)
         self.client = boto3.client("textract", **credentials_kwargs)
         if self.text_lines:
-            self.categories = ModelCategories(init_categories={1: LayoutType.WORD, 2: LayoutType.LINE})
+            self.categories = ModelCategories(init_categories={1: LayoutLabel.WORD, 2: LayoutLabel.LINE})
         else:
-            self.categories = ModelCategories(init_categories={1: LayoutType.WORD})
+            self.categories = ModelCategories(init_categories={1: LayoutLabel.WORD})
 
     def predict(self, np_img: PixelValues) -> list[DetectionResult]:
         """

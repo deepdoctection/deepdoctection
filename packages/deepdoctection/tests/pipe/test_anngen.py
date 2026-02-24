@@ -30,7 +30,7 @@ import numpy as np
 import pytest
 
 from dd_core.datapoint import ContainerAnnotation, Image
-from dd_core.utils.object_types import Relationships, get_type
+from dd_core.utils.object_types import RelationshipKey, get_type
 from deepdoctection.extern.base import DetectionResult
 from deepdoctection.pipe.anngen import DatapointManager
 
@@ -66,8 +66,8 @@ def test_set_image_annotation_with_image_and_child_relationship(dp_image: Image)
     child = mgr.datapoint.get_annotation(annotation_ids=child_id)[0]
 
     assert parent.image is not None
-    assert Relationships.CHILD in parent.relationships
-    assert child_id in parent.get_relationship(Relationships.CHILD)
+    assert RelationshipKey.CHILD in parent.relationships
+    assert child_id in parent.get_relationship(RelationshipKey.CHILD)
     assert child.annotation_id == child_id
 
 

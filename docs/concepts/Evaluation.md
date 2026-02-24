@@ -165,68 +165,71 @@ def get_table_recognizer():
     cfg = dd.set_config_by_yaml("~/.cache/deepdoctection/configs/dd/conf_dd_one.yaml")
     pipe_component_list: List[dd.PipelineComponent] = []
 
-    crop = dd.ImageCroppingService(category_names=dd.LayoutType.TABLE)
+    crop = dd.ImageCroppingService(category_names=dd.LayoutLabel.TABLE)
     pipe_component_list.append(crop)
 
     cell_config_path = dd.ModelCatalog.get_full_path_configs("cell/d2_model_1849999_cell_inf_only.ts")
-    cell_weights_path = dd.ModelDownloadManager.maybe_download_weights_and_configs("cell/d2_model_1849999_cell_inf_only.ts")
+    cell_weights_path = dd.ModelDownloadManager.maybe_download_weights_and_configs(
+        "cell/d2_model_1849999_cell_inf_only.ts")
     categories_cell = dd.ModelCatalog.get_profile("cell/d2_model_1849999_cell_inf_only.ts").categories
     d_cell = dd.D2FrcnnTracingDetector(cell_config_path, cell_weights_path, categories_cell)
-	
+
     item_config_path = dd.ModelCatalog.get_full_path_configs("item/d2_model_1639999_item_inf_only.ts")
-    item_weights_path = dd.ModelDownloadManager.maybe_download_weights_and_configs("item/d2_model_1639999_item_inf_only.ts")
+    item_weights_path = dd.ModelDownloadManager.maybe_download_weights_and_configs(
+        "item/d2_model_1639999_item_inf_only.ts")
     categories_item = dd.ModelCatalog.get_profile("item/d2_model_1639999_item_inf_only.ts").categories
     d_item = dd.D2FrcnnTracingDetector(item_config_path, item_weights_path, categories_item)
 
-	cell_detect_result_generator = dd.DetectResultGenerator(categories_name_as_key=d_cell.categories.get_categories
-	(as_dict=True, name_as_key=True))
-    cell = dd.SubImageLayoutService(sub_image_detector=d_cell, 
-									sub_image_names=dd.LayoutType.TABLE,
-									service_ids=None,
-									detect_result_generator=cell_detect_result_generator)
-    pipe_component_list.append(cell)
-	
-	item_detect_result_generator = dd.DetectResultGenerator(categories_name_as_key=d_item.categories.get_categories
-	(as_dict=True, name_as_key=True))
-    item = dd.SubImageLayoutService(sub_image_detector=d_item, 
-									sub_image_names=dd.LayoutType.TABLE, 
-									service_ids=None,
-									detect_result_generator=item_detect_result_generator)
-    pipe_component_list.append(item)
+    cell_detect_result_generator = dd.DetectResultGenerator(categories_name_as_key=d_cell.categories.get_categories
+    (as_dict=True, name_as_key=True))
 
-    table_segmentation = dd.TableSegmentationService(
-        cfg.SEGMENTATION.ASSIGNMENT_RULE,
-        cfg.SEGMENTATION.THRESHOLD_ROWS,
-        cfg.SEGMENTATION.THRESHOLD_COLS,
-        cfg.SEGMENTATION.FULL_TABLE_TILING,
-        cfg.SEGMENTATION.REMOVE_IOU_THRESHOLD_ROWS,
-        cfg.SEGMENTATION.REMOVE_IOU_THRESHOLD_COLS,
-        dd.LayoutType.TABLE,
-        [dd.CellType.HEADER,dd.CellType.BODY,dd.LayoutType.CELL],
-        [dd.LayoutType.ROW,dd.LayoutType.COLUMN],
-        [dd.CellType.ROW_NUMBER, dd.CellType.COLUMN_NUMBER],
-        cfg.SEGMENTATION.STRETCH_RULE,
-    )
-	
-    pipe_component_list.append(table_segmentation)
-    table_segmentation_refinement = dd.TableSegmentationRefinementService([LayoutType.TABLE],
-                                                                          [LayoutType.CELL,
-                                                                           CellType.COLUMN_HEADER,
-                                                                           CellType.PROJECTED_ROW_HEADER,
-                                                                           CellType.SPANNING,
-                                                                           CellType.ROW_HEADER,
-                                                                          ])
-    pipe_component_list.append(table_segmentation_refinement)
-    return dd.DoctectionPipe(pipeline_component_list=pipe_component_list)
 
-	
+cell = dd.SubImageLayoutService(sub_image_detector=d_cell,
+                                sub_image_names=dd.LayoutLabel.TABLE,
+                                service_ids=None,
+                                detect_result_generator=cell_detect_result_generator)
+pipe_component_list.append(cell)
+
+item_detect_result_generator = dd.DetectResultGenerator(categories_name_as_key=d_item.categories.get_categories
+(as_dict=True, name_as_key=True))
+item = dd.SubImageLayoutService(sub_image_detector=d_item,
+                                sub_image_names=dd.LayoutLabel.TABLE,
+                                service_ids=None,
+                                detect_result_generator=item_detect_result_generator)
+pipe_component_list.append(item)
+
+table_segmentation = dd.TableSegmentationService(
+    cfg.SEGMENTATION.ASSIGNMENT_RULE,
+    cfg.SEGMENTATION.THRESHOLD_ROWS,
+    cfg.SEGMENTATION.THRESHOLD_COLS,
+    cfg.SEGMENTATION.FULL_TABLE_TILING,
+    cfg.SEGMENTATION.REMOVE_IOU_THRESHOLD_ROWS,
+    cfg.SEGMENTATION.REMOVE_IOU_THRESHOLD_COLS,
+    dd.LayoutLabel.TABLE,
+    [dd.CellLabel.HEADER, dd.CellLabel.BODY, dd.LayoutLabel.CELL],
+    [dd.LayoutLabel.ROW, dd.LayoutLabel.COLUMN],
+    [dd.CellKey.ROW_NUMBER, dd.CellKey.COLUMN_NUMBER],
+    cfg.SEGMENTATION.STRETCH_RULE,
+)
+
+pipe_component_list.append(table_segmentation)
+table_segmentation_refinement = dd.TableSegmentationRefinementService([LayoutType.TABLE],
+                                                                      [LayoutType.CELL,
+                                                                       CellType.COLUMN_HEADER,
+                                                                       CellType.PROJECTED_ROW_HEADER,
+                                                                       CellType.SPANNING,
+                                                                       CellType.ROW_HEADER,
+                                                                       ])
+pipe_component_list.append(table_segmentation_refinement)
+return dd.DoctectionPipe(pipeline_component_list=pipe_component_list)
+
 pubtabnet = dd.Pubtabnet()
 teds = dd.metric_registry.get("teds")
 teds.structure_only = True
 pipe = get_table_recognizer()
 evaluator = dd.Evaluator(pubtabnet, pipe, teds)
-out = evaluator.run(max_datapoints=1000, 
-					split="val", dd_pipe_like=True)
+out = evaluator.run(max_datapoints=1000,
+                    split="val", dd_pipe_like=True)
 print(out)
 ```
 

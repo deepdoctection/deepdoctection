@@ -29,14 +29,14 @@ import numpy as np
 from ..utils.error import AnnotationError, ImageError
 from ..utils.logger import LoggingRecord, log_once, logger
 from ..utils.object_types import (
-    CellType,
-    LayoutType,
+    CellLabel,
+    LayoutLabel,
     ObjectTypes,
-    PageType,
-    Relationships,
-    TableType,
-    TokenClasses,
-    WordType,
+    PageKey,
+    RelationshipKey,
+    TableKey,
+    TokenClassLabel,
+    WordKey,
     get_type,
 )
 from ..utils.transform import ResizeTransform, box_to_point4, point4_to_box
@@ -409,10 +409,15 @@ class Word(ImageAnnotationBaseView):
 
     def get_attribute_names(self) -> set[str]:
         attr_names = (
-            set(WordType)
+            set(WordKey)
             .union(super().get_attribute_names())
             .union(
-                {Relationships.READING_ORDER, Relationships.LAYOUT_LINK, Relationships.LINK, Relationships.SUCCESSOR}
+                {
+                    RelationshipKey.READING_ORDER,
+                    RelationshipKey.LAYOUT_LINK,
+                    RelationshipKey.LINK,
+                    RelationshipKey.SUCCESSOR,
+                }
             )
         )
         return {a.value if isinstance(a, ObjectTypes) else a for a in attr_names}
@@ -436,7 +441,7 @@ class Layout(ImageAnnotationBaseView):
             It will only select those among all annotations that have an entry in `Relationships.child` .
         """
         if self.category_name != self.text_container:
-            text_ids = self.get_relationship(Relationships.CHILD)
+            text_ids = self.get_relationship(RelationshipKey.CHILD)
             return self.base_page.get_annotation(annotation_ids=text_ids, category_names=self.text_container)
         return [self]
 
@@ -482,8 +487,8 @@ class Layout(ImageAnnotationBaseView):
             token_classes = [str(w.token_class) for w in words if getattr(w, "token_class", None) is not None]
             token_class_ann_ids = [
                 (
-                    str(w.get_sub_category(WordType.TOKEN_CLASS).annotation_id)
-                    if WordType.TOKEN_CLASS in w.sub_categories
+                    str(w.get_sub_category(WordKey.TOKEN_CLASS).annotation_id)
+                    if WordKey.TOKEN_CLASS in w.sub_categories
                     else None
                 )
                 for w in words
@@ -491,24 +496,24 @@ class Layout(ImageAnnotationBaseView):
             token_tags = [str(w.token_tag) for w in words if getattr(w, "token_tag", None) is not None]
             token_tag_ann_ids = [
                 (
-                    str(w.get_sub_category(WordType.TOKEN_TAG).annotation_id)
-                    if WordType.TOKEN_TAG in w.sub_categories
+                    str(w.get_sub_category(WordKey.TOKEN_TAG).annotation_id)
+                    if WordKey.TOKEN_TAG in w.sub_categories
                     else None
                 )
                 for w in words
             ]
             token_classes_ids = [
                 (
-                    str(w.get_sub_category(WordType.TOKEN_CLASS).category_id)
-                    if WordType.TOKEN_CLASS in w.sub_categories
+                    str(w.get_sub_category(WordKey.TOKEN_CLASS).category_id)
+                    if WordKey.TOKEN_CLASS in w.sub_categories
                     else None
                 )
                 for w in words
             ]
             token_tag_ids = [
                 (
-                    str(w.get_sub_category(WordType.TOKEN_TAG).category_id)
-                    if WordType.TOKEN_TAG in w.sub_categories
+                    str(w.get_sub_category(WordKey.TOKEN_TAG).category_id)
+                    if WordKey.TOKEN_TAG in w.sub_categories
                     else None
                 )
                 for w in words
@@ -537,7 +542,7 @@ class Layout(ImageAnnotationBaseView):
         attr_names = (
             {"words", "text"}
             .union(super().get_attribute_names())
-            .union({Relationships.READING_ORDER, Relationships.LAYOUT_LINK})
+            .union({RelationshipKey.READING_ORDER, RelationshipKey.LAYOUT_LINK})
         )
         return {a.value if isinstance(a, ObjectTypes) else a for a in attr_names}
 
@@ -555,7 +560,7 @@ class Cell(Layout):
     """
 
     def get_attribute_names(self) -> set[str]:
-        attr_names = set(CellType).union(super().get_attribute_names())
+        attr_names = set(CellLabel).union(super().get_attribute_names())
         return {a.value if isinstance(a, ObjectTypes) else a for a in attr_names}
 
 
@@ -598,10 +603,10 @@ class List(Layout):
         Returns:
             A list of a `list_item`s.
         """
-        all_relation_ids = self.get_relationship(Relationships.CHILD)
+        all_relation_ids = self.get_relationship(RelationshipKey.CHILD)
         list_items = self.base_page.get_annotation(
             annotation_ids=all_relation_ids,
-            category_names=(LayoutType.LIST_ITEM, LayoutType.LINE),
+            category_names=(LayoutLabel.LIST_ITEM, LayoutLabel.LINE),
         )
         list_items.sort(key=lambda x: x.bbox[1])
         return list_items
@@ -633,11 +638,11 @@ class Table(Layout):
         Returns:
             A list of cells that are column headers in the table.
         """
-        all_relation_ids = self.get_relationship(Relationships.CHILD)
+        all_relation_ids = self.get_relationship(RelationshipKey.CHILD)
         all_cells: list[Cell] = self.base_page.get_annotation(  # type: ignore
-            category_names=[LayoutType.CELL, CellType.SPANNING], annotation_ids=all_relation_ids
+            category_names=[LayoutLabel.CELL, CellLabel.SPANNING], annotation_ids=all_relation_ids
         )
-        headers = list(filter(lambda cell: CellType.COLUMN_HEADER in cell.sub_categories, all_cells))
+        headers = list(filter(lambda cell: CellLabel.COLUMN_HEADER in cell.sub_categories, all_cells))
         headers.sort(key=lambda x: x.column_number)  # type: ignore
         return headers
 
@@ -651,11 +656,11 @@ class Table(Layout):
             A list of `Cell` objects that are row headers.
         """
 
-        all_relation_ids = self.get_relationship(Relationships.CHILD)
+        all_relation_ids = self.get_relationship(RelationshipKey.CHILD)
         all_cells: list[Cell] = self.base_page.get_annotation(  # type: ignore
-            category_names=[LayoutType.CELL, CellType.SPANNING], annotation_ids=all_relation_ids
+            category_names=[LayoutLabel.CELL, CellLabel.SPANNING], annotation_ids=all_relation_ids
         )
-        row_header_cells = list(filter(lambda cell: CellType.ROW_HEADER in cell.sub_categories, all_cells))
+        row_header_cells = list(filter(lambda cell: CellLabel.ROW_HEADER in cell.sub_categories, all_cells))
         row_header_cells.sort(key=lambda x: x.column_number)  # type: ignore
         return row_header_cells
 
@@ -690,9 +695,9 @@ class Table(Layout):
             }
             ```
         """
-        all_relation_ids = self.get_relationship(Relationships.CHILD)
+        all_relation_ids = self.get_relationship(RelationshipKey.CHILD)
         all_cells = self.base_page.get_annotation(
-            category_names=[LayoutType.CELL, CellType.SPANNING], annotation_ids=all_relation_ids
+            category_names=[LayoutLabel.CELL, CellLabel.SPANNING], annotation_ids=all_relation_ids
         )
         row_cells: list[ImageAnnotationBaseView] = list(
             filter(lambda c: c.row_number <= row_number <= c.row_number + c.row_span - 1, all_cells)  # type: ignore
@@ -716,8 +721,8 @@ class Table(Layout):
         Returns:
             A list of a table rows.
         """
-        all_relation_ids = self.get_relationship(Relationships.CHILD)
-        row_anns = self.base_page.get_annotation(annotation_ids=all_relation_ids, category_names=[LayoutType.ROW])
+        all_relation_ids = self.get_relationship(RelationshipKey.CHILD)
+        row_anns = self.base_page.get_annotation(annotation_ids=all_relation_ids, category_names=[LayoutLabel.ROW])
         return row_anns
 
     @property
@@ -726,8 +731,8 @@ class Table(Layout):
         Returns:
             A list of a table columns.
         """
-        all_relation_ids = self.get_relationship(Relationships.CHILD)
-        col_anns = self.base_page.get_annotation(annotation_ids=all_relation_ids, category_names=[LayoutType.COLUMN])
+        all_relation_ids = self.get_relationship(RelationshipKey.CHILD)
+        col_anns = self.base_page.get_annotation(annotation_ids=all_relation_ids, category_names=[LayoutLabel.COLUMN])
         return col_anns
 
     def row(self, row_number: int) -> list[ImageAnnotationBaseView]:
@@ -737,9 +742,9 @@ class Table(Layout):
         Returns:
             Get a list of cells in a row.
         """
-        all_relation_ids = self.get_relationship(Relationships.CHILD)
+        all_relation_ids = self.get_relationship(RelationshipKey.CHILD)
         all_cells = self.base_page.get_annotation(
-            category_names=[LayoutType.CELL, CellType.SPANNING], annotation_ids=all_relation_ids
+            category_names=[LayoutLabel.CELL, CellLabel.SPANNING], annotation_ids=all_relation_ids
         )
         row_cells: list[ImageAnnotationBaseView] = list(
             filter(lambda c: row_number in (c.row_number, c.row_number + c.row_span - 1), all_cells)  # type: ignore
@@ -754,9 +759,9 @@ class Table(Layout):
         Returns:
             Get a list of cells in a column.
         """
-        all_relation_ids = self.get_relationship(Relationships.CHILD)
+        all_relation_ids = self.get_relationship(RelationshipKey.CHILD)
         all_cells = self.base_page.get_annotation(
-            category_names=[LayoutType.CELL, CellType.SPANNING], annotation_ids=all_relation_ids
+            category_names=[LayoutLabel.CELL, CellLabel.SPANNING], annotation_ids=all_relation_ids
         )
         column_cells: list[ImageAnnotationBaseView] = list(
             filter(
@@ -775,8 +780,8 @@ class Table(Layout):
         """
 
         html_list: list[str] = []
-        if TableType.HTML in self.sub_categories:
-            ann = self.get_sub_category(TableType.HTML)
+        if TableKey.HTML in self.sub_categories:
+            ann = self.get_sub_category(TableKey.HTML)
             if isinstance(ann, ContainerAnnotation):
                 if isinstance(ann.value, list):
                     html_list = [str(v) for v in ann.value]
@@ -791,7 +796,7 @@ class Table(Layout):
 
     def get_attribute_names(self) -> set[str]:
         attr_names = (
-            set(TableType)
+            set(TableKey)
             .union(super().get_attribute_names())
             .union({"cells", "rows", "columns", "html", "csv", "text"})
         )
@@ -812,7 +817,7 @@ class Table(Layout):
 
         table_list = [["" for _ in range(self.number_of_columns)] for _ in range(self.number_of_rows)]  # type: ignore
         for cell in cells:
-            if cell.category_name == CellType.SPANNING:
+            if cell.category_name == CellLabel.SPANNING:
                 log_once(
                     LoggingRecord(
                         f"A cell with higher row/column span detected; rendering content"
@@ -930,52 +935,52 @@ class Table(Layout):
 class ImageDefaults:
     """ImageDefaults"""
 
-    TEXT_CONTAINER: LayoutType = LayoutType.WORD
-    FLOATING_TEXT_BLOCK_CATEGORIES: Tuple[Union[LayoutType, CellType], ...] = field(
+    TEXT_CONTAINER: LayoutLabel = LayoutLabel.WORD
+    FLOATING_TEXT_BLOCK_CATEGORIES: Tuple[Union[LayoutLabel, CellLabel], ...] = field(
         default_factory=lambda: (
-            LayoutType.TEXT,
-            LayoutType.TITLE,
-            LayoutType.LIST,
-            LayoutType.KEY_VALUE_AREA,
+            LayoutLabel.TEXT,
+            LayoutLabel.TITLE,
+            LayoutLabel.LIST,
+            LayoutLabel.KEY_VALUE_AREA,
         )
     )
-    TEXT_BLOCK_CATEGORIES: Tuple[Union[LayoutType, CellType], ...] = field(
+    TEXT_BLOCK_CATEGORIES: Tuple[Union[LayoutLabel, CellLabel], ...] = field(
         default_factory=lambda: (
-            LayoutType.TEXT,
-            LayoutType.TITLE,
-            LayoutType.LIST_ITEM,
-            LayoutType.LIST,
-            LayoutType.CAPTION,
-            LayoutType.PAGE_HEADER,
-            LayoutType.PAGE_FOOTER,
-            LayoutType.PAGE_NUMBER,
-            LayoutType.MARK,
-            LayoutType.KEY_VALUE_AREA,
-            LayoutType.FIGURE,
-            CellType.SPANNING,
-            LayoutType.CELL,
+            LayoutLabel.TEXT,
+            LayoutLabel.TITLE,
+            LayoutLabel.LIST_ITEM,
+            LayoutLabel.LIST,
+            LayoutLabel.CAPTION,
+            LayoutLabel.PAGE_HEADER,
+            LayoutLabel.PAGE_FOOTER,
+            LayoutLabel.PAGE_NUMBER,
+            LayoutLabel.MARK,
+            LayoutLabel.KEY_VALUE_AREA,
+            LayoutLabel.FIGURE,
+            CellLabel.SPANNING,
+            LayoutLabel.CELL,
         )
     )
-    RESIDUAL_TEXT_BLOCK_CATEGORIES: Tuple[LayoutType, ...] = field(
+    RESIDUAL_TEXT_BLOCK_CATEGORIES: Tuple[LayoutLabel, ...] = field(
         default_factory=lambda: (
-            LayoutType.PAGE_HEADER,
-            LayoutType.PAGE_FOOTER,
-            LayoutType.MARK,
-            LayoutType.PAGE_NUMBER,
+            LayoutLabel.PAGE_HEADER,
+            LayoutLabel.PAGE_FOOTER,
+            LayoutLabel.MARK,
+            LayoutLabel.PAGE_NUMBER,
         )
     )
     IMAGE_ANNOTATION_TO_LAYOUTS: Dict[ObjectTypes, Type[Union[Layout, Table, Word]]] = field(
         default_factory=lambda: {  # type: ignore
-            **{i: Layout for i in LayoutType if (i not in {LayoutType.TABLE, LayoutType.WORD, LayoutType.CELL})},
-            LayoutType.TABLE: Table,
-            LayoutType.TABLE_ROTATED: Table,
-            LayoutType.WORD: Word,
-            LayoutType.CELL: Cell,
-            LayoutType.LIST: List,
-            CellType.SPANNING: Cell,
-            CellType.ROW_HEADER: Cell,
-            CellType.COLUMN_HEADER: Cell,
-            CellType.PROJECTED_ROW_HEADER: Cell,
+            **{i: Layout for i in LayoutLabel if (i not in {LayoutLabel.TABLE, LayoutLabel.WORD, LayoutLabel.CELL})},
+            LayoutLabel.TABLE: Table,
+            LayoutLabel.TABLE_ROTATED: Table,
+            LayoutLabel.WORD: Word,
+            LayoutLabel.CELL: Cell,
+            LayoutLabel.LIST: List,
+            CellLabel.SPANNING: Cell,
+            CellLabel.ROW_HEADER: Cell,
+            CellLabel.COLUMN_HEADER: Cell,
+            CellLabel.PROJECTED_ROW_HEADER: Cell,
         }
     )
 
@@ -999,7 +1004,7 @@ def ann_obj_view_factory(
         Transformed annotation
     """
     if annotation.category_name == text_container:
-        layout_class = IMAGE_DEFAULTS.IMAGE_ANNOTATION_TO_LAYOUTS[LayoutType.WORD]
+        layout_class = IMAGE_DEFAULTS.IMAGE_ANNOTATION_TO_LAYOUTS[LayoutLabel.WORD]
     else:
         layout_class = IMAGE_DEFAULTS.IMAGE_ANNOTATION_TO_LAYOUTS[annotation.category_name]  # type: ignore
     return layout_class(image_annotation=annotation, base_page=base_page, text_container=text_container)
@@ -1067,8 +1072,8 @@ class Page:
         )
 
         self.include_residual_text_container: bool = include_residual_text_container
-        if self.include_residual_text_container and LayoutType.LINE not in ftb:
-            ftb = ftb + (LayoutType.LINE,)
+        if self.include_residual_text_container and LayoutLabel.LINE not in ftb:
+            ftb = ftb + (LayoutLabel.LINE,)
 
         self.floating_text_block_categories: tuple[ObjectTypes, ...] = ftb
         self.residual_text_block_categories: tuple[ObjectTypes, ...] = residual
@@ -1253,7 +1258,7 @@ class Page:
         Returns:
             A list of a tables.
         """
-        return self.get_annotation(category_names=LayoutType.TABLE)
+        return self.get_annotation(category_names=LayoutLabel.TABLE)
 
     @property
     def figures(self) -> list[ImageAnnotationBaseView]:
@@ -1261,7 +1266,7 @@ class Page:
         Returns:
             A list of a figures.
         """
-        return self.get_annotation(category_names=LayoutType.FIGURE)
+        return self.get_annotation(category_names=LayoutLabel.FIGURE)
 
     @property
     def residual_layouts(self) -> list[ImageAnnotationBaseView]:
@@ -1530,12 +1535,12 @@ class Page:
         if show_tables and not debug_kwargs:
             for table in self.tables:
                 box_stack.append(self._ann_viz_bbox(table))
-                category_names_list.append((LayoutType.TABLE.value, LayoutType.TABLE.value))
+                category_names_list.append((LayoutLabel.TABLE.value, LayoutLabel.TABLE.value))
                 if show_cells:
                     for cell in table.cells:
                         if cell.category_name in {
-                            LayoutType.CELL,
-                            CellType.SPANNING,
+                            LayoutLabel.CELL,
+                            CellLabel.SPANNING,
                         }:
                             cells_found = True
                             box_stack.append(self._ann_viz_bbox(cell))
@@ -1551,7 +1556,7 @@ class Page:
                         category_names_list.append((None, col.category_name.value))
 
         if show_cells and not cells_found and not debug_kwargs:
-            for ann in self.get_annotation(category_names=[LayoutType.CELL, CellType.SPANNING]):
+            for ann in self.get_annotation(category_names=[LayoutLabel.CELL, CellLabel.SPANNING]):
                 box_stack.append(self._ann_viz_bbox(ann))
                 category_names_list.append((None, ann.category_name.value))
 
@@ -1566,7 +1571,7 @@ class Page:
             for res_layout in self.residual_layouts:
                 all_words.extend(res_layout.words)
             if not all_words:
-                all_words = self.get_annotation(category_names=LayoutType.WORD)
+                all_words = self.get_annotation(category_names=LayoutLabel.WORD)
             if not ignore_default_token_class:
                 for word in all_words:
                     box_stack.append(self._ann_viz_bbox(word))
@@ -1582,7 +1587,7 @@ class Page:
                         )
             else:
                 for word in all_words:
-                    if word.token_class is not None and word.token_class != TokenClasses.OTHER:
+                    if word.token_class is not None and word.token_class != TokenClassLabel.OTHER:
                         box_stack.append(self._ann_viz_bbox(word))
                         if show_token_class:
                             category_names_list.append(
@@ -1643,7 +1648,7 @@ class Page:
         Returns:
             A set of registered attributes.
         """
-        attr_names = set(PageType).union(cls._attribute_names)
+        attr_names = set(PageKey).union(cls._attribute_names)
         return {attr_name.value if isinstance(attr_name, ObjectTypes) else attr_name for attr_name in attr_names}
 
     @classmethod
@@ -1755,7 +1760,7 @@ class Page:
                 "successor_annotation_id": word.successor[0].annotation_id if word.successor else None,
             }
             for word in all_words
-            if word.token_tag not in (TokenClasses.OTHER, None)
+            if word.token_tag not in (TokenClassLabel.OTHER, None)
         ]
 
     def __copy__(self) -> Page:

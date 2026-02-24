@@ -36,7 +36,7 @@ from dd_core.dataflow import DataFlow, MapData, MapDataComponent
 from dd_core.dataflow.custom_serialize import SerializerCoco
 from dd_core.mapper.cats import add_summary, filter_cat
 from dd_core.mapper.cocostruct import coco_to_image
-from dd_core.utils.object_types import DatasetType, LayoutType
+from dd_core.utils.object_types import DatasetKind, LayoutLabel
 
 from ..base import _BuiltInDataset
 from ..dataflow_builder import DataFlowBaseBuilder
@@ -63,12 +63,12 @@ _URL = (
     "publaynet.tar.gz?_ga=2.23017467.1796315263.1628754613-1173244232.1625045842"
 )
 _SPLITS: Mapping[str, str] = {"train": "train", "val": "val"}
-_TYPE = DatasetType.OBJECT_DETECTION
+_TYPE = DatasetKind.OBJECT_DETECTION
 
 _LOCATION = "publaynet"
 
 _ANNOTATION_FILES: Mapping[str, str] = {"train": "train.json", "val": "val.json"}
-_INIT_CATEGORIES = [LayoutType.TEXT, LayoutType.TITLE, LayoutType.LIST, LayoutType.TABLE, LayoutType.FIGURE]
+_INIT_CATEGORIES = [LayoutLabel.TEXT, LayoutLabel.TITLE, LayoutLabel.LIST, LayoutLabel.TABLE, LayoutLabel.FIGURE]
 
 
 @dataset_registry.register("publaynet")

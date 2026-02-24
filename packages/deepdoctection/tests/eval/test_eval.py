@@ -32,7 +32,7 @@ import pytest
 
 from dd_core.dataflow import DataFromList
 from dd_core.datapoint import BoundingBox, Image, ImageAnnotation
-from dd_core.utils import DatasetType, get_type
+from dd_core.utils import DatasetKind, get_type
 from deepdoctection.eval import CocoMetric, Evaluator
 from deepdoctection.extern.base import DetectionResult
 from deepdoctection.extern.hfdetr import HFDetrDerivedDetector
@@ -110,7 +110,7 @@ class TestEvaluator:
         self._dataset.dataset_info = MagicMock()
         self._dataset.dataflow.build = MagicMock(return_value=DataFromList([dp_image]))
         self._dataset.dataflow.categories = categories
-        self._dataset.dataset_info.type = DatasetType.OBJECT_DETECTION
+        self._dataset.dataset_info.type = DatasetKind.OBJECT_DETECTION
         ModelDownloadManager.maybe_download_weights_and_configs("Aryn/deformable-detr-DocLayNet/model.safetensors")
         path_config = ModelCatalog.get_full_path_configs("Aryn/deformable-detr-DocLayNet/model.safetensors")
         path_weights = ModelCatalog.get_full_path_weights("Aryn/deformable-detr-DocLayNet/model.safetensors")

@@ -34,7 +34,7 @@ import pytest
 
 from dd_core.datapoint import ContainerAnnotation, Image
 from dd_core.utils.file_utils import networkx_available
-from dd_core.utils.object_types import CellType, LayoutType, TableType
+from dd_core.utils.object_types import CellLabel, LayoutLabel, TableKey
 from deepdoctection.pipe.refine import (
     TableSegmentationRefinementService,
     _html_table,
@@ -271,13 +271,13 @@ class TestTableSegmentationRefinementService:
         """
 
         self.table_segmentation_refinement_service = TableSegmentationRefinementService(
-            [LayoutType.TABLE, LayoutType.TABLE_ROTATED],
+            [LayoutLabel.TABLE, LayoutLabel.TABLE_ROTATED],
             [
-                LayoutType.CELL,
-                CellType.COLUMN_HEADER,
-                CellType.PROJECTED_ROW_HEADER,
-                CellType.SPANNING,
-                CellType.ROW_HEADER,
+                LayoutLabel.CELL,
+                CellLabel.COLUMN_HEADER,
+                CellLabel.PROJECTED_ROW_HEADER,
+                CellLabel.SPANNING,
+                CellLabel.ROW_HEADER,
             ],
         )
 
@@ -294,21 +294,21 @@ class TestTableSegmentationRefinementService:
         dp = self.table_segmentation_refinement_service.pass_datapoint(dp)
 
         # Assert
-        table = dp.get_annotation(category_names=LayoutType.TABLE)[0]
+        table = dp.get_annotation(category_names=LayoutLabel.TABLE)[0]
         assert table.image is not None
         summary = table.image.summary
         summaries_table = [
-            summary.get_sub_category(TableType.NUMBER_OF_ROWS).category_id,
-            summary.get_sub_category(TableType.NUMBER_OF_COLUMNS).category_id,
-            summary.get_sub_category(TableType.MAX_ROW_SPAN).category_id,
-            summary.get_sub_category(TableType.MAX_COL_SPAN).category_id,
+            summary.get_sub_category(TableKey.NUMBER_OF_ROWS).category_id,
+            summary.get_sub_category(TableKey.NUMBER_OF_COLUMNS).category_id,
+            summary.get_sub_category(TableKey.MAX_ROW_SPAN).category_id,
+            summary.get_sub_category(TableKey.MAX_COL_SPAN).category_id,
         ]
-        summary_html = table.get_sub_category(TableType.HTML)
+        summary_html = table.get_sub_category(TableKey.HTML)
         cells = dp.get_annotation(category_names=self.table_segmentation_refinement_service.cell_names)
-        row_numbers = {cell.get_sub_category(CellType.ROW_NUMBER).category_id for cell in cells}
-        col_numbers = {cell.get_sub_category(CellType.COLUMN_NUMBER).category_id for cell in cells}
-        row_spans = {cell.get_sub_category(CellType.ROW_SPAN).category_id for cell in cells}
-        col_spans = {cell.get_sub_category(CellType.COLUMN_SPAN).category_id for cell in cells}
+        row_numbers = {cell.get_sub_category(CellKey.ROW_NUMBER).category_id for cell in cells}
+        col_numbers = {cell.get_sub_category(CellKey.COLUMN_NUMBER).category_id for cell in cells}
+        row_spans = {cell.get_sub_category(CellKey.ROW_SPAN).category_id for cell in cells}
+        col_spans = {cell.get_sub_category(CellKey.COLUMN_SPAN).category_id for cell in cells}
 
         assert len(cells) == 4
         assert row_numbers == {1, 2}

@@ -39,12 +39,12 @@ from dd_core.mapper.cats import add_summary, cat_to_sub_cat, filter_cat, filter_
 from dd_core.mapper.cocostruct import coco_to_image
 from dd_core.utils.fs import load_image_from_file
 from dd_core.utils.object_types import (
-    DatasetType,
-    DocumentType,
-    LayoutType,
+    DatasetKind,
+    DocumentLabel,
+    LayoutLabel,
     ObjectTypes,
-    PageType,
-    SummaryType,
+    PageKey,
+    SummaryKey,
     TypeOrStr,
 )
 from dd_core.utils.types import CocoDatapointDict
@@ -75,36 +75,36 @@ _DESCRIPTION = (
 _LICENSE = "CDLA-Permissive"
 _URL = "https://codait-cos-dax.s3.us.cloud-object-storage.appdomain.cloud/dax-doclaynet/1.0.0/DocLayNet_core.zip"
 _SPLITS: Mapping[str, str] = {"train": "train", "val": "val", "test": "test"}
-_TYPE = DatasetType.OBJECT_DETECTION
+_TYPE = DatasetKind.OBJECT_DETECTION
 
 _LOCATION = "DocLayNet_core"
 
 _ANNOTATION_FILES: Mapping[str, str] = {"train": "COCO/train.json", "val": "COCO/val.json", "test": "COCO/test.json"}
 _INIT_CATEGORIES = [
-    LayoutType.CAPTION,
-    LayoutType.FOOTNOTE,
-    LayoutType.FORMULA,
-    LayoutType.LIST,
-    LayoutType.PAGE_FOOTER,
-    LayoutType.PAGE_HEADER,
-    LayoutType.FIGURE,
-    LayoutType.SECTION_HEADER,
-    LayoutType.TABLE,
-    LayoutType.TEXT,
-    LayoutType.TITLE,
+    LayoutLabel.CAPTION,
+    LayoutLabel.FOOTNOTE,
+    LayoutLabel.FORMULA,
+    LayoutLabel.LIST,
+    LayoutLabel.PAGE_FOOTER,
+    LayoutLabel.PAGE_HEADER,
+    LayoutLabel.FIGURE,
+    LayoutLabel.SECTION_HEADER,
+    LayoutLabel.TABLE,
+    LayoutLabel.TEXT,
+    LayoutLabel.TITLE,
 ]
 _SUB_CATEGORIES: Mapping[ObjectTypes, Mapping[ObjectTypes, Sequence[ObjectTypes]]] = {
-    LayoutType.CAPTION: {DatasetType.PUBLAYNET: [LayoutType.TEXT]},
-    LayoutType.FOOTNOTE: {DatasetType.PUBLAYNET: [LayoutType.TEXT]},
-    LayoutType.FORMULA: {DatasetType.PUBLAYNET: [LayoutType.TEXT]},
-    LayoutType.LIST: {DatasetType.PUBLAYNET: [LayoutType.LIST]},
-    LayoutType.PAGE_FOOTER: {DatasetType.PUBLAYNET: [LayoutType.TEXT]},
-    LayoutType.PAGE_HEADER: {DatasetType.PUBLAYNET: [LayoutType.TITLE]},
-    LayoutType.FIGURE: {DatasetType.PUBLAYNET: [LayoutType.FIGURE]},
-    LayoutType.SECTION_HEADER: {DatasetType.PUBLAYNET: [LayoutType.TITLE]},
-    LayoutType.TABLE: {DatasetType.PUBLAYNET: [LayoutType.TABLE]},
-    LayoutType.TEXT: {DatasetType.PUBLAYNET: [LayoutType.TEXT]},
-    LayoutType.TITLE: {DatasetType.PUBLAYNET: [LayoutType.TITLE]},
+    LayoutLabel.CAPTION: {DatasetKind.PUBLAYNET: [LayoutLabel.TEXT]},
+    LayoutLabel.FOOTNOTE: {DatasetKind.PUBLAYNET: [LayoutLabel.TEXT]},
+    LayoutLabel.FORMULA: {DatasetKind.PUBLAYNET: [LayoutLabel.TEXT]},
+    LayoutLabel.LIST: {DatasetKind.PUBLAYNET: [LayoutLabel.LIST]},
+    LayoutLabel.PAGE_FOOTER: {DatasetKind.PUBLAYNET: [LayoutLabel.TEXT]},
+    LayoutLabel.PAGE_HEADER: {DatasetKind.PUBLAYNET: [LayoutLabel.TITLE]},
+    LayoutLabel.FIGURE: {DatasetKind.PUBLAYNET: [LayoutLabel.FIGURE]},
+    LayoutLabel.SECTION_HEADER: {DatasetKind.PUBLAYNET: [LayoutLabel.TITLE]},
+    LayoutLabel.TABLE: {DatasetKind.PUBLAYNET: [LayoutLabel.TABLE]},
+    LayoutLabel.TEXT: {DatasetKind.PUBLAYNET: [LayoutLabel.TEXT]},
+    LayoutLabel.TITLE: {DatasetKind.PUBLAYNET: [LayoutLabel.TITLE]},
 }
 
 
@@ -180,7 +180,7 @@ class DocLayNetBuilder(DataFlowBaseBuilder):
                 filter_empty_image=True,
                 fake_score=fake_score,
                 coarse_mapping={1: 10, 2: 10, 3: 10, 4: 4, 5: 10, 6: 11, 7: 7, 8: 11, 9: 9, 10: 10, 11: 11},
-                coarse_sub_cat_name=DatasetType.PUBLAYNET,
+                coarse_sub_cat_name=DatasetKind.PUBLAYNET,
             ),
         )
 
@@ -204,14 +204,14 @@ class DocLayNetBuilder(DataFlowBaseBuilder):
 
 
 _NAME_SEQ = "doclaynet-seq"
-_TYPE_SEQ = DatasetType.SEQUENCE_CLASSIFICATION
+_TYPE_SEQ = DatasetKind.SEQUENCE_CLASSIFICATION
 _INIT_CATEGORIES_SEQ = [
-    DocumentType.FINANCIAL_REPORT,
-    DocumentType.SCIENTIFIC_PUBLICATION,
-    DocumentType.LAWS_AND_REGULATIONS,
-    DocumentType.GOVERNMENT_TENDERS,
-    DocumentType.MANUALS,
-    DocumentType.PATENTS,
+    DocumentLabel.FINANCIAL_REPORT,
+    DocumentLabel.SCIENTIFIC_PUBLICATION,
+    DocumentLabel.LAWS_AND_REGULATIONS,
+    DocumentLabel.GOVERNMENT_TENDERS,
+    DocumentLabel.MANUALS,
+    DocumentLabel.PATENTS,
 ]
 
 
@@ -269,19 +269,19 @@ class DocLayNetSeqBuilder(DataFlowBaseBuilder):
         def _map_to_image(dp: CocoDatapointDict, load_img: bool) -> Image:
             image = Image(location=dp["file_name"].as_posix(), file_name=os.path.split(dp["file_name"])[1])
             image.image = load_image_from_file(image.location)
-            summary = CategoryAnnotation(category_name=SummaryType.SUMMARY)
+            summary = CategoryAnnotation(category_name=SummaryKey.SUMMARY)
             label_to_category_name = {
-                "financial_reports": DocumentType.FINANCIAL_REPORT,
-                "scientific_articles": DocumentType.SCIENTIFIC_PUBLICATION,
-                "laws_and_regulations": DocumentType.LAWS_AND_REGULATIONS,
-                "government_tenders": DocumentType.GOVERNMENT_TENDERS,
-                "manuals": DocumentType.MANUALS,
-                "patents": DocumentType.PATENTS,
+                "financial_reports": DocumentLabel.FINANCIAL_REPORT,
+                "scientific_articles": DocumentLabel.SCIENTIFIC_PUBLICATION,
+                "laws_and_regulations": DocumentLabel.LAWS_AND_REGULATIONS,
+                "government_tenders": DocumentLabel.GOVERNMENT_TENDERS,
+                "manuals": DocumentLabel.MANUALS,
+                "patents": DocumentLabel.PATENTS,
             }
             categories_dict = self.categories.get_categories(init=True, name_as_key=True)
             category_name = label_to_category_name[dp["doc_category"]]
             summary.dump_sub_category(
-                PageType.DOCUMENT_TYPE,
+                PageKey.DOCUMENT_TYPE,
                 CategoryAnnotation(category_name=category_name, category_id=categories_dict[category_name]),
             )
             image.summary = summary
@@ -295,13 +295,13 @@ class DocLayNetSeqBuilder(DataFlowBaseBuilder):
         if self.categories.is_filtered():
             df = MapData(
                 df,
-                filter_summary({PageType.DOCUMENT_TYPE: self.categories.get_categories(as_dict=False, filtered=True)}),
+                filter_summary({PageKey.DOCUMENT_TYPE: self.categories.get_categories(as_dict=False, filtered=True)}),
             )
 
             @curry
             def _re_map_cat_ids(dp: Image, filtered_categories_name_as_key: Mapping[TypeOrStr, int]) -> Image:
-                if PageType.DOCUMENT_TYPE in dp.summary.sub_categories:
-                    summary_cat = dp.summary.get_sub_category(PageType.DOCUMENT_TYPE)
+                if PageKey.DOCUMENT_TYPE in dp.summary.sub_categories:
+                    summary_cat = dp.summary.get_sub_category(PageKey.DOCUMENT_TYPE)
                     summary_cat.category_id = filtered_categories_name_as_key[summary_cat.category_name]
                 return dp
 

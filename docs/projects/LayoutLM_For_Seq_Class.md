@@ -126,43 +126,44 @@ dd.dataflow_to_json(df, path_to_save_samples,
 Having generated a dataset with features and labels at `/path/to/rvlcdip` we now copy the folder into the 
 **deep**doctection cache and define a custom dataset with a custom dataflow for sequence classification.
 
-
 ```python
 class RvlBuilder(dd.DataFlowBaseBuilder):
 
-    def build(self, **kwargs) -> dd.DataFlow:
-        load_image = kwargs.get("load_image", False)
+  def build(self, **kwargs) -> dd.DataFlow:
+    load_image = kwargs.get("load_image", False)
 
-        ann_files_dir = self.get_workdir()
-        image_dir = self.get_workdir() / "image"
+    ann_files_dir = self.get_workdir()
+    image_dir = self.get_workdir() / "image"
 
-        df = dd.SerializerFiles.load(ann_files_dir,".json")   # get a stream of .json files
-        df = dd.MapData(df, dd.load_json)   # load .json file
-        categories = self.categories.get_categories(name_as_key=True)
+    df = dd.SerializerFiles.load(ann_files_dir, ".json")  # get a stream of .json files
+    df = dd.MapData(df, dd.load_json)  # load .json file
+    categories = self.categories.get_categories(name_as_key=True)
 
-        @dd.curry
-        def map_to_img(dp, cats):
-            dp = dd.Image.from_dict(**dp)
-            dp.file_name= dp.file_name.replace(".tif",".png")
-            dp.location = image_dir / dp.file_name
-            if not os.path.isfile(dp.location): # (1) 
-                return None
-            if not len(dp.annotations): # (2) 
-                return None
-            sub_cat = dp.summary.get_sub_category(dd.PageType.DOCUMENT_TYPE)
-            sub_cat.category_id = cats[sub_cat.category_name]
-            if load_image:
-                dp.image = dd.load_image_from_file(dp.location)
-            return dp
-        df = dd.MapData(df, map_to_img(categories))
+    @dd.curry
+    def map_to_img(dp, cats):
+      dp = dd.Image.from_dict(**dp)
+      dp.file_name = dp.file_name.replace(".tif", ".png")
+      dp.location = image_dir / dp.file_name
+      if not os.path.isfile(dp.location):  # (1) 
+        return None
+      if not len(dp.annotations):  # (2) 
+        return None
+      sub_cat = dp.summary.get_sub_category(dd.PageKey.DOCUMENT_TYPE)
+      sub_cat.category_id = cats[sub_cat.category_name]
+      if load_image:
+        dp.image = dd.load_image_from_file(dp.location)
+      return dp
 
-        return df
-    
-rvlcdip = dd.CustomDataset(name = "rvl",
-                 dataset_type=dd.DatasetType.SEQUENCE_CLASSIFICATION,
-                 location="rvl",
-                 init_categories=[dd.DocumentType.FORM, dd.DocumentType.INVOICE,dd.DocumentType.BUDGET],
-                 dataflow_builder=RvlBuilder)
+    df = dd.MapData(df, map_to_img(categories))
+
+    return df
+
+
+rvlcdip = dd.CustomDataset(name="rvl",
+                           dataset_type=dd.DatasetKind.SEQUENCE_CLASSIFICATION,
+                           location="rvl",
+                           init_categories=[dd.DocumentLabel.FORM, dd.DocumentLabel.INVOICE, dd.DocumentLabel.BUDGET],
+                           dataflow_builder=RvlBuilder)
 ```
 
 1. When creating the dataset some images could not be generated and we have to skip these

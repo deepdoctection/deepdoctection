@@ -51,9 +51,9 @@ We set
 
 ```python
 my_custom_dataset = CustomDataset(name="some name",
-								  dataset_type=dd.DatasetType.object_detection,
-								  location = "custom_dataset",
-								  ...)
+                                  dataset_type=dd.DatasetKind.object_detection,
+                                  location="custom_dataset",
+                                  ...)
 my_custom_dataset.dataflow.get_workdir()
 ```
 

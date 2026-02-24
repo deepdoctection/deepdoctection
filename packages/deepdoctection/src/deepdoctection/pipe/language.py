@@ -23,7 +23,7 @@ from typing import Optional, Sequence
 from dd_core.datapoint.image import Image, MetaAnnotation
 from dd_core.datapoint.view import IMAGE_DEFAULTS, Page
 from dd_core.utils.error import ImageError
-from dd_core.utils.object_types import PageType, TypeOrStr, get_type
+from dd_core.utils.object_types import PageKey, TypeOrStr, get_type
 
 from ..extern.base import LanguageDetector, ObjectDetector
 from .base import PipelineComponent
@@ -110,7 +110,7 @@ class LanguageDetectionService(PipelineComponent):
             text = " ".join((result.text for result in detect_result_list if result.text is not None))
         predict_result = self.predictor.predict(text)
         self.dp_manager.set_summary_annotation(
-            PageType.LANGUAGE, PageType.LANGUAGE, 1, predict_result.class_name, predict_result.score
+            PageKey.LANGUAGE, PageKey.LANGUAGE, 1, predict_result.class_name, predict_result.score
         )
 
     def clone(self) -> PipelineComponent:
@@ -125,7 +125,7 @@ class LanguageDetectionService(PipelineComponent):
         )
 
     def get_meta_annotation(self) -> MetaAnnotation:
-        return MetaAnnotation(image_annotations=(), sub_categories={}, relationships={}, summaries=(PageType.LANGUAGE,))
+        return MetaAnnotation(image_annotations=(), sub_categories={}, relationships={}, summaries=(PageKey.LANGUAGE,))
 
     @staticmethod
     def _get_name(predictor_name: str) -> str:

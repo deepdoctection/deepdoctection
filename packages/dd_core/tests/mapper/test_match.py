@@ -26,7 +26,7 @@ import pytest
 
 from dd_core.mapper.match import match_anns_by_distance, match_anns_by_intersection
 from dd_core.utils.file_utils import scipy_available
-from dd_core.utils.object_types import LayoutType
+from dd_core.utils.object_types import LayoutLabel
 
 
 def test_ioa_threshold_monotonicity(annotations) -> None:  # type: ignore
@@ -46,8 +46,8 @@ def test_iou_table_caption_intersection(annotations) -> None:  # type: ignore
     _, parent_idx, child_anns, parent_anns = match_anns_by_intersection(
         dp, matching_rule="ioa", parent_ann_category_names="table", child_ann_category_names="caption", threshold=0.8
     )
-    assert child_anns[0].annotation_id == "89a1de97-ac04-30c4-9c07-5b88c7a0485c"
-    assert parent_anns[parent_idx[0]].annotation_id == "773eb5ea-1757-3f18-88f3-fdffebe771cc"
+    assert child_anns[0].annotation_id == "8b9c2e22-6204-3e00-879e-9ca79b079fb4"
+    assert parent_anns[parent_idx[0]].annotation_id == "a1e448cd-05c5-31ea-b3a4-579d207184d9"
 
 
 def test_ioa_max_parent_only_uniqueness(annotations) -> None:  # type: ignore
@@ -78,10 +78,10 @@ def test_distance_assigned_child_is_closest(annotations) -> None:  # type: ignor
     For each returned (parent, child) pair the child must be the nearest among all children.
     """
     dp = annotations(use_layout=True, use_captions=True)
-    output = match_anns_by_distance(dp, LayoutType.TABLE, LayoutType.CAPTION)
+    output = match_anns_by_distance(dp, LayoutLabel.TABLE, LayoutLabel.CAPTION)
 
-    table_anns = dp.get_annotation(category_names=LayoutType.TABLE)
-    caption_anns = dp.get_annotation(category_names=LayoutType.CAPTION)
+    table_anns = dp.get_annotation(category_names=LayoutLabel.TABLE)
+    caption_anns = dp.get_annotation(category_names=LayoutLabel.CAPTION)
     output_ids = {(anns[0].annotation_id, anns[1].annotation_id) for anns in output}
     expected_output_ids = {
         (table_anns[0].annotation_id, caption_anns[0].annotation_id),

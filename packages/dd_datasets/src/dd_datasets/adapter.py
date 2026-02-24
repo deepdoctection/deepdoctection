@@ -28,7 +28,7 @@ from dd_core.dataflow import CustomDataFromList, MapData, RepeatedData
 from dd_core.datapoint.image import Image
 from dd_core.mapper import LabelSummarizer
 from dd_core.utils.logger import LoggingRecord, log_once, logger
-from dd_core.utils.object_types import DatasetType, LayoutType, ObjectTypes, PageType, WordType
+from dd_core.utils.object_types import DatasetKind, LayoutLabel, ObjectTypes, PageKey, WordKey
 from dd_core.utils.tqdm import get_tqdm
 from dd_core.utils.types import DP, JsonDict
 
@@ -86,20 +86,22 @@ class DatasetAdapter(IterableDataset):
             logger.info(LoggingRecord("Yielding dataflow into memory and create torch dataset"))
             categories: Mapping[int, ObjectTypes] = {}
             _data_statistics = True
-            if self.dataset.dataset_info.type in (DatasetType.OBJECT_DETECTION, DatasetType.SEQUENCE_CLASSIFICATION):
+            if self.dataset.dataset_info.type in (DatasetKind.OBJECT_DETECTION, DatasetKind.SEQUENCE_CLASSIFICATION):
                 categories = self.dataset.dataflow.categories.get_categories(filtered=True)
-            elif self.dataset.dataset_info.type in (DatasetType.TOKEN_CLASSIFICATION,):
+            elif self.dataset.dataset_info.type in (DatasetKind.TOKEN_CLASSIFICATION,):
                 if use_token_tag:
                     categories = self.dataset.dataflow.categories.get_sub_categories(
-                        categories=LayoutType.WORD,
-                        sub_categories={LayoutType.WORD: [WordType.TOKEN_TAG]},
+                        categories=LayoutLabel.WORD,
+                        sub_categories={LayoutLabel.WORD: [WordKey.TOKEN_TAG]},
                         keys=False,
                         values_as_dict=True,
-                    )[LayoutType.WORD][WordType.TOKEN_TAG]
+                    )[LayoutLabel.WORD][WordKey.TOKEN_TAG]
                 else:
                     categories = self.dataset.dataflow.categories.get_sub_categories(
-                        categories=LayoutType.WORD, sub_categories={LayoutType.WORD: [WordType.TOKEN_CLASS]}, keys=False
-                    )[LayoutType.WORD][WordType.TOKEN_CLASS]
+                        categories=LayoutLabel.WORD,
+                        sub_categories={LayoutLabel.WORD: [WordKey.TOKEN_CLASS]},
+                        keys=False,
+                    )[LayoutLabel.WORD][WordKey.TOKEN_CLASS]
             else:
                 logger.info(
                     LoggingRecord(f"dataset is of type {self.dataset.dataset_info.type}. Cannot generate statistics.")
@@ -129,19 +131,19 @@ class DatasetAdapter(IterableDataset):
                             "images when needed and reduce memory costs!!!",
                             "warn",
                         )
-                    if self.dataset.dataset_info.type == DatasetType.OBJECT_DETECTION:
+                    if self.dataset.dataset_info.type == DatasetKind.OBJECT_DETECTION:
                         anns = dp.get_annotation()
                         cat_ids = [ann.category_id for ann in anns]
 
-                    elif self.dataset.dataset_info.type == DatasetType.SEQUENCE_CLASSIFICATION:
-                        cat_ids = dp.summary.get_sub_category(PageType.DOCUMENT_TYPE).category_id
+                    elif self.dataset.dataset_info.type == DatasetKind.SEQUENCE_CLASSIFICATION:
+                        cat_ids = dp.summary.get_sub_category(PageKey.DOCUMENT_TYPE).category_id
 
-                    elif self.dataset.dataset_info.type == DatasetType.TOKEN_CLASSIFICATION:
-                        anns = dp.get_annotation(category_names=LayoutType.WORD)
+                    elif self.dataset.dataset_info.type == DatasetKind.TOKEN_CLASSIFICATION:
+                        anns = dp.get_annotation(category_names=LayoutLabel.WORD)
                         if use_token_tag:
-                            cat_ids = [ann.get_sub_category(WordType.TOKEN_TAG).category_id for ann in anns]
+                            cat_ids = [ann.get_sub_category(WordKey.TOKEN_TAG).category_id for ann in anns]
                         else:
-                            cat_ids = [ann.get_sub_category(WordType.TOKEN_CLASS).category_id for ann in anns]
+                            cat_ids = [ann.get_sub_category(WordKey.TOKEN_CLASS).category_id for ann in anns]
 
                     if _data_statistics:
                         summarizer.dump(cat_ids)

@@ -24,7 +24,7 @@ from dataclasses import dataclass, field
 from itertools import chain
 from typing import Any, Literal, Mapping, Optional, Sequence, Union, no_type_check, overload
 
-from dd_core.utils.object_types import DatasetType, ObjectTypes, TypeOrStr, get_type
+from dd_core.utils.object_types import DatasetKind, ObjectTypes, TypeOrStr, get_type
 from dd_core.utils.utils import call_only_once
 
 __all__ = ["DatasetInfo", "DatasetCategories", "get_merged_categories"]
@@ -89,7 +89,7 @@ class DatasetInfo:
     license: str = field(default="")
     url: Union[str, Sequence[str]] = field(default="")
     splits: Mapping[str, str] = field(default_factory=dict)
-    type: DatasetType = field(default=DatasetType.DEFAULT)
+    type: DatasetKind = field(default=DatasetKind.DEFAULT)
 
     def get_split(self, key: str) -> str:
         """

@@ -19,12 +19,12 @@
 import pytest
 
 from dd_core.utils.object_types import (
-    BioTag,
-    CellType,
-    LayoutType,
-    TokenClasses,
-    TokenClassWithTag,
-    WordType,
+    BioTagLabel,
+    CellLabel,
+    LayoutLabel,
+    TokenClassLabel,
+    TokenClassWithTagLabel,
+    WordKey,
 )
 from dd_datasets.info import DatasetCategories, get_merged_categories
 from dd_datasets.instances import pubtabnet as pub_mod
@@ -68,104 +68,104 @@ def test_get_categories_default_equals_init_before_changes(pubcat: DatasetCatego
 
 
 def test_filter_categories_keeps_subset_and_order_pub(pubcat: DatasetCategories) -> None:
-    pubcat.filter_categories([LayoutType.WORD, LayoutType.TABLE])
+    pubcat.filter_categories([LayoutLabel.WORD, LayoutLabel.TABLE])
     filtered = pubcat.get_categories(as_dict=False, filtered=True)
-    assert filtered == [LayoutType.TABLE, LayoutType.WORD]
+    assert filtered == [LayoutLabel.TABLE, LayoutLabel.WORD]
 
 
 def test_is_filtered_flag_pub(pubcat: DatasetCategories) -> None:
     assert pubcat.is_filtered() is False
-    pubcat.filter_categories(LayoutType.WORD)
+    pubcat.filter_categories(LayoutLabel.WORD)
     assert pubcat.is_filtered() is True
 
 
 def test_filter_only_once_raises(pubcat: DatasetCategories) -> None:
-    pubcat.filter_categories([LayoutType.WORD])
+    pubcat.filter_categories([LayoutLabel.WORD])
     with pytest.raises(Exception):
-        pubcat.filter_categories([LayoutType.TABLE])
+        pubcat.filter_categories([LayoutLabel.TABLE])
 
 
 def test_set_cat_to_sub_cat_replace_cell_pub(pubcat: DatasetCategories) -> None:
-    pubcat.set_cat_to_sub_cat({LayoutType.CELL: CellType.COLUMN_HEADER})
+    pubcat.set_cat_to_sub_cat({LayoutLabel.CELL: CellLabel.COLUMN_HEADER})
     cats = pubcat.get_categories(as_dict=False)
-    assert LayoutType.CELL not in cats
-    assert CellType.COLUMN_HEADER in cats and CellType.BODY in cats
+    assert LayoutLabel.CELL not in cats
+    assert CellLabel.COLUMN_HEADER in cats and CellLabel.BODY in cats
 
 
 def test_is_cat_to_sub_cat_flag_pub(pubcat: DatasetCategories) -> None:
     assert pubcat.is_cat_to_sub_cat() is False
-    pubcat.set_cat_to_sub_cat({LayoutType.CELL: CellType.COLUMN_HEADER})
+    pubcat.set_cat_to_sub_cat({LayoutLabel.CELL: CellLabel.COLUMN_HEADER})
     assert pubcat.is_cat_to_sub_cat() is True
 
 
 def test_set_cat_to_sub_cat_only_once_raises(pubcat: DatasetCategories) -> None:
-    pubcat.set_cat_to_sub_cat({LayoutType.CELL: CellType.COLUMN_HEADER})
+    pubcat.set_cat_to_sub_cat({LayoutLabel.CELL: CellLabel.COLUMN_HEADER})
     with pytest.raises(Exception):
-        pubcat.set_cat_to_sub_cat({LayoutType.WORD: WordType.CHARACTERS})
+        pubcat.set_cat_to_sub_cat({LayoutLabel.WORD: WordKey.CHARACTERS})
 
 
 def test_pub_word_sub_keys(pubcat: DatasetCategories) -> None:
-    sub = pubcat.get_sub_categories(categories=LayoutType.WORD, keys=True)
-    assert sub[LayoutType.WORD] == [WordType.CHARACTERS]
+    sub = pubcat.get_sub_categories(categories=LayoutLabel.WORD, keys=True)
+    assert sub[LayoutLabel.WORD] == [WordKey.CHARACTERS]
 
 
 def test_xfund_sub_keys_word_has_expected(xfundcat: DatasetCategories) -> None:
-    sub = xfundcat.get_sub_categories(categories=LayoutType.WORD, keys=True)
-    assert set(sub[LayoutType.WORD]) == {WordType.TOKEN_CLASS, WordType.TAG, WordType.TOKEN_TAG}
+    sub = xfundcat.get_sub_categories(categories=LayoutLabel.WORD, keys=True)
+    assert set(sub[LayoutLabel.WORD]) == {WordKey.TOKEN_CLASS, WordKey.TAG, WordKey.TOKEN_TAG}
 
 
 def test_xfund_sub_values_token_class_indices_start_at_1(xfundcat: DatasetCategories) -> None:
     res = xfundcat.get_sub_categories(
-        categories=LayoutType.WORD,
-        sub_categories={LayoutType.WORD: [WordType.TOKEN_CLASS]},
+        categories=LayoutLabel.WORD,
+        sub_categories={LayoutLabel.WORD: [WordKey.TOKEN_CLASS]},
         keys=False,
         values_as_dict=True,
         name_as_key=False,
     )
-    idx_map = res[LayoutType.WORD][WordType.TOKEN_CLASS]
+    idx_map = res[LayoutLabel.WORD][WordKey.TOKEN_CLASS]
     assert set(idx_map.keys()) == {1, 2, 3, 4}
     assert set(idx_map.values()) == {
-        TokenClasses.OTHER,
-        TokenClasses.QUESTION,
-        TokenClasses.ANSWER,
-        TokenClasses.HEADER,
+        TokenClassLabel.OTHER,
+        TokenClassLabel.QUESTION,
+        TokenClassLabel.ANSWER,
+        TokenClassLabel.HEADER,
     }
 
 
 def test_xfund_sub_values_name_as_key_true(xfundcat: DatasetCategories) -> None:
     res = xfundcat.get_sub_categories(
-        categories=LayoutType.WORD,
-        sub_categories={LayoutType.WORD: [WordType.TAG]},
+        categories=LayoutLabel.WORD,
+        sub_categories={LayoutLabel.WORD: [WordKey.TAG]},
         keys=False,
         values_as_dict=True,
         name_as_key=True,
     )
-    tag_map = res[LayoutType.WORD][WordType.TAG]
-    assert isinstance(tag_map[BioTag.OUTSIDE], int)
+    tag_map = res[LayoutLabel.WORD][WordKey.TAG]
+    assert isinstance(tag_map[BioTagLabel.OUTSIDE], int)
 
 
 def test_xfund_replace_word_with_token_tag_then_no_further_subcats(xfundcat: DatasetCategories) -> None:
-    xfundcat.set_cat_to_sub_cat({LayoutType.WORD: WordType.TOKEN_TAG})
+    xfundcat.set_cat_to_sub_cat({LayoutLabel.WORD: WordKey.TOKEN_TAG})
     cats = xfundcat.get_categories(as_dict=False)
-    assert TokenClassWithTag.B_ANSWER in cats
-    empty = xfundcat.get_sub_categories(categories=TokenClassWithTag.B_ANSWER, keys=True)
-    assert empty == {TokenClassWithTag.B_ANSWER: []}
+    assert TokenClassWithTagLabel.B_ANSWER in cats
+    empty = xfundcat.get_sub_categories(categories=TokenClassWithTagLabel.B_ANSWER, keys=True)
+    assert empty == {TokenClassWithTagLabel.B_ANSWER: []}
 
 
 def test_get_categories_as_dict_after_replacement_indices_sequential(pubcat: DatasetCategories) -> None:
-    pubcat.set_cat_to_sub_cat({LayoutType.CELL: CellType.COLUMN_HEADER})
+    pubcat.set_cat_to_sub_cat({LayoutLabel.CELL: CellLabel.COLUMN_HEADER})
     m = pubcat.get_categories(name_as_key=True)
     assert set(m.values()) == set(range(1, len(m) + 1))
 
 
 def test_filtered_dict_idx_as_key_is_contiguous(pubcat: DatasetCategories) -> None:
-    pubcat.filter_categories([LayoutType.TABLE, LayoutType.WORD])
+    pubcat.filter_categories([LayoutLabel.TABLE, LayoutLabel.WORD])
     m = pubcat.get_categories(name_as_key=False, filtered=True)
     assert set(m.keys()) == set(range(1, 2 + 1))
 
 
 def test_filtered_and_unfiltered_lengths(pubcat: DatasetCategories) -> None:
-    pubcat.filter_categories([LayoutType.TABLE])
+    pubcat.filter_categories([LayoutLabel.TABLE])
     all_len = len(pubcat.get_categories(as_dict=False, filtered=False))
     filt_len = len(pubcat.get_categories(as_dict=False, filtered=True))
     assert filt_len == 1 and filt_len < all_len
@@ -176,29 +176,29 @@ def test_get_merged_categories_union_and_sub_intersection(
 ) -> None:
     merged = get_merged_categories(pubcat, xfundcat)
     cats = merged.get_categories(as_dict=False)
-    assert LayoutType.WORD in cats and LayoutType.TABLE in cats
-    sub = merged.get_sub_categories(categories=LayoutType.WORD, keys=True)
-    assert sub.get(LayoutType.WORD, []) in ([], None)
+    assert LayoutLabel.WORD in cats and LayoutLabel.TABLE in cats
+    sub = merged.get_sub_categories(categories=LayoutLabel.WORD, keys=True)
+    assert sub.get(LayoutLabel.WORD, []) in ([], None)
 
 
 def test_merged_categories_locked_against_updates(pubcat: DatasetCategories, xfundcat: DatasetCategories) -> None:
     merged = get_merged_categories(pubcat, xfundcat)
     with pytest.raises(RuntimeWarning):
-        merged.filter_categories([LayoutType.WORD])
+        merged.filter_categories([LayoutLabel.WORD])
     with pytest.raises(RuntimeWarning):
-        merged.set_cat_to_sub_cat({LayoutType.CELL: CellType.COLUMN_HEADER})
+        merged.set_cat_to_sub_cat({LayoutLabel.CELL: CellLabel.COLUMN_HEADER})
 
 
 def test_xfund_multiple_categories_keys_list(xfundcat: DatasetCategories) -> None:
-    sub = xfundcat.get_sub_categories(categories=[LayoutType.WORD, LayoutType.TEXT], keys=True)
-    assert LayoutType.WORD in sub and LayoutType.TEXT in sub
+    sub = xfundcat.get_sub_categories(categories=[LayoutLabel.WORD, LayoutLabel.TEXT], keys=True)
+    assert LayoutLabel.WORD in sub and LayoutLabel.TEXT in sub
 
 
 def test_values_as_list_not_dict_pub(pubcat: DatasetCategories) -> None:
     res = pubcat.get_sub_categories(
-        categories=LayoutType.WORD,
-        sub_categories={LayoutType.WORD: [WordType.CHARACTERS]},
+        categories=LayoutLabel.WORD,
+        sub_categories={LayoutLabel.WORD: [WordKey.CHARACTERS]},
         keys=False,
         values_as_dict=False,
     )
-    assert res[LayoutType.WORD][WordType.CHARACTERS] == [WordType.CHARACTERS]
+    assert res[LayoutLabel.WORD][WordKey.CHARACTERS] == [WordKey.CHARACTERS]

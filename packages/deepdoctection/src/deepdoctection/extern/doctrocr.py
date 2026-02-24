@@ -35,7 +35,7 @@ from dd_core.utils.file_utils import (
     get_pytorch_requirement,
 )
 from dd_core.utils.fs import load_json
-from dd_core.utils.object_types import LayoutType, ObjectTypes, PageType, TypeOrStr
+from dd_core.utils.object_types import LayoutLabel, ObjectTypes, PageKey, TypeOrStr
 from dd_core.utils.transform import RotationTransform
 from dd_core.utils.types import PathLikeOrStr, PixelValues, Requirement
 from dd_core.utils.viz import viz_handler
@@ -84,7 +84,7 @@ def doctr_predict_text_lines(np_img: PixelValues, predictor: DetectionPredictor)
 
     detection_results = [
         DetectionResult(
-            box=box[:4].tolist(), class_id=1, score=box[4], absolute_coords=False, class_name=LayoutType.WORD
+            box=box[:4].tolist(), class_id=1, score=box[4], absolute_coords=False, class_name=LayoutLabel.WORD
         )
         for box in raw_output[0]["words"]
     ]
@@ -507,4 +507,4 @@ class DocTrRotationTransformer(ImageTransformer):
         return self.__class__(self.number_contours, self.ratio_threshold_for_lines)
 
     def get_category_names(self) -> tuple[ObjectTypes, ...]:
-        return (PageType.ANGLE,)
+        return (PageKey.ANGLE,)

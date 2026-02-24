@@ -26,7 +26,7 @@ import pytest
 
 import shared_test_utils as stu
 from dd_core.datapoint.image import Image
-from dd_core.utils.object_types import LayoutType, WordType
+from dd_core.utils.object_types import LayoutLabel, WordKey
 from dd_datasets import Funsd
 
 
@@ -49,11 +49,11 @@ def test_dataset_funsd_returns_image_and_annotations(
     assert len(df_list) == 1
     dp = df_list[0]
 
-    word = dp.get_annotation(category_names=LayoutType.WORD)[0]
-    assert word.get_sub_category(WordType.TOKEN_CLASS) is not None
-    assert word.get_sub_category(WordType.CHARACTERS) is not None
-    assert word.get_sub_category(WordType.TAG) is not None
-    assert word.get_sub_category(WordType.TOKEN_TAG) is not None
+    word = dp.get_annotation(category_names=LayoutLabel.WORD)[0]
+    assert word.get_sub_category(WordKey.TOKEN_CLASS) is not None
+    assert word.get_sub_category(WordKey.CHARACTERS) is not None
+    assert word.get_sub_category(WordKey.TAG) is not None
+    assert word.get_sub_category(WordKey.TOKEN_TAG) is not None
 
-    text = dp.get_annotation(category_names=LayoutType.TEXT)[0]
-    assert text.get_sub_category(WordType.TOKEN_CLASS) is not None
+    text = dp.get_annotation(category_names=LayoutLabel.TEXT)[0]
+    assert text.get_sub_category(WordKey.TOKEN_CLASS) is not None

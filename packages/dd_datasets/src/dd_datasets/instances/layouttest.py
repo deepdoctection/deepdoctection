@@ -31,7 +31,7 @@ from typing import Mapping, Union
 from dd_core.dataflow import DataFlow, MapData
 from dd_core.dataflow.custom_serialize import SerializerJsonlines
 from dd_core.mapper.prodigystruct import prodigy_to_image
-from dd_core.utils.object_types import DatasetType, LayoutType
+from dd_core.utils.object_types import DatasetKind, LayoutLabel
 
 from ..base import _BuiltInDataset
 from ..dataflow_builder import DataFlowBaseBuilder
@@ -52,7 +52,7 @@ _LICENSE = (
 )
 
 _SPLITS: Mapping[str, str] = {"test": "test", "predict": "predict"}
-_TYPE = DatasetType.OBJECT_DETECTION
+_TYPE = DatasetKind.OBJECT_DETECTION
 _LOCATION = "testlayout"
 
 _ANNOTATION_FILES: Mapping[str, str] = {
@@ -60,7 +60,7 @@ _ANNOTATION_FILES: Mapping[str, str] = {
     "predict": "xrf_layout_test_predict.jsonl",
 }
 
-_INIT_CATEGORIES = [LayoutType.TEXT, LayoutType.TITLE, LayoutType.LIST, LayoutType.TABLE, LayoutType.FIGURE]
+_INIT_CATEGORIES = [LayoutLabel.TEXT, LayoutLabel.TITLE, LayoutLabel.LIST, LayoutLabel.TABLE, LayoutLabel.FIGURE]
 
 
 @dataset_registry.register("testlayout")

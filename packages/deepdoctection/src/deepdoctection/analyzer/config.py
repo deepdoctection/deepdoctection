@@ -423,7 +423,7 @@ The distance is calculated using the center points of the layout elements.
 
 from dd_core.datapoint.view import IMAGE_DEFAULTS
 from dd_core.utils.metacfg import AttrDict
-from dd_core.utils.object_types import CellType, LayoutType
+from dd_core.utils.object_types import CellKey, CellLabel, LayoutLabel
 
 cfg = AttrDict()
 
@@ -551,33 +551,33 @@ cfg.LAYOUT.PAD.LEFT = 0
 # LAYOUT_NMS_PAIRS.THRESHOLDS = [0.001, 0.01]
 # LAYOUT_NMS_PAIRS.PRIORITY = ['table', None]
 cfg.LAYOUT_NMS_PAIRS.COMBINATIONS = [
-    [LayoutType.TABLE, LayoutType.TITLE],
-    [LayoutType.TABLE, LayoutType.TEXT],
-    [LayoutType.TABLE, LayoutType.KEY_VALUE_AREA],
-    [LayoutType.TABLE, LayoutType.LIST_ITEM],
-    [LayoutType.TABLE, LayoutType.LIST],
-    [LayoutType.TABLE, LayoutType.FIGURE],
-    [LayoutType.TITLE, LayoutType.TEXT],
-    [LayoutType.TEXT, LayoutType.KEY_VALUE_AREA],
-    [LayoutType.TEXT, LayoutType.LIST_ITEM],
-    [LayoutType.TEXT, LayoutType.CAPTION],
-    [LayoutType.KEY_VALUE_AREA, LayoutType.LIST_ITEM],
-    [LayoutType.FIGURE, LayoutType.CAPTION],
+    [LayoutLabel.TABLE, LayoutLabel.TITLE],
+    [LayoutLabel.TABLE, LayoutLabel.TEXT],
+    [LayoutLabel.TABLE, LayoutLabel.KEY_VALUE_AREA],
+    [LayoutLabel.TABLE, LayoutLabel.LIST_ITEM],
+    [LayoutLabel.TABLE, LayoutLabel.LIST],
+    [LayoutLabel.TABLE, LayoutLabel.FIGURE],
+    [LayoutLabel.TITLE, LayoutLabel.TEXT],
+    [LayoutLabel.TEXT, LayoutLabel.KEY_VALUE_AREA],
+    [LayoutLabel.TEXT, LayoutLabel.LIST_ITEM],
+    [LayoutLabel.TEXT, LayoutLabel.CAPTION],
+    [LayoutLabel.KEY_VALUE_AREA, LayoutLabel.LIST_ITEM],
+    [LayoutLabel.FIGURE, LayoutLabel.CAPTION],
 ]
 cfg.LAYOUT_NMS_PAIRS.THRESHOLDS = [0.001, 0.01, 0.01, 0.001, 0.01, 0.01, 0.05, 0.01, 0.01, 0.01, 0.01, 0.001]
 cfg.LAYOUT_NMS_PAIRS.PRIORITY = [
-    LayoutType.TABLE,
-    LayoutType.TABLE,
-    LayoutType.TABLE,
-    LayoutType.TABLE,
-    LayoutType.TABLE,
-    LayoutType.TABLE,
-    LayoutType.TEXT,
-    LayoutType.TEXT,
+    LayoutLabel.TABLE,
+    LayoutLabel.TABLE,
+    LayoutLabel.TABLE,
+    LayoutLabel.TABLE,
+    LayoutLabel.TABLE,
+    LayoutLabel.TABLE,
+    LayoutLabel.TEXT,
+    LayoutLabel.TEXT,
     None,
-    LayoutType.CAPTION,
-    LayoutType.KEY_VALUE_AREA,
-    LayoutType.FIGURE,
+    LayoutLabel.CAPTION,
+    LayoutLabel.KEY_VALUE_AREA,
+    LayoutLabel.FIGURE,
 ]
 
 # Relevant when LIB = PT. Use either TorchScript weights via ITEM.WEIGHTS_TS
@@ -688,43 +688,43 @@ cfg.SEGMENTATION.STRETCH_RULE = "equal"
 
 # Specifies the layout category used to identify tables.
 # Used in both Deepdoctection and Table Transformer approaches.
-cfg.SEGMENTATION.TABLE_NAME = LayoutType.TABLE
+cfg.SEGMENTATION.TABLE_NAME = LayoutLabel.TABLE
 
 # Lists the layout or cell types used in the original Deepdoctection approach.
 # Used by TableSegmentationService for cell assignments.
-cfg.SEGMENTATION.CELL_NAMES = [CellType.COLUMN_HEADER, CellType.BODY, LayoutType.CELL]
+cfg.SEGMENTATION.CELL_NAMES = [CellLabel.COLUMN_HEADER, CellLabel.BODY, LayoutLabel.CELL]
 
 # Lists all cell types used by the Table Transformer approach (PubtablesSegmentationService).
 # LayoutType.CELL is synthetically generated and not predicted by the structure recognition model.
 cfg.SEGMENTATION.PUBTABLES_CELL_NAMES = [
-    LayoutType.CELL,
+    LayoutLabel.CELL,
 ]
 
 # Subset of PUBTABLES_CELL_NAMES that represent spanning/header cells.
 # These need to be matched with row or column elements.
 cfg.SEGMENTATION.PUBTABLES_SPANNING_CELL_NAMES = [
-    CellType.SPANNING,
+    CellLabel.SPANNING,
 ]
 
 # Lists the layout categories used to identify row and column elements.
 # Used by TableSegmentationService.
-cfg.SEGMENTATION.ITEM_NAMES = [LayoutType.ROW, LayoutType.COLUMN]
+cfg.SEGMENTATION.ITEM_NAMES = [LayoutLabel.ROW, LayoutLabel.COLUMN]
 
 # Equivalent to ITEM_NAMES but used in the Table Transformer approach.
-cfg.SEGMENTATION.PUBTABLES_ITEM_NAMES = [LayoutType.ROW, LayoutType.COLUMN]
+cfg.SEGMENTATION.PUBTABLES_ITEM_NAMES = [LayoutLabel.ROW, LayoutLabel.COLUMN]
 
 # Used in TableSegmentationService to specify sub-category annotations for row and column numbers.
-cfg.SEGMENTATION.SUB_ITEM_NAMES = [CellType.ROW_NUMBER, CellType.COLUMN_NUMBER]
+cfg.SEGMENTATION.SUB_ITEM_NAMES = [CellKey.ROW_NUMBER, CellKey.COLUMN_NUMBER]
 
 # Equivalent to SUB_ITEM_NAMES, but used with the Table Transformer approach.
-cfg.SEGMENTATION.PUBTABLES_SUB_ITEM_NAMES = [CellType.ROW_NUMBER, CellType.COLUMN_NUMBER]
+cfg.SEGMENTATION.PUBTABLES_SUB_ITEM_NAMES = [CellKey.ROW_NUMBER, CellKey.COLUMN_NUMBER]
 
 # Used in PubtablesSegmentationService.
 # Specifies which cells should be treated as header cells that need to be linked to row/column elements.
 cfg.SEGMENTATION.PUBTABLES_ITEM_HEADER_CELL_NAMES = [
-    CellType.COLUMN_HEADER,
-    CellType.ROW_HEADER,
-    CellType.PROJECTED_ROW_HEADER,
+    CellLabel.COLUMN_HEADER,
+    CellLabel.ROW_HEADER,
+    CellLabel.PROJECTED_ROW_HEADER,
 ]
 
 # Defines the threshold values for matching column/row header cells to their respective rows/columns
@@ -840,11 +840,11 @@ cfg.TEXT_ORDERING.PARAGRAPH_BREAK = 0.035
 
 # Specifies the parent layout categories in the link relationship.
 # These are the elements to which related components (e.g., captions) should be linked.
-cfg.LAYOUT_LINK.PARENTAL_CATEGORIES = [LayoutType.FIGURE, LayoutType.TABLE]
+cfg.LAYOUT_LINK.PARENTAL_CATEGORIES = [LayoutLabel.FIGURE, LayoutLabel.TABLE]
 
 # Specifies the child layout categories in the link relationship.
 # These are typically smaller or subordinate elements (e.g., captions).
-cfg.LAYOUT_LINK.CHILD_CATEGORIES = [LayoutType.CAPTION]
+cfg.LAYOUT_LINK.CHILD_CATEGORIES = [LayoutLabel.CAPTION]
 
 # Weights configuration for language detection model.
 cfg.LM_LANGUAGE_DETECT_CLASS.WEIGHTS = None

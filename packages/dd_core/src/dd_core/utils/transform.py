@@ -31,7 +31,7 @@ import numpy as np
 import numpy.typing as npt
 from numpy import float32
 
-from .object_types import ObjectTypes, PageType
+from .object_types import ImagePadKey, ObjectTypes, PageKey
 from .ptutils import apply_torch_image
 from .types import PixelValues
 from .viz import viz_handler
@@ -250,7 +250,7 @@ class ResizeTransform(BaseTransform):
 
     def get_category_names(self) -> tuple[ObjectTypes, ...]:
         """Get category names"""
-        return (PageType.SIZE,)
+        return (PageKey.SIZE,)
 
 
 class InferenceResize:
@@ -421,10 +421,10 @@ class PadTransform(BaseTransform):
     def get_category_names(self) -> tuple[ObjectTypes, ...]:
         """Get category names"""
         return (
-            PageType.PAD_TOP,
-            PageType.PAD_RIGHT,
-            PageType.PAD_LEFT,
-            PageType.PAD_BOTTOM,
+            ImagePadKey.PAD_TOP,
+            ImagePadKey.PAD_RIGHT,
+            ImagePadKey.PAD_LEFT,
+            ImagePadKey.PAD_BOTTOM,
         )
 
 
@@ -548,4 +548,4 @@ class RotationTransform(BaseTransform):
 
     def get_category_names(self) -> tuple[ObjectTypes, ...]:
         """Get category names"""
-        return (PageType.ANGLE,)
+        return (PageKey.ANGLE,)

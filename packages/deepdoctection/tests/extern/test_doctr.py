@@ -37,7 +37,7 @@ import numpy as np
 import pytest
 
 from dd_core.utils.file_utils import doctr_available, pytorch_available
-from dd_core.utils.object_types import LayoutType
+from dd_core.utils.object_types import LayoutLabel
 from deepdoctection.extern.base import DetectionResult
 from deepdoctection.extern.doctrocr import (
     DocTrRotationTransformer,
@@ -64,8 +64,8 @@ def test_doctr_textline_detector_predict_basic(monkeypatch: pytest.MonkeyPatch) 
     # Mock prediction helper
     def _fake_predict(np_img, predictor):  # type: ignore # pylint:disable=W0613
         return [
-            DetectionResult(box=[0, 0, 10, 10], class_id=1, score=0.9, class_name=LayoutType.WORD),
-            DetectionResult(box=[20, 20, 40, 40], class_id=1, score=0.8, class_name=LayoutType.WORD),
+            DetectionResult(box=[0, 0, 10, 10], class_id=1, score=0.9, class_name=LayoutLabel.WORD),
+            DetectionResult(box=[20, 20, 40, 40], class_id=1, score=0.8, class_name=LayoutLabel.WORD),
         ]
 
     monkeypatch.setattr(
@@ -74,7 +74,7 @@ def test_doctr_textline_detector_predict_basic(monkeypatch: pytest.MonkeyPatch) 
         raising=True,
     )
 
-    categories = {1: LayoutType.WORD}
+    categories = {1: LayoutLabel.WORD}
     det = DoctrTextlineDetector("db_resnet50", "dummy.pt", categories, "cpu")
 
     np_image = (np.random.rand(32, 32, 3) * 255).astype("uint8")

@@ -20,9 +20,10 @@ Module for funcs and constants that maintain general settings
 """
 from __future__ import annotations
 
+import itertools
 import threading
 from enum import Enum
-from typing import Any, Callable, Iterable, Optional, Type, Union
+from typing import Any, Callable, Iterable, Optional, Type, Union, Sequence
 
 import catalogue  # type: ignore
 
@@ -109,8 +110,19 @@ class DefaultType(ObjectTypes):
     DEFAULT_TYPE = "default_type"
 
 
-@object_types_registry.register("PageType")
-class PageType(ObjectTypes):
+@object_types_registry.register("DocumentFileType")
+class DocumentFileLabel(ObjectTypes):
+    """Supported document types."""
+
+    PDF = "pdf"
+    VAR = "various"
+    PNG = "png"
+    JPEG = "jpeg"
+    JPG = "jpg"
+    TIFF = "tiff"
+
+@object_types_registry.register("PageKey")
+class PageKey(ObjectTypes):
     """Type for document page properties"""
 
     DOCUMENT_TYPE = "document_type"
@@ -123,17 +135,40 @@ class PageType(ObjectTypes):
     PAD_RIGHT = "pad_right"
 
 
-@object_types_registry.register("SummaryType")
-class SummaryType(ObjectTypes):
+@object_types_registry.register("ImagePadKey")
+class ImagePadKey(ObjectTypes):
+    """Types for image padding values"""
+
+    TOP = "top"
+    BOTTOM = "bottom"
+    LEFT = "left"
+    RIGHT = "right"
+
+
+@object_types_registry.register("SummaryKey")
+class SummaryKey(ObjectTypes):
     """Summary type member"""
 
     SUMMARY = "summary"
     DOCUMENT_SUMMARY = "document_summary"
     DOCUMENT_MAPPING = "document_mapping"
+    KEY_VALUES = "key_values"
+    SPLIT_NEXT = "split_next"
 
 
-@object_types_registry.register("DocumentType")
-class DocumentType(ObjectTypes):
+@object_types_registry.register("RelationshipKey")
+class RelationshipKey(ObjectTypes):
+    """Relationship keys between annotations."""
+
+    CHILD = "child"
+    READING_ORDER = "reading_order"
+    LINK = "link"
+    LAYOUT_LINK = "layout_link"
+    SUCCESSOR = "successor"
+
+
+@object_types_registry.register("DocumentLabel")
+class DocumentLabel(ObjectTypes):
     """Document types"""
 
     LETTER = "letter"
@@ -159,8 +194,8 @@ class DocumentType(ObjectTypes):
     BANK_STATEMENT = "bank_statement"
 
 
-@object_types_registry.register("LayoutType")
-class LayoutType(ObjectTypes):
+@object_types_registry.register("LayoutLabel")
+class LayoutLabel(ObjectTypes):
     """Layout types"""
 
     TABLE = "table"
@@ -190,8 +225,8 @@ class LayoutType(ObjectTypes):
     MARK = "mark"
 
 
-@object_types_registry.register("TableType")
-class TableType(ObjectTypes):
+@object_types_registry.register("TableKey")
+class TableKey(ObjectTypes):
     """Types for table properties"""
 
     ITEM = "item"
@@ -202,23 +237,29 @@ class TableType(ObjectTypes):
     HTML = "html"
 
 
-@object_types_registry.register("CellType")
-class CellType(ObjectTypes):
-    """Types for cell properties"""
+@object_types_registry.register("CellLabel")
+class CellLabel(ObjectTypes):
+    """Cell semantic labels / roles."""
 
     BODY = "body"
-    ROW_NUMBER = "row_number"
-    ROW_SPAN = "row_span"
     ROW_HEADER = "row_header"
     PROJECTED_ROW_HEADER = "projected_row_header"
-    COLUMN_NUMBER = "column_number"
-    COLUMN_SPAN = "column_span"
     COLUMN_HEADER = "column_header"
     SPANNING = "spanning"
 
 
-@object_types_registry.register("WordType")
-class WordType(ObjectTypes):
+@object_types_registry.register("CellKey")
+class CellKey(ObjectTypes):
+    """Keys for cell properties."""
+
+    ROW_NUMBER = "row_number"
+    ROW_SPAN = "row_span"
+    COLUMN_NUMBER = "column_number"
+    COLUMN_SPAN = "column_span"
+
+
+@object_types_registry.register("WordKey")
+class WordKey(ObjectTypes):
     """Types for word properties"""
 
     CHARACTERS = "characters"
@@ -228,12 +269,18 @@ class WordType(ObjectTypes):
     TOKEN_TAG = "token_tag"
     TEXT_LINE = "text_line"
     CHARACTER_TYPE = "character_type"
+
+
+@object_types_registry.register("CharacterTypeLabel")
+class CharacterTypeLabel(ObjectTypes):
+    """Character type labels used under WordKey.CHARACTER_TYPE."""
+
     PRINTED = "printed"
     HANDWRITTEN = "handwritten"
 
 
-@object_types_registry.register("TokenClasses")
-class TokenClasses(ObjectTypes):
+@object_types_registry.register("TokenClassLabel")
+class TokenClassLabel(ObjectTypes):
     """Types for token classes"""
 
     HEADER = "header"
@@ -242,8 +289,8 @@ class TokenClasses(ObjectTypes):
     OTHER = "other"
 
 
-@object_types_registry.register("BioTag")
-class BioTag(ObjectTypes):
+@object_types_registry.register("BioTagLabel")
+class BioTagLabel(ObjectTypes):
     """Types for tags"""
 
     BEGIN = "B"
@@ -253,8 +300,8 @@ class BioTag(ObjectTypes):
     END = "E"
 
 
-@object_types_registry.register("TokenClassWithTag")
-class TokenClassWithTag(ObjectTypes):
+@object_types_registry.register("TokenClassWithTagLabel")
+class TokenClassWithTagLabel(ObjectTypes):
     """Types for token classes with tags, e.g. B-answer"""
 
     B_ANSWER = "B-answer"
@@ -271,19 +318,8 @@ class TokenClassWithTag(ObjectTypes):
     S_QUESTION = "S-question"
 
 
-@object_types_registry.register("Relationships")
-class Relationships(ObjectTypes):
-    """Types for describing relationships between types"""
-
-    CHILD = "child"
-    READING_ORDER = "reading_order"
-    LINK = "link"
-    LAYOUT_LINK = "layout_link"
-    SUCCESSOR = "successor"
-
-
-@object_types_registry.register("Languages")
-class Languages(ObjectTypes):
+@object_types_registry.register("LanguageCode")
+class LanguageCode(ObjectTypes):
     """Language types"""
 
     ENGLISH = "eng"
@@ -348,8 +384,8 @@ class Languages(ObjectTypes):
     NOT_DEFINED = "nn"
 
 
-@object_types_registry.register("DatasetType")
-class DatasetType(ObjectTypes):
+@object_types_registry.register("DatasetKind")
+class DatasetKind(ObjectTypes):
     """Dataset types"""
 
     OBJECT_DETECTION = "object_detection"
@@ -360,29 +396,29 @@ class DatasetType(ObjectTypes):
 
 
 _TOKEN_AND_TAG_TO_TOKEN_CLASS_WITH_TAG = {
-    (TokenClasses.HEADER, BioTag.BEGIN): TokenClassWithTag.B_HEADER,
-    (TokenClasses.HEADER, BioTag.INSIDE): TokenClassWithTag.I_HEADER,
-    (TokenClasses.HEADER, BioTag.END): TokenClassWithTag.E_HEADER,
-    (TokenClasses.HEADER, BioTag.SINGLE): TokenClassWithTag.S_HEADER,
-    (TokenClasses.ANSWER, BioTag.BEGIN): TokenClassWithTag.B_ANSWER,
-    (TokenClasses.ANSWER, BioTag.INSIDE): TokenClassWithTag.I_ANSWER,
-    (TokenClasses.ANSWER, BioTag.END): TokenClassWithTag.E_ANSWER,
-    (TokenClasses.ANSWER, BioTag.SINGLE): TokenClassWithTag.S_ANSWER,
-    (TokenClasses.QUESTION, BioTag.BEGIN): TokenClassWithTag.B_QUESTION,
-    (TokenClasses.QUESTION, BioTag.INSIDE): TokenClassWithTag.I_QUESTION,
-    (TokenClasses.QUESTION, BioTag.END): TokenClassWithTag.E_QUESTION,
-    (TokenClasses.QUESTION, BioTag.SINGLE): TokenClassWithTag.S_QUESTION,
-    (TokenClasses.OTHER, BioTag.OUTSIDE): BioTag.OUTSIDE,
-    (TokenClasses.HEADER, BioTag.OUTSIDE): BioTag.OUTSIDE,
-    (TokenClasses.ANSWER, BioTag.OUTSIDE): BioTag.OUTSIDE,
-    (TokenClasses.QUESTION, BioTag.OUTSIDE): BioTag.OUTSIDE,
+    (TokenClassLabel.HEADER, BioTagLabel.BEGIN): TokenClassWithTagLabel.B_HEADER,
+    (TokenClassLabel.HEADER, BioTagLabel.INSIDE): TokenClassWithTagLabel.I_HEADER,
+    (TokenClassLabel.HEADER, BioTagLabel.END): TokenClassWithTagLabel.E_HEADER,
+    (TokenClassLabel.HEADER, BioTagLabel.SINGLE): TokenClassWithTagLabel.S_HEADER,
+    (TokenClassLabel.ANSWER, BioTagLabel.BEGIN): TokenClassWithTagLabel.B_ANSWER,
+    (TokenClassLabel.ANSWER, BioTagLabel.INSIDE): TokenClassWithTagLabel.I_ANSWER,
+    (TokenClassLabel.ANSWER, BioTagLabel.END): TokenClassWithTagLabel.E_ANSWER,
+    (TokenClassLabel.ANSWER, BioTagLabel.SINGLE): TokenClassWithTagLabel.S_ANSWER,
+    (TokenClassLabel.QUESTION, BioTagLabel.BEGIN): TokenClassWithTagLabel.B_QUESTION,
+    (TokenClassLabel.QUESTION, BioTagLabel.INSIDE): TokenClassWithTagLabel.I_QUESTION,
+    (TokenClassLabel.QUESTION, BioTagLabel.END): TokenClassWithTagLabel.E_QUESTION,
+    (TokenClassLabel.QUESTION, BioTagLabel.SINGLE): TokenClassWithTagLabel.S_QUESTION,
+    (TokenClassLabel.OTHER, BioTagLabel.OUTSIDE): BioTagLabel.OUTSIDE,
+    (TokenClassLabel.HEADER, BioTagLabel.OUTSIDE): BioTagLabel.OUTSIDE,
+    (TokenClassLabel.ANSWER, BioTagLabel.OUTSIDE): BioTagLabel.OUTSIDE,
+    (TokenClassLabel.QUESTION, BioTagLabel.OUTSIDE): BioTagLabel.OUTSIDE,
 }
 
 
 def token_class_tag_to_token_class_with_tag(token: ObjectTypes, tag: ObjectTypes) -> ObjectTypes:
     """
-    Maps a `TokenClassWithTag` enum member from a token class and tag, e.g. `TokenClasses.header` and `BioTag.inside`
-    maps to `TokenClassWithTag.i_header`.
+    Maps a `TokenClassWithTagLabel` enum member from a token class and tag, e.g. `TokenClassLabel.HEADER` and `BioTag.INSIDE`
+    maps to `TTokenClassWithTagLabel.I_HEADER`.
 
     Args:
         token: TokenClasses member.
@@ -394,7 +430,7 @@ def token_class_tag_to_token_class_with_tag(token: ObjectTypes, tag: ObjectTypes
     Raises:
         TypeError: If token is not of type TokenClasses or tag is not of type BioTag.
     """
-    if isinstance(token, TokenClasses) and isinstance(tag, BioTag):
+    if isinstance(token, TokenClassLabel) and isinstance(tag, BioTagLabel):
         return _TOKEN_AND_TAG_TO_TOKEN_CLASS_WITH_TAG[(token, tag)]
     raise TypeError(
         f"Token must be of type TokenClasses, is of {type(token)} and tag " f"{type(tag)} must be of type BioTag"
@@ -414,6 +450,78 @@ def token_class_with_tag_to_token_class_and_tag(
         Tuple of `TokenClasses` member and `BioTag` member
     """
     return {val: key for key, val in _TOKEN_AND_TAG_TO_TOKEN_CLASS_WITH_TAG.items()}.get(token_class_with_tag)
+
+
+def register_custom_token_tag(custom_object_types: ObjectTypes, suffix: str = "llm_custom_token_tag") -> str:
+    """
+    Registers custom token tags for a given ObjectType with a specified suffix. The tags are created by combining
+    BIO tags (B, I, E) with the custom object types.
+
+    :param custom_object_types: An instance of ObjectTypes containing the custom object types to be registered.
+    :param suffix: A string suffix to be appended to the name of the registered object type. Default is
+     "llm_custom_token_tag".
+    :return: The name of the registered object type.
+
+    Example:
+
+    ```python
+    from deepdoctection.utils.settings import ObjectTypes
+
+    class CustomObjectTypesLabel(ObjectTypes):
+        TOKEN_A = "token_a"
+        TOKEN_B = "token_b"
+
+    custom_object_types = CustomObjectTypes()
+    register_custom_token_tag(custom_object_types)
+    # This will register tags like "B-TOKEN_A", "I-TOKEN_A", "E-TOKEN_A", "B-TOKEN_B", "I-TOKEN_B", "E-TOKEN_B"
+    ```
+
+    """
+    tag_list = [i for i in object_types_registry.get("BioTagLabel") if i in ("B", "I", "E")]
+    name = f"{custom_object_types.__name__.lower()}_{suffix}"  # type: ignore
+    product = [
+        (
+            a[0].value + "_" + a[1].value.upper(),  # type: ignore
+            a[0].value + "-" + a[1].value,  # type: ignore
+        )
+        for a in list(itertools.product(tag_list, custom_object_types))
+    ]
+
+    object_types_registry.register(name)(ObjectTypes(name, product))  # type: ignore
+    return name
+
+
+def register_string_categories_from_list(categories_list: Sequence[str], object_type_name: str) -> None:
+    """
+    Registers string categories from a given list into the object types registry. If a category from the list is not
+    already registered, it will be added with the specified object type name.
+
+    :param categories_list: A sequence of strings representing the categories to be registered.
+    :param object_type_name: The name of the object type under which the categories will be registered.
+
+    Example:
+
+    ```python
+    categories = ["category1", "category2", "category3"]
+    register_string_categories_from_list(categories, "custom_object_type")
+    # This will register "CATEGORY1", "CATEGORY2", "CATEGORY3" under the object type "custom_object_type"
+    ```
+    """
+
+    all_types = {cat.value for object_type in set(object_types_registry.get_all().values()) for cat in object_type}
+
+    if categories_list and isinstance(categories_list[0], (list, tuple)):
+        flattened_categories = list(itertools.chain.from_iterable(categories_list))
+    else:
+        flattened_categories = list(categories_list)
+
+    types_to_register = []
+    for cat in flattened_categories:
+        if cat not in all_types:
+            types_to_register.append(cat)
+
+    categories_tuple = list({cat.upper(): cat for cat in types_to_register}.items())
+    object_types_registry.register(object_type_name)(ObjectTypes(object_type_name, categories_tuple))  # type: ignore
 
 
 def update_all_types_dict() -> None:

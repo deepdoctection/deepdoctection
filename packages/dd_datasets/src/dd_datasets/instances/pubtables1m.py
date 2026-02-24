@@ -49,7 +49,7 @@ from dd_core.mapper import curry, xml_to_dict
 from dd_core.mapper.cats import filter_cat
 from dd_core.mapper.pascalstruct import pascal_voc_dict_to_image
 from dd_core.utils.file_utils import lxml_available
-from dd_core.utils.object_types import CellType, DatasetType, LayoutType
+from dd_core.utils.object_types import CellLabel, DatasetKind, LayoutLabel
 from dd_core.utils.types import JsonDict
 
 from ..base import _BuiltInDataset
@@ -78,14 +78,14 @@ _LICENSE = "Community Data License Agreement – Permissive, Version 1.0"
 _URL = "https://msropendata.com/datasets/505fcbe3-1383-42b1-913a-f651b8b712d3"
 
 _SPLITS: Mapping[str, str] = {"train": "train", "val": "val", "test": "test"}
-_TYPE = DatasetType.OBJECT_DETECTION
+_TYPE = DatasetKind.OBJECT_DETECTION
 _LOCATION = "PubTables1M"
 _ANNOTATION_FILES: Mapping[str, str] = {
     "train": "PubTables1M-Detection-PASCAL-VOC/train",
     "val": "PubTables1M-Detection-PASCAL-VOC/val",
     "test": "PubTables1M-Detection-PASCAL-VOC/test",
 }
-_INIT_CATEGORIES_DET = [LayoutType.TABLE, LayoutType.TABLE_ROTATED]
+_INIT_CATEGORIES_DET = [LayoutLabel.TABLE, LayoutLabel.TABLE_ROTATED]
 
 
 @dataset_registry.register("pubtables1m_det")
@@ -187,7 +187,7 @@ class Pubtables1MBuilder(DataFlowBaseBuilder):
                 load_image,
                 filter_empty_image=True,
                 fake_score=fake_score,
-                category_name_mapping={"table": LayoutType.TABLE, "table rotated": LayoutType.TABLE_ROTATED},
+                category_name_mapping={"table": LayoutLabel.TABLE, "table rotated": LayoutLabel.TABLE_ROTATED},
             ),
         )
 
@@ -202,13 +202,13 @@ _ANNOTATION_FILES_STRUCT: Mapping[str, str] = {
 }
 
 _INIT_CATEGORIES_STRUCT = [
-    LayoutType.TABLE,
-    LayoutType.ROW,
-    LayoutType.COLUMN,
-    CellType.SPANNING,
-    CellType.ROW_HEADER,
-    CellType.COLUMN_HEADER,
-    CellType.PROJECTED_ROW_HEADER,
+    LayoutLabel.TABLE,
+    LayoutLabel.ROW,
+    LayoutLabel.COLUMN,
+    CellLabel.SPANNING,
+    CellLabel.ROW_HEADER,
+    CellLabel.COLUMN_HEADER,
+    CellLabel.PROJECTED_ROW_HEADER,
 ]
 
 _IMAGES: Mapping[str, str] = {
@@ -309,13 +309,13 @@ class Pubtables1MBuilderStruct(DataFlowBaseBuilder):
                 filter_empty_image=True,
                 fake_score=fake_score,
                 category_name_mapping={
-                    "table": LayoutType.TABLE,
-                    "table spanning cell": CellType.SPANNING,
-                    "table row": LayoutType.ROW,
-                    "table row header": CellType.ROW_HEADER,
-                    "table projected row header": CellType.PROJECTED_ROW_HEADER,
-                    "table column": LayoutType.COLUMN,
-                    "table column header": CellType.COLUMN_HEADER,
+                    "table": LayoutLabel.TABLE,
+                    "table spanning cell": CellLabel.SPANNING,
+                    "table row": LayoutLabel.ROW,
+                    "table row header": CellLabel.ROW_HEADER,
+                    "table projected row header": CellLabel.PROJECTED_ROW_HEADER,
+                    "table column": LayoutLabel.COLUMN,
+                    "table column header": CellLabel.COLUMN_HEADER,
                 },
             ),
         )

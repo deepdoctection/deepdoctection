@@ -31,14 +31,12 @@ We also need to register the model itself, so that we can invoke it directly in 
 
 **Note**: Once you search for `pii` or `anonymisation` on the Huggingface Hub, you get hundreds of matches. We have
 opted for one popular representative but it is likely that there are other models that might perform better on some
-particular use-case. 
-
+particular use-case.
 
 ```python
 @dd.object_types_registry.register("PIITypes")
 class PIITypes(dd.ObjectTypes):
-
-    B_PERSON ="b_person"
+    B_PERSON = "b_person"
     I_PERSON = "i_person"
     B_LOCATION = "b_location"
     I_LOCATION = "i_location"
@@ -55,10 +53,10 @@ dd.ModelCatalog.register("tanaos/tanaos-text-anonymizer-v1/model.safetensors", d
     description="layout detection ",
     config="tanaos/tanaos-text-anonymizer-v1/config.json",
     hf_repo_id="tanaos/tanaos-text-anonymizer-v1",
-    hf_config_file=["special_tokens_map.json","tokenizer_config.json","tokenizer.json","config.json"],
+    hf_config_file=["special_tokens_map.json", "tokenizer_config.json", "tokenizer.json", "config.json"],
     hf_model_name="model.safetensors",
     size=[3334322],
-    categories={1: dd.TokenClasses.OTHER,
+    categories={1: dd.TokenClassLabel.OTHER,
                 2: PIITypes.B_PERSON,
                 3: PIITypes.I_PERSON,
                 4: PIITypes.B_LOCATION,
@@ -75,13 +73,12 @@ dd.ModelCatalog.register("tanaos/tanaos-text-anonymizer-v1/model.safetensors", d
 
 We also add some layout sections to the narrative text so that they can be analyzed by the token classifier.
 
-
 ```python
-dd.IMAGE_DEFAULTS.FLOATING_TEXT_BLOCK_CATEGORIES = (dd.LayoutType.TEXT,
-            dd.LayoutType.TITLE,
-            dd.LayoutType.LIST,
-            dd.LayoutType.KEY_VALUE_AREA,
-            dd.LayoutType.TABLE)
+dd.IMAGE_DEFAULTS.FLOATING_TEXT_BLOCK_CATEGORIES = (dd.LayoutLabel.TEXT,
+                                                    dd.LayoutLabel.TITLE,
+                                                    dd.LayoutLabel.LIST,
+                                                    dd.LayoutLabel.KEY_VALUE_AREA,
+                                                    dd.LayoutLabel.TABLE)
 ```
 
 Next we write some functions for masking/unmasking words and converting a list of images into a PDF

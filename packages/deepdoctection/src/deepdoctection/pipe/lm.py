@@ -26,7 +26,7 @@ from typing import TYPE_CHECKING, Any, Callable, Literal, Optional, Sequence, Un
 
 from dd_core.datapoint.image import Image, MetaAnnotation
 from dd_core.mapper.laylmstruct import image_to_layoutlm_features, image_to_lm_features
-from dd_core.utils.object_types import BioTag, LayoutType, ObjectTypes, PageType, TokenClasses, WordType
+from dd_core.utils.object_types import BioTagLabel, LayoutLabel, ObjectTypes, PageKey, TokenClassLabel, WordKey
 
 from ..extern.base import SequenceClassResult
 from .base import PipelineComponent
@@ -78,7 +78,7 @@ class LMTokenClassifierService(PipelineComponent):
         truncation: bool = True,
         return_overflowing_tokens: bool = False,
         use_other_as_default_category: bool = False,
-        segment_positions: Optional[Union[LayoutType, Sequence[LayoutType]]] = None,
+        segment_positions: Optional[Union[LayoutLabel, Sequence[LayoutLabel]]] = None,
         sliding_window_stride: int = 0,
     ) -> None:
         """
@@ -152,10 +152,10 @@ class LMTokenClassifierService(PipelineComponent):
         if self.use_other_as_default_category:
             categories_name_as_key = {val: key for key, val in self.language_model.categories.categories.items()}
             self.default_key: ObjectTypes
-            if BioTag.OUTSIDE in categories_name_as_key:
-                self.default_key = BioTag.OUTSIDE
+            if BioTagLabel.OUTSIDE in categories_name_as_key:
+                self.default_key = BioTagLabel.OUTSIDE
             else:
-                self.default_key = TokenClasses.OTHER
+                self.default_key = TokenClassLabel.OTHER
             self.other_name_as_key = {self.default_key: categories_name_as_key[self.default_key]}
         self.tokenizer = tokenizer
         self.mapping_to_lm_input_func = self.image_to_features_func(self.language_model.image_to_features_mapping())
@@ -204,31 +204,31 @@ class LMTokenClassifierService(PipelineComponent):
                 else:
                     token_class_name_id = None
                 self.dp_manager.set_category_annotation(
-                    token.semantic_name, token_class_name_id, WordType.TOKEN_CLASS, token.uuid, token.score
+                    token.semantic_name, token_class_name_id, WordKey.TOKEN_CLASS, token.uuid, token.score
                 )
-                self.dp_manager.set_category_annotation(token.bio_tag, None, WordType.TAG, token.uuid)
+                self.dp_manager.set_category_annotation(token.bio_tag, None, WordKey.TAG, token.uuid)
                 self.dp_manager.set_category_annotation(
-                    token.class_name, token.class_id, WordType.TOKEN_TAG, token.uuid, token.score
+                    token.class_name, token.class_id, WordKey.TOKEN_TAG, token.uuid, token.score
                 )
                 words_populated.append(token.uuid)
 
         if self.use_other_as_default_category:
-            word_anns = dp.get_annotation(LayoutType.WORD)
+            word_anns = dp.get_annotation(LayoutLabel.WORD)
             for word in word_anns:
-                if WordType.TOKEN_CLASS not in word.sub_categories:
+                if WordKey.TOKEN_CLASS not in word.sub_categories:
                     self.dp_manager.set_category_annotation(
-                        TokenClasses.OTHER,
+                        TokenClassLabel.OTHER,
                         self.other_name_as_key[self.default_key],  # type: ignore
-                        WordType.TOKEN_CLASS,
+                        WordKey.TOKEN_CLASS,
                         word.annotation_id,
                     )
-                if WordType.TAG not in word.sub_categories:
-                    self.dp_manager.set_category_annotation(BioTag.OUTSIDE, None, WordType.TAG, word.annotation_id)
-                if WordType.TOKEN_TAG not in word.sub_categories:
+                if WordKey.TAG not in word.sub_categories:
+                    self.dp_manager.set_category_annotation(BioTagLabel.OUTSIDE, None, WordKey.TAG, word.annotation_id)
+                if WordKey.TOKEN_TAG not in word.sub_categories:
                     self.dp_manager.set_category_annotation(
                         self.default_key,
                         self.other_name_as_key[self.default_key],  # type: ignore
-                        WordType.TOKEN_TAG,
+                        WordKey.TOKEN_TAG,
                         word.annotation_id,
                     )
 
@@ -250,18 +250,18 @@ class LMTokenClassifierService(PipelineComponent):
         return MetaAnnotation(
             image_annotations=(),
             sub_categories={
-                LayoutType.WORD: {
-                    WordType.TOKEN_CLASS: (
+                LayoutLabel.WORD: {
+                    WordKey.TOKEN_CLASS: (
                         set(self.language_model.categories.categories_semantics)  # type: ignore
                         if self.language_model.categories.categories_semantics
                         else []
                     ),
-                    WordType.TAG: (
+                    WordKey.TAG: (
                         set(self.language_model.categories.categories_bio)  # type: ignore
                         if self.language_model.categories.categories_bio
                         else []
                     ),
-                    WordType.TOKEN_TAG: set(self.language_model.categories.get_categories(as_dict=False)),
+                    WordKey.TOKEN_TAG: set(self.language_model.categories.get_categories(as_dict=False)),
                 }
             },
             relationships={},
@@ -382,14 +382,14 @@ class LMSequenceClassifierService(PipelineComponent):
         if lm_input is None:
             if self.use_other_as_default_category:
                 class_id = self.language_model.categories.get_categories(as_dict=True, name_as_key=True).get(
-                    TokenClasses.OTHER, 1
+                    TokenClassLabel.OTHER, 1
                 )
-                lm_output = SequenceClassResult(class_name=TokenClasses.OTHER, class_id=class_id)
+                lm_output = SequenceClassResult(class_name=TokenClassLabel.OTHER, class_id=class_id)
         else:
             lm_output = self.language_model.predict(**lm_input)
         if lm_output:
             self.dp_manager.set_summary_annotation(
-                PageType.DOCUMENT_TYPE, lm_output.class_name, lm_output.class_id, None, lm_output.score
+                PageKey.DOCUMENT_TYPE, lm_output.class_name, lm_output.class_id, None, lm_output.score
             )
 
     def clone(self) -> LMSequenceClassifierService:
@@ -403,7 +403,7 @@ class LMSequenceClassifierService(PipelineComponent):
 
     def get_meta_annotation(self) -> MetaAnnotation:
         return MetaAnnotation(
-            image_annotations=(), sub_categories={}, relationships={}, summaries=(PageType.DOCUMENT_TYPE,)
+            image_annotations=(), sub_categories={}, relationships={}, summaries=(PageKey.DOCUMENT_TYPE,)
         )
 
     def _get_name(self) -> str:

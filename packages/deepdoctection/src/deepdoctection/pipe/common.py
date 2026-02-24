@@ -32,7 +32,7 @@ from dd_core.datapoint.view import IMAGE_DEFAULTS, Page
 from dd_core.mapper.match import match_anns_by_distance, match_anns_by_intersection
 from dd_core.mapper.misc import to_image
 from dd_core.mapper.nms import pt_nms_image_annotations as nms_image_annotations
-from dd_core.utils.object_types import LayoutType, ObjectTypes, Relationships, TypeOrStr, get_type
+from dd_core.utils.object_types import LayoutLabel, ObjectTypes, RelationshipKey, TypeOrStr, get_type
 
 from ..extern.base import DetectionResult
 from .base import PipelineComponent
@@ -245,7 +245,7 @@ class FamilyCompound:
         synthetic_parent: The synthetic parent.
     """
 
-    relationship_key: Relationships
+    relationship_key: RelationshipKey
     parent_categories: Optional[Union[ObjectTypes, Sequence[ObjectTypes]]] = field(default=None)
     child_categories: Optional[Union[ObjectTypes, Sequence[ObjectTypes]]] = field(default=None)
     parent_ann_service_ids: Optional[Union[str, Sequence[str]]] = field(default=None)
@@ -426,9 +426,9 @@ class PageParsingService(PipelineComponent):
 
     def _init_sanity_checks(self) -> None:
         assert self.text_container in (
-            LayoutType.WORD,
-            LayoutType.LINE,
-        ), f"text_container must be either {LayoutType.WORD} or {LayoutType.LINE}"
+            LayoutLabel.WORD,
+            LayoutLabel.LINE,
+        ), f"text_container must be either {LayoutLabel.WORD} or {LayoutLabel.LINE}"
 
     def get_meta_annotation(self) -> MetaAnnotation:
         """

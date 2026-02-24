@@ -37,7 +37,7 @@ from dd_core.utils.context import save_tmp_file, timeout_manager
 from dd_core.utils.error import DependencyError, TesseractError
 from dd_core.utils.file_utils import _TESS_PATH, get_tesseract_requirement
 from dd_core.utils.metacfg import config_to_cli_str, set_config_by_yaml
-from dd_core.utils.object_types import LayoutType, ObjectTypes, PageType
+from dd_core.utils.object_types import LayoutLabel, ObjectTypes, PageKey
 from dd_core.utils.transform import RotationTransform
 from dd_core.utils.types import PathLikeOrStr, PixelValues, Requirement
 from dd_core.utils.viz import viz_handler
@@ -248,7 +248,7 @@ def tesseract_line_to_detectresult(detect_result_list: list[DetectionResult]) ->
                 DetectionResult(
                     box=[ulx, uly, lrx, lry],
                     class_id=2,
-                    class_name=LayoutType.LINE,
+                    class_name=LayoutLabel.LINE,
                     text=" ".join(
                         [detect_result.text for detect_result in block_group if isinstance(detect_result.text, str)]
                     ),
@@ -295,7 +295,7 @@ def predict_text(np_img: PixelValues, supported_languages: str, text_lines: bool
                 score=score / 100,
                 text=caption[5],
                 class_id=1,
-                class_name=LayoutType.WORD,
+                class_name=LayoutLabel.WORD,
             )
             all_results.append(word)
     if text_lines:
@@ -381,9 +381,9 @@ class TesseractOcrDetector(ObjectDetector):
         self.config = hyper_param_config
 
         if self.config.LINES:
-            self.categories = ModelCategories(init_categories={1: LayoutType.WORD, 2: LayoutType.LINE})
+            self.categories = ModelCategories(init_categories={1: LayoutLabel.WORD, 2: LayoutLabel.LINE})
         else:
-            self.categories = ModelCategories(init_categories={1: LayoutType.WORD})
+            self.categories = ModelCategories(init_categories={1: LayoutLabel.WORD})
 
     def predict(self, np_img: PixelValues) -> list[DetectionResult]:
         """
@@ -455,7 +455,7 @@ class TesseractRotationTransformer(ImageTransformer):
 
     def __init__(self) -> None:
         self.name = fspath(_TESS_PATH) + "-rotation"
-        self.categories = ModelCategories(init_categories={1: PageType.ANGLE})
+        self.categories = ModelCategories(init_categories={1: PageKey.ANGLE})
         self.model_id = self.get_model_id()
         self.rotator = RotationTransform(360)
 

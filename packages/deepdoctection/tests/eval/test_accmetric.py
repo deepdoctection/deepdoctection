@@ -30,7 +30,7 @@ import pytest
 
 from dd_core.dataflow import DataFromList
 from dd_core.datapoint.image import Image
-from dd_core.utils.object_types import CellType
+from dd_core.utils.object_types import CellKey
 from deepdoctection.eval.accmetric import (
     AccuracyMetric,
     ConfusionMetric,
@@ -94,7 +94,7 @@ class TestAccuracyMetric:
         dataflow_gt = DataFromList(dp_list)
         dataflow_pr = DataFromList(dp_list)
         accuracy_metric = AccuracyMetric()
-        accuracy_metric.set_categories(sub_category_names={"cell": [CellType.ROW_NUMBER, CellType.COLUMN_SPAN]})
+        accuracy_metric.set_categories(sub_category_names={"cell": [CellKey.ROW_NUMBER, CellKey.COLUMN_SPAN]})
 
         # Arrange
         output = accuracy_metric.get_distance(dataflow_gt, dataflow_pr, dataset_categories)

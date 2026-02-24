@@ -37,7 +37,7 @@ from dd_core.dataflow.custom_serialize import SerializerJsonlines
 from dd_core.mapper.cats import cat_to_sub_cat, filter_cat
 from dd_core.mapper.pubstruct import pub_to_image
 from dd_core.utils.logger import LoggingRecord, logger
-from dd_core.utils.object_types import CellType, DatasetType, LayoutType, ObjectTypes, TableType, WordType
+from dd_core.utils.object_types import CellKey, CellLabel, DatasetKind, LayoutLabel, ObjectTypes, TableKey, WordKey
 from dd_core.utils.types import PubtabnetDict
 
 from ..base import _BuiltInDataset
@@ -72,38 +72,38 @@ _URL = (
     "pubtabnet.tar.gz?_ga=2.267291150.146828643.1629125962-1173244232.1625045842"
 )
 _SPLITS: Mapping[str, str] = {"train": "train", "val": "val", "test": "test"}
-_TYPE = DatasetType.OBJECT_DETECTION
+_TYPE = DatasetKind.OBJECT_DETECTION
 _LOCATION = "pubtabnet"
 _ANNOTATION_FILES: Mapping[str, str] = {"all": "PubTabNet_2.0.0.jsonl"}
 
-_INIT_CATEGORIES = [LayoutType.CELL, TableType.ITEM, LayoutType.TABLE, LayoutType.WORD]
+_INIT_CATEGORIES = [LayoutLabel.CELL, TableKey.ITEM, LayoutLabel.TABLE, LayoutLabel.WORD]
 _SUB_CATEGORIES: dict[ObjectTypes, dict[ObjectTypes, list[ObjectTypes]]]
 _SUB_CATEGORIES = {
-    TableType.ITEM: {TableType.ITEM: [LayoutType.ROW, LayoutType.COLUMN]},
-    LayoutType.CELL: {
-        CellType.COLUMN_HEADER: [CellType.COLUMN_HEADER, CellType.BODY],
-        CellType.ROW_NUMBER: [],
-        CellType.COLUMN_NUMBER: [],
-        CellType.ROW_SPAN: [],
-        CellType.COLUMN_SPAN: [],
-        CellType.SPANNING: [CellType.SPANNING],
+    TableKey.ITEM: {TableKey.ITEM: [LayoutLabel.ROW, LayoutLabel.COLUMN]},
+    LayoutLabel.CELL: {
+        CellLabel.COLUMN_HEADER: [CellLabel.COLUMN_HEADER, CellLabel.BODY],
+        CellKey.ROW_NUMBER: [],
+        CellKey.COLUMN_NUMBER: [],
+        CellKey.ROW_SPAN: [],
+        CellKey.COLUMN_SPAN: [],
+        CellLabel.SPANNING: [CellLabel.SPANNING],
     },
-    CellType.COLUMN_HEADER: {
-        CellType.ROW_NUMBER: [],
-        CellType.COLUMN_NUMBER: [],
-        CellType.ROW_SPAN: [],
-        CellType.COLUMN_SPAN: [],
-        CellType.SPANNING: [CellType.SPANNING],
+    CellLabel.COLUMN_HEADER: {
+        CellKey.ROW_NUMBER: [],
+        CellKey.COLUMN_NUMBER: [],
+        CellKey.ROW_SPAN: [],
+        CellKey.COLUMN_SPAN: [],
+        CellLabel.SPANNING: [CellLabel.SPANNING],
     },
-    CellType.BODY: {
-        CellType.ROW_NUMBER: [],
-        CellType.COLUMN_NUMBER: [],
-        CellType.ROW_SPAN: [],
-        CellType.COLUMN_SPAN: [],
-        CellType.SPANNING: [CellType.SPANNING],
+    CellLabel.BODY: {
+        CellKey.ROW_NUMBER: [],
+        CellKey.COLUMN_NUMBER: [],
+        CellKey.ROW_SPAN: [],
+        CellKey.COLUMN_SPAN: [],
+        CellLabel.SPANNING: [CellLabel.SPANNING],
     },
-    LayoutType.TABLE: {TableType.HTML: [TableType.HTML]},
-    LayoutType.WORD: {WordType.CHARACTERS: [WordType.CHARACTERS]},
+    LayoutLabel.TABLE: {TableKey.HTML: [TableKey.HTML]},
+    LayoutLabel.WORD: {WordKey.CHARACTERS: [WordKey.CHARACTERS]},
 }
 
 

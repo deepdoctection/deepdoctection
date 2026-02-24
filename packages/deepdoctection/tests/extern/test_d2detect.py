@@ -34,7 +34,7 @@ import numpy as np
 import pytest
 
 from dd_core.utils.file_utils import detectron2_available, pytorch_available
-from dd_core.utils.object_types import LayoutType, ObjectTypes
+from dd_core.utils.object_types import LayoutLabel, ObjectTypes
 from deepdoctection.extern.d2detect import D2FrcnnDetector, D2FrcnnTracingDetector
 
 if pytorch_available():
@@ -93,7 +93,7 @@ def test_d2_frcnn_predict_basic_mapping(monkeypatch: pytest.MonkeyPatch) -> None
         raising=True,
     )
 
-    categories: Dict[int, ObjectTypes] = {1: LayoutType.FIGURE, 2: LayoutType.LIST, 3: LayoutType.TABLE}
+    categories: Dict[int, ObjectTypes] = {1: LayoutLabel.FIGURE, 2: LayoutLabel.LIST, 3: LayoutLabel.TABLE}
 
     det = D2FrcnnDetector(
         path_yaml="dummy.yaml",
@@ -139,7 +139,7 @@ def test_d2_frcnn_tracing_predict_basic_mapping(monkeypatch: pytest.MonkeyPatch)
         raising=True,
     )
 
-    categories: Dict[int, ObjectTypes] = {1: LayoutType.FIGURE, 2: LayoutType.LIST, 3: LayoutType.TABLE}
+    categories: Dict[int, ObjectTypes] = {1: LayoutLabel.FIGURE, 2: LayoutLabel.LIST, 3: LayoutLabel.TABLE}
 
     det = D2FrcnnTracingDetector(
         path_yaml="dummy.yaml",

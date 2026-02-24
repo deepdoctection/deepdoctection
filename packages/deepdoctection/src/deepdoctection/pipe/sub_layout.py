@@ -29,7 +29,7 @@ import numpy as np
 from dd_core.datapoint.annotation import ImageAnnotation
 from dd_core.datapoint.box import crop_box_from_image
 from dd_core.datapoint.image import Image, MetaAnnotation
-from dd_core.utils.object_types import ObjectTypes, Relationships, TypeOrStr, get_type
+from dd_core.utils.object_types import ObjectTypes, RelationshipKey, TypeOrStr, get_type
 from dd_core.utils.transform import PadTransform
 from dd_core.utils.types import PixelValues
 
@@ -254,7 +254,7 @@ class SubImageLayoutService(PipelineComponent):
         return MetaAnnotation(
             image_annotations=self.predictor.get_category_names(),
             sub_categories={},
-            relationships={get_type(parent): {Relationships.CHILD} for parent in self.sub_image_name},
+            relationships={get_type(parent): {RelationshipKey.CHILD} for parent in self.sub_image_name},
             summaries=(),
         )
 

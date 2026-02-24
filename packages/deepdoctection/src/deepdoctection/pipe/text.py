@@ -27,7 +27,7 @@ from typing import Optional, Sequence, Union
 from dd_core.datapoint.annotation import ImageAnnotation
 from dd_core.datapoint.image import Image, MetaAnnotation
 from dd_core.utils.error import ImageError
-from dd_core.utils.object_types import ObjectTypes, PageType, TypeOrStr, WordType, get_type
+from dd_core.utils.object_types import ObjectTypes, PageKey, TypeOrStr, WordKey, get_type
 from dd_core.utils.types import PixelValues
 
 from ..extern.base import ObjectDetector, PdfMiner, TextRecognizer
@@ -124,7 +124,7 @@ class TextExtractionService(PipelineComponent):
             else:
                 width, height = None, None
                 if self.run_time_ocr_language_selection:
-                    self.predictor.set_language(dp.summary.get_sub_category(PageType.LANGUAGE).value)  # type: ignore
+                    self.predictor.set_language(dp.summary.get_sub_category(PageKey.LANGUAGE).value)  # type: ignore
                 detect_result_list = self.predictor.predict(predictor_input)  # type: ignore
                 if isinstance(self.predictor, PdfMiner):
                     width, height = self.predictor.get_width_height(predictor_input)  # type: ignore
@@ -144,9 +144,9 @@ class TextExtractionService(PipelineComponent):
                         )
                     if detect_ann_id is not None:
                         self.dp_manager.set_container_annotation(
-                            WordType.CHARACTERS,
+                            WordKey.CHARACTERS,
                             None,
-                            WordType.CHARACTERS,
+                            WordKey.CHARACTERS,
                             detect_ann_id,
                             detect_result.text if detect_result.text is not None else "",
                             detect_result.score,
@@ -212,7 +212,7 @@ class TextExtractionService(PipelineComponent):
         sub_cat_dict: dict[ObjectTypes, dict[ObjectTypes, set[ObjectTypes]]]
         if self.extract_from_category:
             sub_cat_dict = {
-                category: {WordType.CHARACTERS: {WordType.CHARACTERS}} for category in self.extract_from_category
+                category: {WordKey.CHARACTERS: {WordKey.CHARACTERS}} for category in self.extract_from_category
             }
         else:
             if not isinstance(self.predictor, (ObjectDetector, PdfMiner)):
@@ -221,8 +221,7 @@ class TextExtractionService(PipelineComponent):
                     f"{type(self.predictor)}"
                 )
             sub_cat_dict = {
-                category: {WordType.CHARACTERS: {WordType.CHARACTERS}}
-                for category in self.predictor.get_category_names()
+                category: {WordKey.CHARACTERS: {WordKey.CHARACTERS}} for category in self.predictor.get_category_names()
             }
         return MetaAnnotation(
             image_annotations=(

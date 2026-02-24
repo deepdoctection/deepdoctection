@@ -37,13 +37,13 @@ from dd_core.dataflow import CustomDataFromList, DataFlow, MapData
 from dd_core.mapper.cats import cat_to_sub_cat, filter_cat
 from dd_core.mapper.xfundstruct import xfund_to_image
 from dd_core.utils.object_types import (
-    BioTag,
-    DatasetType,
-    LayoutType,
+    BioTagLabel,
+    DatasetKind,
+    LayoutLabel,
     ObjectTypes,
-    TokenClasses,
-    TokenClassWithTag,
-    WordType,
+    TokenClassLabel,
+    TokenClassWithTagLabel,
+    WordKey,
 )
 from dd_core.utils.types import FunsdDict
 
@@ -65,7 +65,7 @@ _LICENSE = (
 )
 _URL = "https://github.com/doc-analysis/XFUND/releases/tag/v1.0"
 _SPLITS: Mapping[str, str] = {"train": "train", "val": "val"}
-_TYPE = DatasetType.TOKEN_CLASSIFICATION
+_TYPE = DatasetKind.TOKEN_CLASSIFICATION
 _LOCATION = "xfund"
 _ANNOTATION_FILES: Mapping[str, Union[str, Sequence[str]]] = {
     "train": [
@@ -79,23 +79,33 @@ _ANNOTATION_FILES: Mapping[str, Union[str, Sequence[str]]] = {
     ],
     "val": ["de.val.json", "es.val.json", "fr.val.json", "it.val.json", "ja.val.json", "pt.val.json", "zh.val.json"],
 }
-_INIT_CATEGORIES: Sequence[ObjectTypes] = [LayoutType.WORD, LayoutType.TEXT]
+_INIT_CATEGORIES: Sequence[ObjectTypes] = [LayoutLabel.WORD, LayoutLabel.TEXT]
 _SUB_CATEGORIES: Mapping[ObjectTypes, Mapping[ObjectTypes, Sequence[ObjectTypes]]] = {
-    LayoutType.WORD: {
-        WordType.TOKEN_CLASS: [TokenClasses.OTHER, TokenClasses.QUESTION, TokenClasses.ANSWER, TokenClasses.HEADER],
-        WordType.TAG: [BioTag.INSIDE, BioTag.OUTSIDE, BioTag.BEGIN],
-        WordType.TOKEN_TAG: [
-            TokenClassWithTag.B_ANSWER,
-            TokenClassWithTag.B_HEADER,
-            TokenClassWithTag.B_QUESTION,
-            TokenClassWithTag.I_ANSWER,
-            TokenClassWithTag.I_HEADER,
-            TokenClassWithTag.I_QUESTION,
-            BioTag.OUTSIDE,
+    LayoutLabel.WORD: {
+        WordKey.TOKEN_CLASS: [
+            TokenClassLabel.OTHER,
+            TokenClassLabel.QUESTION,
+            TokenClassLabel.ANSWER,
+            TokenClassLabel.HEADER,
+        ],
+        WordKey.TAG: [BioTagLabel.INSIDE, BioTagLabel.OUTSIDE, BioTagLabel.BEGIN],
+        WordKey.TOKEN_TAG: [
+            TokenClassWithTagLabel.B_ANSWER,
+            TokenClassWithTagLabel.B_HEADER,
+            TokenClassWithTagLabel.B_QUESTION,
+            TokenClassWithTagLabel.I_ANSWER,
+            TokenClassWithTagLabel.I_HEADER,
+            TokenClassWithTagLabel.I_QUESTION,
+            BioTagLabel.OUTSIDE,
         ],
     },
-    LayoutType.TEXT: {
-        WordType.TOKEN_CLASS: [TokenClasses.OTHER, TokenClasses.QUESTION, TokenClasses.ANSWER, TokenClasses.HEADER]
+    LayoutLabel.TEXT: {
+        WordKey.TOKEN_CLASS: [
+            TokenClassLabel.OTHER,
+            TokenClassLabel.QUESTION,
+            TokenClassLabel.ANSWER,
+            TokenClassLabel.HEADER,
+        ]
     },
 }
 
@@ -194,37 +204,37 @@ class XfundBuilder(DataFlowBaseBuilder):
         df = MapData(df, replace_filename)
         categories_name_as_key = self.categories.get_categories(init=True, name_as_key=True)
         token_class_names_mapping = {
-            "other": TokenClasses.OTHER,
-            "question": TokenClasses.QUESTION,
-            "answer": TokenClasses.ANSWER,
-            "header": TokenClasses.HEADER,
+            "other": TokenClassLabel.OTHER,
+            "question": TokenClassLabel.QUESTION,
+            "answer": TokenClassLabel.ANSWER,
+            "header": TokenClassLabel.HEADER,
         }
-        if LayoutType.WORD in self.categories.get_categories(filtered=True, name_as_key=True):
+        if LayoutLabel.WORD in self.categories.get_categories(filtered=True, name_as_key=True):
             ner_token_to_id_mapping = self.categories.get_sub_categories(
-                categories=LayoutType.WORD,
-                sub_categories={LayoutType.WORD: [WordType.TOKEN_TAG, WordType.TAG, WordType.TOKEN_CLASS]},
+                categories=LayoutLabel.WORD,
+                sub_categories={LayoutLabel.WORD: [WordKey.TOKEN_TAG, WordKey.TAG, WordKey.TOKEN_CLASS]},
                 keys=False,
                 values_as_dict=True,
                 name_as_key=True,
             )
         else:
             ner_token_to_id_mapping = {
-                LayoutType.WORD: {
-                    WordType.TAG: {BioTag.BEGIN: 3, BioTag.INSIDE: 1, BioTag.OUTSIDE: 2},
-                    WordType.TOKEN_CLASS: {
-                        TokenClasses.ANSWER: 3,
-                        TokenClasses.HEADER: 4,
-                        TokenClasses.OTHER: 1,
-                        TokenClasses.QUESTION: 2,
+                LayoutLabel.WORD: {
+                    WordKey.TAG: {BioTagLabel.BEGIN: 3, BioTagLabel.INSIDE: 1, BioTagLabel.OUTSIDE: 2},
+                    WordKey.TOKEN_CLASS: {
+                        TokenClassLabel.ANSWER: 3,
+                        TokenClassLabel.HEADER: 4,
+                        TokenClassLabel.OTHER: 1,
+                        TokenClassLabel.QUESTION: 2,
                     },
-                    WordType.TOKEN_TAG: {
-                        TokenClassWithTag.B_ANSWER: 1,
-                        TokenClassWithTag.B_HEADER: 2,
-                        TokenClassWithTag.B_QUESTION: 3,
-                        TokenClassWithTag.I_ANSWER: 4,
-                        TokenClassWithTag.I_HEADER: 5,
-                        TokenClassWithTag.I_QUESTION: 6,
-                        BioTag.OUTSIDE: 7,
+                    WordKey.TOKEN_TAG: {
+                        TokenClassWithTagLabel.B_ANSWER: 1,
+                        TokenClassWithTagLabel.B_HEADER: 2,
+                        TokenClassWithTagLabel.B_QUESTION: 3,
+                        TokenClassWithTagLabel.I_ANSWER: 4,
+                        TokenClassWithTagLabel.I_HEADER: 5,
+                        TokenClassWithTagLabel.I_QUESTION: 6,
+                        BioTagLabel.OUTSIDE: 7,
                     },
                 }
             }
