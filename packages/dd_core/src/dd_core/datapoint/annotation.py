@@ -486,7 +486,7 @@ class CategoryAnnotation(Annotation):
 
     def __repr__(self) -> str:
         return (
-            f"CategoryAnnotation(annotation_id: {self._annotation_id}, category_name={self.category_name},"
+            f"CategoryAnnotation(annotation_id={self._annotation_id}, category_name={self.category_name},"
             f"category_id={self.category_id}, score={self.score}, sub_categories={self.sub_categories},"
             f" relationships={self.relationships})"
         )
@@ -623,7 +623,7 @@ class ImageAnnotation(CategoryAnnotation):
 
     def __repr__(self) -> str:
         return (
-            f"ImageAnnotation(annotation_id: {self._annotation_id}, category_name={self.category_name},"
+            f"ImageAnnotation(annotation_id={self._annotation_id}, category_name={self.category_name},"
             f"category_id={self.category_id}, score={self.score}, bounding_box: {self.bounding_box}, "
             f"sub_categories={self.sub_categories}, relationships={self.relationships})"
         )
@@ -758,7 +758,7 @@ class ContainerAnnotation(CategoryAnnotation):
 
     def __repr__(self) -> str:
         return (
-            f"ContainerAnnotation(annotation_id: {self.annotation_id}, category_name={self.category_name},"
+            f"ContainerAnnotation(annotation_id={self.annotation_id}, category_name={self.category_name},"
             f"category_id={self.category_id}, score={self.score}, sub_categories={self.sub_categories},"
             f" relationships={self.relationships})"
         )

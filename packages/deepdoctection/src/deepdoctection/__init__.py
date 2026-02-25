@@ -6,7 +6,7 @@ Init file for deepdoctection package. This file is used to import all submodules
 """
 
 import sys
-from typing import TYPE_CHECKING, Dict, List
+from typing import TYPE_CHECKING, Dict
 
 from dd_core.utils.env_info import collect_env_info
 from dd_core.utils.file_utils import _LazyModule

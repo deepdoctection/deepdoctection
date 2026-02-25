@@ -452,15 +452,17 @@ def token_class_with_tag_to_token_class_and_tag(
     return {val: key for key, val in _TOKEN_AND_TAG_TO_TOKEN_CLASS_WITH_TAG.items()}.get(token_class_with_tag)
 
 
-def register_custom_token_tag(custom_object_types: ObjectTypes, suffix: str = "llm_custom_token_tag") -> str:
+def register_custom_token_tag(custom_object_types: ObjectTypes, suffix: str) -> str:
     """
     Registers custom token tags for a given ObjectType with a specified suffix. The tags are created by combining
     BIO tags (B, I, E) with the custom object types.
 
-    :param custom_object_types: An instance of ObjectTypes containing the custom object types to be registered.
-    :param suffix: A string suffix to be appended to the name of the registered object type. Default is
-     "llm_custom_token_tag".
-    :return: The name of the registered object type.
+    Args:
+        custom_object_types: An instance of ObjectTypes containing the custom object types to be registered.
+        suffix: A string suffix to be appended to the name of the registered object type.
+
+    Returns:
+        The name of the registered object type.
 
     Example:
 
@@ -472,7 +474,7 @@ def register_custom_token_tag(custom_object_types: ObjectTypes, suffix: str = "l
         TOKEN_B = "token_b"
 
     custom_object_types = CustomObjectTypes()
-    register_custom_token_tag(custom_object_types)
+    register_custom_token_tag(custom_object_types, "custom_type")
     # This will register tags like "B-TOKEN_A", "I-TOKEN_A", "E-TOKEN_A", "B-TOKEN_B", "I-TOKEN_B", "E-TOKEN_B"
     ```
 
@@ -496,16 +498,16 @@ def register_string_categories_from_list(categories_list: Sequence[str], object_
     Registers string categories from a given list into the object types registry. If a category from the list is not
     already registered, it will be added with the specified object type name.
 
-    :param categories_list: A sequence of strings representing the categories to be registered.
-    :param object_type_name: The name of the object type under which the categories will be registered.
+    Args:
+        categories_list: A sequence of strings representing the categories to be registered.
+        object_type_name: The name of the object type under which the categories will be registered.
 
     Example:
-
-    ```python
-    categories = ["category1", "category2", "category3"]
-    register_string_categories_from_list(categories, "custom_object_type")
-    # This will register "CATEGORY1", "CATEGORY2", "CATEGORY3" under the object type "custom_object_type"
-    ```
+        ```python
+        categories = ["category1", "category2", "category3"]
+        register_string_categories_from_list(categories, "custom_object_type")
+        # This will register "CATEGORY1", "CATEGORY2", "CATEGORY3" under the object type "custom_object_type"
+        ```
     """
 
     all_types = {cat.value for object_type in set(object_types_registry.get_all().values()) for cat in object_type}
@@ -515,12 +517,8 @@ def register_string_categories_from_list(categories_list: Sequence[str], object_
     else:
         flattened_categories = list(categories_list)
 
-    types_to_register = []
-    for cat in flattened_categories:
-        if cat not in all_types:
-            types_to_register.append(cat)
-
-    categories_tuple = list({cat.upper(): cat for cat in types_to_register}.items())
+    categories_to_register = [cat for cat in flattened_categories if cat not in all_types]
+    categories_tuple = list({cat.upper(): cat for cat in categories_to_register}.items())
     object_types_registry.register(object_type_name)(ObjectTypes(object_type_name, categories_tuple))  # type: ignore
 
 

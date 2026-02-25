@@ -34,7 +34,7 @@ import pytest
 
 from dd_core.datapoint import ContainerAnnotation, Image
 from dd_core.utils.file_utils import networkx_available
-from dd_core.utils.object_types import CellLabel, LayoutLabel, TableKey
+from dd_core.utils.object_types import CellLabel, LayoutLabel, TableKey, CellKey
 from deepdoctection.pipe.refine import (
     TableSegmentationRefinementService,
     _html_table,
@@ -321,18 +321,18 @@ class TestTableSegmentationRefinementService:
             "<table>",
             "<tr>",
             "<td>",
-            "f64c7ccf-04ca-3f20-a312-a392e1694ee4",
+            "c549a3d9-f375-3053-835d-134d861ea05d",
             "</td>",
             "<td>",
-            "623a15bb-b51a-38a5-92c6-f17e477e7c01",
+            "71c50671-a5c7-314c-9434-8d2c8a2c9f37",
             "</td>",
             "</tr>",
             "<tr>",
             "<td>",
-            "907b5faa-837e-3b47-a57b-3d5a1affdb48",
+            "ea962ebc-e983-3256-8f28-b48c7d055937",
             "</td>",
             "<td>",
-            "e73e3580-1909-3651-a25b-823e7cb0e606",
+            "9d237e37-3e77-3892-8fd9-db6366251346",
             "</td>",
             "</tr>",
             "</table>",

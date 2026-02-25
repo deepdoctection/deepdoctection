@@ -1453,7 +1453,7 @@ class Page:
         ignore_default_token_class: bool = False,
         interactive: bool = False,
         scaled_width: int = 600,
-        **debug_kwargs: str,
+        **debug_kwargs: str | dict[str, Any] | list[str],
     ) -> Optional[PixelValues]:
         """
         Display a page with detected bounding boxes of various types.

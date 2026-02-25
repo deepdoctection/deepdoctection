@@ -56,7 +56,8 @@ _global_import("metacfg", prefix=("set_config_by_yaml", "save_config_to_yaml", "
 _global_import("utils", prefix=("delete_keys_from_dict", "split_string", "string_to_dict"))
 _global_import(
     "object_types",
-    suffix=("Type", "TokenClasses", "BioTag", "TokenClassWithTag", "Relationships", "Languages", "get_type"),
+    suffix=("Type", "TokenClasses", "BioTag", "TokenClassWithTag", "Relationships", "Languages", "get_type",
+            "register_custom_token_tag", "register_string_categories_from_list"),
 )
 _global_import("env_info", prefix=("collect_env_info", "SETTINGS"))
 
