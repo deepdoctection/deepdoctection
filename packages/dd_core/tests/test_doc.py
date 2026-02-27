@@ -18,7 +18,7 @@
 """
 Testing module for doc.py
 """
-
+import os
 from pathlib import Path
 
 import pytest
@@ -46,7 +46,7 @@ def test_pdf_get_page_reference_returns_valid_objects(pdf_file_path_two_pages: P
 
     assert isinstance(ref, PageReference)
     assert ref.image_id == "f05529d3-5d55-3f99-866d-311f5f539358"
-    assert ref.source_path == pdf_file_path_two_pages
+    assert ref.source_path == os.fspath(pdf_file_path_two_pages)
 
 
 def test_from_json_restores_internal_structures(sample_document_json: Path) -> None:

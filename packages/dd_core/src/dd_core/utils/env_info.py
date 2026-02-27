@@ -181,7 +181,7 @@ from .types import KeyValEnvInfos, PathLikeOrStr
 
 ENV_VARS_TRUE: set[str] = {"1", "True", "TRUE", "true", "yes"}
 
-__all__ = ["collect_env_info", "EnvSettings", "SETTINGS", "ENV_VARS_TRUE", "collect_torch_env"]
+__all__ = ["collect_env_info", "EnvSettings", "SETTINGS", "ENV_VARS_TRUE", "collect_torch_env", "find_env_file"]
 
 # pylint: disable=import-outside-toplevel
 

@@ -112,7 +112,7 @@ sample_document_image:
   description: PNG of a page from some DB financial report
 sample_document_json:
   path: dd_core/tests/assets/document.json
-  sha256: a22cbe11252421564d1ea0b26f0e42d68bf8e9e14186764ca68a9435fd859d56
+  sha256: 0c311cb35ce61d9d91e982cd9b3e6d5029908ec4ed3f78846aef9cfb23ea3c8c
   size: 7811504
   license: Apache-2.0
   description: document JSON sample
