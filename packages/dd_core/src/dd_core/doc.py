@@ -43,7 +43,7 @@ from .datapoint.image import Image
 from .datapoint.view import ImageAnnotationBaseView, Page
 from .mapper.maputils import curry
 from .utils import get_uuid_from_str
-from .utils.file_utils import mkdir_p
+from .utils.file_utils import mkdir_p, pypdf_available
 from .utils.identifier import is_uuid_like
 from .utils.object_types import DocumentFileLabel, ObjectTypes, SummaryKey, get_type
 from .utils.types import PathLikeOrStr
@@ -299,7 +299,7 @@ class Document:
 
     def _load_pdf_metadata(self) -> None:
         location_path = Path(self.location)
-        if not location_path.exists():
+        if not location_path.exists() or not pypdf_available():
             return
 
         df = SerializerPdfDoc.load(path=location_path)

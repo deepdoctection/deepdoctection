@@ -21,11 +21,15 @@ Testing module for doc.py
 
 from pathlib import Path
 
+import pytest
+
+from dd_core.utils import file_utils as fu
 from dd_core.datapoint.image import Image
 from dd_core.datapoint.view import Page
 from dd_core.doc import Document, PageReference
 
 
+@pytest.mark.skipif(not fu.pypdf_available(), reason="Pypdf is not installed")
 def test_pdf_reports_number_of_pages(pdf_file_path_two_pages: Path) -> None:
     """test that pdf_reports_number_of_pages works"""
 
@@ -33,6 +37,7 @@ def test_pdf_reports_number_of_pages(pdf_file_path_two_pages: Path) -> None:
     assert doc.number_of_pages == 2
 
 
+@pytest.mark.skipif(not fu.pypdf_available(), reason="Pypdf is not installed")
 def test_pdf_get_page_reference_returns_valid_objects(pdf_file_path_two_pages: Path) -> None:
     """test that PageReference has all attributes filled"""
 
