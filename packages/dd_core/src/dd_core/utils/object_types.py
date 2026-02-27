@@ -23,7 +23,7 @@ from __future__ import annotations
 import itertools
 import threading
 from enum import Enum
-from typing import Any, Callable, Iterable, Optional, Type, Union, Sequence
+from typing import Any, Callable, Iterable, Optional, Sequence, Type, Union
 
 import catalogue  # type: ignore
 
@@ -121,6 +121,7 @@ class DocumentFileLabel(ObjectTypes):
     JPG = "jpg"
     TIFF = "tiff"
 
+
 @object_types_registry.register("PageKey")
 class PageKey(ObjectTypes):
     """Type for document page properties"""
@@ -129,20 +130,16 @@ class PageKey(ObjectTypes):
     LANGUAGE = "language"
     ANGLE = "angle"
     SIZE = "size"
-    PAD_TOP = "pad_top"
-    PAD_BOTTOM = "pad_bottom"
-    PAD_LEFT = "pad_left"
-    PAD_RIGHT = "pad_right"
 
 
 @object_types_registry.register("ImagePadKey")
 class ImagePadKey(ObjectTypes):
     """Types for image padding values"""
 
-    TOP = "top"
-    BOTTOM = "bottom"
-    LEFT = "left"
-    RIGHT = "right"
+    PAD_TOP = "top"
+    PAD_BOTTOM = "bottom"
+    PAD_LEFT = "left"
+    PAD_RIGHT = "right"
 
 
 @object_types_registry.register("SummaryKey")
@@ -417,8 +414,8 @@ _TOKEN_AND_TAG_TO_TOKEN_CLASS_WITH_TAG = {
 
 def token_class_tag_to_token_class_with_tag(token: ObjectTypes, tag: ObjectTypes) -> ObjectTypes:
     """
-    Maps a `TokenClassWithTagLabel` enum member from a token class and tag, e.g. `TokenClassLabel.HEADER` and `BioTag.INSIDE`
-    maps to `TTokenClassWithTagLabel.I_HEADER`.
+    Maps a `TokenClassWithTagLabel` enum member from a token class and tag, e.g. `TokenClassLabel.HEADER` and
+    `BioTag.INSIDE` maps to `TTokenClassWithTagLabel.I_HEADER`.
 
     Args:
         token: TokenClasses member.

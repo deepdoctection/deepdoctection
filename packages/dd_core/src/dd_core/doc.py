@@ -15,6 +15,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""
+Document model and utilities for multi-page document handling.
+
+This module provides lightweight references and a full-featured Document class
+used for representing and processing multi-page documents (PDFs and image
+collections). Core responsibilities include lazy page and pixel loading,
+annotation resolution, structured-output traversal, JSON serialization/
+deserialization, and visualization helpers.
+"""
+
 from __future__ import annotations
 
 import json
@@ -35,28 +45,18 @@ from .mapper.maputils import curry
 from .utils import get_uuid_from_str
 from .utils.file_utils import mkdir_p
 from .utils.identifier import is_uuid_like
-from .utils.object_types import ObjectTypes, SummaryKey, get_type
+from .utils.object_types import DocumentFileLabel, ObjectTypes, SummaryKey, get_type
 from .utils.types import PathLikeOrStr
 from .utils.viz import viz_handler
-
-from .utils.object_types import DocumentFileLabel
-
-"""
-Document model and utilities for multi-page document handling.
-
-This module provides lightweight references and a full-featured Document class
-used for representing and processing multi-page documents (PDFs and image
-collections). Core responsibilities include lazy page and pixel loading,
-annotation resolution, structured-output traversal, JSON serialization/
-deserialization, and visualization helpers.
-"""
 
 
 @dataclass(frozen=True)
 class AnnPair:
     """Lightweight pair referencing an image annotation."""
+
     image_id: str
     annotation_id: str
+
 
 @dataclass(frozen=True)
 class PageReference:
@@ -67,6 +67,7 @@ class PageReference:
     source_path: str
     page_number: int | None = None
     image_id: str | None = None
+
 
 @dataclass(frozen=True)
 class PipelineSession:
@@ -109,6 +110,7 @@ def _walk(node: Any, path: list[str], ann_to_paths: defaultdict[str, set[str]]) 
         ann_to_paths[node.annotation_id].add(".".join(path))
     return
 
+
 def flatten_entity_dict_to_ann_index(
     data: Mapping[str, Any],
 ) -> dict[str, set[str]]:
@@ -128,8 +130,6 @@ def flatten_entity_dict_to_ann_index(
     """
 
     ann_to_paths: defaultdict[str, set[str]] = defaultdict(set)
-
-
 
     _walk(data, [], ann_to_paths)
     return dict(ann_to_paths)
@@ -152,7 +152,6 @@ def build_viz_labels_from_nested_entities(
     """
     ann_index = flatten_entity_dict_to_ann_index(entities)
     return {ann_id: "|".join(sorted(paths)) for ann_id, paths in ann_index.items()}
-
 
 
 @dataclass
@@ -328,6 +327,10 @@ class Document:
 
         self._page_references = refs
 
+    def get_page_reference(self, page_number: int) -> PageReference:
+        """get page reference from page number."""
+        return self._page_references[page_number]
+
     def resolve_in_segments(self, obj: Any) -> Any:
         """
         Resolve UUID pairs into annotations.
@@ -393,7 +396,6 @@ class Document:
         if self._summary is not None:
             raise ValueError("Document.summary already defined and cannot be reset")
         self._summary = summary_annotation
-
 
     def get_image(
         self,

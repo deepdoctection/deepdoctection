@@ -154,6 +154,7 @@ _IMPORT_STRUCTURE = {
     ],
     "utils": [
         "timeout_manager",
+        "find_env_file",
         "SETTINGS",
         "collect_torch_env",
         "collect_env_info",
@@ -301,10 +302,11 @@ _IMPORT_STRUCTURE = {
         "interactive_imshow",
         "viz_handler",
     ],
+    "doc": [],
 }
 
 if TYPE_CHECKING:
-    from . import dataflow, datapoint, mapper, utils
+    from . import dataflow, datapoint, doc, mapper, utils
 
 sys.modules[__name__] = _LazyModule(
     __name__,

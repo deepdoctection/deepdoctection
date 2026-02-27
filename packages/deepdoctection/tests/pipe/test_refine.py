@@ -34,7 +34,7 @@ import pytest
 
 from dd_core.datapoint import ContainerAnnotation, Image
 from dd_core.utils.file_utils import networkx_available
-from dd_core.utils.object_types import CellLabel, LayoutLabel, TableKey, CellKey
+from dd_core.utils.object_types import CellKey, CellLabel, LayoutLabel, TableKey
 from deepdoctection.pipe.refine import (
     TableSegmentationRefinementService,
     _html_table,

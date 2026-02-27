@@ -1393,7 +1393,7 @@ class PubtablesSegmentationService(PipelineComponent):
                     CellKey.ROW_NUMBER: {CellKey.ROW_NUMBER},
                     CellKey.COLUMN_NUMBER: {CellKey.COLUMN_NUMBER},
                     CellKey.ROW_SPAN: {CellKey.ROW_SPAN},
-                    CellKeyCOLUMN_SPAN: {CellKey.COLUMN_SPAN},
+                    CellKey.COLUMN_SPAN: {CellKey.COLUMN_SPAN},
                 },
                 CellLabel.COLUMN_HEADER: {
                     CellKey.ROW_NUMBER: {CellKey.ROW_NUMBER},
