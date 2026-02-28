@@ -23,10 +23,10 @@ from pathlib import Path
 
 import pytest
 
-from dd_core.utils import file_utils as fu
 from dd_core.datapoint.image import Image
 from dd_core.datapoint.view import Page
 from dd_core.doc import Document, PageReference
+from dd_core.utils import file_utils as fu
 
 
 @pytest.mark.skipif(not fu.pypdf_available(), reason="Pypdf is not installed")
