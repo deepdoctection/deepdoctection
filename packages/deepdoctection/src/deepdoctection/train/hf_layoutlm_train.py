@@ -36,7 +36,7 @@ from dd_core.utils import get_torch_device
 from dd_core.utils.error import DependencyError
 from dd_core.utils.file_utils import wandb_available
 from dd_core.utils.logger import LoggingRecord, logger
-from dd_core.utils.object_types import DatasetType, LayoutType, WordType
+from dd_core.utils.object_types import DatasetKind, LayoutLabel, WordKey
 from dd_core.utils.types import PathLikeOrStr
 from dd_core.utils.utils import string_to_dict
 from dd_datasets.adapter import DatasetAdapter
@@ -78,7 +78,7 @@ with try_import() as wb_import_guard:
     import wandb
 
 
-def get_automodel_architecture(dataset_type: DatasetType) -> Any:
+def get_automodel_architecture(dataset_type: DatasetKind) -> Any:
     """
     Gets the model architecture, model wrapper, and config class for a given `model_type` and `dataset_type`.
 
@@ -89,8 +89,8 @@ def get_automodel_architecture(dataset_type: DatasetType) -> Any:
         Autmodel class for sequence or token classification.
     """
     return {
-        DatasetType.SEQUENCE_CLASSIFICATION: AutoModelForSequenceClassification,
-        DatasetType.TOKEN_CLASSIFICATION: AutoModelForTokenClassification,
+        DatasetKind.SEQUENCE_CLASSIFICATION: AutoModelForSequenceClassification,
+        DatasetKind.TOKEN_CLASSIFICATION: AutoModelForTokenClassification,
     }[dataset_type]
 
 
@@ -260,7 +260,7 @@ def train_hf_layoutlm(
     metric: Optional[Union[Type[ClassificationMetric], ClassificationMetric]] = None,
     pipeline_component_name: Optional[str] = None,
     use_token_tag: bool = True,
-    segment_positions: Optional[Union[LayoutType, Sequence[LayoutType]]] = None,
+    segment_positions: Optional[Union[LayoutLabel, Sequence[LayoutLabel]]] = None,
 ) -> None:
     """
     Script for fine-tuning LayoutLM models either for sequence classification (e.g. classifying documents) or token
@@ -350,25 +350,25 @@ def train_hf_layoutlm(
 
     # We wrap our dataset into a torch dataset
     dataset_type = dataset_train.dataset_info.type
-    if dataset_type == DatasetType.SEQUENCE_CLASSIFICATION:
+    if dataset_type == DatasetKind.SEQUENCE_CLASSIFICATION:
         categories_dict_name_as_key = dataset_train.dataflow.categories.get_categories(as_dict=True, name_as_key=True)
-    elif dataset_type == DatasetType.TOKEN_CLASSIFICATION:
+    elif dataset_type == DatasetKind.TOKEN_CLASSIFICATION:
         if use_token_tag:
             categories_dict_name_as_key = dataset_train.dataflow.categories.get_sub_categories(
-                categories=LayoutType.WORD,
-                sub_categories={LayoutType.WORD: [WordType.TOKEN_TAG]},
+                categories=LayoutLabel.WORD,
+                sub_categories={LayoutLabel.WORD: [WordKey.TOKEN_TAG]},
                 keys=False,
                 values_as_dict=True,
                 name_as_key=True,
-            )[LayoutType.WORD][WordType.TOKEN_TAG]
+            )[LayoutLabel.WORD][WordKey.TOKEN_TAG]
         else:
             categories_dict_name_as_key = dataset_train.dataflow.categories.get_sub_categories(
-                categories=LayoutType.WORD,
-                sub_categories={LayoutType.WORD: [WordType.TOKEN_CLASS]},
+                categories=LayoutLabel.WORD,
+                sub_categories={LayoutLabel.WORD: [WordKey.TOKEN_CLASS]},
                 keys=False,
                 values_as_dict=True,
                 name_as_key=True,
-            )[LayoutType.WORD][WordType.TOKEN_CLASS]
+            )[LayoutLabel.WORD][WordKey.TOKEN_CLASS]
     else:
         raise UserWarning("Dataset type not supported for training")
 
@@ -488,19 +488,19 @@ def train_hf_layoutlm(
 
     if arguments.eval_strategy in (IntervalStrategy.STEPS,):
         assert metric is not None  # silence mypy
-        if dataset_type == DatasetType.SEQUENCE_CLASSIFICATION:
+        if dataset_type == DatasetKind.SEQUENCE_CLASSIFICATION:
             categories = dataset_val.dataflow.categories.get_categories(filtered=True)  # type: ignore
         else:
             if use_token_tag:
                 categories = dataset_val.dataflow.categories.get_sub_categories(  # type: ignore
-                    categories=LayoutType.WORD, sub_categories={LayoutType.WORD: [WordType.TOKEN_TAG]}, keys=False
-                )[LayoutType.WORD][WordType.TOKEN_TAG]
-                metric.set_categories(category_names=LayoutType.WORD, sub_category_names={"word": ["token_tag"]})
+                    categories=LayoutLabel.WORD, sub_categories={LayoutLabel.WORD: [WordKey.TOKEN_TAG]}, keys=False
+                )[LayoutLabel.WORD][WordKey.TOKEN_TAG]
+                metric.set_categories(category_names=LayoutLabel.WORD, sub_category_names={"word": ["token_tag"]})
             else:
                 categories = dataset_val.dataflow.categories.get_sub_categories(  # type: ignore
-                    categories=LayoutType.WORD, sub_categories={LayoutType.WORD: [WordType.TOKEN_CLASS]}, keys=False
-                )[LayoutType.WORD][WordType.TOKEN_CLASS]
-                metric.set_categories(category_names=LayoutType.WORD, sub_category_names={"word": ["token_class"]})
+                    categories=LayoutLabel.WORD, sub_categories={LayoutLabel.WORD: [WordKey.TOKEN_CLASS]}, keys=False
+                )[LayoutLabel.WORD][WordKey.TOKEN_CLASS]
+                metric.set_categories(category_names=LayoutLabel.WORD, sub_category_names={"word": ["token_class"]})
         dd_model = model_wrapper_cls(
             path_config_json=path_config_json,
             path_weights=path_weights,
@@ -508,7 +508,7 @@ def train_hf_layoutlm(
             device=get_torch_device(),
         )
         pipeline_component_cls = pipeline_component_registry.get(pipeline_component_name)
-        if dataset_type == DatasetType.SEQUENCE_CLASSIFICATION:
+        if dataset_type == DatasetKind.SEQUENCE_CLASSIFICATION:
             pipeline_component = pipeline_component_cls(tokenizer_fast, dd_model, use_other_as_default_category=True)
         else:
             pipeline_component = pipeline_component_cls(

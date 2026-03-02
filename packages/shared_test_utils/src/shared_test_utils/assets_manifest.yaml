@@ -110,6 +110,12 @@ sample_document_image:
   size: 458046
   license: Prop-Corpoorate-Doc
   description: PNG of a page from some DB financial report
+sample_document_json:
+  path: dd_core/tests/assets/document.json
+  sha256: 0c311cb35ce61d9d91e982cd9b3e6d5029908ec4ed3f78846aef9cfb23ea3c8c
+  size: 7811588
+  license: Apache-2.0
+  description: document JSON sample
 sample_image:
   path: deepdoctection/tests/assets/image_dir/sample_image.png
   sha256: a55679ce5cad22ffbea912eea1973bf5c1032abdce7105662844a936f7cd910d

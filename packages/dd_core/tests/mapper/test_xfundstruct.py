@@ -34,10 +34,10 @@ import pytest
 from dd_core.datapoint import Image
 from dd_core.mapper.xfundstruct import xfund_to_image
 from dd_core.utils.object_types import (
-    BioTag,
-    LayoutType,
-    TokenClasses,
-    WordType,
+    BioTagLabel,
+    LayoutLabel,
+    TokenClassLabel,
+    WordKey,
     token_class_tag_to_token_class_with_tag,
 )
 
@@ -45,22 +45,22 @@ from dd_core.utils.object_types import (
 def test_xfund_to_image_load_image_fake_score(monkeypatch: pytest.MonkeyPatch, xfund_datapoint: Dict[str, Any]) -> None:
     """Map XFUND with image loading and fake scores; validate word-level annotations."""
 
-    CATEGORIES_DICT_NAME_AS_KEY: Dict[LayoutType, int] = {LayoutType.TEXT: 1, LayoutType.WORD: 2}
-    NER_TOKEN_TO_ID_MAPPING: Dict[LayoutType, Dict[WordType, Dict[Any, int]]] = {
-        LayoutType.WORD: {
-            WordType.TAG: {
-                BioTag.BEGIN: 51,
-                BioTag.OUTSIDE: 52,
-                BioTag.INSIDE: 53,
+    CATEGORIES_DICT_NAME_AS_KEY: Dict[LayoutLabel, int] = {LayoutLabel.TEXT: 1, LayoutLabel.WORD: 2}
+    NER_TOKEN_TO_ID_MAPPING: Dict[LayoutLabel, Dict[WordKey, Dict[Any, int]]] = {
+        LayoutLabel.WORD: {
+            WordKey.TAG: {
+                BioTagLabel.BEGIN: 51,
+                BioTagLabel.OUTSIDE: 52,
+                BioTagLabel.INSIDE: 53,
             },
-            WordType.TOKEN_CLASS: {
-                TokenClasses.OTHER: 61,
-                TokenClasses.HEADER: 62,
+            WordKey.TOKEN_CLASS: {
+                TokenClassLabel.OTHER: 61,
+                TokenClassLabel.HEADER: 62,
             },
-            WordType.TOKEN_TAG: {
-                BioTag.OUTSIDE: 71,
-                token_class_tag_to_token_class_with_tag(TokenClasses.HEADER, BioTag.BEGIN): 72,
-                token_class_tag_to_token_class_with_tag(TokenClasses.HEADER, BioTag.INSIDE): 73,
+            WordKey.TOKEN_TAG: {
+                BioTagLabel.OUTSIDE: 71,
+                token_class_tag_to_token_class_with_tag(TokenClassLabel.HEADER, BioTagLabel.BEGIN): 72,
+                token_class_tag_to_token_class_with_tag(TokenClassLabel.HEADER, BioTagLabel.INSIDE): 73,
             },
         }
     }
@@ -87,27 +87,27 @@ def test_xfund_to_image_load_image_fake_score(monkeypatch: pytest.MonkeyPatch, x
     assert img.image.shape == (3508, 2480, 3)
 
     # Collect word annotations
-    word_anns: List[Any] = img.get_annotation(category_names=LayoutType.WORD)
+    word_anns: List[Any] = img.get_annotation(category_names=LayoutLabel.WORD)
     assert len(word_anns) == 3
     assert all(ann.score is not None for ann in word_anns)
 
     observed = []
     for ann in word_anns:
-        chars = ann.get_sub_category(WordType.CHARACTERS).value
-        token_class = ann.get_sub_category(WordType.TOKEN_CLASS).category_name
-        tag = ann.get_sub_category(WordType.TAG).category_name
-        token_tag_cat = ann.get_sub_category(WordType.TOKEN_TAG).category_name
-        token_tag_id = ann.get_sub_category(WordType.TOKEN_TAG).category_id
+        chars = ann.get_sub_category(WordKey.CHARACTERS).value
+        token_class = ann.get_sub_category(WordKey.TOKEN_CLASS).category_name
+        tag = ann.get_sub_category(WordKey.TAG).category_name
+        token_tag_cat = ann.get_sub_category(WordKey.TOKEN_TAG).category_name
+        token_tag_id = ann.get_sub_category(WordKey.TOKEN_TAG).category_id
         observed.append((chars, token_class, tag, token_tag_cat, token_tag_id))
 
     expected = [
-        ("Akademisches", "other", BioTag.OUTSIDE, BioTag.OUTSIDE, 71),
-        ("Auslandsamt", "other", BioTag.OUTSIDE, BioTag.OUTSIDE, 71),
+        ("Akademisches", "other", BioTagLabel.OUTSIDE, BioTagLabel.OUTSIDE, 71),
+        ("Auslandsamt", "other", BioTagLabel.OUTSIDE, BioTagLabel.OUTSIDE, 71),
         (
             "Bewerbungsformular",
             "header",
-            BioTag.BEGIN,
-            token_class_tag_to_token_class_with_tag(TokenClasses.HEADER, BioTag.BEGIN),
+            BioTagLabel.BEGIN,
+            token_class_tag_to_token_class_with_tag(TokenClassLabel.HEADER, BioTagLabel.BEGIN),
             72,
         ),
     ]

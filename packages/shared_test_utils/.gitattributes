@@ -1,0 +1,1 @@
+../dd_core/tests/assets/document.json filter=lfs diff=lfs merge=lfs -text

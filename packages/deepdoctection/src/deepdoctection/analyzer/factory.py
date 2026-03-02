@@ -28,7 +28,7 @@ from lazy_imports import try_import
 from dd_core.utils.env_info import SETTINGS
 from dd_core.utils.error import DependencyError
 from dd_core.utils.metacfg import AttrDict
-from dd_core.utils.object_types import CellType, LayoutType, ObjectTypes, Relationships
+from dd_core.utils.object_types import CellLabel, LayoutLabel, ObjectTypes, RelationshipKey
 from dd_core.utils.transform import PadTransform
 
 from ..extern.base import ImageTransformer, ObjectDetector, PdfMiner
@@ -427,7 +427,7 @@ class ServiceFactory:
         if mode == "ITEM":
             if detector.__class__.__name__ in ("HFDetrDerivedDetector",):
                 exclude_category_names.extend(
-                    [LayoutType.TABLE, CellType.COLUMN_HEADER, CellType.PROJECTED_ROW_HEADER, CellType.SPANNING]
+                    [LayoutLabel.TABLE, CellLabel.COLUMN_HEADER, CellLabel.PROJECTED_ROW_HEADER, CellLabel.SPANNING]
                 )
         return {"exclude_category_names": exclude_category_names}
 
@@ -452,7 +452,7 @@ class ServiceFactory:
         )
         return SubImageLayoutService(
             sub_image_detector=detector,
-            sub_image_names=[LayoutType.TABLE, LayoutType.TABLE_ROTATED],
+            sub_image_names=[LayoutLabel.TABLE, LayoutLabel.TABLE_ROTATED],
             detect_result_generator=detect_result_generator,
             padder=padder,
         )
@@ -1031,14 +1031,14 @@ class ServiceFactory:
             FamilyCompound(
                 parent_categories=parental_categories,
                 child_categories=text_container,
-                relationship_key=Relationships.CHILD,
+                relationship_key=RelationshipKey.CHILD,
             ),
             FamilyCompound(
-                parent_categories=[LayoutType.LIST],
-                child_categories=[LayoutType.LIST_ITEM],
-                relationship_key=Relationships.CHILD,
+                parent_categories=[LayoutLabel.LIST],
+                child_categories=[LayoutLabel.LIST_ITEM],
+                relationship_key=RelationshipKey.CHILD,
                 create_synthetic_parent=True,
-                synthetic_parent=LayoutType.LIST,
+                synthetic_parent=LayoutLabel.LIST,
             ),
         ]
         return MatchingService(
@@ -1093,7 +1093,7 @@ class ServiceFactory:
             FamilyCompound(
                 parent_categories=parental_categories,
                 child_categories=child_categories,
-                relationship_key=Relationships.LAYOUT_LINK,
+                relationship_key=RelationshipKey.LAYOUT_LINK,
             )
         ]
         return MatchingService(
@@ -1153,9 +1153,9 @@ class ServiceFactory:
         )
         family_compounds = [
             FamilyCompound(
-                parent_categories=[LayoutType.LIST],
-                child_categories=[LayoutType.LINE],
-                relationship_key=Relationships.CHILD,
+                parent_categories=[LayoutLabel.LIST],
+                child_categories=[LayoutLabel.LINE],
+                relationship_key=RelationshipKey.CHILD,
             ),
         ]
         return MatchingService(
@@ -1612,7 +1612,7 @@ class ServiceFactory:
         token_classifier: Union[LayoutTokenModels, LmTokenModels],
         tokenizer_fast: Any,
         use_other_as_default_category: bool,
-        segment_positions: Union[LayoutType, Sequence[LayoutType], None],
+        segment_positions: Union[LayoutLabel, Sequence[LayoutLabel], None],
         sliding_window_stride: int,
     ) -> LMTokenClassifierService:
         """

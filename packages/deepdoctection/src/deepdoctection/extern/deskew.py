@@ -24,7 +24,7 @@ from __future__ import annotations
 from lazy_imports import try_import
 
 from dd_core.utils.file_utils import get_jdeskew_requirement
-from dd_core.utils.object_types import ObjectTypes, PageType
+from dd_core.utils.object_types import ObjectTypes, PageKey
 from dd_core.utils.types import PixelValues, Requirement
 from dd_core.utils.viz import viz_handler
 
@@ -90,4 +90,4 @@ class Jdeskewer(ImageTransformer):
         return self.__class__(self.min_angle_rotation)
 
     def get_category_names(self) -> tuple[ObjectTypes, ...]:
-        return (PageType.ANGLE,)
+        return (PageKey.ANGLE,)

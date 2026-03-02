@@ -174,7 +174,6 @@ By the way, the source code for training this model can be found [here](https://
 Save the model under `os.environ["CONFIGS_DIR"] `. 
 Alternatively, provide `hf_repo_id`, `hf_model_name`. This model does not require a config file.
 
-
 ```python
 dd.ModelCatalog.register("yolo/yolov10x_best.pt", dd.ModelProfile(
     name="yolo/yolov10x_best.pt",
@@ -182,17 +181,17 @@ dd.ModelCatalog.register("yolo/yolov10x_best.pt", dd.ModelProfile(
     tp_model=False,
     size=[0],
     categories={
-        1: dd.LayoutType.CAPTION,
-        2: dd.LayoutType.FOOTNOTE,
-        3: dd.LayoutType.FORMULA,
-        4: dd.LayoutType.LIST_ITEM,
-        5: dd.LayoutType.PAGE_FOOTER,
-        6: dd.LayoutType.PAGE_HEADER,
-        7: dd.LayoutType.FIGURE,
-        8: dd.LayoutType.SECTION_HEADER,
-        9: dd.LayoutType.TABLE,
-        10: dd.LayoutType.TEXT,
-        11: dd.LayoutType.TITLE,
+        1: dd.LayoutLabel.CAPTION,
+        2: dd.LayoutLabel.FOOTNOTE,
+        3: dd.LayoutLabel.FORMULA,
+        4: dd.LayoutLabel.LIST_ITEM,
+        5: dd.LayoutLabel.PAGE_FOOTER,
+        6: dd.LayoutLabel.PAGE_HEADER,
+        7: dd.LayoutLabel.FIGURE,
+        8: dd.LayoutLabel.SECTION_HEADER,
+        9: dd.LayoutLabel.TABLE,
+        10: dd.LayoutLabel.TEXT,
+        11: dd.LayoutLabel.TITLE,
     },
     model_wrapper="YoloDetector",
     hf_model_name="yolov10x_best.pt",

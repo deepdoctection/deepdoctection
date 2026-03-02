@@ -25,7 +25,7 @@ from lazy_imports import try_import
 
 from dd_core.utils.context import save_tmp_file
 from dd_core.utils.file_utils import get_pdfplumber_requirement, get_pypdfium2_requirement
-from dd_core.utils.object_types import LayoutType, ObjectTypes
+from dd_core.utils.object_types import LayoutLabel, ObjectTypes
 from dd_core.utils.types import Requirement
 
 from .base import DetectionResult, ModelCategories, PdfMiner
@@ -82,7 +82,7 @@ class PdfPlumberTextDetector(PdfMiner):
     def __init__(self, x_tolerance: int = 3, y_tolerance: int = 3) -> None:
         self.name = "Pdfplumber"
         self.model_id = self.get_model_id()
-        self.categories = ModelCategories(init_categories={1: LayoutType.WORD})
+        self.categories = ModelCategories(init_categories={1: LayoutLabel.WORD})
         self.x_tolerance = x_tolerance
         self.y_tolerance = y_tolerance
         self._page: Optional[Page] = None
@@ -169,7 +169,7 @@ class Pdfmium2TextDetector(PdfMiner):
     def __init__(self) -> None:
         self.name = "Pdfmium"
         self.model_id = self.get_model_id()
-        self.categories = ModelCategories(init_categories={1: LayoutType.LINE})
+        self.categories = ModelCategories(init_categories={1: LayoutLabel.LINE})
         self._page: Optional[Page] = None
 
     def predict(self, pdf_bytes: bytes) -> list[DetectionResult]:

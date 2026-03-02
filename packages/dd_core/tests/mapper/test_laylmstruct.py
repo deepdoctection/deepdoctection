@@ -25,7 +25,7 @@ import pytest
 from dd_core.datapoint import Image
 from dd_core.mapper.laylmstruct import image_to_raw_layoutlm_features, raw_features_to_layoutlm_features
 from dd_core.utils.file_utils import transformers_available
-from dd_core.utils.object_types import DatasetType, WordType
+from dd_core.utils.object_types import DatasetKind, WordKey
 from dd_core.utils.types import JsonDict
 
 if transformers_available():
@@ -48,7 +48,7 @@ def test_image_to_raw_layoutlm_features_for_token_data(
     )
 
     # Act
-    raw_features = image_to_raw_layoutlm_features(DatasetType.TOKEN_CLASSIFICATION)(xfund_image)
+    raw_features = image_to_raw_layoutlm_features(DatasetKind.TOKEN_CLASSIFICATION)(xfund_image)
 
     # Assert
     assert raw_features is not None
@@ -80,12 +80,12 @@ def test_image_to_raw_layoutlm_features_for_inference(
     # Arrange
     image = xfund_image
     for ann in image.get_annotation():
-        ann.remove_sub_category(WordType.TOKEN_CLASS)
-        ann.remove_sub_category(WordType.TAG)
-        ann.remove_sub_category(WordType.TOKEN_TAG)
+        ann.remove_sub_category(WordKey.TOKEN_CLASS)
+        ann.remove_sub_category(WordKey.TAG)
+        ann.remove_sub_category(WordKey.TOKEN_TAG)
 
     # Act
-    raw_features = image_to_raw_layoutlm_features(DatasetType.TOKEN_CLASSIFICATION)(image)
+    raw_features = image_to_raw_layoutlm_features(DatasetKind.TOKEN_CLASSIFICATION)(image)
 
     # Assert
     assert raw_features is not None

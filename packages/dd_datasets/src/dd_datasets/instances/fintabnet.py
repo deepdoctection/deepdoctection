@@ -43,7 +43,7 @@ from dd_core.mapper import curry, image_ann_to_image, maybe_ann_to_sub_image
 from dd_core.mapper.cats import cat_to_sub_cat, filter_cat
 from dd_core.mapper.pubstruct import pub_to_image
 from dd_core.utils.logger import LoggingRecord, logger
-from dd_core.utils.object_types import CellType, DatasetType, LayoutType, ObjectTypes, TableType
+from dd_core.utils.object_types import CellKey, CellLabel, DatasetKind, LayoutLabel, ObjectTypes, TableKey
 from dd_core.utils.types import PubtabnetDict
 
 from ..base import _BuiltInDataset
@@ -82,38 +82,38 @@ _URL = (
     "fintabnet.tar.gz?_ga=2.17492593.994196051.1634564576-1173244232.1625045842"
 )
 _SPLITS: Mapping[str, str] = {"train": "train", "val": "val", "test": "test"}
-_TYPE = DatasetType.OBJECT_DETECTION
+_TYPE = DatasetKind.OBJECT_DETECTION
 _LOCATION = "fintabnet"
 _ANNOTATION_FILES: Mapping[str, str] = {
     "train": "FinTabNet_1.0.0_table_train.jsonl",
     "test": "FinTabNet_1.0.0_table_test.jsonl",
     "val": "FinTabNet_1.0.0_table_val.jsonl",
 }
-_INIT_CATEGORIES = [LayoutType.TABLE, LayoutType.CELL, TableType.ITEM]
+_INIT_CATEGORIES = [LayoutLabel.TABLE, LayoutLabel.CELL, TableKey.ITEM]
 _SUB_CATEGORIES: Mapping[ObjectTypes, Mapping[ObjectTypes, Sequence[ObjectTypes]]]
 _SUB_CATEGORIES = {
-    LayoutType.CELL: {
-        CellType.COLUMN_HEADER: [CellType.COLUMN_HEADER, CellType.BODY],
-        CellType.ROW_NUMBER: [],
-        CellType.COLUMN_NUMBER: [],
-        CellType.ROW_SPAN: [],
-        CellType.COLUMN_SPAN: [],
-        CellType.SPANNING: [CellType.SPANNING, LayoutType.CELL],
+    LayoutLabel.CELL: {
+        CellLabel.COLUMN_HEADER: [CellLabel.COLUMN_HEADER, CellLabel.BODY],
+        CellKey.ROW_NUMBER: [],
+        CellKey.COLUMN_NUMBER: [],
+        CellKey.ROW_SPAN: [],
+        CellKey.COLUMN_SPAN: [],
+        CellLabel.SPANNING: [CellLabel.SPANNING, LayoutLabel.CELL],
     },
-    TableType.ITEM: {TableType.ITEM: [LayoutType.ROW, LayoutType.COLUMN]},
-    CellType.COLUMN_HEADER: {
-        CellType.ROW_NUMBER: [],
-        CellType.COLUMN_NUMBER: [],
-        CellType.ROW_SPAN: [],
-        CellType.COLUMN_SPAN: [],
-        CellType.SPANNING: [CellType.SPANNING, LayoutType.CELL],
+    TableKey.ITEM: {TableKey.ITEM: [LayoutLabel.ROW, LayoutLabel.COLUMN]},
+    CellLabel.COLUMN_HEADER: {
+        CellKey.ROW_NUMBER: [],
+        CellKey.COLUMN_NUMBER: [],
+        CellKey.ROW_SPAN: [],
+        CellKey.COLUMN_SPAN: [],
+        CellLabel.SPANNING: [CellLabel.SPANNING, LayoutLabel.CELL],
     },
-    CellType.BODY: {
-        CellType.ROW_NUMBER: [],
-        CellType.COLUMN_NUMBER: [],
-        CellType.ROW_SPAN: [],
-        CellType.COLUMN_SPAN: [],
-        CellType.SPANNING: [CellType.SPANNING, LayoutType.CELL],
+    CellLabel.BODY: {
+        CellKey.ROW_NUMBER: [],
+        CellKey.COLUMN_NUMBER: [],
+        CellKey.ROW_SPAN: [],
+        CellKey.COLUMN_SPAN: [],
+        CellLabel.SPANNING: [CellLabel.SPANNING, LayoutLabel.CELL],
     },
 }
 
@@ -224,32 +224,32 @@ class FintabnetBuilder(DataFlowBaseBuilder):
                 df,
                 _crop_and_add_image(  # pylint: disable=E1120
                     category_names=[
-                        LayoutType.TABLE,
-                        LayoutType.CELL,
-                        CellType.COLUMN_HEADER,
-                        CellType.BODY,
-                        TableType.ITEM,
-                        LayoutType.ROW,
-                        LayoutType.COLUMN,
+                        LayoutLabel.TABLE,
+                        LayoutLabel.CELL,
+                        CellLabel.COLUMN_HEADER,
+                        CellLabel.BODY,
+                        TableKey.ITEM,
+                        LayoutLabel.ROW,
+                        LayoutLabel.COLUMN,
                     ]
                 ),
             )
             df = MapData(
                 df,
                 maybe_ann_to_sub_image(  # pylint: disable=E1120  # 259
-                    category_names_sub_image=LayoutType.TABLE,
+                    category_names_sub_image=LayoutLabel.TABLE,
                     category_names=[
-                        LayoutType.CELL,
-                        CellType.COLUMN_HEADER,
-                        CellType.BODY,
-                        TableType.ITEM,
-                        LayoutType.ROW,
-                        LayoutType.COLUMN,
+                        LayoutLabel.CELL,
+                        CellLabel.COLUMN_HEADER,
+                        CellLabel.BODY,
+                        TableKey.ITEM,
+                        LayoutLabel.ROW,
+                        LayoutLabel.COLUMN,
                     ],
                     add_summary=True,
                 ),
             )
-            df = MapData(df, lambda dp: [ann.image for ann in dp.get_annotation(category_names=LayoutType.TABLE)])
+            df = MapData(df, lambda dp: [ann.image for ann in dp.get_annotation(category_names=LayoutLabel.TABLE)])
             df = FlattenData(df)
             df = MapData(df, lambda dp: dp[0])
 

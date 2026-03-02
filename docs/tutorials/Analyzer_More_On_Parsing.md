@@ -312,9 +312,8 @@ By the way, don’t be confused by the obscure way the different categories are 
 enum members. Each enum member can be converted into a string type, and vice versa — a string type can be converted 
 back into an enum member:
 
-
 ```python
-dd.LayoutType.CELL, dd.LayoutType.CELL.value, dd.get_type('cell')
+dd.LayoutLabel.CELL, dd.LayoutLabel.CELL.value, dd.get_type('cell')
 ```
 
 ??? info "Output"

@@ -32,7 +32,7 @@ from numpy.testing import assert_array_equal
 
 from dd_core.datapoint.image import Image
 from dd_core.utils.identifier import get_uuid_from_str
-from dd_core.utils.object_types import PageType
+from dd_core.utils.object_types import PageKey
 from deepdoctection.extern.base import DetectionResult, ImageTransformer
 from deepdoctection.pipe.transform import SimpleTransformService
 
@@ -48,7 +48,7 @@ class TestSimpleTransformService:
         """
 
         self._transform_predictor = MagicMock(spec=ImageTransformer)
-        self._transform_predictor.get_category_names = MagicMock(return_value=(PageType.ANGLE,))
+        self._transform_predictor.get_category_names = MagicMock(return_value=(PageKey.ANGLE,))
         self._transform_predictor.name = "mock_transform"
         self._transform_predictor.model_id = get_uuid_from_str(self._transform_predictor.name)[:8]
         detect_result = DetectionResult()

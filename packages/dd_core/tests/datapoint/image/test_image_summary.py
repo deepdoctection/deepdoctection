@@ -20,7 +20,7 @@ Testing Image summary operations
 """
 
 from dd_core.datapoint import CategoryAnnotation, Image
-from dd_core.utils.object_types import SummaryType
+from dd_core.utils.object_types import SummaryKey
 
 
 class TestImageSummary:
@@ -43,7 +43,7 @@ class TestImageSummary:
 
         summary = img.summary
 
-        assert summary.category_name == SummaryType.SUMMARY
+        assert summary.category_name == SummaryKey.SUMMARY
 
     @staticmethod
     def test_summary_has_annotation_id() -> None:

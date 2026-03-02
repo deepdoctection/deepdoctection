@@ -107,15 +107,15 @@ for word in page.words:
 
 We define a dataflow and use the `CustomDataset` class.
 
-
 ```python
 @dd.curry
 def overwrite_location_and_load(dp, image_dir, load_image):
-    image_file = image_dir / dp.file_name.replace("pdf","png")
+    image_file = image_dir / dp.file_name.replace("pdf", "png")
     dp.location = image_file.as_posix()
     if load_image:
         dp.image = dd.load_image_from_file(image_file)
     return dp
+
 
 class NerBuilder(dd.DataFlowBaseBuilder):
 
@@ -125,8 +125,8 @@ class NerBuilder(dd.DataFlowBaseBuilder):
         ann_files_dir = self.get_workdir()
         image_dir = self.get_workdir() / "image"
 
-        df = dd.SerializerFiles.load(ann_files_dir,".json")   # (1) 
-        df = dd.MapData(df, dd.Image.from_file)   # (2) 
+        df = dd.SerializerFiles.load(ann_files_dir, ".json")  # (1) 
+        df = dd.MapData(df, dd.Image.from_file)  # (2) 
 
         df = dd.MapData(df, overwrite_location_and_load(image_dir, load_image))
 
@@ -134,21 +134,21 @@ class NerBuilder(dd.DataFlowBaseBuilder):
             df = dd.MapData(
                 df,
                 dd.filter_cat(
-                    self.categories.get_categories(as_dict=False, 
-												   filtered=True),
-                    self.categories.get_categories(as_dict=False, 
-												   filtered=False),
+                    self.categories.get_categories(as_dict=False,
+                                                   filtered=True),
+                    self.categories.get_categories(as_dict=False,
+                                                   filtered=False),
                 ),
             )
         df = dd.MapData(df,
-			 dd.re_assign_cat_ids(cat_to_sub_cat_mapping=
-			 self.categories.get_sub_categories(
-                                  categories=dd.LayoutType.WORD,
-                                  sub_categories={dd.LayoutType.WORD: 
-												  dd.WordType.TOKEN_CLASS},
-                                  keys = False,
-                                  values_as_dict=True,
-                                  name_as_key=True)))
+                        dd.re_assign_cat_ids(cat_to_sub_cat_mapping=
+                        self.categories.get_sub_categories(
+                            categories=dd.LayoutLabel.WORD,
+                            sub_categories={dd.LayoutLabel.WORD:
+                                                dd.WordKey.TOKEN_CLASS},
+                            keys=False,
+                            values_as_dict=True,
+                            name_as_key=True)))
 
         return df
 ```
@@ -156,27 +156,26 @@ class NerBuilder(dd.DataFlowBaseBuilder):
 1. Get a stream of `.json` files
 2. Load `.json` file
 
-
 ```python
-ner = dd.CustomDataset(name = "FRFPE",
-                 dataset_type=dd.DatasetType.TOKEN_CLASSIFICATION,
-                 location="FRFPE",
-                 init_categories=[dd.LayoutType.TEXT, 
-								  dd.LayoutType.TITLE, 
-								  dd.LayoutType.LIST, 
-								  dd.LayoutType.TABLE,
-                                  dd.LayoutType.FIGURE, 
-								  dd.LayoutType.LINE, 
-								  dd.LayoutType.WORD],
-                 init_sub_categories={dd.LayoutType.WORD: 
-									 {dd.WordType.TOKEN_CLASS: 
-									  [FundsFirstPage.REPORT_DATE,
-									   FundsFirstPage.REPORT_TYPE,
-									   FundsFirstPage.UMBRELLA,
-									   FundsFirstPage.FUND_NAME,
-									   dd.TokenClasses.OTHER],
-                                      dd.WordType.TAG: []}},
-                 dataflow_builder=NerBuilder)
+ner = dd.CustomDataset(name="FRFPE",
+                       dataset_type=dd.DatasetKind.TOKEN_CLASSIFICATION,
+                       location="FRFPE",
+                       init_categories=[dd.LayoutLabel.TEXT,
+                                        dd.LayoutLabel.TITLE,
+                                        dd.LayoutLabel.LIST,
+                                        dd.LayoutLabel.TABLE,
+                                        dd.LayoutLabel.FIGURE,
+                                        dd.LayoutLabel.LINE,
+                                        dd.LayoutLabel.WORD],
+                       init_sub_categories={dd.LayoutLabel.WORD:
+                                                {dd.WordKey.TOKEN_CLASS:
+                                                     [FundsFirstPage.REPORT_DATE,
+                                                      FundsFirstPage.REPORT_TYPE,
+                                                      FundsFirstPage.UMBRELLA,
+                                                      FundsFirstPage.FUND_NAME,
+                                                      dd.TokenClassLabel.OTHER],
+                                                 dd.WordKey.TAG: []}},
+                       dataflow_builder=NerBuilder)
 ```
 
 ## Step 5: Defining a split and saving the split distribution as W&B artifact 
@@ -185,9 +184,8 @@ ner = dd.CustomDataset(name = "FRFPE",
 - We define a split with ~90% train, ~5% validation and ~5% test samples.
 - To reproduce the split later we save the split as a W&B artifact.
 
-
 ```python
-ner.dataflow.categories.filter_categories(categories=dd.LayoutType.WORD)
+ner.dataflow.categories.filter_categories(categories=dd.LayoutLabel.WORD)
 
 merge = dd.MergeDataset(ner)
 merge.buffer_datasets()

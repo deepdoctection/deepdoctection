@@ -28,7 +28,7 @@ from dd_core.datapoint.annotation import DEFAULT_CATEGORY_ID, CategoryAnnotation
 from dd_core.datapoint.box import BoundingBox, local_to_global_coords, rescale_coords
 from dd_core.datapoint.image import Image
 from dd_core.mapper.maputils import MappingContextManager
-from dd_core.utils.object_types import ObjectTypes, Relationships
+from dd_core.utils.object_types import ObjectTypes, RelationshipKey
 
 from ..extern.base import DetectionResult
 
@@ -120,6 +120,10 @@ class DatapointManager:
         self._datapoint = dp
         self._cache_anns = {ann.annotation_id: ann for ann in dp.get_annotation()}
         self.datapoint_is_passed = True
+
+    def set_model_id(self, model_id: str | None) -> None:
+        """Re-sets the model_id."""
+        self.model_id = model_id
 
     def assert_datapoint_passed(self) -> None:
         """
@@ -227,7 +231,7 @@ class DatapointManager:
                     self.datapoint.image_id,
                     ann_global_box.transform(image_width=self.datapoint.width, image_height=self.datapoint.height),
                 )
-                parent_ann.dump_relationship(Relationships.CHILD, ann.annotation_id)
+                parent_ann.dump_relationship(RelationshipKey.CHILD, ann.annotation_id)
 
             self.datapoint.dump(ann)
             self._cache_anns[ann.annotation_id] = ann

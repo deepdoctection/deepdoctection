@@ -40,7 +40,16 @@ from dd_core.datapoint.image import Image, MetaAnnotation
 from dd_core.mapper.maputils import MappingContextManager
 from dd_core.mapper.match import match_anns_by_intersection
 from dd_core.utils.error import ImageError
-from dd_core.utils.object_types import CellType, LayoutType, ObjectTypes, Relationships, TableType, TypeOrStr, get_type
+from dd_core.utils.object_types import (
+    CellKey,
+    CellLabel,
+    LayoutLabel,
+    ObjectTypes,
+    RelationshipKey,
+    TableKey,
+    TypeOrStr,
+    get_type,
+)
 
 from ..extern.base import DetectionResult
 from .base import PipelineComponent
@@ -162,7 +171,7 @@ def stretch_item_per_table(
     Returns:
         The updated `Image`.
     """
-    item_ann_ids = table.get_relationship(Relationships.CHILD)
+    item_ann_ids = table.get_relationship(RelationshipKey.CHILD)
 
     rows = dp.get_annotation(category_names=row_name, annotation_ids=item_ann_ids)
     if table.image is None:
@@ -229,15 +238,15 @@ def _tile_by_stretching_rows_left_and_rightwise(
     table_embedding_box = table.get_bounding_box(dp.image_id)
 
     if table_embedding_box.absolute_coords:
-        tmp_item_xy = table_embedding_box.uly + 1.0 if item_name == LayoutType.ROW else table_embedding_box.ulx + 1.0
+        tmp_item_xy = table_embedding_box.uly + 1.0 if item_name == LayoutLabel.ROW else table_embedding_box.ulx + 1.0
         tmp_item_table_xy = 1.0
     else:
         tmp_item_xy = (
             table_embedding_box.uly + 1.0 / dp.height
-            if item_name == LayoutType.ROW
+            if item_name == LayoutLabel.ROW
             else table_embedding_box.ulx + 1.0 / dp.width
         )
-        tmp_item_table_xy = 1.0 / dp.height if item_name == LayoutType.ROW else 1.0 / dp.width
+        tmp_item_table_xy = 1.0 / dp.height if item_name == LayoutLabel.ROW else 1.0 / dp.width
 
     for idx, item in enumerate(items):
         with MappingContextManager(
@@ -258,21 +267,21 @@ def _tile_by_stretching_rows_left_and_rightwise(
                     )
                 tmp_next_item_xy = (
                     (item_embedding_box.lry + next_item_embedding_box.uly) / 2
-                    if item_name == LayoutType.ROW
+                    if item_name == LayoutLabel.ROW
                     else (item_embedding_box.lrx + next_item_embedding_box.ulx) / 2
                 )
             else:
                 tmp_next_item_xy = (
                     table_embedding_box.lry - 1.0 / dp.height
-                    if item_name == LayoutType.ROW
+                    if item_name == LayoutLabel.ROW
                     else table_embedding_box.lrx - 1.0 / dp.width
                 )
 
             new_embedding_box = BoundingBox(
-                ulx=item_embedding_box.ulx if item_name == LayoutType.ROW else tmp_item_xy,
-                uly=tmp_item_xy if item_name == LayoutType.ROW else item_embedding_box.uly,
-                lrx=item_embedding_box.lrx if item_name == LayoutType.ROW else tmp_next_item_xy,
-                lry=tmp_next_item_xy if item_name == LayoutType.ROW else item_embedding_box.lry,
+                ulx=item_embedding_box.ulx if item_name == LayoutLabel.ROW else tmp_item_xy,
+                uly=tmp_item_xy if item_name == LayoutLabel.ROW else item_embedding_box.uly,
+                lrx=item_embedding_box.lrx if item_name == LayoutLabel.ROW else tmp_next_item_xy,
+                lry=tmp_next_item_xy if item_name == LayoutLabel.ROW else item_embedding_box.lry,
                 absolute_coords=False,
             )
             item.image.set_embedding(dp.image_id, new_embedding_box)
@@ -283,21 +292,21 @@ def _tile_by_stretching_rows_left_and_rightwise(
                 next_item_table_embedding_box = items[idx + 1].get_bounding_box(table.annotation_id)
                 tmp_table_next_item_xy = (
                     (item_table_embedding_box.lry + next_item_table_embedding_box.uly) / 2
-                    if item_name == LayoutType.ROW
+                    if item_name == LayoutLabel.ROW
                     else (item_table_embedding_box.lrx + next_item_table_embedding_box.ulx) / 2
                 )
             else:
                 tmp_table_next_item_xy = (
                     table.image.height - 1.0 / table.image.height
-                    if item_name == LayoutType.ROW
+                    if item_name == LayoutLabel.ROW
                     else table.image.width - 1.0 / table.image.width
                 )
 
             new_table_embedding_box = BoundingBox(
-                ulx=item_table_embedding_box.ulx if item_name == LayoutType.ROW else tmp_item_table_xy,
-                uly=tmp_item_table_xy if item_name == LayoutType.ROW else item_table_embedding_box.uly,
-                lrx=item_table_embedding_box.lrx if item_name == LayoutType.ROW else tmp_table_next_item_xy,
-                lry=tmp_table_next_item_xy if item_name == LayoutType.ROW else item_table_embedding_box.lry,
+                ulx=item_table_embedding_box.ulx if item_name == LayoutLabel.ROW else tmp_item_table_xy,
+                uly=tmp_item_table_xy if item_name == LayoutLabel.ROW else item_table_embedding_box.uly,
+                lrx=item_table_embedding_box.lrx if item_name == LayoutLabel.ROW else tmp_table_next_item_xy,
+                lry=tmp_table_next_item_xy if item_name == LayoutLabel.ROW else item_table_embedding_box.lry,
                 absolute_coords=False,
             )
             item.image.set_embedding(table.annotation_id, new_table_embedding_box)
@@ -312,15 +321,15 @@ def _tile_by_stretching_rows_leftwise_column_downwise(
     table_embedding_box = table.get_bounding_box(dp.image_id)
 
     if table_embedding_box.absolute_coords:
-        tmp_item_xy = table_embedding_box.uly + 1.0 if item_name == LayoutType.ROW else table_embedding_box.ulx + 1.0
+        tmp_item_xy = table_embedding_box.uly + 1.0 if item_name == LayoutLabel.ROW else table_embedding_box.ulx + 1.0
         tmp_item_table_xy = 1.0
     else:
         tmp_item_xy = (
             table_embedding_box.uly + 1.0 / dp.height
-            if item_name == LayoutType.ROW
+            if item_name == LayoutLabel.ROW
             else table_embedding_box.ulx + 1.0 / dp.width
         )
-        tmp_item_table_xy = 1.0 / dp.height if item_name == LayoutType.ROW else 1.0 / dp.width
+        tmp_item_table_xy = 1.0 / dp.height if item_name == LayoutLabel.ROW else 1.0 / dp.width
 
     for item in items:
         with MappingContextManager(
@@ -334,8 +343,8 @@ def _tile_by_stretching_rows_leftwise_column_downwise(
             if item_embedding_box.absolute_coords:
                 item_embedding_box = item_embedding_box.transform(image_width=dp.width, image_height=dp.height)
             new_embedding_box = BoundingBox(
-                ulx=item_embedding_box.ulx if item_name == LayoutType.ROW else tmp_item_xy,
-                uly=tmp_item_xy if item_name == LayoutType.ROW else item_embedding_box.uly,
+                ulx=item_embedding_box.ulx if item_name == LayoutLabel.ROW else tmp_item_xy,
+                uly=tmp_item_xy if item_name == LayoutLabel.ROW else item_embedding_box.uly,
                 lrx=item_embedding_box.lrx,
                 lry=item_embedding_box.lry,
                 absolute_coords=False,
@@ -346,8 +355,8 @@ def _tile_by_stretching_rows_leftwise_column_downwise(
                     image_width=table.image.width, image_height=table.image.height
                 )
             new_table_embedding_box = BoundingBox(
-                ulx=item_table_embedding_box.ulx if item_name == LayoutType.ROW else tmp_item_table_xy,
-                uly=tmp_item_table_xy if item_name == LayoutType.ROW else item_table_embedding_box.uly,
+                ulx=item_table_embedding_box.ulx if item_name == LayoutLabel.ROW else tmp_item_table_xy,
+                uly=tmp_item_table_xy if item_name == LayoutLabel.ROW else item_table_embedding_box.uly,
                 lrx=item_table_embedding_box.lrx,
                 lry=item_table_embedding_box.lry,
                 absolute_coords=False,
@@ -355,31 +364,33 @@ def _tile_by_stretching_rows_leftwise_column_downwise(
 
             if item == items[-1]:
                 new_embedding_box = BoundingBox(
-                    ulx=item_embedding_box.ulx if item_name == LayoutType.ROW else tmp_item_xy,
-                    uly=tmp_item_xy if item_name == LayoutType.ROW else item_embedding_box.uly,
+                    ulx=item_embedding_box.ulx if item_name == LayoutLabel.ROW else tmp_item_xy,
+                    uly=tmp_item_xy if item_name == LayoutLabel.ROW else item_embedding_box.uly,
                     lrx=(
                         item_embedding_box.lrx
-                        if item_name == LayoutType.ROW
+                        if item_name == LayoutLabel.ROW
                         else table_embedding_box.lrx - 1.0 / dp.width
                     ),
                     lry=(
                         table_embedding_box.lry - 1.0 / dp.height
-                        if item_name == LayoutType.ROW
+                        if item_name == LayoutLabel.ROW
                         else item_embedding_box.lry
                     ),
                     absolute_coords=False,
                 )
                 new_table_embedding_box = BoundingBox(
-                    ulx=item_table_embedding_box.ulx if item_name == LayoutType.ROW else tmp_item_table_xy,
-                    uly=tmp_item_table_xy if item_name == LayoutType.ROW else item_table_embedding_box.uly,
-                    lrx=item_table_embedding_box.lrx if item_name == LayoutType.ROW else 1.0 - 1.0 / table.image.width,
-                    lry=1.0 - 1.0 / table.image.height if item_name == LayoutType.ROW else item_table_embedding_box.lry,
+                    ulx=item_table_embedding_box.ulx if item_name == LayoutLabel.ROW else tmp_item_table_xy,
+                    uly=tmp_item_table_xy if item_name == LayoutLabel.ROW else item_table_embedding_box.uly,
+                    lrx=item_table_embedding_box.lrx if item_name == LayoutLabel.ROW else 1.0 - 1.0 / table.image.width,
+                    lry=(
+                        1.0 - 1.0 / table.image.height if item_name == LayoutLabel.ROW else item_table_embedding_box.lry
+                    ),
                     absolute_coords=False,
                 )
 
-            tmp_item_xy = item_embedding_box.lry if item_name == LayoutType.ROW else item_embedding_box.lrx
+            tmp_item_xy = item_embedding_box.lry if item_name == LayoutLabel.ROW else item_embedding_box.lrx
             tmp_item_table_xy = (
-                item_table_embedding_box.lry if item_name == LayoutType.ROW else item_table_embedding_box.lrx
+                item_table_embedding_box.lry if item_name == LayoutLabel.ROW else item_table_embedding_box.lrx
             )
             item.image.set_embedding(dp.image_id, new_embedding_box)
             item.image.set_embedding(table.annotation_id, new_table_embedding_box)
@@ -410,12 +421,14 @@ def tile_tables_with_items_per_table(
         The updated `Image`.
     """
 
-    item_ann_ids = table.get_relationship(Relationships.CHILD)
+    item_ann_ids = table.get_relationship(RelationshipKey.CHILD)
     items = dp.get_annotation(category_names=item_name, annotation_ids=item_ann_ids)
 
     items.sort(
         key=lambda x: (
-            x.get_bounding_box(dp.image_id).cx if item_name == LayoutType.COLUMN else x.get_bounding_box(dp.image_id).cy
+            x.get_bounding_box(dp.image_id).cx
+            if item_name == LayoutLabel.COLUMN
+            else x.get_bounding_box(dp.image_id).cy
         )
     )
 
@@ -507,7 +520,7 @@ def segment_table(
         A list of `SegmentationResult` for each cell.
     """
 
-    child_ann_ids = table.get_relationship(Relationships.CHILD)
+    child_ann_ids = table.get_relationship(RelationshipKey.CHILD)
     cell_index_rows, row_index, _, _ = match_anns_by_intersection(
         dp,
         parent_ann_category_names=item_names[0],
@@ -544,7 +557,7 @@ def segment_table(
             rows_of_cell = [rows[k] for k in row_index[cell_positions_rows]]
             rs = np.count_nonzero(cell_index_rows == idx)
             if len(rows_of_cell):
-                row_number = min(row.get_sub_category(CellType.ROW_NUMBER).category_id for row in rows_of_cell)
+                row_number = min(row.get_sub_category(CellKey.ROW_NUMBER).category_id for row in rows_of_cell)
             else:
                 row_number = 0
 
@@ -552,7 +565,7 @@ def segment_table(
             cols_of_cell = [columns[k] for k in col_index[cell_positions_cols]]
             cs = np.count_nonzero(cell_index_cols == idx)
             if len(cols_of_cell):
-                col_number = min(col.get_sub_category(CellType.COLUMN_NUMBER).category_id for col in cols_of_cell)
+                col_number = min(col.get_sub_category(CellKey.COLUMN_NUMBER).category_id for col in cols_of_cell)
             else:
                 col_number = 0
 
@@ -604,7 +617,7 @@ def create_intersection_cells(
                 DetectionResult(
                     box=boxes_cells[idx].to_list(mode="xyxy"),
                     absolute_coords=boxes_cells[idx].absolute_coords,
-                    class_name=LayoutType.CELL,
+                    class_name=LayoutLabel.CELL,
                 )
             )
             segment_result_cells.append(
@@ -650,7 +663,7 @@ def header_cell_to_item_detect_result(
     Returns:
         A list of `ItemHeaderResult` containing the matched header cells.
     """
-    child_ann_ids = table.get_relationship(Relationships.CHILD)
+    child_ann_ids = table.get_relationship(RelationshipKey.CHILD)
     item_index, _, items, _ = match_anns_by_intersection(
         dp,
         parent_ann_category_names=item_header_name,
@@ -701,7 +714,7 @@ def segment_pubtables(
         A list of `SegmentationResult` for spanning cells.
     """
 
-    child_ann_ids = table.get_relationship(Relationships.CHILD)
+    child_ann_ids = table.get_relationship(RelationshipKey.CHILD)
     cell_index_rows, row_index, _, _ = match_anns_by_intersection(
         dp,
         parent_ann_category_names=item_names[0],
@@ -738,10 +751,10 @@ def segment_pubtables(
             cell_positions_rows = cell_index_rows == idx
             rows_of_cell = [rows[k] for k in row_index[cell_positions_rows]]
             if rows_of_cell:
-                min_row_cell = min(rows_of_cell, key=lambda row: row.get_sub_category(CellType.ROW_NUMBER).category_id)
-                max_row_cell = max(rows_of_cell, key=lambda row: row.get_sub_category(CellType.ROW_NUMBER).category_id)
-                max_row = max_row_cell.get_sub_category(CellType.ROW_NUMBER).category_id
-                min_row = min_row_cell.get_sub_category(CellType.ROW_NUMBER).category_id
+                min_row_cell = min(rows_of_cell, key=lambda row: row.get_sub_category(CellKey.ROW_NUMBER).category_id)
+                max_row_cell = max(rows_of_cell, key=lambda row: row.get_sub_category(CellKey.ROW_NUMBER).category_id)
+                max_row = max_row_cell.get_sub_category(CellKey.ROW_NUMBER).category_id
+                min_row = min_row_cell.get_sub_category(CellKey.ROW_NUMBER).category_id
                 rs = max_row - min_row + 1
                 row_number = min_row
             else:
@@ -753,13 +766,13 @@ def segment_pubtables(
 
             if cols_of_cell:
                 min_col_cell = min(
-                    cols_of_cell, key=lambda col: col.get_sub_category(CellType.COLUMN_NUMBER).category_id
+                    cols_of_cell, key=lambda col: col.get_sub_category(CellKey.COLUMN_NUMBER).category_id
                 )
                 max_col_cell = max(
-                    cols_of_cell, key=lambda col: col.get_sub_category(CellType.COLUMN_NUMBER).category_id
+                    cols_of_cell, key=lambda col: col.get_sub_category(CellKey.COLUMN_NUMBER).category_id
                 )
-                max_col = max_col_cell.get_sub_category(CellType.COLUMN_NUMBER).category_id
-                min_col = min_col_cell.get_sub_category(CellType.COLUMN_NUMBER).category_id
+                max_col = max_col_cell.get_sub_category(CellKey.COLUMN_NUMBER).category_id
+                min_col = min_col_cell.get_sub_category(CellKey.COLUMN_NUMBER).category_id
                 cs = max_col - min_col + 1
                 col_number = min_col
             else:
@@ -913,7 +926,7 @@ class TableSegmentationService(PipelineComponent):
         )
         table_anns = dp.get_annotation(category_names=self.table_name)
         for table in table_anns:
-            item_ann_ids = table.get_relationship(Relationships.CHILD)
+            item_ann_ids = table.get_relationship(RelationshipKey.CHILD)
             for item_sub_item_name in zip(self.item_names, self.sub_item_names):  # one pass for rows and one for cols
                 item_name, sub_item_name = item_sub_item_name[0], item_sub_item_name[1]
                 if self.tile_table:
@@ -931,7 +944,7 @@ class TableSegmentationService(PipelineComponent):
                 items.sort(
                     key=lambda x: (
                         x.get_bounding_box(dp.image_id).cx  # pylint: disable=W0640
-                        if item_name == LayoutType.COLUMN  # pylint: disable=W0640
+                        if item_name == LayoutLabel.COLUMN  # pylint: disable=W0640
                         else x.get_bounding_box(dp.image_id).cy  # pylint: disable=W0640
                     )
                 )
@@ -951,58 +964,58 @@ class TableSegmentationService(PipelineComponent):
             )
             for segment_result in raw_table_segments:
                 self.dp_manager.set_category_annotation(
-                    CellType.ROW_NUMBER, segment_result.row_num, CellType.ROW_NUMBER, segment_result.annotation_id
+                    CellKey.ROW_NUMBER, segment_result.row_num, CellKey.ROW_NUMBER, segment_result.annotation_id
                 )
                 self.dp_manager.set_category_annotation(
-                    CellType.COLUMN_NUMBER, segment_result.col_num, CellType.COLUMN_NUMBER, segment_result.annotation_id
+                    CellKey.COLUMN_NUMBER, segment_result.col_num, CellKey.COLUMN_NUMBER, segment_result.annotation_id
                 )
                 self.dp_manager.set_category_annotation(
-                    CellType.ROW_SPAN, segment_result.rs, CellType.ROW_SPAN, segment_result.annotation_id
+                    CellKey.ROW_SPAN, segment_result.rs, CellKey.ROW_SPAN, segment_result.annotation_id
                 )
                 self.dp_manager.set_category_annotation(
-                    CellType.COLUMN_SPAN, segment_result.cs, CellType.COLUMN_SPAN, segment_result.annotation_id
+                    CellKey.COLUMN_SPAN, segment_result.cs, CellKey.COLUMN_SPAN, segment_result.annotation_id
                 )
 
             if table.image:
                 cells = table.image.get_annotation(category_names=self.cell_names)
                 number_of_rows = max(
-                    cell.get_sub_category(CellType.ROW_NUMBER).category_id
+                    cell.get_sub_category(CellKey.ROW_NUMBER).category_id
                     for cell in cells
-                    if CellType.ROW_NUMBER in cell.sub_categories
+                    if CellKey.ROW_NUMBER in cell.sub_categories
                 )
                 number_of_cols = max(
-                    cell.get_sub_category(CellType.COLUMN_NUMBER).category_id
+                    cell.get_sub_category(CellKey.COLUMN_NUMBER).category_id
                     for cell in cells
-                    if CellType.ROW_NUMBER in cell.sub_categories
+                    if CellKey.ROW_NUMBER in cell.sub_categories
                 )
                 max_row_span = max(
-                    cell.get_sub_category(CellType.ROW_SPAN).category_id
+                    cell.get_sub_category(CellKey.ROW_SPAN).category_id
                     for cell in cells
-                    if CellType.ROW_NUMBER in cell.sub_categories
+                    if CellKey.ROW_NUMBER in cell.sub_categories
                 )
                 max_col_span = max(
-                    cell.get_sub_category(CellType.COLUMN_SPAN).category_id
+                    cell.get_sub_category(CellKey.COLUMN_SPAN).category_id
                     for cell in cells
-                    if CellType.ROW_NUMBER in cell.sub_categories
+                    if CellKey.ROW_NUMBER in cell.sub_categories
                 )
                 # TODO: the summaries should be sub categories of the underlying ann
                 self.dp_manager.set_summary_annotation(
-                    TableType.NUMBER_OF_ROWS,
-                    TableType.NUMBER_OF_ROWS,
+                    TableKey.NUMBER_OF_ROWS,
+                    TableKey.NUMBER_OF_ROWS,
                     number_of_rows,
                     annotation_id=table.annotation_id,
                 )
                 self.dp_manager.set_summary_annotation(
-                    TableType.NUMBER_OF_COLUMNS,
-                    TableType.NUMBER_OF_COLUMNS,
+                    TableKey.NUMBER_OF_COLUMNS,
+                    TableKey.NUMBER_OF_COLUMNS,
                     number_of_cols,
                     annotation_id=table.annotation_id,
                 )
                 self.dp_manager.set_summary_annotation(
-                    TableType.MAX_ROW_SPAN, TableType.MAX_ROW_SPAN, max_row_span, annotation_id=table.annotation_id
+                    TableKey.MAX_ROW_SPAN, TableKey.MAX_ROW_SPAN, max_row_span, annotation_id=table.annotation_id
                 )
                 self.dp_manager.set_summary_annotation(
-                    TableType.MAX_COL_SPAN, TableType.MAX_COL_SPAN, max_col_span, annotation_id=table.annotation_id
+                    TableKey.MAX_COL_SPAN, TableKey.MAX_COL_SPAN, max_col_span, annotation_id=table.annotation_id
                 )
 
     def clone(self) -> TableSegmentationService:
@@ -1024,14 +1037,14 @@ class TableSegmentationService(PipelineComponent):
         return MetaAnnotation(
             image_annotations=(),
             sub_categories={
-                LayoutType.CELL: {
-                    CellType.ROW_NUMBER: {CellType.ROW_NUMBER},
-                    CellType.COLUMN_NUMBER: {CellType.COLUMN_NUMBER},
-                    CellType.ROW_SPAN: {CellType.ROW_SPAN},
-                    CellType.COLUMN_SPAN: {CellType.COLUMN_SPAN},
+                LayoutLabel.CELL: {
+                    CellKey.ROW_NUMBER: {CellKey.ROW_NUMBER},
+                    CellKey.COLUMN_NUMBER: {CellKey.COLUMN_NUMBER},
+                    CellKey.ROW_SPAN: {CellKey.ROW_SPAN},
+                    CellKey.COLUMN_SPAN: {CellKey.COLUMN_SPAN},
                 },
-                LayoutType.ROW: {CellType.ROW_NUMBER: {CellType.ROW_NUMBER}},
-                LayoutType.COLUMN: {CellType.COLUMN_NUMBER: {CellType.COLUMN_NUMBER}},
+                LayoutLabel.ROW: {CellKey.ROW_NUMBER: {CellKey.ROW_NUMBER}},
+                LayoutLabel.COLUMN: {CellKey.COLUMN_NUMBER: {CellKey.COLUMN_NUMBER}},
             },
             relationships={},
             summaries=(),
@@ -1149,7 +1162,7 @@ class PubtablesSegmentationService(PipelineComponent):
         table_anns = dp.get_annotation(category_names=self.table_name)
         has_item_headers = {item: False for item in self.item_names}
         for table in table_anns:
-            item_ann_ids = table.get_relationship(Relationships.CHILD)
+            item_ann_ids = table.get_relationship(RelationshipKey.CHILD)
             for item_sub_item_name in zip(
                 self.item_names, self.sub_item_names, self.item_header_cell_names, self.item_header_thresholds
             ):  # one pass for rows and one for cols
@@ -1167,7 +1180,7 @@ class PubtablesSegmentationService(PipelineComponent):
                 items.sort(
                     key=lambda x: (
                         x.get_bounding_box(dp.image_id).cx
-                        if item_name == LayoutType.COLUMN  # pylint: disable=W0640
+                        if item_name == LayoutLabel.COLUMN  # pylint: disable=W0640
                         else x.get_bounding_box(dp.image_id).cy
                     )
                 )
@@ -1204,16 +1217,16 @@ class PubtablesSegmentationService(PipelineComponent):
                     crop_image=self.crop_cell_image,
                 )
                 self.dp_manager.set_category_annotation(
-                    CellType.ROW_NUMBER, segment_result.row_num, CellType.ROW_NUMBER, segment_result.annotation_id
+                    CellKey.ROW_NUMBER, segment_result.row_num, CellKey.ROW_NUMBER, segment_result.annotation_id
                 )
                 self.dp_manager.set_category_annotation(
-                    CellType.COLUMN_NUMBER, segment_result.col_num, CellType.COLUMN_NUMBER, segment_result.annotation_id
+                    CellKey.COLUMN_NUMBER, segment_result.col_num, CellKey.COLUMN_NUMBER, segment_result.annotation_id
                 )
                 self.dp_manager.set_category_annotation(
-                    CellType.ROW_SPAN, segment_result.rs, CellType.ROW_SPAN, segment_result.annotation_id
+                    CellKey.ROW_SPAN, segment_result.rs, CellKey.ROW_SPAN, segment_result.annotation_id
                 )
                 self.dp_manager.set_category_annotation(
-                    CellType.COLUMN_SPAN, segment_result.cs, CellType.COLUMN_SPAN, segment_result.annotation_id
+                    CellKey.COLUMN_SPAN, segment_result.cs, CellKey.COLUMN_SPAN, segment_result.annotation_id
                 )
                 cell_rn_cn_to_ann_id[(segment_result.row_num, segment_result.col_num)] = segment_result.annotation_id
 
@@ -1236,16 +1249,16 @@ class PubtablesSegmentationService(PipelineComponent):
                     self.dp_manager.deactivate_annotation(segment_result.annotation_id)
                     continue
                 self.dp_manager.set_category_annotation(
-                    CellType.ROW_NUMBER, segment_result.row_num, CellType.ROW_NUMBER, segment_result.annotation_id
+                    CellKey.ROW_NUMBER, segment_result.row_num, CellKey.ROW_NUMBER, segment_result.annotation_id
                 )
                 self.dp_manager.set_category_annotation(
-                    CellType.COLUMN_NUMBER, segment_result.col_num, CellType.COLUMN_NUMBER, segment_result.annotation_id
+                    CellKey.COLUMN_NUMBER, segment_result.col_num, CellKey.COLUMN_NUMBER, segment_result.annotation_id
                 )
                 self.dp_manager.set_category_annotation(
-                    CellType.ROW_SPAN, segment_result.rs, CellType.ROW_SPAN, segment_result.annotation_id
+                    CellKey.ROW_SPAN, segment_result.rs, CellKey.ROW_SPAN, segment_result.annotation_id
                 )
                 self.dp_manager.set_category_annotation(
-                    CellType.COLUMN_SPAN, segment_result.cs, CellType.COLUMN_SPAN, segment_result.annotation_id
+                    CellKey.COLUMN_SPAN, segment_result.cs, CellKey.COLUMN_SPAN, segment_result.annotation_id
                 )
                 cells_to_deactivate = []
                 for rs in range(segment_result.rs):
@@ -1273,24 +1286,24 @@ class PubtablesSegmentationService(PipelineComponent):
                 cells = table.image.get_annotation(category_names=self.cell_names + self.spanning_cell_names)
             if cells:
                 number_of_rows = max(
-                    cell.get_sub_category(CellType.ROW_NUMBER).category_id
+                    cell.get_sub_category(CellKey.ROW_NUMBER).category_id
                     for cell in cells
-                    if CellType.ROW_NUMBER in cell.sub_categories
+                    if CellKey.ROW_NUMBER in cell.sub_categories
                 )
                 number_of_cols = max(
-                    cell.get_sub_category(CellType.COLUMN_NUMBER).category_id
+                    cell.get_sub_category(CellKey.COLUMN_NUMBER).category_id
                     for cell in cells
-                    if CellType.COLUMN_NUMBER in cell.sub_categories
+                    if CellKey.COLUMN_NUMBER in cell.sub_categories
                 )
                 max_row_span = max(
-                    cell.get_sub_category(CellType.ROW_SPAN).category_id
+                    cell.get_sub_category(CellKey.ROW_SPAN).category_id
                     for cell in cells
-                    if CellType.ROW_SPAN in cell.sub_categories
+                    if CellKey.ROW_SPAN in cell.sub_categories
                 )
                 max_col_span = max(
-                    cell.get_sub_category(CellType.COLUMN_SPAN).category_id
+                    cell.get_sub_category(CellKey.COLUMN_SPAN).category_id
                     for cell in cells
-                    if CellType.COLUMN_SPAN in cell.sub_categories
+                    if CellKey.COLUMN_SPAN in cell.sub_categories
                 )
             else:
                 number_of_rows = 0
@@ -1316,29 +1329,29 @@ class PubtablesSegmentationService(PipelineComponent):
                                         )
                                 else:
                                     cell_ann = dp.get_annotation(annotation_ids=value)[0]
-                                    if CellType.BODY not in cell_ann.sub_categories:
+                                    if CellLabel.BODY not in cell_ann.sub_categories:
                                         self.dp_manager.set_category_annotation(
-                                            CellType.BODY, None, CellType.BODY, cell_ann.annotation_id
+                                            CellLabel.BODY, None, CellLabel.BODY, cell_ann.annotation_id
                                         )
 
             # TODO: the summaries should be sub categories of the underlying ann
             self.dp_manager.set_summary_annotation(
-                TableType.NUMBER_OF_ROWS, TableType.NUMBER_OF_ROWS, number_of_rows, annotation_id=table.annotation_id
+                TableKey.NUMBER_OF_ROWS, TableKey.NUMBER_OF_ROWS, number_of_rows, annotation_id=table.annotation_id
             )
             self.dp_manager.set_summary_annotation(
-                TableType.NUMBER_OF_COLUMNS,
-                TableType.NUMBER_OF_COLUMNS,
+                TableKey.NUMBER_OF_COLUMNS,
+                TableKey.NUMBER_OF_COLUMNS,
                 number_of_cols,
                 annotation_id=table.annotation_id,
             )
             self.dp_manager.set_summary_annotation(
-                TableType.MAX_ROW_SPAN, TableType.MAX_ROW_SPAN, max_row_span, annotation_id=table.annotation_id
+                TableKey.MAX_ROW_SPAN, TableKey.MAX_ROW_SPAN, max_row_span, annotation_id=table.annotation_id
             )
             self.dp_manager.set_summary_annotation(
-                TableType.MAX_COL_SPAN, TableType.MAX_COL_SPAN, max_col_span, annotation_id=table.annotation_id
+                TableKey.MAX_COL_SPAN, TableKey.MAX_COL_SPAN, max_col_span, annotation_id=table.annotation_id
             )
             html = generate_html_string(table, self.cell_names + self.spanning_cell_names)
-            self.dp_manager.set_container_annotation(TableType.HTML, -1, TableType.HTML, table.annotation_id, html)
+            self.dp_manager.set_container_annotation(TableKey.HTML, -1, TableKey.HTML, table.annotation_id, html)
 
     def clone(self) -> PubtablesSegmentationService:
         return self.__class__(
@@ -1364,38 +1377,38 @@ class PubtablesSegmentationService(PipelineComponent):
         return MetaAnnotation(
             image_annotations=(),
             sub_categories={
-                LayoutType.CELL: {
-                    CellType.ROW_NUMBER: {CellType.ROW_NUMBER},
-                    CellType.COLUMN_NUMBER: {CellType.COLUMN_NUMBER},
-                    CellType.ROW_SPAN: {CellType.ROW_SPAN},
-                    CellType.COLUMN_SPAN: {CellType.COLUMN_SPAN},
+                LayoutLabel.CELL: {
+                    CellKey.ROW_NUMBER: {CellKey.ROW_NUMBER},
+                    CellKey.COLUMN_NUMBER: {CellKey.COLUMN_NUMBER},
+                    CellKey.ROW_SPAN: {CellKey.ROW_SPAN},
+                    CellKey.COLUMN_SPAN: {CellKey.COLUMN_SPAN},
                 },
-                CellType.SPANNING: {
-                    CellType.ROW_NUMBER: {CellType.ROW_NUMBER},
-                    CellType.COLUMN_NUMBER: {CellType.COLUMN_NUMBER},
-                    CellType.ROW_SPAN: {CellType.ROW_SPAN},
-                    CellType.COLUMN_SPAN: {CellType.COLUMN_SPAN},
+                CellLabel.SPANNING: {
+                    CellKey.ROW_NUMBER: {CellKey.ROW_NUMBER},
+                    CellKey.COLUMN_NUMBER: {CellKey.COLUMN_NUMBER},
+                    CellKey.ROW_SPAN: {CellKey.ROW_SPAN},
+                    CellKey.COLUMN_SPAN: {CellKey.COLUMN_SPAN},
                 },
-                CellType.ROW_HEADER: {
-                    CellType.ROW_NUMBER: {CellType.ROW_NUMBER},
-                    CellType.COLUMN_NUMBER: {CellType.COLUMN_NUMBER},
-                    CellType.ROW_SPAN: {CellType.ROW_SPAN},
-                    CellType.COLUMN_SPAN: {CellType.COLUMN_SPAN},
+                CellLabel.ROW_HEADER: {
+                    CellKey.ROW_NUMBER: {CellKey.ROW_NUMBER},
+                    CellKey.COLUMN_NUMBER: {CellKey.COLUMN_NUMBER},
+                    CellKey.ROW_SPAN: {CellKey.ROW_SPAN},
+                    CellKey.COLUMN_SPAN: {CellKey.COLUMN_SPAN},
                 },
-                CellType.COLUMN_HEADER: {
-                    CellType.ROW_NUMBER: {CellType.ROW_NUMBER},
-                    CellType.COLUMN_NUMBER: {CellType.COLUMN_NUMBER},
-                    CellType.ROW_SPAN: {CellType.ROW_SPAN},
-                    CellType.COLUMN_SPAN: {CellType.COLUMN_SPAN},
+                CellLabel.COLUMN_HEADER: {
+                    CellKey.ROW_NUMBER: {CellKey.ROW_NUMBER},
+                    CellKey.COLUMN_NUMBER: {CellKey.COLUMN_NUMBER},
+                    CellKey.ROW_SPAN: {CellKey.ROW_SPAN},
+                    CellKey.COLUMN_SPAN: {CellKey.COLUMN_SPAN},
                 },
-                CellType.PROJECTED_ROW_HEADER: {
-                    CellType.ROW_NUMBER: {CellType.ROW_NUMBER},
-                    CellType.COLUMN_NUMBER: {CellType.COLUMN_NUMBER},
-                    CellType.ROW_SPAN: {CellType.ROW_SPAN},
-                    CellType.COLUMN_SPAN: {CellType.COLUMN_SPAN},
+                CellLabel.PROJECTED_ROW_HEADER: {
+                    CellKey.ROW_NUMBER: {CellKey.ROW_NUMBER},
+                    CellKey.COLUMN_NUMBER: {CellKey.COLUMN_NUMBER},
+                    CellKey.ROW_SPAN: {CellKey.ROW_SPAN},
+                    CellKey.COLUMN_SPAN: {CellKey.COLUMN_SPAN},
                 },
-                LayoutType.ROW: {CellType.ROW_NUMBER: {CellType.ROW_NUMBER}},
-                LayoutType.COLUMN: {CellType.COLUMN_NUMBER: {CellType.COLUMN_NUMBER}},
+                LayoutLabel.ROW: {CellKey.ROW_NUMBER: {CellKey.ROW_NUMBER}},
+                LayoutLabel.COLUMN: {CellKey.COLUMN_NUMBER: {CellKey.COLUMN_NUMBER}},
             },
             relationships={},
             summaries=(),

@@ -31,7 +31,7 @@ from dd_core.datapoint.box import BoundingBox
 from dd_core.datapoint.image import Image
 from dd_core.datapoint.view import Page
 from dd_core.utils.file_utils import pytorch_available
-from dd_core.utils.object_types import LayoutType, ObjectTypes, Relationships
+from dd_core.utils.object_types import LayoutLabel, ObjectTypes, RelationshipKey
 from deepdoctection.pipe.common import (
     AnnotationNmsService,
     FamilyCompound,
@@ -53,17 +53,17 @@ def make_ann(category: ObjectTypes, box: dict[str, int], score: float = 0.9) -> 
 @pytest.mark.parametrize(
     "pairs,thresh,prio",
     [
-        ([[LayoutType.TITLE, LayoutType.TEXT]], [0.5], [LayoutType.TITLE]),
-        ([[LayoutType.TABLE, LayoutType.TABLE_ROTATED]], [0.3], [LayoutType.TABLE]),
+        ([[LayoutLabel.TITLE, LayoutLabel.TEXT]], [0.5], [LayoutLabel.TITLE]),
+        ([[LayoutLabel.TABLE, LayoutLabel.TABLE_ROTATED]], [0.3], [LayoutLabel.TABLE]),
     ],
 )
 def test_annotation_nms_service_serves(
-    dp_image: Image, pairs: list[list[LayoutType]], thresh: list[float], prio: list[LayoutType]
+    dp_image: Image, pairs: list[list[LayoutLabel]], thresh: list[float], prio: list[LayoutLabel]
 ) -> None:
     """Test that the AnnotationNmsService serves the expected results."""
-    a1 = make_ann(LayoutType.TEXT, {"ulx": 10, "uly": 10, "width": 100, "height": 20, "absolute_coords": True})
-    a2 = make_ann(LayoutType.TEXT, {"ulx": 15, "uly": 12, "width": 100, "height": 20, "absolute_coords": True})
-    a3 = make_ann(LayoutType.TITLE, {"ulx": 12, "uly": 9, "width": 100, "height": 20, "absolute_coords": True})
+    a1 = make_ann(LayoutLabel.TEXT, {"ulx": 10, "uly": 10, "width": 100, "height": 20, "absolute_coords": True})
+    a2 = make_ann(LayoutLabel.TEXT, {"ulx": 15, "uly": 12, "width": 100, "height": 20, "absolute_coords": True})
+    a3 = make_ann(LayoutLabel.TITLE, {"ulx": 12, "uly": 9, "width": 100, "height": 20, "absolute_coords": True})
 
     dp_image.dump(a1)
     dp_image.dump(a2)
@@ -72,17 +72,17 @@ def test_annotation_nms_service_serves(
     svc = AnnotationNmsService(nms_pairs=pairs, thresholds=thresh, priority=prio)
     out = svc.pass_datapoint(dp_image)
 
-    anns_text = out.get_annotation(category_names=[LayoutType.TEXT])
+    anns_text = out.get_annotation(category_names=[LayoutLabel.TEXT])
     assert len(anns_text) <= 2
     assert isinstance(out, Image)
 
 
 def test_matching_service_child_relationships(dp_image: Image) -> None:
     """Test that the MatchingService creates the expected relationships."""
-    parent = make_ann(LayoutType.LIST, {"ulx": 50, "uly": 50, "width": 200, "height": 200, "absolute_coords": True})
-    child1 = make_ann(LayoutType.LIST_ITEM, {"ulx": 60, "uly": 60, "width": 50, "height": 20, "absolute_coords": True})
+    parent = make_ann(LayoutLabel.LIST, {"ulx": 50, "uly": 50, "width": 200, "height": 200, "absolute_coords": True})
+    child1 = make_ann(LayoutLabel.LIST_ITEM, {"ulx": 60, "uly": 60, "width": 50, "height": 20, "absolute_coords": True})
     child2 = make_ann(
-        LayoutType.LIST_ITEM, {"ulx": 300, "uly": 300, "width": 50, "height": 20, "absolute_coords": True}
+        LayoutLabel.LIST_ITEM, {"ulx": 300, "uly": 300, "width": 50, "height": 20, "absolute_coords": True}
     )  # outside
 
     dp_image.dump(parent)
@@ -91,80 +91,82 @@ def test_matching_service_child_relationships(dp_image: Image) -> None:
 
     matcher = IntersectionMatcher(matching_rule="iou", threshold=0.01, max_parent_only=False)
     fam = FamilyCompound(
-        parent_categories=[LayoutType.LIST],
-        child_categories=[LayoutType.LIST_ITEM],
-        relationship_key=Relationships.CHILD,
+        parent_categories=[LayoutLabel.LIST],
+        child_categories=[LayoutLabel.LIST_ITEM],
+        relationship_key=RelationshipKey.CHILD,
     )
     svc = MatchingService(family_compounds=[fam], matcher=matcher)
 
     _ = svc.pass_datapoint(dp_image)
 
-    rels = parent.get_relationship(Relationships.CHILD)
+    rels = parent.get_relationship(RelationshipKey.CHILD)
     assert child1.annotation_id in rels
     assert child2.annotation_id not in rels
 
 
 def test_matching_service_synthetic_parent_creation(dp_image: Image) -> None:
     """Test that the MatchingService creates synthetic parents."""
-    child1 = make_ann(LayoutType.LIST_ITEM, {"ulx": 60, "uly": 60, "width": 50, "height": 20, "absolute_coords": True})
-    child2 = make_ann(LayoutType.LIST_ITEM, {"ulx": 80, "uly": 100, "width": 50, "height": 20, "absolute_coords": True})
+    child1 = make_ann(LayoutLabel.LIST_ITEM, {"ulx": 60, "uly": 60, "width": 50, "height": 20, "absolute_coords": True})
+    child2 = make_ann(
+        LayoutLabel.LIST_ITEM, {"ulx": 80, "uly": 100, "width": 50, "height": 20, "absolute_coords": True}
+    )
 
     dp_image.dump(child1)
     dp_image.dump(child2)
 
     matcher = IntersectionMatcher(matching_rule="iou", threshold=0.0, max_parent_only=False)
     fam = FamilyCompound(
-        parent_categories=[LayoutType.LIST],
-        child_categories=[LayoutType.LIST_ITEM],
-        relationship_key=Relationships.CHILD,
+        parent_categories=[LayoutLabel.LIST],
+        child_categories=[LayoutLabel.LIST_ITEM],
+        relationship_key=RelationshipKey.CHILD,
         create_synthetic_parent=True,
-        synthetic_parent=LayoutType.LIST,
+        synthetic_parent=LayoutLabel.LIST,
     )
     svc = MatchingService(family_compounds=[fam], matcher=matcher)
     out = svc.pass_datapoint(dp_image)
 
-    parents = out.get_annotation(category_names=[LayoutType.LIST])
+    parents = out.get_annotation(category_names=[LayoutLabel.LIST])
     assert len(parents) >= 1
-    assert child1.annotation_id in parents[0].get_relationship(Relationships.CHILD) and child2.annotation_id in parents[
-        1
-    ].get_relationship(Relationships.CHILD)
+    assert child1.annotation_id in parents[0].get_relationship(
+        RelationshipKey.CHILD
+    ) and child2.annotation_id in parents[1].get_relationship(RelationshipKey.CHILD)
 
 
 def test_neighbour_matcher_layout_link(dp_image: Image) -> None:
     """Test that the NeighbourMatcher creates the expected layout link."""
     # Two text blocks near each other should be linked via NeighbourMatcher
-    a = make_ann(LayoutType.TEXT, {"ulx": 100, "uly": 100, "width": 80, "height": 20, "absolute_coords": True})
-    b = make_ann(LayoutType.CAPTION, {"ulx": 190, "uly": 105, "width": 80, "height": 20, "absolute_coords": True})
+    a = make_ann(LayoutLabel.TEXT, {"ulx": 100, "uly": 100, "width": 80, "height": 20, "absolute_coords": True})
+    b = make_ann(LayoutLabel.CAPTION, {"ulx": 190, "uly": 105, "width": 80, "height": 20, "absolute_coords": True})
 
     dp_image.dump(a)
     dp_image.dump(b)
 
     neighbor = NeighbourMatcher()
     fam = FamilyCompound(
-        parent_categories=[LayoutType.TEXT],
-        child_categories=[LayoutType.CAPTION],
-        relationship_key=Relationships.LAYOUT_LINK,
+        parent_categories=[LayoutLabel.TEXT],
+        child_categories=[LayoutLabel.CAPTION],
+        relationship_key=RelationshipKey.LAYOUT_LINK,
     )
     svc = MatchingService(family_compounds=[fam], matcher=neighbor)
     _ = svc.pass_datapoint(dp_image)
 
-    rels_a = a.get_relationship(Relationships.LAYOUT_LINK)
+    rels_a = a.get_relationship(RelationshipKey.LAYOUT_LINK)
     assert b.annotation_id in rels_a
 
 
 def test_page_parsing_service_basic(dp_image: Image) -> None:
     """Test that the PageParsingService serves the expected results."""
-    container = make_ann(LayoutType.TEXT, {"ulx": 0, "uly": 0, "width": 500, "height": 500, "absolute_coords": True})
-    line1 = make_ann(LayoutType.LINE, {"ulx": 10, "uly": 20, "width": 100, "height": 15, "absolute_coords": True})
-    line2 = make_ann(LayoutType.LINE, {"ulx": 12, "uly": 40, "width": 100, "height": 15, "absolute_coords": True})
+    container = make_ann(LayoutLabel.TEXT, {"ulx": 0, "uly": 0, "width": 500, "height": 500, "absolute_coords": True})
+    line1 = make_ann(LayoutLabel.LINE, {"ulx": 10, "uly": 20, "width": 100, "height": 15, "absolute_coords": True})
+    line2 = make_ann(LayoutLabel.LINE, {"ulx": 12, "uly": 40, "width": 100, "height": 15, "absolute_coords": True})
 
     dp_image.dump(container)
     dp_image.dump(line1)
     dp_image.dump(line2)
 
     svc = PageParsingService(
-        text_container=LayoutType.WORD,
-        floating_text_block_categories=[LayoutType.TEXT],
+        text_container=LayoutLabel.WORD,
+        floating_text_block_categories=[LayoutLabel.TEXT],
         include_residual_text_container=True,
     )
     out = svc.pass_datapoint(dp_image)

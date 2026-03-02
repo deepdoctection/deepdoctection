@@ -36,7 +36,7 @@ import numpy as np
 from dd_core.dataflow import CacheData, ConcatData, CustomDataFromList, DataFlow
 from dd_core.datapoint.image import Image, MetaAnnotation
 from dd_core.utils.logger import LoggingRecord, logger
-from dd_core.utils.object_types import DatasetType, ObjectTypes, TypeOrStr, get_type
+from dd_core.utils.object_types import DatasetKind, ObjectTypes, TypeOrStr, get_type
 from dd_core.utils.types import PathLikeOrStr
 
 from .dataflow_builder import DataFlowBaseBuilder
@@ -654,7 +654,7 @@ class CustomDataset(DatasetBase):
         """
 
         self.name = name
-        self.type: DatasetType = get_type(dataset_type)  # type: ignore
+        self.type: DatasetKind = get_type(dataset_type)  # type: ignore
         self.location = location
         self.init_categories = init_categories
         if init_sub_categories is None:

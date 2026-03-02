@@ -147,13 +147,12 @@ len(dp.words), word_sample.characters, word_sample.bbox, word_sample.reading_ord
 
 The reason is, that we do not have inferred a reading order. If there is no reading order, there is no contiguous text. 
 We treat text extraction as a character recognition problem only. If we want a reading order of predicted words, 
-we need to do it by adding a designated service. 
-
+we need to do it by adding a designated service.
 
 ```python
-order_comp = dd.TextOrderService(text_container=dd.LayoutType.WORD)
+order_comp = dd.TextOrderService(text_container=dd.LayoutLabel.WORD)
 
-pipe_comp_list=[lang_detect_comp, text_comp, order_comp]
+pipe_comp_list = [lang_detect_comp, text_comp, order_comp]
 pipe = dd.DoctectionPipe(pipeline_component_list=pipe_comp_list)
 
 df = pipe.analyze(path=image_path)
@@ -286,16 +285,15 @@ because once we have a non-empty `dp.layouts` the routine responsible for creati
 from the `Layout`s. But we haven't run any method that maps a `word` to some `Layout` object. We need to specify this 
 by running a `MatchingService`. We will also have to slightly change the configuration of the  `TextOrderService`.
 
-
 ```python
-map_comp = dd.MatchingService(parent_categories=["text","title","list","table","figure"], 
+map_comp = dd.MatchingService(parent_categories=["text", "title", "list", "table", "figure"],
                               child_categories=["word"],
-                              matching_rule = 'ioa', 
+                              matching_rule='ioa',
                               threshold=0.6)
 
-order_comp = dd.TextOrderService(text_container=dd.LayoutType.WORD,
-                                 floating_text_block_categories=["text","title","list", "figure"],
-                                 text_block_categories=["text","title","list","table","figure"])
+order_comp = dd.TextOrderService(text_container=dd.LayoutLabel.WORD,
+                                 floating_text_block_categories=["text", "title", "list", "figure"],
+                                 text_block_categories=["text", "title", "list", "table", "figure"])
 
 pipe_comp_list = [layout_comp, lang_detect_comp, text_comp, map_comp, order_comp]
 pipe = dd.DoctectionPipe(pipeline_component_list=pipe_comp_list)

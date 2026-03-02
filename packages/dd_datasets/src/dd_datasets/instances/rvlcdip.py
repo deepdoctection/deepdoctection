@@ -41,7 +41,7 @@ from dd_core.datapoint.image import Image
 from dd_core.mapper import curry
 from dd_core.mapper.cats import filter_summary
 from dd_core.utils.fs import load_image_from_file
-from dd_core.utils.object_types import DatasetType, DocumentType, PageType, SummaryType, TypeOrStr, WordType
+from dd_core.utils.object_types import CharacterTypeLabel, DatasetKind, DocumentLabel, PageKey, SummaryKey, TypeOrStr
 
 from ..base import _BuiltInDataset
 from ..dataflow_builder import DataFlowBaseBuilder
@@ -66,27 +66,27 @@ _LICENSE = (
 _URL = "https://www.cs.cmu.edu/~aharley/rvl-cdip/"
 
 _SPLITS: Mapping[str, str] = {"train": "train", "val": "val", "test": "test"}
-_TYPE = DatasetType.SEQUENCE_CLASSIFICATION
+_TYPE = DatasetKind.SEQUENCE_CLASSIFICATION
 _LOCATION = "rvl-cdip"
 
 _ANNOTATION_FILES: Mapping[str, str] = {"train": "labels/train.txt", "val": "labels/val.txt", "test": "labels/test.txt"}
 _INIT_CATEGORIES = [
-    DocumentType.LETTER,
-    DocumentType.FORM,
-    DocumentType.EMAIL,
-    WordType.HANDWRITTEN,
-    DocumentType.ADVERTISEMENT,
-    DocumentType.SCIENTIFIC_REPORT,
-    DocumentType.SCIENTIFIC_PUBLICATION,
-    DocumentType.SPECIFICATION,
-    DocumentType.FILE_FOLDER,
-    DocumentType.NEWS_ARTICLE,
-    DocumentType.BUDGET,
-    DocumentType.INVOICE,
-    DocumentType.PRESENTATION,
-    DocumentType.QUESTIONNAIRE,
-    DocumentType.RESUME,
-    DocumentType.MEMO,
+    DocumentLabel.LETTER,
+    DocumentLabel.FORM,
+    DocumentLabel.EMAIL,
+    CharacterTypeLabel.HANDWRITTEN,
+    DocumentLabel.ADVERTISEMENT,
+    DocumentLabel.SCIENTIFIC_REPORT,
+    DocumentLabel.SCIENTIFIC_PUBLICATION,
+    DocumentLabel.SPECIFICATION,
+    DocumentLabel.FILE_FOLDER,
+    DocumentLabel.NEWS_ARTICLE,
+    DocumentLabel.BUDGET,
+    DocumentLabel.INVOICE,
+    DocumentLabel.PRESENTATION,
+    DocumentLabel.QUESTIONNAIRE,
+    DocumentLabel.RESUME,
+    DocumentLabel.MEMO,
 ]
 
 
@@ -154,10 +154,10 @@ class RvlcdipBuilder(DataFlowBaseBuilder):
             file_name = os.path.split(location)[1]
             image = Image(location=(self.get_workdir() / "images" / location).as_posix(), file_name=file_name)
             image.image = load_image_from_file(image.location)
-            summary = CategoryAnnotation(category_name=SummaryType.SUMMARY)
+            summary = CategoryAnnotation(category_name=SummaryKey.SUMMARY)
             categories_dict = self.categories.get_categories(init=True)
             summary.dump_sub_category(
-                PageType.DOCUMENT_TYPE, CategoryAnnotation(category_name=categories_dict[label], category_id=label)
+                PageKey.DOCUMENT_TYPE, CategoryAnnotation(category_name=categories_dict[label], category_id=label)
             )
             image.summary = summary
             if not load_img:
@@ -169,13 +169,13 @@ class RvlcdipBuilder(DataFlowBaseBuilder):
         if self.categories.is_filtered():
             df = MapData(
                 df,
-                filter_summary({PageType.DOCUMENT_TYPE: self.categories.get_categories(as_dict=False, filtered=True)}),
+                filter_summary({PageKey.DOCUMENT_TYPE: self.categories.get_categories(as_dict=False, filtered=True)}),
             )
 
             @curry
             def _re_map_cat_ids(dp: Image, filtered_categories_name_as_key: Mapping[TypeOrStr, int]) -> Image:
-                if PageType.DOCUMENT_TYPE in dp.summary.sub_categories:
-                    summary_cat = dp.summary.get_sub_category(PageType.DOCUMENT_TYPE)
+                if PageKey.DOCUMENT_TYPE in dp.summary.sub_categories:
+                    summary_cat = dp.summary.get_sub_category(PageKey.DOCUMENT_TYPE)
                     summary_cat.category_id = filtered_categories_name_as_key[summary_cat.category_name]
                 return dp
 

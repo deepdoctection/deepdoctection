@@ -30,17 +30,17 @@ import numpy as np
 import pytest
 
 from dd_core.mapper.pascalstruct import pascal_voc_dict_to_image
-from dd_core.utils.object_types import LayoutType, ObjectTypes
+from dd_core.utils.object_types import LayoutLabel, ObjectTypes
 
 
 @pytest.fixture
 def categories_name_as_keys() -> dict[ObjectTypes, int]:
     """Category names as keys for mapping Pascal VOC annotations to Image annotations."""
     return {
-        LayoutType.TABLE: 1,
-        LayoutType.LOGO: 2,
-        LayoutType.FIGURE: 3,
-        LayoutType.SIGNATURE: 4,
+        LayoutLabel.TABLE: 1,
+        LayoutLabel.LOGO: 2,
+        LayoutLabel.FIGURE: 3,
+        LayoutLabel.SIGNATURE: 4,
     }
 
 
@@ -48,11 +48,11 @@ def categories_name_as_keys() -> dict[ObjectTypes, int]:
 def category_names_mapping() -> dict[str, ObjectTypes]:
     """Category names mapping for Pascal VOC annotations to Image annotations."""
     return {
-        "natural_image": LayoutType.FIGURE,
-        "figure": LayoutType.FIGURE,
-        "logo": LayoutType.LOGO,
-        "signature": LayoutType.SIGNATURE,
-        "table": LayoutType.TABLE,
+        "natural_image": LayoutLabel.FIGURE,
+        "figure": LayoutLabel.FIGURE,
+        "logo": LayoutLabel.LOGO,
+        "signature": LayoutLabel.SIGNATURE,
+        "table": LayoutLabel.TABLE,
     }
 
 

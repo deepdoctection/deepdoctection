@@ -31,6 +31,7 @@ class ObjectTestType(ObjectTypes):
     RELATIONSHIP_1 = "relationship_1"
     RELATIONSHIP_2 = "relationship_2"
     NON_EXISTENT = "non_existent"
+    JSON_RAW = "json_raw"
 
 
 @dataclass(frozen=True)
@@ -82,6 +83,12 @@ def fixture_page_json_path() -> Path:
 def fixture_pdf_file_path_two_pages() -> Path:
     """Provide path to a sample PDF file with two pages."""
     return stu.asset_path("pdf_file_two_pages")
+
+
+@pytest.fixture(name="sample_document_json")
+def fixture_sample_document_json() -> Path:
+    """Provide path to a sample PDF file with two pages."""
+    return stu.asset_path("sample_document_json")
 
 
 @pytest.hookimpl(tryfirst=True)

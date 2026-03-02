@@ -34,7 +34,7 @@ from dd_core.mapper import filter_cat, remove_cats
 from dd_core.mapper.misc import maybe_load_image, maybe_remove_image, maybe_remove_image_from_category
 from dd_core.mapper.wandbstruct import to_wandb_image
 from dd_core.utils.logger import LoggingRecord, logger
-from dd_core.utils.object_types import DatasetType, LayoutType, TypeOrStr, get_type
+from dd_core.utils.object_types import DatasetKind, LayoutLabel, TypeOrStr, get_type
 from dd_core.utils.types import PixelValues
 from dd_core.utils.viz import interactive_imshow
 
@@ -146,14 +146,14 @@ class Evaluator:
 
         self.wandb_table_agent: Optional[WandbTableAgent]
         if run is not None:
-            if self.dataset.dataset_info.type == DatasetType.OBJECT_DETECTION:
+            if self.dataset.dataset_info.type == DatasetKind.OBJECT_DETECTION:
                 self.wandb_table_agent = WandbTableAgent(
                     run,
                     self.dataset.dataset_info.name,
                     50,
                     self.dataset.dataflow.categories.get_categories(filtered=True),
                 )
-            elif self.dataset.dataset_info.type == DatasetType.TOKEN_CLASSIFICATION:
+            elif self.dataset.dataset_info.type == DatasetKind.TOKEN_CLASSIFICATION:
                 if hasattr(self.metric, "sub_cats"):
                     sub_cat_key, sub_cat_val_list = list(self.metric.sub_cats.items())[0]
                     sub_cat_val = sub_cat_val_list[0]
@@ -253,7 +253,7 @@ class Evaluator:
         possible_cats_in_datapoint = self.dataset.dataflow.categories.get_categories(as_dict=False, filtered=True)
 
         # clean-up procedure depends on the dataset type
-        if self.dataset.dataset_info.type == DatasetType.OBJECT_DETECTION:
+        if self.dataset.dataset_info.type == DatasetKind.OBJECT_DETECTION:
             # we keep all image annotations that will not be generated through processing
             anns_to_keep = {ann for ann in possible_cats_in_datapoint if ann not in meta_anns.image_annotations}
             sub_cats_to_remove = meta_anns.sub_categories
@@ -269,11 +269,11 @@ class Evaluator:
                 remove_cats(sub_categories=sub_cats_to_remove, relationships=relationships_to_remove),
             )
 
-        elif self.dataset.dataset_info.type == DatasetType.SEQUENCE_CLASSIFICATION:
+        elif self.dataset.dataset_info.type == DatasetKind.SEQUENCE_CLASSIFICATION:
             summary_sub_cats_to_remove = meta_anns.summaries
             df_pr = MapData(df_pr, remove_cats(summary_sub_categories=summary_sub_cats_to_remove))
 
-        elif self.dataset.dataset_info.type == DatasetType.TOKEN_CLASSIFICATION:
+        elif self.dataset.dataset_info.type == DatasetKind.TOKEN_CLASSIFICATION:
             sub_cats_to_remove = meta_anns.sub_categories
             df_pr = MapData(df_pr, remove_cats(sub_categories=sub_cats_to_remove))
         else:
@@ -313,7 +313,7 @@ class Evaluator:
         df_pr = self._clean_up_predict_dataflow_annotations(df_pr)
 
         page_parsing_component = PageParsingService(
-            text_container=LayoutType.WORD,
+            text_container=LayoutLabel.WORD,
             floating_text_block_categories=floating_text_block_categories,  # type: ignore
             include_residual_text_container=bool(include_residual_text_containers),
         )

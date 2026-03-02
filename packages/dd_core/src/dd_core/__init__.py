@@ -32,7 +32,7 @@ from typing import TYPE_CHECKING
 
 from .utils.file_utils import _LazyModule
 
-__version__ = "1.1.0"
+__version__ = "1.2.0"
 _IMPORT_STRUCTURE = {
     "dataflow": [
         "DataFlowReentrantGuard",
@@ -154,6 +154,7 @@ _IMPORT_STRUCTURE = {
     ],
     "utils": [
         "timeout_manager",
+        "find_env_file",
         "SETTINGS",
         "collect_torch_env",
         "collect_env_info",
@@ -244,21 +245,26 @@ _IMPORT_STRUCTURE = {
         "ObjectTypes",
         "object_types_registry",
         "DefaultType",
-        "PageType",
-        "SummaryType",
-        "DocumentType",
-        "LayoutType",
-        "TableType",
-        "CellType",
-        "WordType",
-        "TokenClasses",
-        "BioTag",
-        "TokenClassWithTag",
-        "Relationships",
-        "Languages",
-        "DatasetType",
+        "PageKey",
+        "ImagePadKey",
+        "SummaryKey",
+        "RelationshipKey",
+        "DocumentLabel",
+        "LayoutLabel",
+        "TableKey",
+        "CellLabel",
+        "CellKey",
+        "WordKey",
+        "CharacterTypeLabel",
+        "TokenClassLabel",
+        "BioTagLabel",
+        "TokenClassWithTagLabel",
+        "LanguageCode",
+        "DatasetKind",
         "token_class_tag_to_token_class_with_tag",
         "token_class_with_tag_to_token_class_and_tag",
+        "register_custom_token_tag",
+        "register_string_categories_from_list",
         "update_all_types_dict",
         "get_type",
         "update_black_list",
@@ -296,10 +302,11 @@ _IMPORT_STRUCTURE = {
         "interactive_imshow",
         "viz_handler",
     ],
+    "doc": [],
 }
 
 if TYPE_CHECKING:
-    from . import dataflow, datapoint, mapper, utils
+    from . import dataflow, datapoint, doc, mapper, utils
 
 sys.modules[__name__] = _LazyModule(
     __name__,

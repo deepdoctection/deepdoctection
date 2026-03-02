@@ -328,10 +328,10 @@ def token_class_result() -> list[Any]:
     """fixture token_class_result"""
     uuids = [
         "CLS",
-        "e9c4b3e7-0b2c-3d45-89f3-db6e3ef864ad",
-        "44ef758d-92f5-3f57-b6a3-aa95b9606f70",
-        "1413d499-ce19-3a50-861c-7d8c5a7ba772",
-        "fd78767a-227d-3c17-83cb-586d24cb0c55",
+        "98bb9fd6-b040-3eb2-9d0c-096caa07d406",
+        "cc60f1a0-c385-3877-9339-c893cbfd5566",
+        "06516371-27b7-3e36-8a5e-62645d116129",
+        "56e6cc7e-38d1-3ebb-9cef-b465b7f8b293",
         "SEP",
     ]
     input_ids = [[101, 9875, 3207, 15630, 8569, 102]]

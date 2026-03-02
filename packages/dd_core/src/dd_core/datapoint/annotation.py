@@ -27,6 +27,7 @@ from collections import defaultdict
 from dataclasses import dataclass
 from typing import Any, Callable, Literal, Optional, Type, TypeVar, Union
 
+import catalogue  # type: ignore
 from pydantic import BaseModel, Field, PrivateAttr, SerializeAsAny, field_validator, model_serializer, model_validator
 
 from ..utils.error import AnnotationError, UUIDError
@@ -247,6 +248,18 @@ class Annotation(BaseModel, ABC):
         return get_uuid(self.annotation_id, *container_ids)
 
 
+container_annotation_registry = catalogue.create("dd_core", "container_annotation_factory", entry_points=True)
+
+
+def build_container_annotation(payload: dict[str, Any]) -> ContainerAnnotation:
+    """Building container annotation from payload with registered container ann sub classes."""
+    return (
+        container_annotation_registry.get(payload["_container_type"])(**payload)
+        if "_container_type" in payload
+        else ContainerAnnotation(**payload)
+    )
+
+
 class CategoryAnnotation(Annotation):
     """
     A general class for storing categories (labels/classes) as well as sub categories (sub-labels/subclasses),
@@ -327,7 +340,7 @@ class CategoryAnnotation(Annotation):
             elif isinstance(val, dict):
                 # decide target type without ann_from_dict
                 if "value" in val:
-                    out[key_type] = ContainerAnnotation(**val)
+                    out[key_type] = build_container_annotation(val)
                 else:
                     out[key_type] = CategoryAnnotation(**val)
             else:
@@ -486,7 +499,7 @@ class CategoryAnnotation(Annotation):
 
     def __repr__(self) -> str:
         return (
-            f"CategoryAnnotation(annotation_id: {self._annotation_id}, category_name={self.category_name},"
+            f"CategoryAnnotation(annotation_id={self._annotation_id}, category_name={self.category_name},"
             f"category_id={self.category_id}, score={self.score}, sub_categories={self.sub_categories},"
             f" relationships={self.relationships})"
         )
@@ -623,7 +636,7 @@ class ImageAnnotation(CategoryAnnotation):
 
     def __repr__(self) -> str:
         return (
-            f"ImageAnnotation(annotation_id: {self._annotation_id}, category_name={self.category_name},"
+            f"ImageAnnotation(annotation_id={self._annotation_id}, category_name={self.category_name},"
             f"category_id={self.category_id}, score={self.score}, bounding_box: {self.bounding_box}, "
             f"sub_categories={self.sub_categories}, relationships={self.relationships})"
         )
@@ -758,7 +771,7 @@ class ContainerAnnotation(CategoryAnnotation):
 
     def __repr__(self) -> str:
         return (
-            f"ContainerAnnotation(annotation_id: {self.annotation_id}, category_name={self.category_name},"
+            f"ContainerAnnotation(annotation_id={self.annotation_id}, category_name={self.category_name},"
             f"category_id={self.category_id}, score={self.score}, sub_categories={self.sub_categories},"
             f" relationships={self.relationships})"
         )

@@ -35,7 +35,7 @@ import pytest
 
 from dd_core.utils import get_torch_device
 from dd_core.utils.file_utils import pytorch_available, transformers_available
-from dd_core.utils.object_types import LayoutType
+from dd_core.utils.object_types import LayoutLabel
 from deepdoctection.extern.base import DetectionResult
 from deepdoctection.extern.hfdetr import HFDetrDerivedDetector
 
@@ -85,7 +85,7 @@ def test_hfdetr_predict_basic(monkeypatch: pytest.MonkeyPatch) -> None:
         raising=True,
     )
 
-    categories = {1: LayoutType.TABLE}
+    categories = {1: LayoutLabel.TABLE}
 
     det = HFDetrDerivedDetector(
         path_config_json="dummy_config.json",
@@ -145,7 +145,7 @@ def test_hfdetr_category_filtering(monkeypatch: pytest.MonkeyPatch) -> None:
         raising=True,
     )
 
-    categories = {1: LayoutType.TABLE}
+    categories = {1: LayoutLabel.TABLE}
     # Filter out "table" to test category filtering
     det = HFDetrDerivedDetector(
         "dummy_config.json",
@@ -153,7 +153,7 @@ def test_hfdetr_category_filtering(monkeypatch: pytest.MonkeyPatch) -> None:
         "dummy_fe.json",
         categories,
         "cpu",
-        filter_categories=[LayoutType.TABLE],
+        filter_categories=[LayoutLabel.TABLE],
     )
 
     np_image = (np.random.rand(16, 16, 3) * 255).astype("uint8")
@@ -194,7 +194,7 @@ def test_hfdetr_clear_model(monkeypatch: pytest.MonkeyPatch) -> None:
         raising=True,
     )
 
-    det = HFDetrDerivedDetector("cfg.json", "w.bin", "fe.json", {1: LayoutType.TABLE}, "cpu")
+    det = HFDetrDerivedDetector("cfg.json", "w.bin", "fe.json", {1: LayoutLabel.TABLE}, "cpu")
 
     assert det.hf_detr_predictor is not None
     det.clear_model()

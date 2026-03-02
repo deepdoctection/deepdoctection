@@ -35,7 +35,7 @@ from dd_core.datapoint.image import Image, MetaAnnotation
 from dd_core.mapper.maputils import MappingContextManager
 from dd_core.utils.error import ImageError
 from dd_core.utils.file_utils import networkx_available
-from dd_core.utils.object_types import CellType, LayoutType, ObjectTypes, Relationships, TableType, get_type
+from dd_core.utils.object_types import CellKey, LayoutLabel, ObjectTypes, RelationshipKey, TableKey, get_type
 
 from ..extern.base import DetectionResult
 from .base import PipelineComponent
@@ -65,21 +65,21 @@ def tiles_to_cells(
         A list of tuples with tile positions and cell annotation ids.
     """
 
-    cell_ann_ids = table.get_relationship(Relationships.CHILD)
+    cell_ann_ids = table.get_relationship(RelationshipKey.CHILD)
     cells = dp.get_annotation(category_names=cell_names, annotation_ids=cell_ann_ids)
     tile_to_cells = []
 
     for cell in cells:
         if (
-            CellType.ROW_NUMBER in cell.sub_categories
-            and CellType.COLUMN_NUMBER in cell.sub_categories
-            and CellType.ROW_SPAN in cell.sub_categories
-            and CellType.COLUMN_SPAN in cell.sub_categories
+            CellKey.ROW_NUMBER in cell.sub_categories
+            and CellKey.COLUMN_NUMBER in cell.sub_categories
+            and CellKey.ROW_SPAN in cell.sub_categories
+            and CellKey.COLUMN_SPAN in cell.sub_categories
         ):
-            row_number = cell.get_sub_category(CellType.ROW_NUMBER).category_id
-            col_number = cell.get_sub_category(CellType.COLUMN_NUMBER).category_id
-            rs = cell.get_sub_category(CellType.ROW_SPAN).category_id
-            cs = cell.get_sub_category(CellType.COLUMN_SPAN).category_id
+            row_number = cell.get_sub_category(CellKey.ROW_NUMBER).category_id
+            col_number = cell.get_sub_category(CellKey.COLUMN_NUMBER).category_id
+            rs = cell.get_sub_category(CellKey.ROW_SPAN).category_id
+            cs = cell.get_sub_category(CellKey.COLUMN_SPAN).category_id
             for k in range(rs):
                 for l in range(cs):
                     assert cell.annotation_id is not None, cell.annotation_id
@@ -365,27 +365,27 @@ def generate_html_string(table: ImageAnnotation, cell_names: Sequence[ObjectType
         raise ImageError("table.image cannot be None")
     table_image = table.image
     cells = table_image.get_annotation(category_names=cell_names)
-    number_of_rows = table_image.summary.get_sub_category(TableType.NUMBER_OF_ROWS).category_id
-    number_of_cols = table_image.summary.get_sub_category(TableType.NUMBER_OF_COLUMNS).category_id
+    number_of_rows = table_image.summary.get_sub_category(TableKey.NUMBER_OF_ROWS).category_id
+    number_of_cols = table_image.summary.get_sub_category(TableKey.NUMBER_OF_COLUMNS).category_id
     table_list = []
     cells_ann_list = []
     for row_number in range(1, number_of_rows + 1):
         cells_of_row = list(
             sorted(
                 filter(
-                    lambda cell: cell.get_sub_category(CellType.ROW_NUMBER).category_id
+                    lambda cell: cell.get_sub_category(CellKey.ROW_NUMBER).category_id
                     == row_number,  # pylint: disable=W0640
                     cells,
                 ),
-                key=lambda cell: cell.get_sub_category(CellType.COLUMN_NUMBER).category_id,
+                key=lambda cell: cell.get_sub_category(CellKey.COLUMN_NUMBER).category_id,
             )
         )
         row_list = [
             (
-                cell.get_sub_category(CellType.ROW_NUMBER).category_id,
-                cell.get_sub_category(CellType.COLUMN_NUMBER).category_id,
-                cell.get_sub_category(CellType.ROW_SPAN).category_id,
-                cell.get_sub_category(CellType.COLUMN_SPAN).category_id,
+                cell.get_sub_category(CellKey.ROW_NUMBER).category_id,
+                cell.get_sub_category(CellKey.COLUMN_NUMBER).category_id,
+                cell.get_sub_category(CellKey.ROW_SPAN).category_id,
+                cell.get_sub_category(CellKey.COLUMN_SPAN).category_id,
             )
             for cell in cells_of_row
         ]
@@ -487,16 +487,16 @@ class TableSegmentationRefinementService(PipelineComponent):
                     if new_cell_ann_id is not None:
                         row_number, col_number, row_span, col_span = _tiling_to_cell_position(tiling)
                         self.dp_manager.set_category_annotation(
-                            CellType.ROW_NUMBER, row_number, CellType.ROW_NUMBER, new_cell_ann_id
+                            CellKey.ROW_NUMBER, row_number, CellKey.ROW_NUMBER, new_cell_ann_id
                         )
                         self.dp_manager.set_category_annotation(
-                            CellType.COLUMN_NUMBER, col_number, CellType.COLUMN_NUMBER, new_cell_ann_id
+                            CellKey.COLUMN_NUMBER, col_number, CellKey.COLUMN_NUMBER, new_cell_ann_id
                         )
                         self.dp_manager.set_category_annotation(
-                            CellType.ROW_SPAN, row_span, CellType.ROW_SPAN, new_cell_ann_id
+                            CellKey.ROW_SPAN, row_span, CellKey.ROW_SPAN, new_cell_ann_id
                         )
                         self.dp_manager.set_category_annotation(
-                            CellType.COLUMN_SPAN, col_span, CellType.COLUMN_SPAN, new_cell_ann_id
+                            CellKey.COLUMN_SPAN, col_span, CellKey.COLUMN_SPAN, new_cell_ann_id
                         )
                     else:
                         # DetectionResult cannot be dumped, hence merged_box must already exist. Hence, it must
@@ -512,39 +512,39 @@ class TableSegmentationRefinementService(PipelineComponent):
                             cell.deactivate()
 
             cells = table.image.get_annotation(category_names=self.cell_names)
-            number_of_rows = max(cell.get_sub_category(CellType.ROW_NUMBER).category_id for cell in cells)
-            number_of_cols = max(cell.get_sub_category(CellType.COLUMN_NUMBER).category_id for cell in cells)
-            max_row_span = max(cell.get_sub_category(CellType.ROW_SPAN).category_id for cell in cells)
-            max_col_span = max(cell.get_sub_category(CellType.COLUMN_SPAN).category_id for cell in cells)
+            number_of_rows = max(cell.get_sub_category(CellKey.ROW_NUMBER).category_id for cell in cells)
+            number_of_cols = max(cell.get_sub_category(CellKey.COLUMN_NUMBER).category_id for cell in cells)
+            max_row_span = max(cell.get_sub_category(CellKey.ROW_SPAN).category_id for cell in cells)
+            max_col_span = max(cell.get_sub_category(CellKey.COLUMN_SPAN).category_id for cell in cells)
             # TODO: the summaries should be sub categories of the underlying ann
             if (
-                TableType.NUMBER_OF_ROWS in table.image.summary.sub_categories
-                and TableType.NUMBER_OF_COLUMNS in table.image.summary.sub_categories
-                and TableType.MAX_ROW_SPAN in table.image.summary.sub_categories
-                and TableType.MAX_COL_SPAN in table.image.summary.sub_categories
+                TableKey.NUMBER_OF_ROWS in table.image.summary.sub_categories
+                and TableKey.NUMBER_OF_COLUMNS in table.image.summary.sub_categories
+                and TableKey.MAX_ROW_SPAN in table.image.summary.sub_categories
+                and TableKey.MAX_COL_SPAN in table.image.summary.sub_categories
             ):
-                table.image.summary.remove_sub_category(TableType.NUMBER_OF_ROWS)
-                table.image.summary.remove_sub_category(TableType.NUMBER_OF_COLUMNS)
-                table.image.summary.remove_sub_category(TableType.MAX_ROW_SPAN)
-                table.image.summary.remove_sub_category(TableType.MAX_COL_SPAN)
+                table.image.summary.remove_sub_category(TableKey.NUMBER_OF_ROWS)
+                table.image.summary.remove_sub_category(TableKey.NUMBER_OF_COLUMNS)
+                table.image.summary.remove_sub_category(TableKey.MAX_ROW_SPAN)
+                table.image.summary.remove_sub_category(TableKey.MAX_COL_SPAN)
 
             self.dp_manager.set_summary_annotation(
-                TableType.NUMBER_OF_ROWS, TableType.NUMBER_OF_ROWS, number_of_rows, annotation_id=table.annotation_id
+                TableKey.NUMBER_OF_ROWS, TableKey.NUMBER_OF_ROWS, number_of_rows, annotation_id=table.annotation_id
             )
             self.dp_manager.set_summary_annotation(
-                TableType.NUMBER_OF_COLUMNS,
-                TableType.NUMBER_OF_COLUMNS,
+                TableKey.NUMBER_OF_COLUMNS,
+                TableKey.NUMBER_OF_COLUMNS,
                 number_of_cols,
                 annotation_id=table.annotation_id,
             )
             self.dp_manager.set_summary_annotation(
-                TableType.MAX_ROW_SPAN, TableType.MAX_ROW_SPAN, max_row_span, annotation_id=table.annotation_id
+                TableKey.MAX_ROW_SPAN, TableKey.MAX_ROW_SPAN, max_row_span, annotation_id=table.annotation_id
             )
             self.dp_manager.set_summary_annotation(
-                TableType.MAX_COL_SPAN, TableType.MAX_COL_SPAN, max_col_span, annotation_id=table.annotation_id
+                TableKey.MAX_COL_SPAN, TableKey.MAX_COL_SPAN, max_col_span, annotation_id=table.annotation_id
             )
             html = generate_html_string(table, self.cell_names)
-            self.dp_manager.set_container_annotation(TableType.HTML, -1, TableType.HTML, table.annotation_id, html)
+            self.dp_manager.set_container_annotation(TableKey.HTML, -1, TableKey.HTML, table.annotation_id, html)
 
     def clone(self) -> TableSegmentationRefinementService:
         return self.__class__(self.table_name, self.cell_names)
@@ -553,13 +553,13 @@ class TableSegmentationRefinementService(PipelineComponent):
         return MetaAnnotation(
             image_annotations=(),
             sub_categories={
-                LayoutType.CELL: {
-                    CellType.ROW_NUMBER: {CellType.ROW_NUMBER},
-                    CellType.COLUMN_NUMBER: {CellType.COLUMN_NUMBER},
-                    CellType.ROW_SPAN: {CellType.ROW_SPAN},
-                    CellType.COLUMN_SPAN: {CellType.COLUMN_SPAN},
+                LayoutLabel.CELL: {
+                    CellKey.ROW_NUMBER: {CellKey.ROW_NUMBER},
+                    CellKey.COLUMN_NUMBER: {CellKey.COLUMN_NUMBER},
+                    CellKey.ROW_SPAN: {CellKey.ROW_SPAN},
+                    CellKey.COLUMN_SPAN: {CellKey.COLUMN_SPAN},
                 },
-                LayoutType.TABLE: {TableType.HTML: {TableType.HTML}},
+                LayoutLabel.TABLE: {TableKey.HTML: {TableKey.HTML}},
             },
             relationships={},
             summaries=(),

@@ -74,19 +74,19 @@ def test_lm_token_classifier_service_creates_token_classes(
 
     dp = lm_service.pass_datapoint(dp)
 
-    words = dp.get_annotation(annotation_ids="e9c4b3e7-0b2c-3d45-89f3-db6e3ef864ad")
+    words = dp.get_annotation(annotation_ids="98bb9fd6-b040-3eb2-9d0c-096caa07d406")
     assert words[0].get_sub_category(get_type("token_class")).category_name == get_type("header")
     assert words[0].get_sub_category(get_type("tag")).category_name == get_type("B")
 
-    words = dp.get_annotation(annotation_ids="44ef758d-92f5-3f57-b6a3-aa95b9606f70")
+    words = dp.get_annotation(annotation_ids="cc60f1a0-c385-3877-9339-c893cbfd5566")
     assert words[0].get_sub_category(get_type("token_class")).category_name == get_type("header")
     assert words[0].get_sub_category(get_type("tag")).category_name == get_type("B")
 
-    words = dp.get_annotation(annotation_ids="1413d499-ce19-3a50-861c-7d8c5a7ba772")
+    words = dp.get_annotation(annotation_ids="06516371-27b7-3e36-8a5e-62645d116129")
     assert words[0].get_sub_category(get_type("token_class")).category_name == get_type("header")
     assert words[0].get_sub_category(get_type("tag")).category_name == get_type("I")
 
-    words = dp.get_annotation(annotation_ids="fd78767a-227d-3c17-83cb-586d24cb0c55")
+    words = dp.get_annotation(annotation_ids="56e6cc7e-38d1-3ebb-9cef-b465b7f8b293")
     assert words[0].get_sub_category(get_type("token_class")).category_name == get_type("header")
     assert words[0].get_sub_category(get_type("tag")).category_name == get_type("I")
 

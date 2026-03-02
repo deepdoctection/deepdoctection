@@ -16,8 +16,7 @@ We use a union of subsets from Doclaynet and Publaynet and resume training of a 
 ## Step 1: Rescaling Doclaynet images
 
 Doclaynet images are scaled to 1000x1000 pixels, wheras Publaynet images have a 4/3 height/width ratio. 
-We re-scale Doclaynet images in order to have the same width/height ratio.  
-
+We re-scale Doclaynet images in order to have the same width/height ratio.
 
 ```python
 from collections import defaultdict
@@ -28,22 +27,23 @@ import wandb
 
 import deepdoctection as dd
 
+
 @dd.curry
 def scale_transform(dp, scaler, apply_image=False):
     dp._bbox = None
-    dp.set_width_height(1654,2339)
+    dp.set_width_height(1654, 2339)
     if apply_image:
         dp.image = scaler.apply_image(dp.image)
     anns = dp.get_annotation()
     boxes = np.array([ann.bounding_box.to_list(mode="xyxy") for ann in anns])
     scaled_boxes = scaler.apply_box(boxes)
-    for box, ann in zip(scaled_boxes[:,],anns):
-        ann.bounding_box= dd.BoundingBox(ulx=box[0],uly=box[1],lrx=box[2],lry=box[3],absolute_coords=True)
+    for box, ann in zip(scaled_boxes[:,], anns):
+        ann.bounding_box = dd.BoundingBox(ulx=box[0], uly=box[1], lrx=box[2], lry=box[3], absolute_coords=True)
     return dp
 
 
 def filter_list_images(dp):
-    if dp.summary.get_sub_category(dd.LayoutType.LIST).category_id != 0:
+    if dp.summary.get_sub_category(dd.LayoutLabel.LIST).category_id != 0:
         return None
     return dp
 ```
@@ -77,34 +77,33 @@ After re-scaling the images, we also have to re-scale the ground truth label coo
 
 One other thing we observed is that the style how `list` have been annotated is different to
 how the annotation style in Publaynet: Doclaynet labels each list items separately in one bounding box wheres in 
-Publaynet a `list` bounding box encloses all list items.    
-    
+Publaynet a `list` bounding box encloses all list items.
 
 ```python
 doclaynet = dd.get_dataset("doclaynet")
 
 doclaynet.dataflow.categories.set_cat_to_sub_cat({
-    dd.LayoutType.CAPTION: dd.DatasetType.PUBLAYNET,
-    dd.LayoutType.FOOTNOTE: dd.DatasetType.PUBLAYNET,
-    dd.LayoutType.FORMULA: dd.DatasetType.PUBLAYNET,
-    dd.LayoutType.LIST: dd.DatasetType.PUBLAYNET,
-    dd.LayoutType.PAGE_FOOTER: dd.DatasetType.PUBLAYNET,
-    dd.LayoutType.PAGE_HEADER: dd.DatasetType.PUBLAYNET,
-    dd.LayoutType.FIGURE: dd.DatasetType.PUBLAYNET,
-    dd.LayoutType.SECTION_HEADER: dd.DatasetType.PUBLAYNET,
-    dd.LayoutType.TABLE: dd.DatasetType.PUBLAYNET,
-    dd.LayoutType.TEXT: dd.DatasetType.PUBLAYNET,
-    dd.LayoutType.TITLE: dd.DatasetType.PUBLAYNET})
+    dd.LayoutLabel.CAPTION: dd.DatasetKind.PUBLAYNET,
+    dd.LayoutLabel.FOOTNOTE: dd.DatasetKind.PUBLAYNET,
+    dd.LayoutLabel.FORMULA: dd.DatasetKind.PUBLAYNET,
+    dd.LayoutLabel.LIST: dd.DatasetKind.PUBLAYNET,
+    dd.LayoutLabel.PAGE_FOOTER: dd.DatasetKind.PUBLAYNET,
+    dd.LayoutLabel.PAGE_HEADER: dd.DatasetKind.PUBLAYNET,
+    dd.LayoutLabel.FIGURE: dd.DatasetKind.PUBLAYNET,
+    dd.LayoutLabel.SECTION_HEADER: dd.DatasetKind.PUBLAYNET,
+    dd.LayoutLabel.TABLE: dd.DatasetKind.PUBLAYNET,
+    dd.LayoutLabel.TEXT: dd.DatasetKind.PUBLAYNET,
+    dd.LayoutLabel.TITLE: dd.DatasetKind.PUBLAYNET})
 
-doclaynet.dataflow.categories._categories_update = [dd.LayoutType.TEXT,
-                                                    dd.LayoutType.TITLE,
-                                                    dd.LayoutType.LIST,
-                                                    dd.LayoutType.TABLE,
-                                                    dd.LayoutType.FIGURE]
+doclaynet.dataflow.categories._categories_update = [dd.LayoutLabel.TEXT,
+                                                    dd.LayoutLabel.TITLE,
+                                                    dd.LayoutLabel.LIST,
+                                                    dd.LayoutLabel.TABLE,
+                                                    dd.LayoutLabel.FIGURE]
 
-df_doc = doclaynet.dataflow.build(split="train", resized=True)  
+df_doc = doclaynet.dataflow.build(split="train", resized=True)
 df_doc_val = doclaynet.dataflow.build(split="val", resized=True)
-df_doc_test = doclaynet.dataflow.build(split="test", resized=True) 
+df_doc_test = doclaynet.dataflow.build(split="test", resized=True)
 
 scaler = ScaleTransform(h=1025,
                         w=1025,
