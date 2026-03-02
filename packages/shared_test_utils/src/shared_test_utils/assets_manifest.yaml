@@ -113,7 +113,7 @@ sample_document_image:
 sample_document_json:
   path: dd_core/tests/assets/document.json
   sha256: 0c311cb35ce61d9d91e982cd9b3e6d5029908ec4ed3f78846aef9cfb23ea3c8c
-  size: 7811504
+  size: 7811588
   license: Apache-2.0
   description: document JSON sample
 sample_image:
