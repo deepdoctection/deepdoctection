@@ -121,6 +121,10 @@ class DatapointManager:
         self._cache_anns = {ann.annotation_id: ann for ann in dp.get_annotation()}
         self.datapoint_is_passed = True
 
+    def set_model_id(self, model_id: str | None) -> None:
+        """Re-sets the model_id."""
+        self.model_id = model_id
+
     def assert_datapoint_passed(self) -> None:
         """
         Asserts that a datapoint is passed.

@@ -68,7 +68,7 @@ def test_doc_returns_structured_output(sample_document_json: Path) -> None:
     doc = Document.from_json(sample_document_json)
     structured_output = doc.structured_output
     assert len(structured_output["buyer"]["buyerReference"]) == 11
-    assert structured_output["buyer"]["contact"]["contractName"] is None
+    assert structured_output["buyer"]["contact"]["contactName"] is None
 
 
 def test_get_page_and_get_image_return_types(sample_document_json: Path) -> None:
