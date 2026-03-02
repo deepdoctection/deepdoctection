@@ -80,7 +80,7 @@ def test_get_page_and_get_image_return_types(sample_document_json: Path) -> None
 
 def test_get_page_by_image_id_returns_page(sample_document_json: Path) -> None:
     """test get page by given image id"""
-    image_id = "7e154965-1250-3f4f-b1c2-a6e822f0aaa"
+    image_id = "7e154965-1250-3f4f-b1c2-a6e822f0aaa5"
     doc = Document.from_json(sample_document_json)
     page0 = doc.get_page(image_id=image_id)
     assert page0.image_id == image_id
@@ -91,7 +91,7 @@ def test_get_image_dataflow(sample_document_json: Path) -> None:
     doc = Document.from_json(sample_document_json)
     df = doc.get_image_dataflow()
     df.reset_state()
-    assert list(df) == 6
+    assert len(list(df)) == 6
 
 
 def test_set_image_updates_references_and_images() -> None:
