@@ -18,7 +18,8 @@
 """
 Datapoint manager
 """
-from collections import deque
+
+from abc import ABC, abstractmethod
 from dataclasses import asdict
 from typing import Any, Optional, Sequence, Union
 
@@ -31,6 +32,129 @@ from dd_core.mapper.maputils import MappingContextManager
 from dd_core.utils.object_types import ObjectTypes, RelationshipKey
 
 from ..extern.base import DetectionResult
+
+
+class DataPointCacheStore(ABC):
+    """
+    Abstract interface for a datapoint cache store.
+
+    Implementations are expected to provide a mechanism to persist and retrieve recently
+    used image datapoints (pages) for a given document. This is used by the
+    :class:`DatapointManager` to keep a bounded FIFO cache of previously seen
+    datapoints.
+    """
+
+    @abstractmethod
+    def put_datapoint(self, document_id: str, image_id: str, page_number: int, image: Image) -> None:
+        """
+        Persist a datapoint (image) for a specific document and page number.
+
+        Args:
+            document_id (str): The identifier of the document the image belongs to.
+            image_id (str): The unique identifier of the image.
+            page_number (int): The 0-based page number inside the document.
+            image (Image): The image object to store (may be serialized by the store).
+
+        Returns:
+            None
+        """
+
+    @abstractmethod
+    def get_datapoints(self, document_id: str, last_d: int) -> tuple[Image, ...]:
+        """
+        Retrieve up to `last_d` most recently stored datapoints for the given document.
+
+        Args:
+            document_id (str): The identifier of the document to retrieve datapoints for.
+            last_d (int): Maximum number of most recent datapoints to return. Must be >= 0.
+
+        Returns:
+            tuple[Image, ...]: A tuple of reconstructed :class:`Image` objects ordered from
+                newest to oldest (or an empty tuple if none exist).
+        """
+
+
+def _set_image_keys_to_none(d: Any) -> None:
+    if isinstance(d, dict):
+        for key, value in d.items():
+            if key == "_image":
+                d[key] = None
+            else:
+                _set_image_keys_to_none(value)
+    elif isinstance(d, list):
+        for item in d:
+            _set_image_keys_to_none(item)
+
+
+def _image_to_cache_dict(image: Image) -> dict[str, Any]:
+    image.remove_image_from_lower_hierarchy()
+    export_dict = image.as_dict()
+    _set_image_keys_to_none(export_dict)
+    return export_dict
+
+
+class LocalDataPointCacheStore(DataPointCacheStore):
+    """
+    In-memory implementation of :class:`DataPointCacheStore`.
+
+    This simple store keeps a small per-document mapping of page-number -> serialized image
+    dictionaries and enforces a FIFO eviction policy based on ``max_pages``.
+
+    Args:
+        max_pages (int): Maximum number of pages to keep per document. If <= 0 caching
+            is effectively disabled. Defaults to 3.
+    """
+
+    def __init__(self, max_pages: int = 3) -> None:
+        """
+        Initialize the in-memory cache store.
+
+        Args:
+            max_pages (int): Maximum number of pages to keep per document.
+        """
+        self._max_pages = max_pages
+        self._pages: dict[str, dict[int, dict[str, Any]]] = {}
+
+    def put_datapoint(self, document_id: str, image_id: str, page_number: int, image: Image) -> None:
+        """
+        Store a serialized version of ``image`` for ``document_id`` at ``page_number``.
+
+        If the number of stored pages for the document exceeds ``self._max_pages`` an eviction
+        of the oldest pages (lowest page numbers) will be performed.
+
+        Args:
+            document_id (str): Document identifier the image belongs to.
+            image_id (str): Image identifier (not directly used by this store but included for API
+                compatibility with other stores).
+            page_number (int): 0-based page number of the image.
+            image (Image): The Image object to serialize and store.
+        """
+        pages = self._pages.get(document_id)
+        if pages is None:
+            pages = {}
+            self._pages[document_id] = pages
+        pages[page_number] = _image_to_cache_dict(image)
+        if self._max_pages > 0 and len(pages) > self._max_pages:
+            for k in sorted(pages.keys())[: -self._max_pages]:
+                pages.pop(k, None)
+
+    def get_datapoints(self, document_id: str, last_d: int) -> tuple[Image, ...]:
+        """
+        Retrieve up to ``last_d`` most recent datapoints for a document.
+
+        Args:
+            document_id (str): Document identifier to retrieve pages for.
+            last_d (int): Maximum number of pages to return. If <= 0, an empty tuple is returned.
+
+        Returns:
+            tuple[Image, ...]: Tuple of :class:`Image` instances reconstructed from the stored
+                serialized dicts ordered from newest -> oldest.
+        """
+        if last_d <= 0:
+            return ()
+        pages = self._pages.get(document_id) or {}
+        keys = sorted(pages.keys(), reverse=True)[:last_d]
+        return tuple(Image(**pages[k]) for k in keys)
 
 
 class DatapointManager:
@@ -63,6 +187,7 @@ class DatapointManager:
         model_id: Optional[str] = None,
         num_cached_datapoints: int = 0,
         remove_pixel_values_from_cache: bool = True,
+        cache_store: LocalDataPointCacheStore | None = None,
     ) -> None:
         self._datapoint: Optional[Image] = None
         self._cache_anns: dict[str, ImageAnnotation] = {}
@@ -75,7 +200,8 @@ class DatapointManager:
             raise ValueError("num_cached_datapoints must be >= 0")
         self.num_cached_datapoints = num_cached_datapoints
         self.remove_pixel_values_from_cache = remove_pixel_values_from_cache
-        self._cached_datapoints: deque[Image] = deque()
+
+        self._cache_store = cache_store or LocalDataPointCacheStore(max_pages=num_cached_datapoints)
 
     def _maybe_cache_datapoint(self, image: Optional[Image]) -> None:
         if image is None:
@@ -85,12 +211,13 @@ class DatapointManager:
 
         if self.remove_pixel_values_from_cache:
             image.clear_image()
-            image.remove_image_from_lower_hierarchy(pixel_values_only=True)
 
-        self._cached_datapoints.append(image)
-
-        while len(self._cached_datapoints) > self.num_cached_datapoints:
-            self._cached_datapoints.popleft()
+        self._cache_store.put_datapoint(
+            document_id=image.document_id,
+            image_id=image.image_id,
+            page_number=image.page_number,
+            image=image,
+        )
 
     @property
     def datapoint(self) -> Image:
@@ -116,7 +243,6 @@ class DatapointManager:
             dp: The datapoint to set.
         """
         self._maybe_cache_datapoint(self._datapoint)
-
         self._datapoint = dp
         self._cache_anns = {ann.annotation_id: ann for ann in dp.get_annotation()}
         self.datapoint_is_passed = True
@@ -481,8 +607,8 @@ class DatapointManager:
         """
         if last_k < 0:
             raise ValueError("last_k must be >= 0")
-        if last_k == 0 or not self._cached_datapoints:
+        if last_k == 0:
             return tuple()
 
-        k = min(last_k, len(self._cached_datapoints))
-        return tuple(list(self._cached_datapoints)[-k:])
+        doc_id = self.datapoint.document_id
+        return self._cache_store.get_datapoints(document_id=doc_id, last_d=last_k)
