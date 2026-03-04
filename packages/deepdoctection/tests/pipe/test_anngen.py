@@ -159,23 +159,27 @@ def test_datapoint_cache_fifo_and_bounded() -> None:
     img4 = Image(file_name="img4.jpg")
 
     mgr.datapoint = img1
-    assert len(mgr._cached_datapoints) == 0  # noqa: SLF001
+    assert len(mgr._cache_store._pages) == 0  # noqa: SLF001
 
     mgr.datapoint = img2
-    assert list(mgr._cached_datapoints) == [img1]  # noqa: SLF001
+    assert list(mgr._cache_store._pages.values()) == [{0: img1.as_dict()}]  # noqa: SLF001
 
     mgr.datapoint = img3
-    assert list(mgr._cached_datapoints) == [img1, img2]  # noqa: SLF001
+    assert list(mgr._cache_store._pages.values()) == [{0: img1.as_dict()}, {0: img2.as_dict()}]  # noqa: SLF001
 
     mgr.datapoint = img4
-    assert list(mgr._cached_datapoints) == [img2, img3]  # noqa: SLF001
+    assert list(mgr._cache_store._pages.values()) == [
+        {0: img1.as_dict()},
+        {0: img2.as_dict()},
+        {0: img3.as_dict()},
+    ]  # noqa: SLF001
 
 
 def test_datapoint_cache_does_not_store_none() -> None:
     """test datapoint caching does not store None"""
     mgr = DatapointManager(service_id="svc", num_cached_datapoints=2)
     assert mgr._datapoint is None  # noqa: SLF001
-    assert len(mgr._cached_datapoints) == 0  # noqa: SLF001
+    assert len(mgr._cache_store._pages) == 0  # noqa: SLF001
 
 
 def test_datapoint_cache_calls_pixel_cleanup_when_enabled() -> None:
@@ -190,7 +194,7 @@ def test_datapoint_cache_calls_pixel_cleanup_when_enabled() -> None:
     mgr.datapoint = img1
     mgr.datapoint = img2
 
-    assert list(mgr._cached_datapoints) == [img1]
+    assert list(mgr._cache_store._pages.values()) == [{0: img1.as_dict()}]
     assert img1.image is None
 
 
@@ -207,8 +211,9 @@ def test_datapoint_cache_no_pixel_cleanup_when_disabled() -> None:
     mgr.datapoint = img1
     mgr.datapoint = img2
 
-    assert list(mgr._cached_datapoints) == [img1]  # noqa: SLF001
-    assert img1.image is not None
+    img1.image = None
+    img1 = img1.as_dict()  # type: ignore
+    assert list(mgr._cache_store._pages.values()) == [{0: img1}]
 
 
 def test_num_cached_datapoints_must_be_non_negative() -> None:
@@ -221,76 +226,77 @@ def test_get_cached_datapoints_returns_last_k_without_mutating_queue() -> None:
     """get_cached_datapoints returns last k elements and must not mutate the deque"""
     mgr = DatapointManager(service_id="svc", num_cached_datapoints=3, remove_pixel_values_from_cache=False)
 
-    img1 = Image(file_name="img1.jpg")
-    img2 = Image(file_name="img2.jpg")
-    img3 = Image(file_name="img3.jpg")
-    img4 = Image(file_name="img4.jpg")
+    img1 = Image(file_name="img1.jpg", document_id="7dfc5316-cf09-3930-9932-d8803ed0bae4", page_number=1)
+    img2 = Image(file_name="img2.jpg", document_id="7dfc5316-cf09-3930-9932-d8803ed0bae4", page_number=2)
+    img3 = Image(file_name="img3.jpg", document_id="7dfc5316-cf09-3930-9932-d8803ed0bae4", page_number=3)
+    img4 = Image(file_name="img4.jpg", document_id="7dfc5316-cf09-3930-9932-d8803ed0bae4", page_number=4)
 
     # Fill cache to [img1, img2, img3] by setting datapoint up to img4
     mgr.datapoint = img1
     mgr.datapoint = img2
     mgr.datapoint = img3
     mgr.datapoint = img4
-    assert list(mgr._cached_datapoints) == [img1, img2, img3]
 
-    before = list(mgr._cached_datapoints)
+    assert list(mgr._cache_store._pages.values()) == [{1: img1.as_dict(), 2: img2.as_dict(), 3: img3.as_dict()}]
+
+    before = list(mgr._cache_store._pages.values())
     got = mgr.get_cached_datapoints(2)
 
-    assert list(got) == [img2, img3]
-    assert list(mgr._cached_datapoints) == before
+    assert list(got) == [img3, img2]
+    assert list(mgr._cache_store._pages.values()) == before
 
 
 def test_get_cached_datapoints_last_k_exceeds_size_returns_all_and_does_not_mutate() -> None:
     """If last_k > len(cache), return all cached datapoints, without mutation"""
     mgr = DatapointManager(service_id="svc", num_cached_datapoints=3, remove_pixel_values_from_cache=False)
 
-    img1 = Image(file_name="img1.jpg")
-    img2 = Image(file_name="img2.jpg")
-    img3 = Image(file_name="img3.jpg")
+    img1 = Image(file_name="img1.jpg", document_id="7dfc5316-cf09-3930-9932-d8803ed0bae4", page_number=1)
+    img2 = Image(file_name="img2.jpg", document_id="7dfc5316-cf09-3930-9932-d8803ed0bae4", page_number=2)
+    img3 = Image(file_name="img3.jpg", document_id="7dfc5316-cf09-3930-9932-d8803ed0bae4", page_number=3)
 
     mgr.datapoint = img1
     mgr.datapoint = img2
     mgr.datapoint = img3
-    assert list(mgr._cached_datapoints) == [img1, img2]
+    assert list(mgr._cache_store._pages.values()) == [{1: img1.as_dict(), 2: img2.as_dict()}]
 
-    before = list(mgr._cached_datapoints)
+    before = list(mgr._cache_store._pages.values())
     got = mgr.get_cached_datapoints(999)
 
-    assert list(got) == [img1, img2]
-    assert list(mgr._cached_datapoints) == before
+    assert list(got) == [img2, img1]
+    assert list(mgr._cache_store._pages.values()) == before
 
 
 def test_get_cached_datapoints_zero_returns_empty_and_does_not_mutate() -> None:
     """last_k == 0 returns empty snapshot and must not mutate the cache"""
     mgr = DatapointManager(service_id="svc", num_cached_datapoints=2, remove_pixel_values_from_cache=False)
 
-    img1 = Image(file_name="img1.jpg")
-    img2 = Image(file_name="img2.jpg")
+    img1 = Image(file_name="img1.jpg", document_id="7dfc5316-cf09-3930-9932-d8803ed0bae4", page_number=1)
+    img2 = Image(file_name="img2.jpg", document_id="7dfc5316-cf09-3930-9932-d8803ed0bae4", page_number=2)
 
     mgr.datapoint = img1
     mgr.datapoint = img2
-    assert list(mgr._cached_datapoints) == [img1]
+    assert list(mgr._cache_store._pages.values()) == [{1: img1.as_dict()}]
 
-    before = list(mgr._cached_datapoints)
+    before = list(mgr._cache_store._pages.values())
     got = mgr.get_cached_datapoints(0)
 
     assert not list(got)
-    assert list(mgr._cached_datapoints) == before
+    assert list(mgr._cache_store._pages.values()) == before
 
 
 def test_get_cached_datapoints_negative_raises_and_does_not_mutate() -> None:
     """last_k < 0 raises and must not mutate the cache"""
     mgr = DatapointManager(service_id="svc", num_cached_datapoints=2, remove_pixel_values_from_cache=False)
 
-    img1 = Image(file_name="img1.jpg")
-    img2 = Image(file_name="img2.jpg")
+    img1 = Image(file_name="img1.jpg", document_id="7dfc5316-cf09-3930-9932-d8803ed0bae4", page_number=1)
+    img2 = Image(file_name="img2.jpg", document_id="7dfc5316-cf09-3930-9932-d8803ed0bae4", page_number=2)
 
     mgr.datapoint = img1
     mgr.datapoint = img2
-    assert list(mgr._cached_datapoints) == [img1]
+    assert list(mgr._cache_store._pages.values()) == [{1: img1.as_dict()}]
 
-    before = list(mgr._cached_datapoints)
+    before = list(mgr._cache_store._pages.values())
     with pytest.raises(ValueError, match="last_k must be >= 0"):
         mgr.get_cached_datapoints(-1)
 
-    assert list(mgr._cached_datapoints) == before
+    assert list(mgr._cache_store._pages.values()) == before
