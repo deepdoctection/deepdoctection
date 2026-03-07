@@ -868,6 +868,9 @@ class Image(BaseModel):
         retrieves its annotation map via `ann.get_annotation_map()`. All `AnnotationMap`
         objects are collected into a single `defaultdict` keyed by the annotation id.
 
+        Also includes AnnotationMap entries for CategoryAnnotation objects in
+        Image.summary.sub_categories with an empty image_annotation_id.
+
         Returns:
             defaultdict[str, list[AnnotationMap]]: A mapping where each key is an
             annotation id and each value is the list of corresponding `AnnotationMap`
@@ -878,6 +881,14 @@ class Image(BaseModel):
             ann_id_dict = ann.get_annotation_map()
             for key, val in ann_id_dict.items():
                 all_ann_id_dict[key].extend(val)
+
+        if self._summary is not None:
+            for summary_cat_key in self.summary.sub_categories:
+                summary_cat = self.summary.get_sub_category(summary_cat_key)
+                all_ann_id_dict[summary_cat.annotation_id].append(
+                    AnnotationMap(image_annotation_id="", summary_key=summary_cat_key)
+                )
+
         return all_ann_id_dict
 
     def remove(
