@@ -203,7 +203,15 @@ class DatapointManager:
 
         self._cache_store = cache_store or LocalDataPointCacheStore(max_pages=num_cached_datapoints)
 
-    def _maybe_cache_datapoint(self, image: Optional[Image]) -> None:
+    def maybe_cache_datapoint(self, image: Optional[Image]) -> None:
+        """
+        Cache the given datapoint if caching is enabled.
+
+        This should be called when a datapoint leaves the component to ensure it is cached.
+
+        Args:
+            image: The image datapoint to cache, or None to skip caching.
+        """
         if image is None:
             return
         if self.num_cached_datapoints <= 0:
@@ -242,7 +250,6 @@ class DatapointManager:
         Args:
             dp: The datapoint to set.
         """
-        self._maybe_cache_datapoint(self._datapoint)
         self._datapoint = dp
         self._cache_anns = {ann.annotation_id: ann for ann in dp.get_annotation()}
         self.datapoint_is_passed = True

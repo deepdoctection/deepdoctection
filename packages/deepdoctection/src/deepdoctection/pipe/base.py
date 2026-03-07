@@ -143,6 +143,9 @@ class PipelineComponent(ABC):
                 self._pass_datapoint(dp)
         else:
             self._pass_datapoint(dp)
+
+        self.dp_manager.maybe_cache_datapoint(self.dp_manager.datapoint)
+
         return self.dp_manager.datapoint
 
     def predict_dataflow(self, df: DataFlow) -> DataFlow:
