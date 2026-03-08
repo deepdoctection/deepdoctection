@@ -79,8 +79,6 @@ class Annotation(BaseModel, ABC):
         _annotation_id: Unique id for annotations. Will always be given as string representation of a md5-hash.
         service_id: Service that generated the annotation. This will be the name of a pipeline component
         model_id: Model that generated the annotation. This will be the name of a model in a component
-        session_id: Session id for the annotation. This will be the id of the session in which the annotation was
-                    created.
     """
 
     model_config = {
@@ -94,14 +92,16 @@ class Annotation(BaseModel, ABC):
     _annotation_id: Optional[str] = PrivateAttr(default=None)
     service_id: Optional[str] = Field(default=None)
     model_id: Optional[str] = Field(default=None)
-    session_id: Optional[str] = Field(default=None)
 
     def __init__(self, **data: Any) -> None:
         """
         Accept `_annotation_id` in kwargs (e.g. CategoryAnnotation(**item)),
         remove it before BaseModel initialization and set the PrivateAttr after.
+        Also remove `session_id` for backward compatibility if present.
         """
         _annotation_id = data.pop("_annotation_id", None)
+        # Remove session_id for backward compatibility
+        data.pop("session_id", None)
         super().__init__(**data)
         if _annotation_id is not None:
             object.__setattr__(self, "_annotation_id", _annotation_id)

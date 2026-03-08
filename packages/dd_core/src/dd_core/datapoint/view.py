@@ -159,11 +159,6 @@ class ImageAnnotationBaseView:
         return self._image_annotation.model_id
 
     @property
-    def session_id(self) -> Optional[str]:
-        """property session_id"""
-        return self._image_annotation.session_id
-
-    @property
     def active(self) -> bool:
         """property active"""
         return self._image_annotation.active
@@ -1140,7 +1135,6 @@ class Page:
         annotation_ids: Optional[Union[str, Sequence[str]]] = None,
         service_ids: Optional[Union[str, Sequence[str]]] = None,
         model_id: Optional[Union[str, Sequence[str]]] = None,
-        session_ids: Optional[Union[str, Sequence[str]]] = None,
         ignore_inactive: bool = True,
     ) -> list[ImageAnnotationBaseView]:
         """
@@ -1159,7 +1153,6 @@ class Page:
             annotation_ids: A single id or list of ids
             service_ids: A single service name or list of service names
             model_id: A single model name or list of model names
-            session_ids: A single session id or list of session ids
             ignore_inactive: If set to `True` only active annotations are returned.
 
         Returns:
@@ -1174,7 +1167,6 @@ class Page:
         ann_ids = [annotation_ids] if isinstance(annotation_ids, str) else annotation_ids
         service_ids = [service_ids] if isinstance(service_ids, str) else service_ids
         model_ids = [model_id] if isinstance(model_id, str) else model_id
-        session_id = [session_ids] if isinstance(session_ids, str) else session_ids
 
         anns: list[ImageAnnotationBaseView] = self.ann_base_view
         if ignore_inactive:
@@ -1187,8 +1179,6 @@ class Page:
             anns = list(filter(lambda x: x.service_id in service_ids, anns))
         if model_ids is not None:
             anns = list(filter(lambda x: x.model_id in model_ids, anns))
-        if session_id is not None:
-            anns = list(filter(lambda x: x.session_id in session_id, anns))
         return anns
 
     @classmethod

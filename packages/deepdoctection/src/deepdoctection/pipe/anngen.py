@@ -45,7 +45,9 @@ class DataPointCacheStore(ABC):
     """
 
     @abstractmethod
-    def put_datapoint(self, document_id: str, image_id: str, page_number: int, image: Image) -> None:
+    def put_datapoint(
+        self, document_id: str, image_id: str, page_number: int, image: Image, job_id: str | None = None
+    ) -> None:
         """
         Persist a datapoint (image) for a specific document and page number.
 
@@ -54,19 +56,23 @@ class DataPointCacheStore(ABC):
             image_id (str): The unique identifier of the image.
             page_number (int): The 0-based page number inside the document.
             image (Image): The image object to store (may be serialized by the store).
+            job_id (str | None): Optional job identifier to distinguish between different processing runs.
+                If None, caching key remains unchanged (backward compatible).
 
         Returns:
             None
         """
 
     @abstractmethod
-    def get_datapoints(self, document_id: str, last_d: int) -> tuple[Image, ...]:
+    def get_datapoints(self, document_id: str, last_d: int, job_id: str | None = None) -> tuple[Image, ...]:
         """
         Retrieve up to `last_d` most recently stored datapoints for the given document.
 
         Args:
             document_id (str): The identifier of the document to retrieve datapoints for.
             last_d (int): Maximum number of most recent datapoints to return. Must be >= 0.
+            job_id (str | None): Optional job identifier to retrieve datapoints from a specific processing run.
+                If None, retrieves datapoints for the document without job distinction (backward compatible).
 
         Returns:
             tuple[Image, ...]: A tuple of reconstructed :class:`Image` objects ordered from
@@ -115,7 +121,25 @@ class LocalDataPointCacheStore(DataPointCacheStore):
         self._max_pages = max_pages
         self._pages: dict[str, dict[int, dict[str, Any]]] = {}
 
-    def put_datapoint(self, document_id: str, image_id: str, page_number: int, image: Image) -> None:
+    def _get_cache_key(self, document_id: str, job_id: str | None) -> str:
+        """
+        Generate cache key, distinguishing by job_id if present.
+
+        Args:
+            document_id (str): The document identifier.
+            job_id (str | None): Optional job identifier.
+
+        Returns:
+            str: Cache key. If job_id is None, returns document_id unchanged.
+                 If job_id is provided, returns "document_id::job_id".
+        """
+        if job_id is None:
+            return document_id
+        return f"{document_id}::{job_id}"
+
+    def put_datapoint(
+        self, document_id: str, image_id: str, page_number: int, image: Image, job_id: str | None = None
+    ) -> None:
         """
         Store a serialized version of ``image`` for ``document_id`` at ``page_number``.
 
@@ -128,23 +152,26 @@ class LocalDataPointCacheStore(DataPointCacheStore):
                 compatibility with other stores).
             page_number (int): 0-based page number of the image.
             image (Image): The Image object to serialize and store.
+            job_id (str | None): Optional job identifier to distinguish between different processing runs.
         """
-        pages = self._pages.get(document_id)
+        cache_key = self._get_cache_key(document_id, job_id)
+        pages = self._pages.get(cache_key)
         if pages is None:
             pages = {}
-            self._pages[document_id] = pages
+            self._pages[cache_key] = pages
         pages[page_number] = _image_to_cache_dict(image)
         if self._max_pages > 0 and len(pages) > self._max_pages:
             for k in sorted(pages.keys())[: -self._max_pages]:
                 pages.pop(k, None)
 
-    def get_datapoints(self, document_id: str, last_d: int) -> tuple[Image, ...]:
+    def get_datapoints(self, document_id: str, last_d: int, job_id: str | None = None) -> tuple[Image, ...]:
         """
         Retrieve up to ``last_d`` most recent datapoints for a document.
 
         Args:
             document_id (str): Document identifier to retrieve pages for.
             last_d (int): Maximum number of pages to return. If <= 0, an empty tuple is returned.
+            job_id (str | None): Optional job identifier to retrieve datapoints from a specific processing run.
 
         Returns:
             tuple[Image, ...]: Tuple of :class:`Image` instances reconstructed from the stored
@@ -152,7 +179,8 @@ class LocalDataPointCacheStore(DataPointCacheStore):
         """
         if last_d <= 0:
             return ()
-        pages = self._pages.get(document_id) or {}
+        cache_key = self._get_cache_key(document_id, job_id)
+        pages = self._pages.get(cache_key) or {}
         keys = sorted(pages.keys(), reverse=True)[:last_d]
         return tuple(Image(**pages[k]) for k in keys)
 
@@ -194,7 +222,6 @@ class DatapointManager:
         self.datapoint_is_passed: bool = False
         self.service_id = service_id
         self.model_id = model_id
-        self.session_id: Optional[str] = None
 
         if num_cached_datapoints < 0:
             raise ValueError("num_cached_datapoints must be >= 0")
@@ -203,7 +230,17 @@ class DatapointManager:
 
         self._cache_store = cache_store or LocalDataPointCacheStore(max_pages=num_cached_datapoints)
 
-    def _maybe_cache_datapoint(self, image: Optional[Image]) -> None:
+    def maybe_cache_datapoint(self, image: Optional[Image], job_id: str | None = None) -> None:
+        """
+        Cache the given datapoint if caching is enabled.
+
+        This should be called when a datapoint leaves the component to ensure it is cached.
+
+        Args:
+            image: The image datapoint to cache, or None to skip caching.
+            job_id: Optional job identifier to distinguish caches between different processing runs.
+                If None, caching key remains unchanged (backward compatible).
+        """
         if image is None:
             return
         if self.num_cached_datapoints <= 0:
@@ -217,6 +254,7 @@ class DatapointManager:
             image_id=image.image_id,
             page_number=image.page_number,
             image=image,
+            job_id=job_id,
         )
 
     @property
@@ -242,7 +280,6 @@ class DatapointManager:
         Args:
             dp: The datapoint to set.
         """
-        self._maybe_cache_datapoint(self._datapoint)
         self._datapoint = dp
         self._cache_anns = {ann.annotation_id: ann for ann in dp.get_annotation()}
         self.datapoint_is_passed = True
@@ -329,7 +366,6 @@ class DatapointManager:
                 score=detect_result.score,
                 service_id=self.service_id,
                 model_id=self.model_id,
-                session_id=self.session_id,
             )
             if to_annotation_id is not None:
                 parent_ann = self._cache_anns[to_annotation_id]
@@ -406,7 +442,6 @@ class DatapointManager:
                 score=score,
                 service_id=self.service_id,
                 model_id=self.model_id,
-                session_id=self.session_id,
             )
             self._cache_anns[annotation_id].dump_sub_category(sub_cat_key, cat_ann)
         if annotation_context.context_error:
@@ -454,7 +489,6 @@ class DatapointManager:
                 score=score,
                 service_id=self.service_id,
                 model_id=self.model_id,
-                session_id=self.session_id,
             )
             self._cache_anns[annotation_id].dump_sub_category(sub_cat_key, cont_ann)
         if annotation_context.context_error:
@@ -542,7 +576,6 @@ class DatapointManager:
                     score=summary_score,
                     service_id=self.service_id,
                     model_id=self.model_id,
-                    session_id=self.session_id,
                 )
             else:
                 ann = CategoryAnnotation(
@@ -551,7 +584,6 @@ class DatapointManager:
                     score=summary_score,
                     service_id=self.service_id,
                     model_id=self.model_id,
-                    session_id=self.session_id,
                 )
             image.summary.dump_sub_category(summary_key, ann, image.image_id)
 

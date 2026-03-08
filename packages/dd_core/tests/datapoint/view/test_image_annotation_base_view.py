@@ -62,13 +62,6 @@ class TestImageAnnotationBaseView:
             model_id = layouts[0].model_id
             assert model_id is None or isinstance(model_id, str)
 
-    def test_session_id_property(self, page: Page) -> None:
-        """session_id property exists and can be None or str"""
-        layouts = page.layouts
-        if layouts:
-            session_id = layouts[0].session_id
-            assert session_id is None or isinstance(session_id, str)
-
     def test_b64_image_returns_string_or_none(self, page: Page) -> None:
         """b64_image property returns string or None"""
         layouts = page.layouts

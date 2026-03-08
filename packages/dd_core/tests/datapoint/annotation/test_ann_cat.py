@@ -245,13 +245,10 @@ class TestAnnotationEdgeCases:
     """Tests for edge cases and error conditions"""
 
     def test_service_and_model_id_fields(self) -> None:
-        """Test that service_id, model_id, session_id fields work correctly"""
-        cat = CategoryAnnotation(
-            category_name="test_cat_1", service_id="text_detector", model_id="model_v1", session_id="session_123"
-        )
+        """Test that service_id and model_id fields work correctly"""
+        cat = CategoryAnnotation(category_name="test_cat_1", service_id="text_detector", model_id="model_v1")
         assert cat.service_id == "text_detector"
         assert cat.model_id == "model_v1"
-        assert cat.session_id == "session_123"
 
     def test_multiple_sub_category_types(self) -> None:
         """Test annotation with multiple different sub-categories"""

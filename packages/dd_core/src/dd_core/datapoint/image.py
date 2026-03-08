@@ -541,7 +541,6 @@ class Image(BaseModel):
         annotation_ids: Optional[Union[str, Sequence[str]]] = None,
         service_ids: Optional[Union[str, Sequence[str]]] = None,
         model_id: Optional[Union[str, Sequence[str]]] = None,
-        session_ids: Optional[Union[str, Sequence[str]]] = None,
         ignore_inactive: bool = True,
     ) -> list[ImageAnnotation]:
         """
@@ -556,7 +555,6 @@ class Image(BaseModel):
             annotation_ids: A single id or list of ids
             service_ids: A single service name or list of service names
             model_id: A single model name or list of model names
-            session_ids: A single session id or list of session ids
             ignore_inactive: If set to `True` only active annotations are returned.
 
         Returns:
@@ -573,7 +571,6 @@ class Image(BaseModel):
         ann_ids = [annotation_ids] if isinstance(annotation_ids, str) else annotation_ids
         service_ids = [service_ids] if isinstance(service_ids, str) else service_ids
         model_id = [model_id] if isinstance(model_id, str) else model_id
-        session_id = [session_ids] if isinstance(session_ids, str) else session_ids
 
         anns = filter(lambda x: x.active, self.annotations) if ignore_inactive else self.annotations
         if category_names is not None:
@@ -584,8 +581,6 @@ class Image(BaseModel):
             anns = filter(lambda x: x.service_id in service_ids, anns)
         if model_id is not None:
             anns = filter(lambda x: x.model_id in model_id, anns)
-        if session_id is not None:
-            anns = filter(lambda x: x.session_id in session_id, anns)
         return list(anns)
 
     def define_annotation_id(self, annotation: Annotation) -> str:
@@ -868,6 +863,9 @@ class Image(BaseModel):
         retrieves its annotation map via `ann.get_annotation_map()`. All `AnnotationMap`
         objects are collected into a single `defaultdict` keyed by the annotation id.
 
+        Also includes AnnotationMap entries for CategoryAnnotation objects in
+        Image.summary.sub_categories with an empty image_annotation_id.
+
         Returns:
             defaultdict[str, list[AnnotationMap]]: A mapping where each key is an
             annotation id and each value is the list of corresponding `AnnotationMap`
@@ -878,6 +876,14 @@ class Image(BaseModel):
             ann_id_dict = ann.get_annotation_map()
             for key, val in ann_id_dict.items():
                 all_ann_id_dict[key].extend(val)
+
+        if self._summary is not None:
+            for summary_cat_key in self.summary.sub_categories:
+                summary_cat = self.summary.get_sub_category(summary_cat_key)
+                all_ann_id_dict[summary_cat.annotation_id].append(
+                    AnnotationMap(image_annotation_id="", summary_key=summary_cat_key)
+                )
+
         return all_ann_id_dict
 
     def remove(

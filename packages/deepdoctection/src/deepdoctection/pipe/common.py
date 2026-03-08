@@ -406,7 +406,7 @@ class PageParsingService(PipelineComponent):
     def serve(self, dp: Image) -> None:
         raise NotImplementedError("PageParsingService is not meant to be used in serve method")
 
-    def pass_datapoint(self, dp: Image) -> Page:  # type:ignore
+    def pass_datapoint(self, dp: Image, job_id: str | None = None) -> Page:  # type:ignore
         """
         Converts `Image` to `Page`.
 
