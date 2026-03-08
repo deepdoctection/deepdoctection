@@ -720,7 +720,7 @@ class Document:
         page_refs_raw = raw.pop("_page_references", None)
         pipeline_jobs = raw.pop("pipeline_jobs", {})
 
-        if ("_processing_state" in raw):
+        if "_processing_state" in raw:
             raw.pop("_processing_state")
 
         raw["compute_metadata"] = False

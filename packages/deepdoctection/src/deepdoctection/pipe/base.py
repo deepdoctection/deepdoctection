@@ -125,7 +125,7 @@ class PipelineComponent(ABC):
         if not self.filter_func(dp):
             self.serve(dp)
 
-    def pass_datapoint(self, dp: Image) -> Image:
+    def pass_datapoint(self, dp: Image, job_id: str | None = None) -> Image:
         """
         Acceptance, handover to `dp_manager`, transformation and forwarding of `dp`.
 
@@ -133,6 +133,8 @@ class PipelineComponent(ABC):
 
         Args:
             dp: Datapoint.
+            job_id: Optional job identifier to distinguish caches between different processing runs.
+                When None, caching behavior is backward compatible (no job distinction).
 
         Returns:
             Datapoint.
@@ -143,7 +145,7 @@ class PipelineComponent(ABC):
         else:
             self._pass_datapoint(dp)
 
-        self.dp_manager.maybe_cache_datapoint(self.dp_manager.datapoint)
+        self.dp_manager.maybe_cache_datapoint(self.dp_manager.datapoint, job_id=job_id)
 
         return self.dp_manager.datapoint
 
