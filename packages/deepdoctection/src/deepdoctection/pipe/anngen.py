@@ -194,7 +194,6 @@ class DatapointManager:
         self.datapoint_is_passed: bool = False
         self.service_id = service_id
         self.model_id = model_id
-        self.session_id: Optional[str] = None
 
         if num_cached_datapoints < 0:
             raise ValueError("num_cached_datapoints must be >= 0")
@@ -336,7 +335,6 @@ class DatapointManager:
                 score=detect_result.score,
                 service_id=self.service_id,
                 model_id=self.model_id,
-                session_id=self.session_id,
             )
             if to_annotation_id is not None:
                 parent_ann = self._cache_anns[to_annotation_id]
@@ -413,7 +411,6 @@ class DatapointManager:
                 score=score,
                 service_id=self.service_id,
                 model_id=self.model_id,
-                session_id=self.session_id,
             )
             self._cache_anns[annotation_id].dump_sub_category(sub_cat_key, cat_ann)
         if annotation_context.context_error:
@@ -461,7 +458,6 @@ class DatapointManager:
                 score=score,
                 service_id=self.service_id,
                 model_id=self.model_id,
-                session_id=self.session_id,
             )
             self._cache_anns[annotation_id].dump_sub_category(sub_cat_key, cont_ann)
         if annotation_context.context_error:
@@ -549,7 +545,6 @@ class DatapointManager:
                     score=summary_score,
                     service_id=self.service_id,
                     model_id=self.model_id,
-                    session_id=self.session_id,
                 )
             else:
                 ann = CategoryAnnotation(
@@ -558,7 +553,6 @@ class DatapointManager:
                     score=summary_score,
                     service_id=self.service_id,
                     model_id=self.model_id,
-                    session_id=self.session_id,
                 )
             image.summary.dump_sub_category(summary_key, ann, image.image_id)
 

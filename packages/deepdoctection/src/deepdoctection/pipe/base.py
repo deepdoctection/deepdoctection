@@ -24,7 +24,6 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from typing import Any, Callable, Mapping, Optional, Union
-from uuid import uuid1
 
 from dd_core.dataflow import DataFlow, MapData
 from dd_core.datapoint.image import Image, MetaAnnotation
@@ -289,19 +288,6 @@ class Pipeline(ABC):
      core model or already processed further).
 
     In addition to `analyze`, the internal `_entry` is used to bundle preprocessing steps.
-
-    It is possible to set a session id for the pipeline. This is useful for logging purposes. The session id can be
-     either passed to the pipeline via the `analyze` method or generated automatically.
-
-    To generate a `session_id` automatically:
-
-    Example:
-        ```python
-        pipe = MyPipeline(pipeline_component = [layout, text])
-        pipe.set_session_id = True
-
-        df = pipe.analyze(input = "path/to/dir") # session_id is generated automatically
-        ```
     """
 
     def __init__(self, pipeline_component_list: list[PipelineComponent]) -> None:
@@ -312,7 +298,6 @@ class Pipeline(ABC):
             pipeline_component_list: A list of pipeline components.
         """
         self.pipe_component_list = pipeline_component_list
-        self.set_session_id = False
 
     @abstractmethod
     def _entry(self, **kwargs: Any) -> DataFlow:
@@ -383,22 +368,18 @@ class Pipeline(ABC):
         """
         raise NotImplementedError()
 
-    def _build_pipe(self, df: DataFlow, session_id: Optional[str] = None) -> DataFlow:
+    def _build_pipe(self, df: DataFlow) -> DataFlow:
         """
         Composition of the backbone.
 
         Args:
             df: The input dataflow.
-            session_id: Optional session id.
 
         Returns:
             The processed dataflow.
         """
-        if session_id is None and self.set_session_id:
-            session_id = self.get_session_id()
         for component in self.pipe_component_list:
             component.timer_on = True
-            component.dp_manager.session_id = session_id
             df = component.predict_dataflow(df)
         return df
 
@@ -493,13 +474,3 @@ class Pipeline(ABC):
             if comp.service_id == service_id or comp.name == name:
                 return comp
         raise ValueError(f"Pipeline component not found with service_id={service_id} or name={name}")
-
-    @staticmethod
-    def get_session_id() -> str:
-        """
-        Get the generating a session id.
-
-        Returns:
-            The session id as a string.
-        """
-        return str(uuid1())[:8]

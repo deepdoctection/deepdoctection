@@ -386,10 +386,9 @@ class DoctectionPipe(Pipeline):
         """
 
         output = kwargs.get("output", "page")
-        session_id = kwargs.get("session_id")
         assert output in ("page", "image", "dict"), "output must be either page image or dict"
         df = self._entry(**kwargs)
-        df = self._build_pipe(df, session_id=session_id)  # type: ignore
+        df = self._build_pipe(df)
         if output == "page":
             df = self.dataflow_to_page(df)
         elif output == "dict":

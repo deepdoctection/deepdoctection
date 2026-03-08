@@ -70,13 +70,13 @@ class PageReference:
 
 
 @dataclass(frozen=True)
-class PipelineSession:
+class PipelineJobs:
     """
-    Tracks pipeline processing sessions for documents.
+    Tracks pipeline processing jobs for documents.
     """
 
     pipeline_name: str
-    session_id: str
+    job_id: str
     pipeline_info: dict[str, str]
 
 
@@ -172,7 +172,7 @@ class Document:
         external_id: Optional external identifier
         document_id: UUID-like identifier used to identify the document instance.
         compute_metadata: Whether to compute page references during initialization.
-        pipeline_sessions: Stored pipeline session metadata.
+        pipeline_jobs: Stored pipeline jobs metadata.
 
     Example:
         ```python
@@ -202,7 +202,7 @@ class Document:
     document_id: str = ""
     compute_metadata: bool = True
 
-    pipeline_sessions: dict[str, PipelineSession] = field(default_factory=dict)
+    pipeline_jobs: dict[str, PipelineJobs] = field(default_factory=dict)
 
     _page_references: dict[int, PageReference] = field(default_factory=dict, init=False, repr=False)
     _images: dict[str, Image] = field(default_factory=dict, init=False, repr=False)
@@ -537,7 +537,6 @@ class Document:
         annotation_ids: Optional[Union[str, Sequence[str]]] = None,
         service_ids: Optional[Union[str, Sequence[str]]] = None,
         model_id: Optional[Union[str, Sequence[str]]] = None,
-        session_ids: Optional[Union[str, Sequence[str]]] = None,
         ignore_inactive: bool = True,
     ) -> list[ImageAnnotationBaseView]:
         """
@@ -551,7 +550,6 @@ class Document:
             annotation_ids: Filter by annotation UUID(s).
             service_ids: Filter by service id(s).
             model_id: Filter by model id(s).
-            session_ids: Filter by pipeline session id(s).
             ignore_inactive: If True, exclude inactive annotations.
 
         Returns:
@@ -564,7 +562,6 @@ class Document:
             annotation_ids=annotation_ids,
             service_ids=service_ids,
             model_id=model_id,
-            session_ids=session_ids,
             ignore_inactive=ignore_inactive,
         )
 
@@ -603,7 +600,7 @@ class Document:
             "external_id": self.external_id,
             "document_id": self.document_id,
             "compute_metadata": self.compute_metadata,
-            "pipeline_sessions": {k: asdict(v) for k, v in self.pipeline_sessions.items()},
+            "pipeline_jobs": {k: asdict(v) for k, v in self.pipeline_jobs.items()},
             "_summary": self._summary.as_dict() if self._summary is not None else None,
             "_images": {key: val.as_dict() for key, val in self._images.items()},
             "_page_references": {key: asdict(value) for key, value in self._page_references.items()},
@@ -721,17 +718,20 @@ class Document:
         summary_raw = raw.pop("_summary", None)
         images_raw = raw.pop("_images", None)
         page_refs_raw = raw.pop("_page_references", None)
-        pipeline_sessions = raw.pop("pipeline_sessions", {})
+        pipeline_jobs = raw.pop("pipeline_jobs", {})
 
-        if "_processing_state" in raw:
+        if ("_processing_state" in raw):
             raw.pop("_processing_state")
 
         raw["compute_metadata"] = False
 
         doc = cls(**raw)
 
-        if pipeline_sessions:
-            doc.pipeline_sessions = {key: PipelineSession(**val) for key, val in pipeline_sessions.items()}
+        if pipeline_jobs:
+            doc.pipeline_jobs = {
+                key: PipelineJobs(**{k: v for k, v in val.items() if k != "session_id"})
+                for key, val in pipeline_jobs.items()
+            }
 
         if doc.location:
             doc.location = Path(doc.location)
