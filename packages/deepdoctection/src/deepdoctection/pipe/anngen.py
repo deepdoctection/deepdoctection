@@ -45,9 +45,7 @@ class DataPointCacheStore(ABC):
     """
 
     @abstractmethod
-    def put_datapoint(
-        self, document_id: str, page_number: int, image: Image, job_id: str | None = None
-    ) -> None:
+    def put_datapoint(self, document_id: str, page_number: int, image: Image, job_id: str | None = None) -> None:
         """
         Persist a datapoint (image) for a specific document and page number.
 
@@ -136,9 +134,7 @@ class LocalDataPointCacheStore(DataPointCacheStore):
             return document_id
         return f"{document_id}::{job_id}"
 
-    def put_datapoint(
-        self, document_id: str, page_number: int, image: Image, job_id: str | None = None
-    ) -> None:
+    def put_datapoint(self, document_id: str, page_number: int, image: Image, job_id: str | None = None) -> None:
         """
         Store a serialized version of ``image`` for ``document_id`` at ``page_number``.
 
