@@ -296,6 +296,7 @@ def get_meta_annotation(pipeline_component_list: list[PipelineComponent]) -> Met
         summaries=tuple(summaries),
     )
 
+
 def get_service_id_to_meta_annotation(pipeline_component_list: list[PipelineComponent]) -> Mapping[str, MetaAnnotation]:
     """
     Collects meta annotations from all pipeline components and return a dict of service id to its meta annotation.
@@ -311,9 +312,10 @@ def get_service_id_to_meta_annotation(pipeline_component_list: list[PipelineComp
         service_id_to_meta_annotation[component.service_id] = meta_anns
     return service_id_to_meta_annotation
 
-def get_pipeline_info(pipeline_component_list: list[PipelineComponent],
-                      service_id: str,
-                      name: str | None = None) -> Union[str, Mapping[str, str]]:
+
+def get_pipeline_info(
+    pipeline_component_list: list[PipelineComponent], service_id: str | None = None, name: str | None = None
+) -> Union[str, Mapping[str, str]]:
     """
     Get pipeline information.
 
@@ -334,6 +336,7 @@ def get_pipeline_info(pipeline_component_list: list[PipelineComponent],
     if name is not None:
         return comp_info_name_as_key[name]
     return comp_info
+
 
 class Pipeline(ABC):
     """
@@ -472,7 +475,6 @@ class Pipeline(ABC):
         """
         return get_meta_annotation(self.pipe_component_list)
 
-
     def get_service_id_to_meta_annotation(self) -> Mapping[str, MetaAnnotation]:
         """
         Collects meta annotations from all pipeline components and return a dict of service id to its meta annotation.
@@ -501,7 +503,6 @@ class Pipeline(ABC):
             the position has been passed or the position if the name has been passed.
         """
         return get_pipeline_info(self.pipe_component_list, service_id=service_id, name=name)
-
 
     def get_pipeline_component(self, service_id: Optional[str] = None, name: Optional[str] = None) -> PipelineComponent:
         """
