@@ -24,7 +24,7 @@ import itertools
 import threading
 from enum import Enum
 from typing import Any, Callable, Iterable, Optional, Sequence, Type, Union
-
+import re
 import catalogue  # type: ignore
 
 from .error import DuplicateObjectTypeError
@@ -62,45 +62,324 @@ def _iter_registered_enums() -> Iterable[Type[ObjectTypes]]:
     return object_types_registry.get_all().values()
 
 
-def _index_enum(enum_cls: Type[ObjectTypes]) -> None:
+
+def _wrapped_register(name: str, func: Optional[Any] = None) -> Callable[[Type[ObjectTypes]], Type[ObjectTypes]]:
+    def _decorator(cls: Type[ObjectTypes]) -> Type[ObjectTypes]:
+        with _TYPES_INDEX_LOCK:
+            registered_cls = _orig_register(name, func=func)(cls)
+            _rebuild_types_index_locked()
+            return registered_cls
+
+    return _decorator
+
+
+def _upsert_dynamic_enum(name: str, members: Sequence[tuple[str, str]]) -> Type[ObjectTypes] | None:
     """
-    Merge a newly-registered enum class into the global index, enforcing unique string values.
+    Idempotently register or extend a dynamic ObjectTypes enum under `name`.
+
+    Rules:
+    - existing values under the same enum name are preserved
+    - new values are appended
+    - repeated registration of the same values is a no-op
+    - values already owned by a different enum raise DuplicateObjectTypeError
     """
     with _TYPES_INDEX_LOCK:
+        registered = object_types_registry.get_all()
+        existing_enum = registered.get(name)
+
+        existing_by_value: dict[str, str] = {}
+        if existing_enum is not None:
+            for member in existing_enum:
+                existing_by_value[str(member.value)] = member.name
+
+        merged_by_value = dict(existing_by_value)
+
+        for proposed_member_name, raw_value in members:
+            value = _normalize_object_type_value(raw_value)
+
+            existing_member = _ALL_TYPES_DICT.get(value)
+
+            # Case 1: value already globally claimed by another enum -> skip silently
+            if existing_member is not None and existing_member.__class__.__name__ != name:
+                continue
+
+            # Case 2: value already part of this enum -> keep existing member name
+            if value not in merged_by_value:
+                merged_by_value[value] = proposed_member_name
+
+        # Nothing to do
+        if merged_by_value == existing_by_value:
+            return existing_enum
+
+        # Avoid creating an empty enum if target type does not yet exist and all values were skipped
+        if not merged_by_value:
+            return None
+
+        merged_members = [(member_name, value) for value, member_name in merged_by_value.items()]
+        merged_enum = ObjectTypes(name, merged_members)  # type: ignore[misc]
+
+        registered_cls = _orig_register(name)(merged_enum)
+        _rebuild_types_index_locked()
+        return registered_cls
+
+
+
+def _get_black_list() -> list[str]:
+    return _BLACK_LIST
+
+
+def update_black_list(item: str) -> None:
+    """Updates the black list, i.e. set of elements that must not be lowered"""
+    _BLACK_LIST.append(item)
+
+
+def _normalize_object_type_value(obj_type: str) -> str:
+    """
+    Canonical normalization for lookup and dynamic registration.
+    This must match get_type() semantics.
+    """
+    obj_type = _get_new_obj_type_str(obj_type)
+
+    if obj_type.startswith(("B-", "E-", "I-", "S-")):
+        return obj_type[:2] + obj_type[2:].lower()
+
+    if obj_type not in _get_black_list():
+        return obj_type.lower()
+
+    return obj_type
+
+
+def _flatten_categories(categories_list: Sequence[str]) -> list[str]:
+    """
+    Flatten a possibly nested category sequence into a plain list[str].
+    """
+    if categories_list and isinstance(categories_list[0], (list, tuple)):
+        return [str(item) for item in itertools.chain.from_iterable(categories_list)]  # type: ignore[arg-type]
+    return [str(item) for item in categories_list]
+
+
+def _dedupe_preserve_order(values: Sequence[str]) -> list[str]:
+    """
+    Stable de-duplication preserving the first occurrence order.
+    """
+    seen: set[str] = set()
+    out: list[str] = []
+    for value in values:
+        if value not in seen:
+            seen.add(value)
+            out.append(value)
+    return out
+
+
+def _sanitize_enum_member_name(value: str, used_names: set[str]) -> str:
+    """
+    Convert a value string into a safe enum member name.
+    """
+    candidate = re.sub(r"[^A-Z0-9_]", "_", value.upper())
+    if not candidate:
+        candidate = "TYPE"
+    if candidate[0].isdigit():
+        candidate = f"TYPE_{candidate}"
+
+    name = candidate
+    suffix = 2
+    while name in used_names:
+        name = f"{candidate}_{suffix}"
+        suffix += 1
+
+    used_names.add(name)
+    return name
+
+
+def _build_types_index_from_registry() -> dict[str, ObjectTypes]:
+    """
+    Build a fresh value->member index from the current registry contents.
+
+    This is the only place where duplicate value detection happens.
+    """
+    new_index: dict[str, ObjectTypes] = {}
+
+    for enum_cls in _iter_registered_enums():
         for member in enum_cls:
-            val = str(member.value)
-            existing = _ALL_TYPES_DICT.get(val)
+            value = str(member.value)
+            existing = new_index.get(value)
             if existing is not None and existing is not member:
                 raise DuplicateObjectTypeError(
-                    f"Object type value '{val}' already taken by {existing!r}; cannot register {member!r}"
+                    f"Object type value '{value}' already taken by {existing!r}; cannot register {member!r}"
                 )
-            _ALL_TYPES_DICT[val] = member
+            new_index[value] = member
+
+    return new_index
+
+
+def _rebuild_types_index_locked() -> None:
+    """
+    Rebuild the global lookup index from the registry.
+    Caller must hold _TYPES_INDEX_LOCK.
+    """
+    global _ALL_TYPES_DICT
+    _ALL_TYPES_DICT = _build_types_index_from_registry()
 
 
 def _rebuild_types_index() -> None:
     """
-    Full rebuild from the registry. Useful at process start or in tests.
+    Public/internal helper to rebuild the lookup index from the registry.
     """
     with _TYPES_INDEX_LOCK:
-        _ALL_TYPES_DICT.clear()
-        for enum_cls in _iter_registered_enums():
-            _index_enum(enum_cls)
+        _rebuild_types_index_locked()
+
+def token_class_tag_to_token_class_with_tag(token: ObjectTypes, tag: ObjectTypes) -> ObjectTypes:
+    """
+    Maps a `TokenClassWithTagLabel` enum member from a token class and tag, e.g. `TokenClassLabel.HEADER` and
+    `BioTag.INSIDE` maps to `TTokenClassWithTagLabel.I_HEADER`.
+
+    Args:
+        token: TokenClasses member.
+        tag: BioTag member.
+
+    Returns:
+        TokenClassWithTag member.
+
+    Raises:
+        TypeError: If token is not of type TokenClasses or tag is not of type BioTag.
+    """
+    if isinstance(token, TokenClassLabel) and isinstance(tag, BioTagLabel):
+        return _TOKEN_AND_TAG_TO_TOKEN_CLASS_WITH_TAG[(token, tag)]
+    raise TypeError(
+        f"Token must be of type TokenClasses, is of {type(token)} and tag " f"{type(tag)} must be of type BioTag"
+    )
 
 
-def _wrapped_register(name: str, func: Optional[Any] = None) -> Callable[[Type[ObjectTypes]], Type[ObjectTypes]]:
-    def _decorator(cls: Type[ObjectTypes]) -> Type[ObjectTypes]:
-        registered_cls = _orig_register(name, func=func)(cls)
-        _index_enum(registered_cls)
-        return registered_cls
+def token_class_with_tag_to_token_class_and_tag(
+    token_class_with_tag: ObjectTypes,
+) -> Optional[tuple[ObjectTypes, ObjectTypes]]:
+    """
+    This is the reverse mapping from TokenClassWithTag members to TokenClasses and BioTag
 
-    return _decorator
+    Args:
+        token_class_with_tag: `TokenClassWithTag` member
 
+    Returns:
+        Tuple of `TokenClasses` member and `BioTag` member
+    """
+    return {val: key for key, val in _TOKEN_AND_TAG_TO_TOKEN_CLASS_WITH_TAG.items()}.get(token_class_with_tag)
+
+
+def register_custom_token_tag(custom_object_types: ObjectTypes, suffix: str) -> str:
+    """
+    Registers custom token tags for a given ObjectType with a specified suffix. The tags are created by combining
+    BIO tags (B, I, E) with the custom object types.
+
+    Args:
+        custom_object_types: An instance of ObjectTypes containing the custom object types to be registered.
+        suffix: A string suffix to be appended to the name of the registered object type.
+
+    Returns:
+        The name of the registered object type.
+
+    Example:
+
+    ```python
+    from deepdoctection.utils.settings import ObjectTypes
+
+    class CustomObjectTypesLabel(ObjectTypes):
+        TOKEN_A = "token_a"
+        TOKEN_B = "token_b"
+
+    custom_object_types = CustomObjectTypes()
+    register_custom_token_tag(custom_object_types, "custom_type")
+    # This will register tags like "B-TOKEN_A", "I-TOKEN_A", "E-TOKEN_A", "B-TOKEN_B", "I-TOKEN_B", "E-TOKEN_B"
+    ```
+
+    """
+    tag_list = [i for i in object_types_registry.get("BioTagLabel") if i in ("B", "I", "E")]
+    name = f"{custom_object_types.__name__.lower()}_{suffix}"  # type: ignore
+
+    product = [
+        (
+            a[0].value + "_" + a[1].value.upper(),  # member name
+            a[0].value + "-" + a[1].value,          # value
+        )
+        for a in list(itertools.product(tag_list, custom_object_types))
+    ]
+
+    _upsert_dynamic_enum(name, product)
+    return name
+
+
+def register_string_categories_from_list(categories_list: Sequence[str], object_type_name: str) -> None:
+    """
+    Idempotently register or extend string categories under a dynamic ObjectTypes enum.
+
+    Repeated calls with the same values are a no-op.
+    Repeated calls with new values extend the enum under the same name.
+    """
+    flattened_categories = _flatten_categories(categories_list)
+    normalized_values = _dedupe_preserve_order(
+        [_normalize_object_type_value(cat) for cat in flattened_categories]
+    )
+
+    if not normalized_values:
+        return
+
+    used_names: set[str] = set()
+    members = [
+        (_sanitize_enum_member_name(value, used_names), value)
+        for value in normalized_values
+    ]
+
+    _upsert_dynamic_enum(object_type_name, members)
+
+
+def update_all_types_dict() -> None:
+    """
+    Compatibility helper retained for older code/tests that call it explicitly.
+    Rebuilds the global index from the registry.
+    """
+    _rebuild_types_index()
+
+
+
+
+def get_type(obj_type: Union[str, ObjectTypes]) -> ObjectTypes:
+    """
+    Get an object type property from a given string. Does nothing if an `ObjectType` is passed
+
+    Args:
+        obj_type: String or ObjectTypes
+    Returns:
+        `ObjectType`
+    """
+    if isinstance(obj_type, ObjectTypes):
+        return obj_type
+
+    if not isinstance(obj_type, str):
+        raise TypeError(f"get_type expects str or ObjectTypes, got {type(obj_type)}")
+
+    normalized = _normalize_object_type_value(obj_type)
+
+    with _TYPES_INDEX_LOCK:
+        member = _ALL_TYPES_DICT.get(normalized)
+
+    if member is None:
+        raise KeyError(f"String {normalized} does not correspond to a registered ObjectType")
+
+    return member
+
+
+def _get_new_obj_type_str(obj_type: str) -> str:
+    return _OLD_TO_NEW_OBJ_TYPE.get(obj_type, obj_type)
 
 # Monkey-patch the registry to enforce duplicate detection for all modules.
 object_types_registry.register = _wrapped_register
 
 _TYPES_INDEX_LOCK = threading.RLock()
 _ALL_TYPES_DICT: dict[str, ObjectTypes] = {}
+
+
+_rebuild_types_index()
+
+
 
 
 @object_types_registry.register("DefaultType")
@@ -412,119 +691,7 @@ _TOKEN_AND_TAG_TO_TOKEN_CLASS_WITH_TAG = {
 }
 
 
-def token_class_tag_to_token_class_with_tag(token: ObjectTypes, tag: ObjectTypes) -> ObjectTypes:
-    """
-    Maps a `TokenClassWithTagLabel` enum member from a token class and tag, e.g. `TokenClassLabel.HEADER` and
-    `BioTag.INSIDE` maps to `TTokenClassWithTagLabel.I_HEADER`.
 
-    Args:
-        token: TokenClasses member.
-        tag: BioTag member.
-
-    Returns:
-        TokenClassWithTag member.
-
-    Raises:
-        TypeError: If token is not of type TokenClasses or tag is not of type BioTag.
-    """
-    if isinstance(token, TokenClassLabel) and isinstance(tag, BioTagLabel):
-        return _TOKEN_AND_TAG_TO_TOKEN_CLASS_WITH_TAG[(token, tag)]
-    raise TypeError(
-        f"Token must be of type TokenClasses, is of {type(token)} and tag " f"{type(tag)} must be of type BioTag"
-    )
-
-
-def token_class_with_tag_to_token_class_and_tag(
-    token_class_with_tag: ObjectTypes,
-) -> Optional[tuple[ObjectTypes, ObjectTypes]]:
-    """
-    This is the reverse mapping from TokenClassWithTag members to TokenClasses and BioTag
-
-    Args:
-        token_class_with_tag: `TokenClassWithTag` member
-
-    Returns:
-        Tuple of `TokenClasses` member and `BioTag` member
-    """
-    return {val: key for key, val in _TOKEN_AND_TAG_TO_TOKEN_CLASS_WITH_TAG.items()}.get(token_class_with_tag)
-
-
-def register_custom_token_tag(custom_object_types: ObjectTypes, suffix: str) -> str:
-    """
-    Registers custom token tags for a given ObjectType with a specified suffix. The tags are created by combining
-    BIO tags (B, I, E) with the custom object types.
-
-    Args:
-        custom_object_types: An instance of ObjectTypes containing the custom object types to be registered.
-        suffix: A string suffix to be appended to the name of the registered object type.
-
-    Returns:
-        The name of the registered object type.
-
-    Example:
-
-    ```python
-    from deepdoctection.utils.settings import ObjectTypes
-
-    class CustomObjectTypesLabel(ObjectTypes):
-        TOKEN_A = "token_a"
-        TOKEN_B = "token_b"
-
-    custom_object_types = CustomObjectTypes()
-    register_custom_token_tag(custom_object_types, "custom_type")
-    # This will register tags like "B-TOKEN_A", "I-TOKEN_A", "E-TOKEN_A", "B-TOKEN_B", "I-TOKEN_B", "E-TOKEN_B"
-    ```
-
-    """
-    tag_list = [i for i in object_types_registry.get("BioTagLabel") if i in ("B", "I", "E")]
-    name = f"{custom_object_types.__name__.lower()}_{suffix}"  # type: ignore
-    product = [
-        (
-            a[0].value + "_" + a[1].value.upper(),  # type: ignore
-            a[0].value + "-" + a[1].value,  # type: ignore
-        )
-        for a in list(itertools.product(tag_list, custom_object_types))
-    ]
-
-    object_types_registry.register(name)(ObjectTypes(name, product))  # type: ignore
-    return name
-
-
-def register_string_categories_from_list(categories_list: Sequence[str], object_type_name: str) -> None:
-    """
-    Registers string categories from a given list into the object types registry. If a category from the list is not
-    already registered, it will be added with the specified object type name.
-
-    Args:
-        categories_list: A sequence of strings representing the categories to be registered.
-        object_type_name: The name of the object type under which the categories will be registered.
-
-    Example:
-        ```python
-        categories = ["category1", "category2", "category3"]
-        register_string_categories_from_list(categories, "custom_object_type")
-        # This will register "CATEGORY1", "CATEGORY2", "CATEGORY3" under the object type "custom_object_type"
-        ```
-    """
-
-    all_types = {cat.value for object_type in set(object_types_registry.get_all().values()) for cat in object_type}
-
-    if categories_list and isinstance(categories_list[0], (list, tuple)):
-        flattened_categories = list(itertools.chain.from_iterable(categories_list))
-    else:
-        flattened_categories = list(categories_list)
-
-    categories_to_register = [cat for cat in flattened_categories if cat not in all_types]
-    categories_tuple = list({cat.upper(): cat for cat in categories_to_register}.items())
-    object_types_registry.register(object_type_name)(ObjectTypes(object_type_name, categories_tuple))  # type: ignore
-
-
-def update_all_types_dict() -> None:
-    """
-    Compatibility helper retained for older code/tests that call it explicitly.
-    Rebuilds the global index from the registry.
-    """
-    _rebuild_types_index()
 
 
 _OLD_TO_NEW_OBJ_TYPE: dict[str, str] = {
@@ -546,49 +713,7 @@ _OLD_TO_NEW_OBJ_TYPE: dict[str, str] = {
 }
 
 
-def _get_new_obj_type_str(obj_type: str) -> str:
-    return _OLD_TO_NEW_OBJ_TYPE.get(obj_type, obj_type)
-
-
 _BLACK_LIST: list[str] = ["B", "I", "O", "E", "S"]
 
 
-def _get_black_list() -> list[str]:
-    return _BLACK_LIST
 
-
-def update_black_list(item: str) -> None:
-    """Updates the black list, i.e. set of elements that must not be lowered"""
-    _BLACK_LIST.append(item)
-
-
-def get_type(obj_type: Union[str, ObjectTypes]) -> ObjectTypes:
-    """
-    Get an object type property from a given string. Does nothing if an `ObjectType` is passed
-
-    Args:
-        obj_type: String or ObjectTypes
-    Returns:
-        `ObjectType`
-    """
-    if isinstance(obj_type, ObjectTypes):
-        return obj_type
-    if not isinstance(obj_type, str):
-        raise TypeError(f"get_type expects str or ObjectTypes, got {type(obj_type)}")
-
-    obj_type = _get_new_obj_type_str(obj_type)
-    if obj_type.startswith(("B-", "E-", "I-", "S-")):
-        obj_type = obj_type[:2] + obj_type[2:].lower()
-    elif obj_type not in _get_black_list():
-        obj_type = obj_type.lower()
-
-    with _TYPES_INDEX_LOCK:
-        member = _ALL_TYPES_DICT.get(obj_type)
-
-    if member is None:
-        raise KeyError(f"String {obj_type} does not correspond to a registered ObjectType")
-
-    return member
-
-
-_rebuild_types_index()

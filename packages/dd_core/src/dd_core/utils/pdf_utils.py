@@ -127,7 +127,7 @@ def decrypt_pdf_document_from_bytes(input_bytes: bytes) -> bytes:
             sys.exit()
 
 
-def get_pdf_file_reader(path_or_bytes: Union[PathLikeOrStr, bytes]) -> PdfReader:
+def get_pdf_file_reader(path_or_bytes: Union[PathLikeOrStr, bytes], check_file_extension: bool = True) -> PdfReader:
     """
     Create a file reader object from a PDF document.
 
@@ -136,6 +136,7 @@ def get_pdf_file_reader(path_or_bytes: Union[PathLikeOrStr, bytes]) -> PdfReader
 
     Args:
         path_or_bytes: A path to a PDF document or bytes.
+        check_file_extension: If True, and file suffix is not .pdf, it will raise a FileExtensionError
 
     Returns:
         A file reader object from which you can iterate through the document.
@@ -154,7 +155,7 @@ def get_pdf_file_reader(path_or_bytes: Union[PathLikeOrStr, bytes]) -> PdfReader
     if not os.path.isfile(path_or_bytes):
         raise FileNotFoundError(str(path_or_bytes))
     file_name = os.path.split(path_or_bytes)[1]
-    if not is_file_extension(file_name, ".pdf"):
+    if not is_file_extension(file_name, ".pdf") and check_file_extension:
         raise FileExtensionError(f"must be a pdf file: {file_name}")
 
     with open(path_or_bytes, "rb") as file:
@@ -218,15 +219,17 @@ class PDFStreamer:
         you open many files.
     """
 
-    def __init__(self, path_or_bytes: Union[PathLikeOrStr, bytes]) -> None:
+    def __init__(self, path_or_bytes: Union[PathLikeOrStr, bytes], check_file_extension: bool = True) -> None:
         """
         Args:
             path_or_bytes: Path to a PDF.
+            check_file_extension: If True, and file suffix is not .pdf, it will raise a FileExtensionError
+
 
         Returns:
             None.
         """
-        self.file_reader = get_pdf_file_reader(path_or_bytes)
+        self.file_reader = get_pdf_file_reader(path_or_bytes, check_file_extension=check_file_extension)
         self.file_writer = PdfWriter()
 
     def __len__(self) -> int:
