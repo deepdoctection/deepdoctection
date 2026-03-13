@@ -736,9 +736,11 @@ class Document:
 
         if pipeline_jobs:
             doc.pipeline_jobs = {
-                key: val
-                if isinstance(val, PipelineJobs)
-                else PipelineJobs(**{k: v for k, v in val.items() if k != "session_id"})
+                key: (
+                    val
+                    if isinstance(val, PipelineJobs)
+                    else PipelineJobs(**{k: v for k, v in val.items() if k != "session_id"})
+                )
                 for key, val in pipeline_jobs.items()
             }
 

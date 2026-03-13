@@ -21,10 +21,11 @@ Module for funcs and constants that maintain general settings
 from __future__ import annotations
 
 import itertools
+import re
 import threading
 from enum import Enum
 from typing import Any, Callable, Iterable, Optional, Sequence, Type, Union
-import re
+
 import catalogue  # type: ignore
 
 from .error import DuplicateObjectTypeError
@@ -60,7 +61,6 @@ def _iter_registered_enums() -> Iterable[Type[ObjectTypes]]:
     Iterate over all enum classes registered in the catalogue registry.
     """
     return object_types_registry.get_all().values()
-
 
 
 def _wrapped_register(name: str, func: Optional[Any] = None) -> Callable[[Type[ObjectTypes]], Type[ObjectTypes]]:
@@ -121,7 +121,6 @@ def _upsert_dynamic_enum(name: str, members: Sequence[tuple[str, str]]) -> Type[
         registered_cls = _orig_register(name)(merged_enum)
         _rebuild_types_index_locked()
         return registered_cls
-
 
 
 def _get_black_list() -> list[str]:
@@ -228,6 +227,7 @@ def _rebuild_types_index() -> None:
     with _TYPES_INDEX_LOCK:
         _rebuild_types_index_locked()
 
+
 def token_class_tag_to_token_class_with_tag(token: ObjectTypes, tag: ObjectTypes) -> ObjectTypes:
     """
     Maps a `TokenClassWithTagLabel` enum member from a token class and tag, e.g. `TokenClassLabel.HEADER` and
@@ -298,7 +298,7 @@ def register_custom_token_tag(custom_object_types: ObjectTypes, suffix: str) -> 
     product = [
         (
             a[0].value + "_" + a[1].value.upper(),  # member name
-            a[0].value + "-" + a[1].value,          # value
+            a[0].value + "-" + a[1].value,  # value
         )
         for a in list(itertools.product(tag_list, custom_object_types))
     ]
@@ -315,18 +315,13 @@ def register_string_categories_from_list(categories_list: Sequence[str], object_
     Repeated calls with new values extend the enum under the same name.
     """
     flattened_categories = _flatten_categories(categories_list)
-    normalized_values = _dedupe_preserve_order(
-        [_normalize_object_type_value(cat) for cat in flattened_categories]
-    )
+    normalized_values = _dedupe_preserve_order([_normalize_object_type_value(cat) for cat in flattened_categories])
 
     if not normalized_values:
         return
 
     used_names: set[str] = set()
-    members = [
-        (_sanitize_enum_member_name(value, used_names), value)
-        for value in normalized_values
-    ]
+    members = [(_sanitize_enum_member_name(value, used_names), value) for value in normalized_values]
 
     _upsert_dynamic_enum(object_type_name, members)
 
@@ -337,8 +332,6 @@ def update_all_types_dict() -> None:
     Rebuilds the global index from the registry.
     """
     _rebuild_types_index()
-
-
 
 
 def get_type(obj_type: Union[str, ObjectTypes]) -> ObjectTypes:
@@ -370,6 +363,7 @@ def get_type(obj_type: Union[str, ObjectTypes]) -> ObjectTypes:
 def _get_new_obj_type_str(obj_type: str) -> str:
     return _OLD_TO_NEW_OBJ_TYPE.get(obj_type, obj_type)
 
+
 # Monkey-patch the registry to enforce duplicate detection for all modules.
 object_types_registry.register = _wrapped_register
 
@@ -378,8 +372,6 @@ _ALL_TYPES_DICT: dict[str, ObjectTypes] = {}
 
 
 _rebuild_types_index()
-
-
 
 
 @object_types_registry.register("DefaultType")
@@ -691,9 +683,6 @@ _TOKEN_AND_TAG_TO_TOKEN_CLASS_WITH_TAG = {
 }
 
 
-
-
-
 _OLD_TO_NEW_OBJ_TYPE: dict[str, str] = {
     "DOC_CLASS": "document_type",
     "CHARS": "characters",
@@ -714,6 +703,3 @@ _OLD_TO_NEW_OBJ_TYPE: dict[str, str] = {
 
 
 _BLACK_LIST: list[str] = ["B", "I", "O", "E", "S"]
-
-
-
