@@ -259,6 +259,85 @@ class PipelineComponent(ABC):
         return MapData(df, self._undo)
 
 
+def get_meta_annotation(pipeline_component_list: list[PipelineComponent]) -> MetaAnnotation:
+    """
+    Collects meta annotations from all pipeline components and summarizes the returned results.
+
+    Returns:
+        Meta annotations with information about image annotations (list), sub categories (dict with category
+        names and generated sub categories), relationships (dict with category names and generated relationships)
+        as well as summaries (list with sub categories).
+    """
+    image_annotations: list[ObjectTypes] = []
+    sub_categories: dict[ObjectTypes, dict[ObjectTypes, set[ObjectTypes]]] = {}
+    relationships = defaultdict(set[ObjectTypes])  # type: ignore
+    summaries: list[ObjectTypes] = []
+    for component in pipeline_component_list:
+        meta_anns = component.get_meta_annotation()
+        image_annotations.extend(meta_anns.image_annotations)
+        for key, value in meta_anns.sub_categories.items():
+            sub_dict = meta_anns.sub_categories[key]
+            for sub_cat, sub_cat_value in value.items():
+                if sub_cat in sub_dict:
+                    sub_dict[sub_cat].update(sub_cat_value)
+                else:
+                    sub_dict[sub_cat] = {sub_cat_value}  # type: ignore
+            if key in sub_categories:
+                sub_categories[key].update(sub_dict)
+            else:
+                sub_categories[key] = sub_dict
+        for key, value in meta_anns.relationships.items():  # type: ignore
+            relationships[key].update(value)
+        summaries.extend(meta_anns.summaries)
+    return MetaAnnotation(
+        image_annotations=tuple(image_annotations),
+        sub_categories=sub_categories,
+        relationships=relationships,
+        summaries=tuple(summaries),
+    )
+
+
+def get_service_id_to_meta_annotation(pipeline_component_list: list[PipelineComponent]) -> Mapping[str, MetaAnnotation]:
+    """
+    Collects meta annotations from all pipeline components and return a dict of service id to its meta annotation.
+
+    Returns:
+        `service_id` to `MetaAnnotation` with information about image annotations (list), sub categories (dict with
+        category names and generated sub categories), relationships (dict with category names and generated
+        relationships) as well as summaries (list with sub categories).
+    """
+    service_id_to_meta_annotation = {}
+    for component in pipeline_component_list:
+        meta_anns = component.get_meta_annotation()
+        service_id_to_meta_annotation[component.service_id] = meta_anns
+    return service_id_to_meta_annotation
+
+
+def get_pipeline_info(
+    pipeline_component_list: list[PipelineComponent], service_id: str | None = None, name: str | None = None
+) -> Union[str, Mapping[str, str]]:
+    """
+    Get pipeline information.
+
+    Returns a dictionary with a description of each pipeline component.
+
+    Args:
+        service_id: Service id of the pipeline component to search for.
+        name: Name of the pipeline component to search for.
+
+    Returns:
+        Either a full dictionary with position and name of all pipeline components or the name, if
+        the position has been passed or the position if the name has been passed.
+    """
+    comp_info = {comp.service_id: comp.name for comp in pipeline_component_list}
+    comp_info_name_as_key = {value: key for key, value in comp_info.items()}
+    if service_id is not None:
+        return comp_info[service_id]
+    if name is not None:
+        return comp_info_name_as_key[name]
+    return comp_info
+
+
 class Pipeline(ABC):
     """
     Abstract base class for creating pipelines.
@@ -394,33 +473,7 @@ class Pipeline(ABC):
             names and generated sub categories), relationships (dict with category names and generated relationships)
             as well as summaries (list with sub categories).
         """
-        image_annotations: list[ObjectTypes] = []
-        sub_categories: dict[ObjectTypes, dict[ObjectTypes, set[ObjectTypes]]] = {}
-        relationships = defaultdict(set[ObjectTypes])  # type: ignore
-        summaries: list[ObjectTypes] = []
-        for component in self.pipe_component_list:
-            meta_anns = component.get_meta_annotation()
-            image_annotations.extend(meta_anns.image_annotations)
-            for key, value in meta_anns.sub_categories.items():
-                sub_dict = meta_anns.sub_categories[key]
-                for sub_cat, sub_cat_value in value.items():
-                    if sub_cat in sub_dict:
-                        sub_dict[sub_cat].update(sub_cat_value)
-                    else:
-                        sub_dict[sub_cat] = {sub_cat_value}  # type: ignore
-                if key in sub_categories:
-                    sub_categories[key].update(sub_dict)
-                else:
-                    sub_categories[key] = sub_dict
-            for key, value in meta_anns.relationships.items():  # type: ignore
-                relationships[key].update(value)
-            summaries.extend(meta_anns.summaries)
-        return MetaAnnotation(
-            image_annotations=tuple(image_annotations),
-            sub_categories=dict(sub_categories),
-            relationships=dict(relationships),
-            summaries=tuple(summaries),
-        )
+        return get_meta_annotation(self.pipe_component_list)
 
     def get_service_id_to_meta_annotation(self) -> Mapping[str, MetaAnnotation]:
         """
@@ -431,11 +484,7 @@ class Pipeline(ABC):
             category names and generated sub categories), relationships (dict with category names and generated
             relationships) as well as summaries (list with sub categories).
         """
-        service_id_to_meta_annotation = {}
-        for component in self.pipe_component_list:
-            meta_anns = component.get_meta_annotation()
-            service_id_to_meta_annotation[component.service_id] = meta_anns
-        return service_id_to_meta_annotation
+        return get_service_id_to_meta_annotation(self.pipe_component_list)
 
     def get_pipeline_info(
         self, service_id: Optional[str] = None, name: Optional[str] = None
@@ -453,13 +502,7 @@ class Pipeline(ABC):
             Either a full dictionary with position and name of all pipeline components or the name, if
             the position has been passed or the position if the name has been passed.
         """
-        comp_info = {comp.service_id: comp.name for comp in self.pipe_component_list}
-        comp_info_name_as_key = {value: key for key, value in comp_info.items()}
-        if service_id is not None:
-            return comp_info[service_id]
-        if name is not None:
-            return comp_info_name_as_key[name]
-        return comp_info
+        return get_pipeline_info(self.pipe_component_list, service_id=service_id, name=name)
 
     def get_pipeline_component(self, service_id: Optional[str] = None, name: Optional[str] = None) -> PipelineComponent:
         """

@@ -45,15 +45,12 @@ class DataPointCacheStore(ABC):
     """
 
     @abstractmethod
-    def put_datapoint(
-        self, document_id: str, image_id: str, page_number: int, image: Image, job_id: str | None = None
-    ) -> None:
+    def put_datapoint(self, document_id: str, page_number: int, image: Image, job_id: str | None = None) -> None:
         """
         Persist a datapoint (image) for a specific document and page number.
 
         Args:
             document_id (str): The identifier of the document the image belongs to.
-            image_id (str): The unique identifier of the image.
             page_number (int): The 0-based page number inside the document.
             image (Image): The image object to store (may be serialized by the store).
             job_id (str | None): Optional job identifier to distinguish between different processing runs.
@@ -137,9 +134,7 @@ class LocalDataPointCacheStore(DataPointCacheStore):
             return document_id
         return f"{document_id}::{job_id}"
 
-    def put_datapoint(
-        self, document_id: str, image_id: str, page_number: int, image: Image, job_id: str | None = None
-    ) -> None:
+    def put_datapoint(self, document_id: str, page_number: int, image: Image, job_id: str | None = None) -> None:
         """
         Store a serialized version of ``image`` for ``document_id`` at ``page_number``.
 
@@ -148,8 +143,6 @@ class LocalDataPointCacheStore(DataPointCacheStore):
 
         Args:
             document_id (str): Document identifier the image belongs to.
-            image_id (str): Image identifier (not directly used by this store but included for API
-                compatibility with other stores).
             page_number (int): 0-based page number of the image.
             image (Image): The Image object to serialize and store.
             job_id (str | None): Optional job identifier to distinguish between different processing runs.
@@ -251,7 +244,6 @@ class DatapointManager:
 
         self._cache_store.put_datapoint(
             document_id=image.document_id,
-            image_id=image.image_id,
             page_number=image.page_number,
             image=image,
             job_id=job_id,
