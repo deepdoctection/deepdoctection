@@ -31,6 +31,7 @@ import sys
 from typing import TYPE_CHECKING
 
 from .utils.file_utils import _LazyModule
+
 __version__ = "1.2.4"
 _IMPORT_STRUCTURE = {
     "dataflow": [
