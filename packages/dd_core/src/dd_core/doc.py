@@ -705,6 +705,75 @@ class Document:
         return path_json
 
     @classmethod
+    def from_dict(cls, inputs: dict[str, Any]) -> Document:
+        """
+        Create a ``Document`` instance from a dict that has the same shape as
+        ``as_dict()`` / ``from_json()``.
+
+        The dict is **not** mutated.  Private fields (``_summary``,
+        ``_images``, ``_page_references``) and composite fields
+        (``pipeline_jobs``) that cannot be passed directly to the dataclass
+        constructor are extracted and restored after construction.
+
+        Args:
+            inputs: Dict with the same keys as produced by :meth:`as_dict`.
+
+        Returns:
+            Document: Fully restored ``Document`` instance.
+        """
+        raw: dict[str, Any] = dict(inputs)  # shallow copy – do not mutate caller's dict
+
+        summary_raw = raw.pop("_summary", None)
+        images_raw = raw.pop("_images", None)
+        page_refs_raw = raw.pop("_page_references", None)
+        pipeline_jobs = raw.pop("pipeline_jobs", {})
+
+        raw.pop("_processing_state", None)
+
+        raw["compute_metadata"] = False
+
+        doc = cls(**raw)
+
+        if pipeline_jobs:
+            doc.pipeline_jobs = {
+                key: (
+                    val
+                    if isinstance(val, PipelineJobs)
+                    else PipelineJobs(**{k: v for k, v in val.items() if k != "session_id"})
+                )
+                for key, val in pipeline_jobs.items()
+            }
+
+        if doc.location:
+            doc.location = Path(doc.location)
+
+        if summary_raw is not None:
+            doc._summary = (
+                summary_raw
+                if isinstance(summary_raw, CategoryAnnotation)
+                else CategoryAnnotation.from_dict(**summary_raw)
+            )
+
+        if images_raw is not None:
+            restored_images: dict[str, Image] = {}
+            for image_id, img in images_raw.items():
+                if isinstance(img, Image):
+                    restored_images[image_id] = img
+                else:
+                    restored_images[image_id] = Image(**img)
+                    if img.get("_image"):
+                        restored_images[image_id].image = img["_image"]
+            doc._images = restored_images
+
+        if page_refs_raw is not None:
+            restored_refs: dict[int, PageReference] = {}
+            for page_number, v in page_refs_raw.items():
+                restored_refs[int(page_number)] = v if isinstance(v, PageReference) else PageReference(**v)
+            doc._page_references = restored_refs
+
+        return doc
+
+    @classmethod
     def from_json(cls, file_path: PathLikeOrStr) -> Document:
         """
         Create `Document` instance from `.json` file.
@@ -715,45 +784,7 @@ class Document:
         with open(file_path, "r", encoding="UTF-8") as f:
             raw: dict[str, Any] = json.load(f)
 
-        summary_raw = raw.pop("_summary", None)
-        images_raw = raw.pop("_images", None)
-        page_refs_raw = raw.pop("_page_references", None)
-        pipeline_jobs = raw.pop("pipeline_jobs", {})
-
-        if "_processing_state" in raw:
-            raw.pop("_processing_state")
-
-        raw["compute_metadata"] = False
-
-        doc = cls(**raw)
-
-        if pipeline_jobs:
-            doc.pipeline_jobs = {
-                key: PipelineJobs(**{k: v for k, v in val.items() if k != "session_id"})
-                for key, val in pipeline_jobs.items()
-            }
-
-        if doc.location:
-            doc.location = Path(doc.location)
-
-        if summary_raw is not None:
-            doc._summary = CategoryAnnotation.from_dict(**summary_raw)
-
-        if images_raw is not None:
-            restored_images: dict[str, Image] = {}
-            for image_id, img in images_raw.items():
-                restored_images[image_id] = img if isinstance(img, Image) else Image(**img)
-                if img["_image"]:
-                    restored_images[image_id].image = img["_image"]
-            doc._images = restored_images
-
-        if page_refs_raw is not None:
-            restored_refs: dict[int, PageReference] = {}
-            for page_number, v in page_refs_raw.items():
-                restored_refs[int(page_number)] = v if isinstance(v, PageReference) else PageReference(**v)
-            doc._page_references = restored_refs
-
-        return doc
+        return cls.from_dict(raw)
 
     def viz_entities(  # type
         self,
