@@ -99,24 +99,20 @@ def _upsert_dynamic_enum(name: str, members: Sequence[tuple[str, str]]) -> Type[
 
             existing_member = _ALL_TYPES_DICT.get(value)
 
-            # Case 1: value already globally claimed by another enum -> skip silently
             if existing_member is not None and existing_member.__class__.__name__ != name:
                 continue
 
-            # Case 2: value already part of this enum -> keep existing member name
             if value not in merged_by_value:
                 merged_by_value[value] = proposed_member_name
 
-        # Nothing to do
         if merged_by_value == existing_by_value:
             return existing_enum
 
-        # Avoid creating an empty enum if target type does not yet exist and all values were skipped
         if not merged_by_value:
             return None
 
         merged_members = [(member_name, value) for value, member_name in merged_by_value.items()]
-        merged_enum = ObjectTypes(name, merged_members)  # type: ignore[misc]
+        merged_enum = ObjectTypes(name, merged_members)  # type: ignore
 
         registered_cls = _orig_register(name)(merged_enum)
         _rebuild_types_index_locked()
@@ -153,7 +149,7 @@ def _flatten_categories(categories_list: Sequence[str]) -> list[str]:
     Flatten a possibly nested category sequence into a plain list[str].
     """
     if categories_list and isinstance(categories_list[0], (list, tuple)):
-        return [str(item) for item in itertools.chain.from_iterable(categories_list)]  # type: ignore[arg-type]
+        return [str(item) for item in itertools.chain.from_iterable(categories_list)]
     return [str(item) for item in categories_list]
 
 
@@ -216,7 +212,7 @@ def _rebuild_types_index_locked() -> None:
     Rebuild the global lookup index from the registry.
     Caller must hold _TYPES_INDEX_LOCK.
     """
-    global _ALL_TYPES_DICT
+    global _ALL_TYPES_DICT  # pylint: disable=W0603
     _ALL_TYPES_DICT = _build_types_index_from_registry()
 
 
@@ -297,8 +293,8 @@ def register_custom_token_tag(custom_object_types: ObjectTypes, suffix: str) -> 
 
     product = [
         (
-            a[0].value + "_" + a[1].value.upper(),  # member name
-            a[0].value + "-" + a[1].value,  # value
+            a[0].value + "_" + a[1].value.upper(),  # type: ignore
+            a[0].value + "-" + a[1].value,  # type: ignore
         )
         for a in list(itertools.product(tag_list, custom_object_types))
     ]

@@ -62,7 +62,7 @@ class TestSessionIdRemovalIntegration:
         assert loaded_ann.model_id == "model_v1"
         # The important thing is that session_id was removed from model_fields, not that hasattr returns False
         # (hasattr may still return True due to Pydantic internals, but the field is not in the model schema)
-        assert "session_id" not in loaded_ann.model_fields
+        assert "session_id" not in set(ImageAnnotation.model_fields)
 
     def test_serialization_roundtrip_without_session_id(self) -> None:
         """Test that serialization/deserialization roundtrip works without session_id"""
@@ -130,5 +130,5 @@ class TestSessionIdRemovalIntegration:
         assert image.annotations[1].service_id == "new_detector"
 
         # Both should have session_id removed from model fields
-        for ann in image.annotations:
-            assert "session_id" not in ann.model_fields
+        for _ in image.annotations:
+            assert "session_id" not in set(ImageAnnotation.model_fields)
