@@ -140,6 +140,10 @@ module = ["pdfplumber.*"]
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
+module = ["pikepdf.*"]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
 module = ["pypdfium2.*"]
 ignore_missing_imports = true
 

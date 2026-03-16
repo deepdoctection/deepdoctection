@@ -514,18 +514,29 @@ def get_sklearn_requirement() -> Requirement:
     return "sklearn", sklearn_available(), _SKLEARN_ERR_MSG
 
 
-# qpdf related dependencies
-_QPDF_AVAILABLE = which("qpdf") is not None
+_PIKEPDF_AVAILABLE = importlib.util.find_spec("pikepdf") is not None
+
+
+def pikepdf_available() -> bool:
+    """
+    Returns whether `pikepdf` is installed.
+
+    Returns:
+        bool: `True` if `pikepdf` is installed, `False` otherwise.
+    """
+
+    return bool(_PIKEPDF_AVAILABLE)
 
 
 def qpdf_available() -> bool:
     """
-    Returns whether `qpdf` is installed.
+    Returns whether PDF decryption support is available.
 
     Returns:
-        bool: `True` if `qpdf` is installed, `False` otherwise.
+        bool: `True` if `pikepdf` is installed, `False` otherwise.
     """
-    return bool(_QPDF_AVAILABLE)
+
+    return pikepdf_available()
 
 
 # Textract related dependencies

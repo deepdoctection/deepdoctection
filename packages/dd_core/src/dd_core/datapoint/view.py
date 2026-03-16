@@ -38,6 +38,7 @@ from ..utils.object_types import (
     TokenClassLabel,
     WordKey,
     get_type,
+    CellKey
 )
 from ..utils.transform import ResizeTransform, box_to_point4, point4_to_box
 from ..utils.types import HTML, Chunks, ImageDict, PathLikeOrStr, PixelValues, csv
@@ -555,7 +556,7 @@ class Cell(Layout):
     """
 
     def get_attribute_names(self) -> set[str]:
-        attr_names = set(CellLabel).union(super().get_attribute_names())
+        attr_names = set(CellKey).union(set(CellLabel).union(super().get_attribute_names()))
         return {a.value if isinstance(a, ObjectTypes) else a for a in attr_names}
 
 
