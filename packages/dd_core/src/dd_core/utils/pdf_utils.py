@@ -30,7 +30,7 @@ from enum import Enum
 from errno import ENOENT
 from io import BytesIO
 from pathlib import Path
-from typing import Generator, Literal, Optional, Union
+from typing import Any, Generator, Literal, Optional, Union
 
 from lazy_imports import try_import
 from numpy import uint8
@@ -53,7 +53,7 @@ with try_import() as pt_import_guard:
     import pypdfium2
 
 with try_import() as pikepdf_import_guard:
-    import pikepdf
+    import pikepdf  # pylint: disable=E0401
 
 __all__ = [
     "PdfDecryptStatus",
@@ -212,7 +212,6 @@ def inspect_and_maybe_decrypt_pdf_bytes(
         return report, output_buffer.getvalue()
 
 
-
 def inspect_and_maybe_decrypt_pdf_file(
     path: PathLikeOrStr,
     syntax_check: bool = True,
@@ -271,7 +270,6 @@ def inspect_and_maybe_decrypt_pdf_file(
         return report
 
 
-
 def decrypt_pdf_document(path: PathLikeOrStr) -> bool:
     """
     Decrypt a PDF file in place when possible.
@@ -285,7 +283,9 @@ def decrypt_pdf_document(path: PathLikeOrStr) -> bool:
 
     if not pikepdf_available():
         logger.error(
-            LoggingRecord("pikepdf is not installed. If the document must be decrypted please ensure that it is installed")
+            LoggingRecord(
+                "pikepdf is not installed. If the document must be decrypted please ensure that it is installed"
+            )
         )
         return False
 
@@ -405,12 +405,16 @@ def get_pdf_file_writer() -> PdfWriter:
 
 class PDFStreamer:
     """
-    A class for streaming PDF documents as bytes objects.
+    Stream PDF pages as single-page PDF bytes.
 
-    Built as a generator, it is possible to load the document iteratively into memory. Uses `pypdf` `PdfReader` and
-    `PdfWriter`.
+    Properties of this implementation:
+    - __iter__ and __getitem__ do not share reader state
+    - optional caching of the full PDF source bytes
+    - optional caching of already materialized single-page PDFs
+    - close() clears caches for backward compatibility
 
     Example:
+
         ```python
         df = dataflow.DataFromIterable(PDFStreamer(path=path))
         df.reset_state()
@@ -429,43 +433,111 @@ class PDFStreamer:
         you open many files.
     """
 
-    def __init__(self, path_or_bytes: Union[PathLikeOrStr, bytes], check_file_extension: bool = True) -> None:
+    def __init__(
+        self,
+        path_or_bytes: Union[PathLikeOrStr, bytes],
+        check_file_extension: bool = True,
+        cache_source_bytes: bool = True,
+        cache_pages: bool = False,
+    ) -> None:
+        self._check_file_extension = check_file_extension
+        self._cache_source_bytes = cache_source_bytes
+        self._cache_pages = cache_pages
+
+        self._source_path: PathLikeOrStr | None = None
+        self._source_bytes: bytes | None = None
+        self._num_pages: int | None = None
+        self._page_cache: dict[int, bytes] = {}
+
+        if isinstance(path_or_bytes, bytes):
+            self._source_bytes = path_or_bytes
+        else:
+            self._source_path = path_or_bytes
+            if cache_source_bytes:
+                path = Path(path_or_bytes)
+                if check_file_extension and path.suffix.lower() != ".pdf":
+                    raise FileExtensionError(f"File must have extension '.pdf', got '{path.suffix}'")
+                self._source_bytes = path.read_bytes()
+
+    def _new_reader(self) -> PdfReader:
         """
-        Args:
-            path_or_bytes: Path to a PDF.
-            check_file_extension: If True, and file suffix is not .pdf, it will raise a FileExtensionError
+        Always create a fresh reader.
 
-
-        Returns:
-            None.
+        If source bytes are cached, use them.
+        Otherwise reopen from the original path.
         """
-        self.file_reader = get_pdf_file_reader(path_or_bytes, check_file_extension=check_file_extension)
-        self.file_writer = PdfWriter()
+        if self._source_bytes is not None:
+            return get_pdf_file_reader(self._source_bytes, check_file_extension=False)
+        if self._source_path is None:
+            raise ValueError("No PDF source available")
+        return get_pdf_file_reader(self._source_path, check_file_extension=self._check_file_extension)
 
-    def __len__(self) -> int:
-        return len(self.file_reader.pages)
+    @staticmethod
+    def _close_reader(reader: PdfReader) -> None:
+        reader.close()
 
-    def __iter__(self) -> Generator[tuple[bytes, int], None, None]:
-        for k in range(len(self)):
-            buffer = BytesIO()
-            writer = get_pdf_file_writer()
-            writer.add_page(self.file_reader.pages[k])
-            writer.write(buffer)
-            yield buffer.getvalue(), k
-        self.file_reader.close()
-
-    def __getitem__(self, index: int) -> bytes:
+    @staticmethod
+    def _page_to_bytes(page: Any) -> bytes:
         buffer = BytesIO()
         writer = get_pdf_file_writer()
-        writer.add_page(self.file_reader.pages[index])
+        writer.add_page(page)
         writer.write(buffer)
         return buffer.getvalue()
 
+    def __len__(self) -> int:
+        if self._num_pages is None:
+            reader = self._new_reader()
+            try:
+                self._num_pages = len(reader.pages)
+            finally:
+                self._close_reader(reader)
+        return self._num_pages
+
+    def __iter__(self) -> Generator[tuple[bytes, int], None, None]:
+        reader = self._new_reader()
+        try:
+            for k, page in enumerate(reader.pages):
+                if self._cache_pages and k in self._page_cache:
+                    yield self._page_cache[k], k
+                    continue
+
+                page_bytes = self._page_to_bytes(page)
+                if self._cache_pages:
+                    self._page_cache[k] = page_bytes
+                yield page_bytes, k
+        finally:
+            self._close_reader(reader)
+
+    def __getitem__(self, index: int) -> bytes:
+        num_pages = len(self)
+
+        if index < 0:
+            index += num_pages
+        if index < 0 or index >= num_pages:
+            raise IndexError(f"PDF page index out of range: {index}")
+
+        if self._cache_pages and index in self._page_cache:
+            return self._page_cache[index]
+
+        reader = self._new_reader()
+        try:
+            page_bytes = self._page_to_bytes(reader.pages[index])
+            if self._cache_pages:
+                self._page_cache[index] = page_bytes
+            return page_bytes
+        finally:
+            self._close_reader(reader)
+
     def close(self) -> None:
         """
-        Close the file reader
+        Backward-compatible cleanup method.
+
+        Since readers are no longer held on the instance, this mainly releases caches.
         """
-        self.file_reader.close()
+        self._page_cache.clear()
+        self._num_pages = None
+        # Optional: also release the cached PDF bytes
+        # self._source_bytes = None
 
 
 # The following functions are modified versions from the Python poppler wrapper

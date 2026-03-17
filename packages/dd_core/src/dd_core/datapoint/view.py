@@ -29,6 +29,7 @@ import numpy as np
 from ..utils.error import AnnotationError, ImageError
 from ..utils.logger import LoggingRecord, log_once, logger
 from ..utils.object_types import (
+    CellKey,
     CellLabel,
     LayoutLabel,
     ObjectTypes,
@@ -38,7 +39,6 @@ from ..utils.object_types import (
     TokenClassLabel,
     WordKey,
     get_type,
-    CellKey
 )
 from ..utils.transform import ResizeTransform, box_to_point4, point4_to_box
 from ..utils.types import HTML, Chunks, ImageDict, PathLikeOrStr, PixelValues, csv
