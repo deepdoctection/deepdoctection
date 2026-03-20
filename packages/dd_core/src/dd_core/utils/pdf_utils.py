@@ -25,11 +25,12 @@ import os
 import platform
 import subprocess
 import sys
+from dataclasses import dataclass, field
+from enum import Enum
 from errno import ENOENT
 from io import BytesIO
 from pathlib import Path
-from shutil import copyfile
-from typing import Generator, Literal, Optional, Union
+from typing import Any, Generator, Literal, Optional, Union
 
 from lazy_imports import try_import
 from numpy import uint8
@@ -37,7 +38,7 @@ from numpy import uint8
 from .context import save_tmp_file, timeout_manager
 from .env_info import ENV_VARS_TRUE
 from .error import DependencyError, FileExtensionError, PopplerError
-from .file_utils import pdf_to_cairo_available, pdf_to_ppm_available, pypdf_available, qpdf_available
+from .file_utils import pdf_to_cairo_available, pdf_to_ppm_available, pikepdf_available, pypdf_available
 from .logger import LoggingRecord, logger
 from .types import B64, PathLikeOrStr, PixelValues
 from .utils import is_file_extension
@@ -51,7 +52,14 @@ with try_import() as pypdf_import_guard:
 with try_import() as pt_import_guard:
     import pypdfium2
 
+with try_import() as pikepdf_import_guard:
+    import pikepdf  # pylint: disable=E0401
+
 __all__ = [
+    "PdfDecryptStatus",
+    "PdfDecryptReport",
+    "inspect_and_maybe_decrypt_pdf_bytes",
+    "inspect_and_maybe_decrypt_pdf_file",
     "decrypt_pdf_document",
     "decrypt_pdf_document_from_bytes",
     "get_pdf_file_reader",
@@ -66,65 +74,260 @@ __all__ = [
 ]
 
 
-def decrypt_pdf_document(path: PathLikeOrStr) -> bool:
+class PdfDecryptStatus(str, Enum):
     """
-    Decrypt a PDF file.
+    Status values for PDF inspection and decryption.
+    """
 
-    As copying a PDF document removes the password that protects the PDF, this method generates a copy and decrypts the
-    copy using `qpdf`. The result is saved as the original document.
+    NOT_ENCRYPTED = "not_encrypted"
+    DECRYPTED = "decrypted"
+    INVALID_PDF = "invalid_pdf"
 
-    Note:
-        This decryption does not work if the PDF has a readable protection, in which case no solution is provided.
-        `qpdf`: <http://qpdf.sourceforge.net/>
+
+@dataclass(slots=True)
+class PdfDecryptReport:
+    """Report returned by PDF inspection and decryption helpers.
+
+    Attributes:
+        status: Final processing status.
+        was_encrypted: Whether the input PDF was encrypted.
+        syntax_issues: Syntax problems reported by pikepdf.
+        parser_warnings: Parser warnings reported by pikepdf.
+        encryption_bits: Encryption bit size if available.
+        encryption_revision: Encryption revision if available.
+        encryption_version: Encryption version if available.
+        message: Optional human-readable status message.
+    """
+
+    status: PdfDecryptStatus
+    was_encrypted: bool = False
+    syntax_issues: list[str] = field(default_factory=list)
+    parser_warnings: list[str] = field(default_factory=list)
+    encryption_bits: int | None = None
+    encryption_revision: int | None = None
+    encryption_version: int | None = None
+    message: str | None = None
+
+    @property
+    def ok(self) -> bool:
+        """Return whether the PDF is processable after inspection."""
+
+        return self.status in {PdfDecryptStatus.NOT_ENCRYPTED, PdfDecryptStatus.DECRYPTED}
+
+
+def _collect_report(pdf: pikepdf.Pdf, syntax_check: bool, strict_syntax: bool) -> PdfDecryptReport:
+    """Collect inspection metadata for an opened PDF.
 
     Args:
-        path: A path to the PDF file.
+        pdf: Open pikepdf document.
+        syntax_check: Whether to collect syntax issues.
+        strict_syntax: Whether syntax issues should mark the PDF as invalid.
 
     Returns:
-        True if the document has been successfully decrypted.
+        A populated decryption report.
     """
-    if qpdf_available():
-        path_base, file_name = os.path.split(path)
-        file_name_tmp = os.path.splitext(file_name)[0] + "tmp.pdf"
-        path_tmp = os.path.join(path_base, file_name_tmp)
-        copyfile(path, path_tmp)
-        cmd_str = f"qpdf --password='' --decrypt {path_tmp} {os.path.join(path_base, path)}"
-        response = os.system(cmd_str)
-        os.remove(path_tmp)
-        if not response:
-            return True
-    else:
-        logger.info(
-            LoggingRecord("qpdf is not installed. If the document must be decrypted please ensure that it is installed")
+
+    parser_warnings = [str(warning) for warning in pdf.get_warnings()]
+    syntax_issues = [str(warning) for warning in pdf.check_pdf_syntax()] if syntax_check else []
+    was_encrypted = bool(pdf.is_encrypted)
+    encryption_bits = None
+    encryption_revision = None
+    encryption_version = None
+
+    if was_encrypted:
+        try:
+            encryption_bits = int(pdf.encryption.bits)
+            encryption_revision = int(pdf.encryption.R)
+            encryption_version = int(pdf.encryption.V)
+        except (AttributeError, TypeError, ValueError):
+            pass
+
+    if strict_syntax and syntax_issues:
+        return PdfDecryptReport(
+            status=PdfDecryptStatus.INVALID_PDF,
+            was_encrypted=was_encrypted,
+            syntax_issues=syntax_issues,
+            parser_warnings=parser_warnings,
+            encryption_bits=encryption_bits,
+            encryption_revision=encryption_revision,
+            encryption_version=encryption_version,
+            message="PDF has syntax issues and strict_syntax=True.",
         )
-    return False
+
+    return PdfDecryptReport(
+        status=PdfDecryptStatus.DECRYPTED if was_encrypted else PdfDecryptStatus.NOT_ENCRYPTED,
+        was_encrypted=was_encrypted,
+        syntax_issues=syntax_issues,
+        parser_warnings=parser_warnings,
+        encryption_bits=encryption_bits,
+        encryption_revision=encryption_revision,
+        encryption_version=encryption_version,
+    )
+
+
+def inspect_and_maybe_decrypt_pdf_bytes(
+    input_bytes: bytes,
+    syntax_check: bool = True,
+    strict_syntax: bool = False,
+    attempt_recovery: bool = True,
+) -> tuple[PdfDecryptReport, bytes]:
+    """
+    Inspect PDF bytes and remove encryption when possible.
+
+    Args:
+        input_bytes: PDF bytes to inspect.
+        syntax_check: Whether to collect syntax issues via pikepdf.
+        strict_syntax: Whether syntax issues should raise `ValueError`.
+        attempt_recovery: Whether pikepdf should attempt PDF recovery.
+
+    Returns:
+        A tuple containing the inspection report and the resulting PDF bytes.
+
+    Raises:
+        ImportError: If pikepdf is not installed.
+        ValueError: If `strict_syntax` is enabled and syntax issues are found.
+        pikepdf.PasswordError: If the PDF requires a password.
+        pikepdf.PdfError: If the PDF cannot be parsed.
+    """
+
+    if not pikepdf_available():
+        raise ImportError("pikepdf is not installed.")
+
+    with pikepdf.Pdf.open(
+        BytesIO(input_bytes),
+        password="",
+        suppress_warnings=True,
+        attempt_recovery=attempt_recovery,
+    ) as pdf:
+        report = _collect_report(pdf, syntax_check, strict_syntax)
+
+        if report.status == PdfDecryptStatus.INVALID_PDF:
+            raise ValueError(report.message or "PDF has syntax issues and strict_syntax=True.")
+
+        if report.status == PdfDecryptStatus.NOT_ENCRYPTED:
+            return report, input_bytes
+
+        output_buffer = BytesIO()
+        pdf.save(output_buffer)
+        return report, output_buffer.getvalue()
+
+
+def inspect_and_maybe_decrypt_pdf_file(
+    path: PathLikeOrStr,
+    syntax_check: bool = True,
+    strict_syntax: bool = False,
+    attempt_recovery: bool = True,
+    overwrite_input: bool = True,
+) -> PdfDecryptReport:
+    """
+    Inspect a PDF file and remove encryption in place when possible.
+
+    Args:
+        path: Path to the PDF file.
+        syntax_check: Whether to collect syntax issues via pikepdf.
+        strict_syntax: Whether syntax issues should raise `ValueError`.
+        attempt_recovery: Whether pikepdf should attempt PDF recovery.
+        overwrite_input: Whether pikepdf may overwrite the input file while saving.
+
+    Returns:
+        The inspection report.
+
+    Raises:
+        ImportError: If pikepdf is not installed.
+        FileNotFoundError: If the path does not exist.
+        ValueError: If `strict_syntax` is enabled and syntax issues are found or if `path` is not a file.
+        pikepdf.PasswordError: If the PDF requires a password.
+        pikepdf.PdfError: If the PDF cannot be parsed.
+    """
+
+    if not pikepdf_available():
+        raise ImportError("pikepdf is not installed.")
+
+    pdf_path = Path(path)
+
+    if not pdf_path.exists():
+        raise FileNotFoundError(str(pdf_path))
+
+    if not pdf_path.is_file():
+        raise ValueError(f"Path is not a file: {pdf_path}")
+
+    with pikepdf.Pdf.open(
+        pdf_path,
+        password="",
+        suppress_warnings=True,
+        attempt_recovery=attempt_recovery,
+        allow_overwriting_input=overwrite_input,
+    ) as pdf:
+        report = _collect_report(pdf, syntax_check, strict_syntax)
+
+        if report.status == PdfDecryptStatus.INVALID_PDF:
+            raise ValueError(report.message or "PDF has syntax issues and strict_syntax=True.")
+
+        if report.status == PdfDecryptStatus.NOT_ENCRYPTED:
+            return report
+
+        pdf.save(pdf_path)
+        return report
+
+
+def decrypt_pdf_document(path: PathLikeOrStr) -> bool:
+    """
+    Decrypt a PDF file in place when possible.
+
+    Args:
+        path: Path to the PDF file.
+
+    Returns:
+        True if the PDF is already processable or was decrypted successfully, otherwise False.
+    """
+
+    if not pikepdf_available():
+        logger.error(
+            LoggingRecord(
+                "pikepdf is not installed. If the document must be decrypted please ensure that it is installed"
+            )
+        )
+        return False
+
+    try:
+        report = inspect_and_maybe_decrypt_pdf_file(path, True, False, True, True)
+    except (FileNotFoundError, ValueError, pikepdf.PasswordError, pikepdf.PdfError) as exc:
+        logger.error(LoggingRecord(f"PDF could not be decrypted or validated: {path} ({exc})"))
+        return False
+
+    if report.parser_warnings:
+        logger.warning(LoggingRecord(f"PDF parser warnings for {path}: {report.parser_warnings[:5]}"))
+    if report.syntax_issues:
+        logger.warning(LoggingRecord(f"PDF syntax issues for {path}: {report.syntax_issues[:5]}"))
+
+    return True
 
 
 def decrypt_pdf_document_from_bytes(input_bytes: bytes) -> bytes:
     """
-    Decrypt a PDF given as bytes.
-
-    Under the hood, it saves the bytes to a temporary file and then calls `decrypt_pdf_document`.
-
-    Note:
-        `qpdf`: <http://qpdf.sourceforge.net/>
+    Decrypt PDF bytes when possible.
 
     Args:
-        input_bytes: A bytes object representing the PDF file.
+        input_bytes: PDF bytes to inspect and optionally decrypt.
 
     Returns:
-        The decrypted bytes object.
+        The original bytes for unencrypted PDFs or decrypted bytes for encrypted PDFs.
 
-
+    Raises:
+        ImportError: If pikepdf is not installed.
+        ValueError: If `strict_syntax` is enabled and syntax issues are found.
+        pikepdf.PasswordError: If the PDF requires a password.
+        pikepdf.PdfError: If the PDF cannot be parsed.
     """
-    with save_tmp_file(input_bytes, "pdf_") as (_, input_file_name):
-        is_decrypted = decrypt_pdf_document(input_file_name)
-        if is_decrypted:
-            with open(input_file_name, "rb") as file:
-                return file.read()
-        else:
-            logger.error(LoggingRecord("pdf bytes cannot be decrypted and therefore cannot be processed further."))
-            sys.exit()
+
+    report, output_bytes = inspect_and_maybe_decrypt_pdf_bytes(input_bytes, True, False, True)
+
+    if report.parser_warnings:
+        logger.warning(LoggingRecord(f"PDF parser warnings for input bytes: {report.parser_warnings[:5]}"))
+    if report.syntax_issues:
+        logger.warning(LoggingRecord(f"PDF syntax issues for input bytes: {report.syntax_issues[:5]}"))
+
+    return output_bytes
 
 
 def get_pdf_file_reader(path_or_bytes: Union[PathLikeOrStr, bytes], check_file_extension: bool = True) -> PdfReader:
@@ -163,8 +366,15 @@ def get_pdf_file_reader(path_or_bytes: Union[PathLikeOrStr, bytes], check_file_e
         try:
             reader = PdfReader(file)
         except (pypdf_errors.PdfReadError, AttributeError):
-            _ = decrypt_pdf_document(path_or_bytes)
+            is_decrypted = decrypt_pdf_document(path_or_bytes)
             qpdf_called = True
+            if not is_decrypted:
+                logger.error(
+                    LoggingRecord(
+                        f"pdf document {path_or_bytes} cannot be decrypted and therefore cannot be processed further."
+                    )
+                )
+                sys.exit()
 
         if not qpdf_called:
             if reader.is_encrypted:
@@ -195,12 +405,16 @@ def get_pdf_file_writer() -> PdfWriter:
 
 class PDFStreamer:
     """
-    A class for streaming PDF documents as bytes objects.
+    Stream PDF pages as single-page PDF bytes.
 
-    Built as a generator, it is possible to load the document iteratively into memory. Uses `pypdf` `PdfReader` and
-    `PdfWriter`.
+    Properties of this implementation:
+    - __iter__ and __getitem__ do not share reader state
+    - optional caching of the full PDF source bytes
+    - optional caching of already materialized single-page PDFs
+    - close() clears caches for backward compatibility
 
     Example:
+
         ```python
         df = dataflow.DataFromIterable(PDFStreamer(path=path))
         df.reset_state()
@@ -219,43 +433,111 @@ class PDFStreamer:
         you open many files.
     """
 
-    def __init__(self, path_or_bytes: Union[PathLikeOrStr, bytes], check_file_extension: bool = True) -> None:
+    def __init__(
+        self,
+        path_or_bytes: Union[PathLikeOrStr, bytes],
+        check_file_extension: bool = True,
+        cache_source_bytes: bool = True,
+        cache_pages: bool = False,
+    ) -> None:
+        self._check_file_extension = check_file_extension
+        self._cache_source_bytes = cache_source_bytes
+        self._cache_pages = cache_pages
+
+        self._source_path: PathLikeOrStr | None = None
+        self._source_bytes: bytes | None = None
+        self._num_pages: int | None = None
+        self._page_cache: dict[int, bytes] = {}
+
+        if isinstance(path_or_bytes, bytes):
+            self._source_bytes = path_or_bytes
+        else:
+            self._source_path = path_or_bytes
+            if cache_source_bytes:
+                path = Path(path_or_bytes)
+                if check_file_extension and path.suffix.lower() != ".pdf":
+                    raise FileExtensionError(f"File must have extension '.pdf', got '{path.suffix}'")
+                self._source_bytes = path.read_bytes()
+
+    def _new_reader(self) -> PdfReader:
         """
-        Args:
-            path_or_bytes: Path to a PDF.
-            check_file_extension: If True, and file suffix is not .pdf, it will raise a FileExtensionError
+        Always create a fresh reader.
 
-
-        Returns:
-            None.
+        If source bytes are cached, use them.
+        Otherwise reopen from the original path.
         """
-        self.file_reader = get_pdf_file_reader(path_or_bytes, check_file_extension=check_file_extension)
-        self.file_writer = PdfWriter()
+        if self._source_bytes is not None:
+            return get_pdf_file_reader(self._source_bytes, check_file_extension=False)
+        if self._source_path is None:
+            raise ValueError("No PDF source available")
+        return get_pdf_file_reader(self._source_path, check_file_extension=self._check_file_extension)
 
-    def __len__(self) -> int:
-        return len(self.file_reader.pages)
+    @staticmethod
+    def _close_reader(reader: PdfReader) -> None:
+        reader.close()
 
-    def __iter__(self) -> Generator[tuple[bytes, int], None, None]:
-        for k in range(len(self)):
-            buffer = BytesIO()
-            writer = get_pdf_file_writer()
-            writer.add_page(self.file_reader.pages[k])
-            writer.write(buffer)
-            yield buffer.getvalue(), k
-        self.file_reader.close()
-
-    def __getitem__(self, index: int) -> bytes:
+    @staticmethod
+    def _page_to_bytes(page: Any) -> bytes:
         buffer = BytesIO()
         writer = get_pdf_file_writer()
-        writer.add_page(self.file_reader.pages[index])
+        writer.add_page(page)
         writer.write(buffer)
         return buffer.getvalue()
 
+    def __len__(self) -> int:
+        if self._num_pages is None:
+            reader = self._new_reader()
+            try:
+                self._num_pages = len(reader.pages)
+            finally:
+                self._close_reader(reader)
+        return self._num_pages
+
+    def __iter__(self) -> Generator[tuple[bytes, int], None, None]:
+        reader = self._new_reader()
+        try:
+            for k, page in enumerate(reader.pages):
+                if self._cache_pages and k in self._page_cache:
+                    yield self._page_cache[k], k
+                    continue
+
+                page_bytes = self._page_to_bytes(page)
+                if self._cache_pages:
+                    self._page_cache[k] = page_bytes
+                yield page_bytes, k
+        finally:
+            self._close_reader(reader)
+
+    def __getitem__(self, index: int) -> bytes:
+        num_pages = len(self)
+
+        if index < 0:
+            index += num_pages
+        if index < 0 or index >= num_pages:
+            raise IndexError(f"PDF page index out of range: {index}")
+
+        if self._cache_pages and index in self._page_cache:
+            return self._page_cache[index]
+
+        reader = self._new_reader()
+        try:
+            page_bytes = self._page_to_bytes(reader.pages[index])
+            if self._cache_pages:
+                self._page_cache[index] = page_bytes
+            return page_bytes
+        finally:
+            self._close_reader(reader)
+
     def close(self) -> None:
         """
-        Close the file reader
+        Backward-compatible cleanup method.
+
+        Since readers are no longer held on the instance, this mainly releases caches.
         """
-        self.file_reader.close()
+        self._page_cache.clear()
+        self._num_pages = None
+        # Optional: also release the cached PDF bytes
+        # self._source_bytes = None
 
 
 # The following functions are modified versions from the Python poppler wrapper

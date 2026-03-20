@@ -29,6 +29,7 @@ import numpy as np
 from ..utils.error import AnnotationError, ImageError
 from ..utils.logger import LoggingRecord, log_once, logger
 from ..utils.object_types import (
+    CellKey,
     CellLabel,
     LayoutLabel,
     ObjectTypes,
@@ -555,7 +556,7 @@ class Cell(Layout):
     """
 
     def get_attribute_names(self) -> set[str]:
-        attr_names = set(CellLabel).union(super().get_attribute_names())
+        attr_names = set(CellKey).union(set(CellLabel).union(super().get_attribute_names()))
         return {a.value if isinstance(a, ObjectTypes) else a for a in attr_names}
 
 
