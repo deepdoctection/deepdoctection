@@ -24,7 +24,7 @@ from __future__ import annotations
 import json
 from abc import ABC, abstractmethod
 from collections import defaultdict
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any, Callable, Literal, Optional, Type, TypeVar, Union
 
 import catalogue  # type: ignore
@@ -43,9 +43,43 @@ class AnnotationMap:
     """AnnotationMap to store all sub categories, relationship keys and summary keys of an annotation"""
 
     image_annotation_id: str
-    sub_category_key: Optional[ObjectTypes] = None
-    relationship_key: Optional[ObjectTypes] = None
-    summary_key: Optional[ObjectTypes] = None
+    sub_category_key: Optional[ObjectTypes] = field(default=None)
+    relationship_key: Optional[ObjectTypes] = field(default=None)
+    summary_key: Optional[ObjectTypes] = field(default=None)
+    doc_summary_key: Optional[ObjectTypes] = field(default=None)
+    image_id: Optional[str] = field(default=None)
+
+
+    @classmethod
+    def from_dict(cls, **kwargs: Any) -> AnnotationMap:
+        """Build an annotation map from a dictionary payload.
+
+        Args:
+            **kwargs: Dictionary values for the annotation map fields.
+
+        Returns:
+            The instantiated annotation map.
+        """
+        payload = dict(kwargs)
+        for key in ("sub_category_key", "relationship_key", "summary_key", "doc_summary_key"):
+            value = payload.get(key)
+            payload[key] = get_type(value)
+        return cls(**payload)
+
+    def as_dict(self) -> dict[str, Any]:
+        """Serialize the annotation map to a dictionary.
+
+        Returns:
+            The serialized annotation map with enum keys converted to strings.
+        """
+        return {
+            "image_annotation_id": self.image_annotation_id,
+            "sub_category_key": None if self.sub_category_key is None else self.sub_category_key.value,
+            "relationship_key": None if self.relationship_key is None else self.relationship_key.value,
+            "summary_key": None if self.summary_key is None else self.summary_key.value,
+            "doc_summary_key": None if self.doc_summary_key is None else self.doc_summary_key.value,
+            "image_id": self.image_id,
+        }
 
 
 DEFAULT_CATEGORY_ID = -1
@@ -416,7 +450,7 @@ class CategoryAnnotation(Annotation):
         """
         return self.sub_categories[sub_category_name]
 
-    def remove_sub_category(self, key: ObjectTypes) -> None:
+    def pop_sub_category(self, key: ObjectTypes) -> CategoryAnnotation | None:
         """
         Removes a sub category with a given key. Necessary to call, when you want to replace an already dumped sub
         category.
@@ -424,14 +458,10 @@ class CategoryAnnotation(Annotation):
         Args:
             key: A key to a sub category.
         """
-        sub_categories = getattr(self, "sub_categories", None)
-        if (
-            sub_categories is not None
-            and isinstance(sub_categories, dict)
-            and hasattr(sub_categories, "pop")
-            and key in sub_categories
-        ):
-            sub_categories.pop(key)
+
+        if key in self.sub_categories:
+            return self.sub_categories.pop(key)
+        return None
 
     def dump_relationship(self, key: TypeOrStr, annotation_id: str) -> None:
         """

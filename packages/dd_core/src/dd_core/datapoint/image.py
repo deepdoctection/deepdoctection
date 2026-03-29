@@ -225,6 +225,8 @@ class Image(BaseModel):
         annotations: A list of `ImageAnnotation` objects. Use `get_annotation` to retrieve annotations.
         _annotation_ids: A list of `annotation_id`s. Used internally to ensure uniqueness of annotations.
         _summary: A `CategoryAnnotation` for image-level informations. If not set, it will be set to None.
+        _extras: A `dict` for storing additional transient messages or metadata. Not persisted in
+                 serialization and silently ignored when present in constructor kwargs.
 
     """
 
@@ -249,15 +251,18 @@ class Image(BaseModel):
     _summary: Optional[CategoryAnnotation] = PrivateAttr(default=None)
     _image_id: Optional[str] = PrivateAttr(default=None)
     _pdf_bytes: Optional[bytes] = PrivateAttr(default=None)
+    _extras: dict = PrivateAttr(default_factory=dict)
 
     def __init__(self, **data: Any) -> None:
         """
         Accept private attrs in kwargs (e.g. `_image_id`, `_summary`, `_bbox`, `_annotation_ids`, `_image`,
          `_pdf_bytes`)
         Remove them before BaseModel initialization and set the PrivateAttr values afterwards so that
-        `Image(**inputs)` works when legacy code passes private keys.
+        `Image(**inputs)` works when legacy code passes private keys. `_extras` is silently discarded if
+        present in kwargs and is never restored.
         """
         private_keys = ["_image", "_bbox", "_annotation_ids", "_summary", "_image_id", "_pdf_bytes"]
+        data.pop("_extras", None)
         priv: dict[str, Any] = {}
         for key in private_keys:
             if key in data:
@@ -432,6 +437,29 @@ class Image(BaseModel):
         if self._pdf_bytes is None:
             assert isinstance(pdf_bytes, bytes)
             self._pdf_bytes = pdf_bytes
+
+    @property
+    def extras(self) -> dict:
+        """
+        Transient key-value store for additional messages or metadata attached to this image.
+
+        The store is never serialized and is silently ignored when a caller passes `_extras` as a
+        constructor keyword argument.
+
+        Returns:
+            The `dict` holding the extra entries for this image.
+        """
+        return self._extras
+
+    @extras.setter
+    def extras(self, value: dict) -> None:
+        """
+        Replace the entire extras store.
+
+        Args:
+            value: A `dict` instance that will replace the current extras store.
+        """
+        object.__setattr__(self, "_extras", value)
 
     @property
     def width(self) -> BoxCoordinate:
@@ -912,7 +940,7 @@ class Image(BaseModel):
                     raise ImageError(f"Annotation with id {ann_id} not found")
                 annotation_maps = ann_id_to_annotation_maps[ann_id]
                 for annotation_map in annotation_maps:
-                    self._remove_by_annotation_id(ann_id, annotation_map)
+                    self._pop_by_annotation_id(ann_id, annotation_map)
 
         if service_ids is not None:
             service_ids = [service_ids] if isinstance(service_ids, str) else service_ids
@@ -930,27 +958,28 @@ class Image(BaseModel):
                         raise ImageError(f"Annotation with id {ann_id} not found")
                     annotation_maps = ann_id_to_annotation_maps[ann_id]
                     for annotation_map in annotation_maps:
-                        self._remove_by_annotation_id(ann_id, annotation_map)
+                        self._pop_by_annotation_id(ann_id, annotation_map)
 
-    def _remove_by_annotation_id(self, annotation_id: str, location_dict: AnnotationMap) -> None:
+    def _pop_by_annotation_id(self, annotation_id: str, location_dict: AnnotationMap) -> Annotation:
         image_annotation_id = location_dict.image_annotation_id
         annotations = self.get_annotation(annotation_ids=image_annotation_id)
         if not annotations:
             return
         annotation = annotations[0]
-
+        ann = None
         if (
             location_dict.sub_category_key is None
             and location_dict.relationship_key is None
             and location_dict.summary_key is None
         ):
-            self.annotations.remove(annotation)  # pylint: disable=E1101
+            ann = self.annotations.pop(annotation)  # pylint: disable=E1101
             if annotation.annotation_id in self._annotation_ids:
                 self._annotation_ids.remove(annotation.annotation_id)
+                
 
         sub_category_key = location_dict.sub_category_key
         if sub_category_key is not None:
-            annotation.remove_sub_category(sub_category_key)
+            ann = annotation.pop_sub_category(sub_category_key)
 
         relationship_key = location_dict.relationship_key
         if relationship_key is not None:
@@ -959,7 +988,20 @@ class Image(BaseModel):
         summary_key = location_dict.summary_key
         if summary_key is not None:
             if annotation.image is not None:
-                annotation.image.summary.remove_sub_category(summary_key)
+                ann = annotation.image.summary.pop_sub_category(summary_key)
+        return ann
+
+    def export_annotations(self, annotation_ids: str | list[str]) -> dict[AnnotationMap, Annotation]:
+        annotation_maps_dict = self.get_annotation_id_to_annotation_maps()
+        annotation_ids = [annotation_ids] if isinstance(annotation_ids, str) else annotation_ids
+        export_dict: dict[AnnotationMap, Annotation] = {}
+        for ann_id in annotation_ids:
+            annotation_maps = annotation_maps_dict[ann_id]
+            for ann_map in annotation_maps:
+                if ann_map.sub_category_key is not None or ann_map.summary_key is not None:
+                    export_dict[ann_map] = self._pop_by_annotation_id(ann_id, ann_map)
+        return export_dict
+
 
     def get_image(self) -> ImageFormats:
         """

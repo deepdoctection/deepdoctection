@@ -28,6 +28,7 @@ class ObjectTestType(ObjectTypes):
     SUB_CAT_1 = "sub_cat_1"
     SUB_CAT_2 = "sub_cat_2"
     SUB_CAT_3 = "sub_cat_3"
+    SUMMARY_1 = "summary_1"
     RELATIONSHIP_1 = "relationship_1"
     RELATIONSHIP_2 = "relationship_2"
     NON_EXISTENT = "non_existent"

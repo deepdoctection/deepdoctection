@@ -380,7 +380,7 @@ def remove_cats(
             if isinstance(sub_cats_to_remove, str):
                 sub_cats_to_remove = [sub_cats_to_remove]
             for sub_cat in sub_cats_to_remove:
-                ann.remove_sub_category(get_type(sub_cat))
+                ann.pop_sub_category(get_type(sub_cat))
         if ann.category_name in relationships.keys():
             relationships_to_remove = relationships[ann.category_name]
             if isinstance(relationships_to_remove, str):
@@ -392,7 +392,7 @@ def remove_cats(
 
     if summary_sub_categories is not None:
         for sub_cat in summary_sub_categories:
-            dp.summary.remove_sub_category(get_type(sub_cat))
+            dp.summary.pop_sub_category(get_type(sub_cat))
 
     return dp
 

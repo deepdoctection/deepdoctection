@@ -24,6 +24,7 @@ handling of data roundtrips, sub-categories, relationships, and validation funct
 import pytest
 
 from dd_core.datapoint.annotation import (
+    AnnotationMap,
     CategoryAnnotation,
     ContainerAnnotation,
     ImageAnnotation,
@@ -118,3 +119,39 @@ class TestAnnotationValidation:
         cat = CategoryAnnotation(**data)
         # String key should be converted to ObjectTypes
         assert get_type("sub_cat_1") in cat.sub_categories
+
+
+class TestAnnotationMap:
+    """Tests for AnnotationMap serialization and deserialization"""
+
+    @staticmethod
+    def test_as_dict_serializes_enum_fields_to_strings() -> None:
+        """as_dict converts ObjectTypes fields to their string values."""
+        ann_map = AnnotationMap(
+            image_annotation_id="abc-123",
+            sub_category_key=get_type("sub_cat_1"),
+            relationship_key=get_type("relationship_1"),
+            summary_key=get_type("summary_1"),
+            image_id="d822f8c3-1148-30c4-90eb-cb4896b1ebe6",
+        )
+        result = ann_map.as_dict()
+        assert result["image_annotation_id"] == "abc-123"
+        assert result["image_id"] == "img-456"
+        assert result["sub_category_key"] == get_type("sub_cat_1").value
+        assert result["relationship_key"] == get_type("relationship_1").value
+        assert result["summary_key"] == get_type("summary_1").value
+
+    @staticmethod
+    def test_from_dict_roundtrip_restores_annotation_map() -> None:
+        """from_dict deserializes string enum fields and produces an equal AnnotationMap."""
+        ann_map = AnnotationMap(
+            image_annotation_id="abc-123",
+            sub_category_key=get_type("sub_cat_1"),
+            relationship_key=None,
+            summary_key=get_type("summary_1"),
+            image_id="d822f8c3-1148-30c4-90eb-cb4896b1ebe6",
+        )
+        data = ann_map.as_dict()
+        restored = AnnotationMap.from_dict(**data)
+        assert restored == ann_map
+

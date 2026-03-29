@@ -139,13 +139,13 @@ class TestSubCategories:
         sub_cat = CategoryAnnotation(category_name="test_cat_2", category_id=2)
         cat.dump_sub_category("sub_cat_1", sub_cat)
         assert get_type("sub_cat_1") in cat.sub_categories
-        cat.remove_sub_category(get_type("sub_cat_1"))
+        cat.pop_sub_category(get_type("sub_cat_1"))
         assert get_type("sub_cat_1") not in cat.sub_categories
 
     def test_remove_nonexistent_sub_category_no_error(self) -> None:
         """Test that removing nonexistent sub-category doesn't raise error"""
         cat = CategoryAnnotation(category_name="test_cat_1")
-        cat.remove_sub_category(get_type("non_existent"))
+        cat.pop_sub_category(get_type("non_existent"))
 
     def test_sub_categories_from_dict(self) -> None:
         """Test creating annotation with sub_categories from dict"""

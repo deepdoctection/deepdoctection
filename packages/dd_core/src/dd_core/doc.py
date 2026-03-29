@@ -38,7 +38,7 @@ from .dataflow.base import DataFlow
 from .dataflow.common import MapData
 from .dataflow.custom_serialize import SerializerFiles, SerializerPdfDoc
 from .dataflow.serialize import DataFromList
-from .datapoint.annotation import CategoryAnnotation
+from .datapoint.annotation import CategoryAnnotation, AnnotationMap, Annotation
 from .datapoint.image import Image
 from .datapoint.view import ImageAnnotationBaseView, Page
 from .mapper.maputils import curry
@@ -208,6 +208,7 @@ class Document:
     _images: dict[str, Image] = field(default_factory=dict, init=False, repr=False)
     _summary: Optional[CategoryAnnotation] = field(default=None, init=False, repr=False)
     _pdf_bytes: Optional[bytes] = field(default=None, init=False, repr=False)
+    _extras: dict = field(default_factory=dict, init=False, repr=False)
 
     def __post_init__(self) -> None:
         if self.location is None or self.location == "":
@@ -396,6 +397,28 @@ class Document:
         if self._summary is not None:
             raise ValueError("Document.summary already defined and cannot be reset")
         self._summary = summary_annotation
+
+    @property
+    def extras(self) -> dict:
+        """
+        Transient key-value store for additional messages or metadata attached to this document.
+
+        The store is never serialized and is silently ignored when present in constructor kwargs.
+
+        Returns:
+            The `dict` holding the extra entries for this document.
+        """
+        return self._extras
+
+    @extras.setter
+    def extras(self, value: dict) -> None:
+        """
+        Replace the entire extras store.
+
+        Args:
+            value: A `dict` instance that will replace the current extras store.
+        """
+        self._extras = value
 
     def get_image(
         self,
@@ -627,6 +650,7 @@ class Document:
         highest_hierarchy_only: bool = False,
         path: Optional[PathLikeOrStr] = None,
         dry: bool = False,
+        extra_file: bool = False,
     ) -> Optional[Union[dict[str, Any], str]]:
         """
         Save the document instance to a JSON file (or return a dict when `dry=True`).
@@ -638,6 +662,11 @@ class Document:
             path: Path to save the `.json` file to. If `None`, uses `self.location`.
                   If a directory is provided, saves as `<dir>/<document_id>.json`.
             dry: If `True`, do not write files; return the export dict.
+            extra_file: If `True`, annotations flagged via ``image.extras["extra_file"]`` (a
+                ``list[str]`` of annotation ids) are popped from each image and from the document
+                summary, then written to a sidecar file named
+                ``<path_without_.json>_extra.json``.  The main JSON will not contain those
+                annotations.  When ``dry=True`` this step is skipped entirely.
 
         Returns:
             A dict if `dry=True`, otherwise the JSON file path as string.
@@ -682,6 +711,21 @@ class Document:
             path_json = os.fspath(path).replace(suffix, ".json")
         else:
             path_json = os.fspath(path) + ".json"
+
+        if extra_file and not dry:
+            all_ann_ids: list[str] = list(self._extras.get("extra_file", []))
+            for image in self._images.values():
+                all_ann_ids.extend(image.extras.get("extra_file", []))
+
+            if all_ann_ids:
+                all_export = self.export_annotations(all_ann_ids)
+                all_exports = [
+                    {"annotation_map": ann_map.as_dict(), "annotation": ann.as_dict()}
+                    for ann_map, ann in all_export.items()
+                ]
+                extra_path = path_json.replace(".json", "_extra.json")
+                with open(extra_path, "w", encoding="UTF-8") as extra_file_handle:
+                    json.dump(all_exports, extra_file_handle, indent=2)
 
         for img in self._images.values():
             if highest_hierarchy_only:
@@ -729,6 +773,7 @@ class Document:
         pipeline_jobs = raw.pop("pipeline_jobs", {})
 
         raw.pop("_processing_state", None)
+        raw.pop("_extras", None)
 
         raw["compute_metadata"] = False
 
@@ -774,17 +819,38 @@ class Document:
         return doc
 
     @classmethod
-    def from_json(cls, file_path: PathLikeOrStr) -> Document:
+    def from_json(cls, file_path: PathLikeOrStr, extra_file: bool = False) -> Document:
         """
         Create `Document` instance from `.json` file.
 
         Restores private attrs (e.g. `_images`, `_page_references`, `_summary`, `_processing_state`)
         that are not populated automatically by pydantic from input data.
+
+        Args:
+            file_path: Path to the `.json` file produced by :meth:`save`.
+            extra_file: If `True`, also loads the sidecar ``_extra.json`` file (expected in the same
+                directory) and dumps each annotation back into its original location using the
+                accompanying `AnnotationMap`.
+
+        Returns:
+            Document: Fully restored ``Document`` instance.
         """
         with open(file_path, "r", encoding="UTF-8") as f:
             raw: dict[str, Any] = json.load(f)
 
-        return cls.from_dict(raw)
+        doc = cls.from_dict(raw)
+
+        if extra_file:
+            extra_path = os.fspath(file_path).replace(".json", "_extra.json")
+            with open(extra_path, "r", encoding="UTF-8") as ef:
+                extra_data: list[dict[str, Any]] = json.load(ef)
+
+            for entry in extra_data:
+                ann_map = AnnotationMap.from_dict(**entry["annotation_map"])
+                ann = CategoryAnnotation.from_dict(**entry["annotation"])
+                doc._dump_by_annotation_map(ann_map, ann)
+
+        return doc
 
     def viz_entities(  # type
         self,
@@ -837,3 +903,111 @@ class Document:
                 annotation_id_labels=page_labels,
                 annotation_ids=ann_ids_unique,
             )
+
+    def get_annotation_id_to_annotation_maps(self) -> defaultdict[str, list[AnnotationMap]]:
+        """
+        Build a mapping from annotation IDs to lists of AnnotationMap entries for the whole document.
+
+        Iterates over every stored image and collects each image's own mapping (enriching every
+        AnnotationMap with the owning image's ``image_id`` so callers can route pops/dumps back
+        to the right image).  Document-level summary sub-categories are appended afterwards with
+        ``image_id=None`` and an empty ``image_annotation_id``.
+
+        Returns:
+            defaultdict[str, list[AnnotationMap]]: Mapping from annotation UUID to the list of
+            AnnotationMap descriptors that reference it.
+        """
+        all_ann_id_dict: defaultdict[str, list[AnnotationMap]] = defaultdict(list)
+
+        for image in self._images.values():
+            for ann_id, maps in image.get_annotation_id_to_annotation_maps().items():
+                for ann_map in maps:
+                    enriched = AnnotationMap(
+                        image_annotation_id=ann_map.image_annotation_id,
+                        sub_category_key=ann_map.sub_category_key,
+                        relationship_key=ann_map.relationship_key,
+                        summary_key=ann_map.summary_key,
+                        image_id=image.image_id,
+                    )
+                    all_ann_id_dict[ann_id].append(enriched)
+
+        if self._summary is not None:
+            for summary_cat_key in self.summary.sub_categories:
+                summary_cat = self.summary.get_sub_category(summary_cat_key)
+                all_ann_id_dict[summary_cat.annotation_id].append(
+                    AnnotationMap(image_annotation_id="", summary_key=summary_cat_key)
+                )
+
+        return all_ann_id_dict
+
+    def _pop_by_annotation_id(self, annotation_id: str, location_dict: AnnotationMap) -> Optional[Annotation]:
+        """
+        Remove and return the annotation described by ``location_dict``.
+
+        Routes to the owning ``Image._pop_by_annotation_id`` when ``location_dict.image_id``
+        is set; otherwise operates on the document-level summary.
+
+        Args:
+            annotation_id: UUID of the annotation to remove.
+            location_dict: AnnotationMap that carries the full location context, including
+                ``image_id`` for image-level annotations.
+
+        Returns:
+            The removed ``Annotation``, or ``None`` if nothing matched.
+        """
+        if location_dict.image_id is not None:
+            return self._images[location_dict.image_id]._pop_by_annotation_id(annotation_id, location_dict)
+
+        summary_key = location_dict.summary_key
+        if summary_key is not None:
+            return self.summary.pop_sub_category(summary_key)
+
+        return None
+
+    def _dump_by_annotation_map(self, ann_map: AnnotationMap, ann: CategoryAnnotation) -> None:
+        """
+        Dump ``ann`` back to the location described by ``ann_map``.
+
+        Inverse of ``_pop_by_annotation_id``: routes to the owning image when
+        ``ann_map.image_id`` is set, and falls back to the document-level summary.
+
+        Args:
+            ann_map: AnnotationMap produced by ``export_annotations`` / ``as_dict``.
+            ann: The ``CategoryAnnotation`` to dump back.
+        """
+        if ann_map.image_id is not None:
+            image = self._images[ann_map.image_id]
+            if ann_map.sub_category_key is not None:
+                parent = image.get_annotation(annotation_ids=ann_map.image_annotation_id)[0]
+                parent.dump_sub_category(ann_map.sub_category_key, ann)
+            elif ann_map.summary_key is not None:
+                if ann_map.image_annotation_id:
+                    parent = image.get_annotation(annotation_ids=ann_map.image_annotation_id)[0]
+                    parent.image.summary.dump_sub_category(ann_map.summary_key, ann)
+                else:
+                    image.summary.dump_sub_category(ann_map.summary_key, ann)
+        elif ann_map.summary_key is not None:
+            self.summary.dump_sub_category(ann_map.summary_key, ann)
+
+    def export_annotations(self, annotation_ids: str | list[str]) -> dict[AnnotationMap, Annotation]:
+        """
+        Pop and return annotations identified by ``annotation_ids`` from anywhere in the document.
+
+        Uses ``get_annotation_id_to_annotation_maps`` to locate each annotation (image-level or
+        document-level).  Only sub-category and summary-key slots are exported; the matching
+        entries are removed in the process.
+
+        Args:
+            annotation_ids: One or more annotation UUIDs to export.
+
+        Returns:
+            dict[AnnotationMap, Annotation]: Mapping from location descriptor to removed annotation.
+        """
+        annotation_maps_dict = self.get_annotation_id_to_annotation_maps()
+        annotation_ids = [annotation_ids] if isinstance(annotation_ids, str) else annotation_ids
+        export_dict: dict[AnnotationMap, Annotation] = {}
+        for ann_id in annotation_ids:
+            for ann_map in annotation_maps_dict[ann_id]:
+                if ann_map.sub_category_key is not None or ann_map.summary_key is not None:
+                    export_dict[ann_map] = self._pop_by_annotation_id(ann_id, ann_map)
+        return export_dict

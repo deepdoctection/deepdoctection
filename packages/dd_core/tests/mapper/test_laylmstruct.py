@@ -80,9 +80,9 @@ def test_image_to_raw_layoutlm_features_for_inference(
     # Arrange
     image = xfund_image
     for ann in image.get_annotation():
-        ann.remove_sub_category(WordKey.TOKEN_CLASS)
-        ann.remove_sub_category(WordKey.TAG)
-        ann.remove_sub_category(WordKey.TOKEN_TAG)
+        ann.pop_sub_category(WordKey.TOKEN_CLASS)
+        ann.pop_sub_category(WordKey.TAG)
+        ann.pop_sub_category(WordKey.TOKEN_TAG)
 
     # Act
     raw_features = image_to_raw_layoutlm_features(DatasetKind.TOKEN_CLASSIFICATION)(image)

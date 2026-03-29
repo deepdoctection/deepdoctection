@@ -161,7 +161,7 @@ class TestAnnotationIdContextPropagation:
         sub1 = CategoryAnnotation(category_name="test_cat_4", category_id=2)
         parent.dump_sub_category("sub_cat_1", sub1)
         first_id = parent.get_sub_category(get_type("sub_cat_1")).annotation_id
-        parent.remove_sub_category(get_type("sub_cat_1"))
+        parent.pop_sub_category(get_type("sub_cat_1"))
         sub2 = CategoryAnnotation(category_name="test_cat_4", category_id=2)
         parent.dump_sub_category("sub_cat_1", sub2)
         second_id = parent.get_sub_category(get_type("sub_cat_1")).annotation_id

@@ -523,10 +523,10 @@ class TableSegmentationRefinementService(PipelineComponent):
                 and TableKey.MAX_ROW_SPAN in table.image.summary.sub_categories
                 and TableKey.MAX_COL_SPAN in table.image.summary.sub_categories
             ):
-                table.image.summary.remove_sub_category(TableKey.NUMBER_OF_ROWS)
-                table.image.summary.remove_sub_category(TableKey.NUMBER_OF_COLUMNS)
-                table.image.summary.remove_sub_category(TableKey.MAX_ROW_SPAN)
-                table.image.summary.remove_sub_category(TableKey.MAX_COL_SPAN)
+                table.image.summary.pop_sub_category(TableKey.NUMBER_OF_ROWS)
+                table.image.summary.pop_sub_category(TableKey.NUMBER_OF_COLUMNS)
+                table.image.summary.pop_sub_category(TableKey.MAX_ROW_SPAN)
+                table.image.summary.pop_sub_category(TableKey.MAX_COL_SPAN)
 
             self.dp_manager.set_summary_annotation(
                 TableKey.NUMBER_OF_ROWS, TableKey.NUMBER_OF_ROWS, number_of_rows, annotation_id=table.annotation_id
