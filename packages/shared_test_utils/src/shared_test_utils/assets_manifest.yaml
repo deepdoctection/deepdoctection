@@ -112,8 +112,8 @@ sample_document_image:
   description: PNG of a page from some DB financial report
 sample_document_json:
   path: dd_core/tests/assets/document.json
-  sha256: 9982b0471060cf40aa93baae39571b6da3b348eac9ce9a2ad29abef4fc3f9187
-  size: 7811576
+  sha256: c01740b9100ead2bbc40db328896b1073596d5ae72668e6b4973396ec6eed8f6
+  size: 7855919
   license: Apache-2.0
 sample_image:
   path: deepdoctection/tests/assets/image_dir/sample_image.png
