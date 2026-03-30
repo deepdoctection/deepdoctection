@@ -24,9 +24,12 @@ handling of data roundtrips, sub-categories, relationships, and validation funct
 import pytest
 
 from dd_core.datapoint.annotation import (
+    AnnotationMap,
+    AnnotationRef,
     CategoryAnnotation,
     ContainerAnnotation,
     ImageAnnotation,
+    ReferencePayload,
 )
 from dd_core.datapoint.box import BoundingBox
 from dd_core.utils.error import UUIDError
@@ -118,3 +121,82 @@ class TestAnnotationValidation:
         cat = CategoryAnnotation(**data)
         # String key should be converted to ObjectTypes
         assert get_type("sub_cat_1") in cat.sub_categories
+
+
+class TestAnnotationMap:
+    """Tests for AnnotationMap serialization and deserialization"""
+
+    @staticmethod
+    def test_as_dict_serializes_enum_fields_to_strings() -> None:
+        """as_dict converts ObjectTypes fields to their string values."""
+        ann_map = AnnotationMap(
+            image_annotation_id="abc-123",
+            sub_category_key=get_type("sub_cat_1"),
+            relationship_key=get_type("relationship_1"),
+            summary_key=get_type("summary_1"),
+            image_id="d822f8c3-1148-30c4-90eb-cb4896b1ebe6",
+        )
+        result = ann_map.as_dict()
+        assert result["image_annotation_id"] == "abc-123"
+        assert result["image_id"] == "d822f8c3-1148-30c4-90eb-cb4896b1ebe6"
+        assert result["sub_category_key"] == get_type("sub_cat_1").value
+        assert result["relationship_key"] == get_type("relationship_1").value
+        assert result["summary_key"] == get_type("summary_1").value
+
+    @staticmethod
+    def test_from_dict_roundtrip_restores_annotation_map() -> None:
+        """from_dict deserializes string enum fields and produces an equal AnnotationMap."""
+        ann_map = AnnotationMap(
+            image_annotation_id="abc-123",
+            sub_category_key=get_type("sub_cat_1"),
+            relationship_key=None,
+            summary_key=get_type("summary_1"),
+            image_id="d822f8c3-1148-30c4-90eb-cb4896b1ebe6",
+        )
+        data = ann_map.as_dict()
+        restored = AnnotationMap.from_dict(**data)
+        assert restored == ann_map
+
+
+class TestAnnotationRef:
+    """Tests for AnnotationRef serialization helpers."""
+
+    def test_to_dict_produces_correct_payload(self) -> None:
+        """to_dict returns a dict with _ref_type, image_id, and annotation_id."""
+        ref = AnnotationRef(image_id="img-001", annotation_id="ann-abc")
+        result = ref.to_dict()
+        assert result == {
+            "_ref_type": "annotation_ref",
+            "image_id": "img-001",
+            "annotation_id": "ann-abc",
+        }
+
+    def test_from_dict_roundtrip_restores_instance(self) -> None:
+        """from_dict reconstructs an AnnotationRef equal to the original."""
+        ref = AnnotationRef(image_id="img-001", annotation_id="ann-abc")
+        restored = AnnotationRef.from_dict(ref.to_dict())
+        assert restored.image_id == ref.image_id
+        assert restored.annotation_id == ref.annotation_id
+        assert restored == ref
+
+
+class TestReferencePayload:
+    """Tests for ReferencePayload serialization helpers."""
+
+    def test_to_dict_produces_correct_payload(self) -> None:
+        """to_dict returns a dict with _ref_type and serialized content."""
+        payload = ReferencePayload(content={"key": "value", "count": 42})
+        result = payload.to_dict()
+        assert result["_ref_type"] == "reference_payload"
+        assert result["content"] == {"key": "value", "count": 42}
+
+    def test_is_dict_reference_payload_detects_marker(self) -> None:
+        """is_dict_reference_payload returns True only for dicts with the correct _ref_type marker."""
+        valid = {"_ref_type": "reference_payload", "content": {}}
+        invalid_wrong_type = {"_ref_type": "annotation_ref", "content": {}}
+        invalid_no_marker = {"content": {}}  # type:ignore
+
+        assert ReferencePayload.is_dict_reference_payload(valid) is True
+        assert ReferencePayload.is_dict_reference_payload(invalid_wrong_type) is False
+        assert ReferencePayload.is_dict_reference_payload(invalid_no_marker) is False
+        assert ReferencePayload.is_dict_reference_payload("not_a_dict") is False

@@ -32,7 +32,7 @@ from typing import TYPE_CHECKING
 
 from .utils.file_utils import _LazyModule
 
-__version__ = "1.2.5"
+__version__ = "1.2.6"
 _IMPORT_STRUCTURE = {
     "dataflow": [
         "DataFlowReentrantGuard",
@@ -67,6 +67,11 @@ _IMPORT_STRUCTURE = {
         "StdFromDataFlow",
     ],
     "datapoint": [
+        "to_json_compatible",
+        "from_json_compatible",
+        "AnnotationRef",
+        "maybe_to_annotation_ref",
+        "ReferencePayload",
         "AnnotationMap",
         "Annotation",
         "CategoryAnnotation",
@@ -306,7 +311,7 @@ _IMPORT_STRUCTURE = {
         "interactive_imshow",
         "viz_handler",
     ],
-    "doc": [],
+    "doc": ["Document"],
 }
 
 if TYPE_CHECKING:

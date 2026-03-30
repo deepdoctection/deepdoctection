@@ -58,8 +58,8 @@ invoice_rotated_pdf:
   license: Apache-2.0
 page_json:
   path: dd_core/tests/assets/a8d0e15c-7463-378a-a3e5-28590a4440ab.json
-  sha256: ae8e68f2b06624986ef959feb38b7431c8b666927442dbfe9abc263ca00d3286
-  size: 3564716
+  sha256: 2e587998a1509afb0f791daa7ca33f796edd12f9c3747c5b867bd7c0c63b9cd7
+  size: 3566706
   license: Apache-2.0
   description: Sample JSON for generating dd.Page
 pdf_file_two_pages:
@@ -112,8 +112,8 @@ sample_document_image:
   description: PNG of a page from some DB financial report
 sample_document_json:
   path: dd_core/tests/assets/document.json
-  sha256: 9982b0471060cf40aa93baae39571b6da3b348eac9ce9a2ad29abef4fc3f9187
-  size: 7811576
+  sha256: a49fd3b8ed0168a4e64936ed19b80326e13463df3d14ce81f214d81610595b12
+  size: 7859807
   license: Apache-2.0
 sample_image:
   path: deepdoctection/tests/assets/image_dir/sample_image.png

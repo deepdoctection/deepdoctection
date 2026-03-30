@@ -32,30 +32,28 @@ import os
 from collections import defaultdict
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
-from typing import Any, Mapping, Optional, Sequence, Union
+from typing import Any, Mapping, Optional, Sequence, Union, cast
 
 from .dataflow.base import DataFlow
 from .dataflow.common import MapData
 from .dataflow.custom_serialize import SerializerFiles, SerializerPdfDoc
 from .dataflow.serialize import DataFromList
-from .datapoint.annotation import CategoryAnnotation
+from .datapoint.annotation import (
+    AnnotationMap,
+    AnnotationRef,
+    CategoryAnnotation,
+    ImageAnnotation,
+    ReferencePayload,
+    from_json_compatible,
+)
 from .datapoint.image import Image
 from .datapoint.view import ImageAnnotationBaseView, Page
 from .mapper.maputils import curry
 from .utils import get_uuid_from_str
 from .utils.file_utils import mkdir_p, pypdf_available
-from .utils.identifier import is_uuid_like
 from .utils.object_types import DocumentFileLabel, ObjectTypes, SummaryKey, get_type
 from .utils.types import PathLikeOrStr
 from .utils.viz import viz_handler
-
-
-@dataclass(frozen=True)
-class AnnPair:
-    """Lightweight pair referencing an image annotation."""
-
-    image_id: str
-    annotation_id: str
 
 
 @dataclass(frozen=True)
@@ -80,39 +78,31 @@ class PipelineJobs:
     pipeline_info: dict[str, str]
 
 
-def _maybe_to_annpair(obj: Any) -> Any:
-    if isinstance(obj, dict):
-        if "image_id" in obj and "annotation_id" in obj:
-            return AnnPair(image_id=obj["image_id"], annotation_id=obj["annotation_id"])
-    return obj
-
-
 def _walk(node: Any, path: list[str], ann_to_paths: defaultdict[str, set[str]]) -> None:
     if node is None:
         return
 
+    if isinstance(node, AnnotationRef):
+        ann_to_paths[node.annotation_id].add(".".join(path))
+        return
+
+    if isinstance(node, ReferencePayload):
+        _walk(node.content, path, ann_to_paths)
+        return
+
     if isinstance(node, Mapping):
-        for k, v in node.items():
-            _walk(v, path + [str(k)], ann_to_paths)
+        for key, value in node.items():
+            _walk(value, path + [str(key)], ann_to_paths)
         return
 
     if isinstance(node, (list, tuple)):
         for item in node:
-            item = _maybe_to_annpair(item)
-            if isinstance(item, AnnPair):
-                ann_to_paths[item.annotation_id].add(".".join(path))
-            else:
-                _walk(item, path, ann_to_paths)
+            _walk(item, path, ann_to_paths)
         return
-
-    node = _maybe_to_annpair(node)
-    if isinstance(node, AnnPair):
-        ann_to_paths[node.annotation_id].add(".".join(path))
-    return
 
 
 def flatten_entity_dict_to_ann_index(
-    data: Mapping[str, Any],
+    data: Mapping[str, Any] | ReferencePayload,
 ) -> dict[str, set[str]]:
     """
     Flattens a nested structure (mapping / list / tuple) of entities into
@@ -120,35 +110,35 @@ def flatten_entity_dict_to_ann_index(
     occurs.
 
     Args:
-        data (Mapping[str, Any]): Arbitrary nested mapping/list structure that may
-            contain annotation reference objects or dictionaries representing
-            annotation pairs.
+        data: Arbitrary nested mapping/list structure that may contain
+            AnnotationRef objects, serialized AnnotationRef dictionaries,
+            ReferencePayload, or serialized ReferencePayload dictionaries.
 
     Returns:
-        dict[str, set[str]]: Mapping where keys are annotation UUID strings and
-        values are sets of dot-separated key paths pointing to occurrences.
+        Mapping where keys are annotation UUID strings and values are sets
+        of dot-separated key paths pointing to occurrences.
     """
-
     ann_to_paths: defaultdict[str, set[str]] = defaultdict(set)
 
-    _walk(data, [], ann_to_paths)
+    root = from_json_compatible(data)
+    _walk(root, [], ann_to_paths)
     return dict(ann_to_paths)
 
 
 def build_viz_labels_from_nested_entities(
-    entities: Mapping[str, Any],
+    entities: Mapping[str, Any] | ReferencePayload,
 ) -> dict[str, str]:
     """
     Create human-readable labels for annotations found inside a nested entities
     structure. Each annotation id is mapped to a single label composed of
-    sorted leaf key paths joined by \"|\".
+    sorted leaf key paths joined by "|".
 
     Args:
-        entities (Mapping[str, Any]): Nested mapping/list structure containing
-            annotation references.
+        entities: Nested mapping/list structure containing annotation references,
+            or a ReferencePayload wrapping such a structure.
 
     Returns:
-        dict[str, str]: Mapping from annotation UUID to label string.
+        Mapping from annotation UUID to label string.
     """
     ann_index = flatten_entity_dict_to_ann_index(entities)
     return {ann_id: "|".join(sorted(paths)) for ann_id, paths in ann_index.items()}
@@ -208,6 +198,7 @@ class Document:
     _images: dict[str, Image] = field(default_factory=dict, init=False, repr=False)
     _summary: Optional[CategoryAnnotation] = field(default=None, init=False, repr=False)
     _pdf_bytes: Optional[bytes] = field(default=None, init=False, repr=False)
+    _extras: dict[str, str] = field(default_factory=dict, init=False, repr=False)
 
     def __post_init__(self) -> None:
         if self.location is None or self.location == "":
@@ -234,6 +225,7 @@ class Document:
         Leaves `document_type` unchanged if it is already set or cannot be resolved.
         """
         if self.document_type is not None:
+            self.document_type = cast(DocumentFileLabel, get_type(self.document_type))
             return
         if not self.location:
             return
@@ -331,54 +323,53 @@ class Document:
         """get page reference from page number."""
         return self._page_references[page_number]
 
-    def resolve_in_segments(self, obj: Any) -> Any:
+    def resolve_reference_payload(self, payload: ReferencePayload) -> dict[str, Any]:
         """
-        Resolve UUID pairs into annotations.
+        Resolve a ``ReferencePayload`` into a plain dict by replacing every
+        ``AnnotationRef`` leaf with the text of the referenced annotation.
 
-        Supported leaves:
-        - [image_id, annotation_id] -> ImageAnnotationBaseView (via self.get_annotation(...)[0])
-        - [[image_id, annotation_id], ...] -> list[ImageAnnotationBaseView]
+        ``from_json_compatible`` is applied to the payload content first so
+        that both already-instantiated ``AnnotationRef`` objects and their
+        serialised dict representations are handled uniformly.
 
-        Other values pass through unchanged (e.g. None).
+        Args:
+            payload: The ``ReferencePayload`` whose content should be resolved.
+
+        Returns:
+            A nested dict/list structure with every ``AnnotationRef`` replaced
+            by the annotation's ``text`` attribute (empty string when absent).
         """
+        return self._resolve_node(from_json_compatible(payload.content))
 
-        def is_uuid_pair(x: Any) -> bool:
-            return isinstance(x, list) and len(x) == 2 and is_uuid_like(x[0]) and is_uuid_like(x[1])
+    def _resolve_node(self, node: Any) -> Any:
+        if isinstance(node, AnnotationRef):
+            if node.image_id is None:
+                return ValueError(
+                    "image_id cannot be None when resolving ReferencePayload with resolve_reference_payload"
+                )
+            ann = self.get_annotation(image_id=node.image_id, annotation_ids=node.annotation_id)[0]
+            if "text" in ann.get_attribute_names():
+                text = ann.text
+            elif "characters" in ann.get_attribute_names():
+                text = ann.characters
+            else:
+                text = ""
+            return text
 
-        if is_uuid_pair(obj):
-            image_id, ann_id = obj
-            return self.get_annotation(image_id, annotation_ids=ann_id)[0]
+        if isinstance(node, dict):
+            return {key: self._resolve_node(value) for key, value in node.items()}
 
-        if isinstance(obj, list) and obj and all(is_uuid_pair(item) for item in obj):
-            resolved: list[tuple[str, ImageAnnotationBaseView]] = []
-            for image_id, ann_id in obj:
-                resolved.append((image_id, self.get_annotation(image_id, annotation_ids=ann_id)[0]))
-            return resolved
+        if isinstance(node, list):
+            return [self._resolve_node(item) for item in node]
 
-        return obj
-
-    def _walk_structured_output(self, obj: Any) -> Any:
-        """
-        Recursively walk a nested dict/list structure and replace UUID pairs with annotations.
-        Preserves the original container shape.
-        """
-        if isinstance(obj, dict):
-            return {k: self._walk_structured_output(v) for k, v in obj.items()}
-
-        if isinstance(obj, list):
-            resolved = self.resolve_in_segments(obj)
-            if resolved is not obj:
-                return resolved
-            return [self._walk_structured_output(item) for item in obj]
-
-        return self.resolve_in_segments(obj)
+        return node
 
     @property
     def structured_output(self) -> dict[str, Any]:
         """structured output"""
         if "key_values" in self.summary.sub_categories:
-            dict_value = self.summary.get_sub_category(get_type("key_values")).value  # type: ignore
-            return self._walk_structured_output(dict_value)
+            payload = self.summary.get_sub_category(get_type("key_values")).value  # type: ignore
+            return self.resolve_reference_payload(payload)
         return {}
 
     @property
@@ -396,6 +387,28 @@ class Document:
         if self._summary is not None:
             raise ValueError("Document.summary already defined and cannot be reset")
         self._summary = summary_annotation
+
+    @property
+    def extras(self) -> dict[str, str]:
+        """
+        Transient key-value store for additional messages or metadata attached to this document.
+
+        The store is never serialized and is silently ignored when present in constructor kwargs.
+
+        Returns:
+            The `dict` holding the extra entries for this document.
+        """
+        return self._extras
+
+    @extras.setter
+    def extras(self, value: dict[str, str]) -> None:
+        """
+        Replace the entire extras store.
+
+        Args:
+            value: A `dict` instance that will replace the current extras store.
+        """
+        self._extras = value
 
     def get_image(
         self,
@@ -627,6 +640,7 @@ class Document:
         highest_hierarchy_only: bool = False,
         path: Optional[PathLikeOrStr] = None,
         dry: bool = False,
+        extra_file: bool = False,
     ) -> Optional[Union[dict[str, Any], str]]:
         """
         Save the document instance to a JSON file (or return a dict when `dry=True`).
@@ -638,6 +652,11 @@ class Document:
             path: Path to save the `.json` file to. If `None`, uses `self.location`.
                   If a directory is provided, saves as `<dir>/<document_id>.json`.
             dry: If `True`, do not write files; return the export dict.
+            extra_file: If `True`, annotations flagged via ``image.extras["extra_file"]`` (a
+                ``list[str]`` of annotation ids) are popped from each image and from the document
+                summary, then written to a sidecar file named
+                ``<path_without_.json>_extra.json``.  The main JSON will not contain those
+                annotations.  When ``dry=True`` this step is skipped entirely.
 
         Returns:
             A dict if `dry=True`, otherwise the JSON file path as string.
@@ -682,6 +701,25 @@ class Document:
             path_json = os.fspath(path).replace(suffix, ".json")
         else:
             path_json = os.fspath(path) + ".json"
+
+        if extra_file and not dry:
+            all_ann_ids: list[str] = list(self._extras.get("extra_file", []))
+            for image in self._images.values():
+                all_ann_ids.extend(image.extras.get("extra_file", []))
+
+            if all_ann_ids:
+                all_export = self.export_annotations(all_ann_ids)
+                all_exports = [
+                    {
+                        "annotation_id": ann_id,
+                        "annotation_maps": [ann_map.as_dict() for ann_map in ann_maps],
+                        "annotation": ann.as_dict(),
+                    }
+                    for ann_id, (ann_maps, ann) in all_export.items()
+                ]
+                extra_path = path_json.replace(".json", "_extra.json")
+                with open(extra_path, "w", encoding="UTF-8") as extra_file_handle:
+                    json.dump(all_exports, extra_file_handle, indent=2)
 
         for img in self._images.values():
             if highest_hierarchy_only:
@@ -729,6 +767,7 @@ class Document:
         pipeline_jobs = raw.pop("pipeline_jobs", {})
 
         raw.pop("_processing_state", None)
+        raw.pop("_extras", None)
 
         raw["compute_metadata"] = False
 
@@ -774,17 +813,44 @@ class Document:
         return doc
 
     @classmethod
-    def from_json(cls, file_path: PathLikeOrStr) -> Document:
+    def from_json(cls, file_path: PathLikeOrStr, extra_file: bool = False) -> Document:
         """
         Create `Document` instance from `.json` file.
 
         Restores private attrs (e.g. `_images`, `_page_references`, `_summary`, `_processing_state`)
         that are not populated automatically by pydantic from input data.
+
+        Args:
+            file_path: Path to the `.json` file produced by :meth:`save`.
+            extra_file: If `True`, also loads the sidecar ``_extra.json`` file (expected in the same
+                directory) and dumps each annotation back into its original location using the
+                accompanying `AnnotationMap`.
+
+        Returns:
+            Document: Fully restored ``Document`` instance.
         """
         with open(file_path, "r", encoding="UTF-8") as f:
             raw: dict[str, Any] = json.load(f)
 
-        return cls.from_dict(raw)
+        doc = cls.from_dict(raw)
+
+        if extra_file:
+            extra_path = os.fspath(file_path).replace(".json", "_extra.json")
+            with open(extra_path, "r", encoding="UTF-8") as ef:
+                extra_data: list[dict[str, Any]] = json.load(ef)
+
+            for ann_data in extra_data:
+                ann_maps = [AnnotationMap.from_dict(**map_dict) for map_dict in ann_data["annotation_maps"]]
+                ann = CategoryAnnotation.from_dict(**ann_data["annotation"])
+                for ann_map in ann_maps:
+                    if (
+                        ann_map.sub_category_key is not None
+                        or ann_map.summary_key is not None
+                        or ann_map.doc_summary_key is not None
+                    ):
+                        doc._dump_by_annotation_map(ann_map, ann)
+
+        return doc
 
     def viz_entities(  # type
         self,
@@ -837,3 +903,121 @@ class Document:
                 annotation_id_labels=page_labels,
                 annotation_ids=ann_ids_unique,
             )
+
+    def get_annotation_id_to_annotation_maps(self) -> defaultdict[str, list[AnnotationMap]]:
+        """
+        Build a mapping from annotation IDs to lists of AnnotationMap entries for the whole document.
+
+        Iterates over every stored image and collects each image's own mapping (enriching every
+        AnnotationMap with the owning image's ``image_id`` so callers can route pops/dumps back
+        to the right image).  Document-level summary sub-categories are appended afterwards with
+        ``image_id=None`` and an empty ``image_annotation_id``.
+
+        Returns:
+            defaultdict[str, list[AnnotationMap]]: Mapping from annotation UUID to the list of
+            AnnotationMap descriptors that reference it.
+        """
+        all_ann_id_dict: defaultdict[str, list[AnnotationMap]] = defaultdict(list)
+
+        for image in self._images.values():
+            for ann_id, maps in image.get_annotation_id_to_annotation_maps().items():
+                for ann_map in maps:
+                    enriched = AnnotationMap(
+                        image_annotation_id=ann_map.image_annotation_id,
+                        sub_category_key=ann_map.sub_category_key,
+                        relationship_key=ann_map.relationship_key,
+                        summary_key=ann_map.summary_key,
+                        image_id=image.image_id,
+                    )
+                    all_ann_id_dict[ann_id].append(enriched)
+
+        if self._summary is not None:
+            for summary_cat_key in self.summary.sub_categories:
+                summary_cat = self.summary.get_sub_category(summary_cat_key)
+                all_ann_id_dict[summary_cat.annotation_id].append(AnnotationMap(doc_summary_key=summary_cat_key))
+
+        return all_ann_id_dict
+
+    def _pop_by_annotation_id(
+        self, annotation_id: str, location_dict: AnnotationMap
+    ) -> Union[ImageAnnotation, CategoryAnnotation, None]:
+        """
+        Remove and return the annotation described by ``location_dict``.
+
+        Routes to the owning ``Image._pop_by_annotation_id`` when ``location_dict.image_id``
+        is set; otherwise operates on the document-level summary.
+
+        Args:
+            annotation_id: UUID of the annotation to remove.
+            location_dict: AnnotationMap that carries the full location context, including
+                ``image_id`` for image-level annotations.
+
+        Returns:
+            The removed ``Annotation``, or ``None`` if nothing matched.
+        """
+        if location_dict.image_id is not None:
+            return self._images[location_dict.image_id]._pop_by_annotation_id(annotation_id, location_dict)
+
+        summary_key = location_dict.doc_summary_key
+        if summary_key is not None:
+            return self.summary.pop_sub_category(summary_key)
+
+        return None
+
+    def _dump_by_annotation_map(self, ann_map: AnnotationMap, ann: CategoryAnnotation) -> None:
+        """
+        Dump ``ann`` back to the location described by ``ann_map``.
+
+        Inverse of ``_pop_by_annotation_id``: routes to the owning image when
+        ``ann_map.image_id`` is set, and falls back to the document-level summary.
+
+        Args:
+            ann_map: AnnotationMap produced by ``export_annotations`` / ``as_dict``.
+            ann: The ``CategoryAnnotation`` to dump back.
+        """
+        if ann_map.image_id is not None:
+            image = self._images[ann_map.image_id]
+            if ann_map.sub_category_key is not None:
+                parent = image.get_annotation(annotation_ids=ann_map.image_annotation_id)[0]
+                parent.dump_sub_category(ann_map.sub_category_key, ann)
+            elif ann_map.summary_key is not None:
+                if ann_map.image_annotation_id:
+                    parent = image.get_annotation(annotation_ids=ann_map.image_annotation_id)[0]
+                    if parent.image is not None:
+                        parent.image.summary.dump_sub_category(ann_map.summary_key, ann)
+                else:
+                    image.summary.dump_sub_category(ann_map.summary_key, ann)
+        elif ann_map.doc_summary_key is not None:
+            self.summary.dump_sub_category(ann_map.doc_summary_key, ann)
+
+    def export_annotations(
+        self, annotation_ids: str | list[str]
+    ) -> dict[str, tuple[list[AnnotationMap], Union[ImageAnnotation, CategoryAnnotation]]]:
+        """
+        Pop and return annotations identified by `annotation_ids` from anywhere in the document.
+
+        Uses `get_annotation_id_to_annotation_maps` to locate each annotation (image-level or
+        document-level).
+
+        Args:
+            annotation_ids: One or more annotation UUIDs to export.
+
+        Returns:
+            dict[str, tuple[list[AnnotationMap], Union[ImageAnnotation, CategoryAnnotation]]]:
+            Mapping from location descriptor to removed annotation.
+        """
+        annotation_maps_dict = self.get_annotation_id_to_annotation_maps()
+        annotation_ids = [annotation_ids] if isinstance(annotation_ids, str) else annotation_ids
+        export_dict: dict[str, tuple[list[AnnotationMap], Union[ImageAnnotation, CategoryAnnotation]]] = {}
+        for ann_id in annotation_ids:
+            ann_maps = annotation_maps_dict[ann_id]
+            for ann_map in ann_maps:
+                if (
+                    ann_map.sub_category_key is not None
+                    or ann_map.summary_key is not None
+                    or ann_map.doc_summary_key is not None
+                ):
+                    annotation = self._pop_by_annotation_id(ann_id, ann_map)
+                    export_dict[ann_id] = (ann_maps, annotation)  # type:ignore
+
+        return export_dict

@@ -23,10 +23,12 @@ from pathlib import Path
 
 import pytest
 
+from dd_core.datapoint.annotation import AnnotationRef, CategoryAnnotation, ContainerAnnotation, ReferencePayload
 from dd_core.datapoint.image import Image
 from dd_core.datapoint.view import Page
 from dd_core.doc import Document, PageReference
 from dd_core.utils import file_utils as fu
+from dd_core.utils.object_types import get_type
 
 
 @pytest.mark.skipif(not fu.pypdf_available(), reason="Pypdf is not installed")
@@ -69,6 +71,28 @@ def test_doc_returns_structured_output(sample_document_json: Path) -> None:
     structured_output = doc.structured_output
     assert len(structured_output["buyer"]["buyerReference"]) == 11
     assert structured_output["buyer"]["contact"]["contactName"] is None
+
+
+def test_resolve_reference_payload_returns_text(sample_document_json: Path) -> None:
+    """resolve_reference_payload resolves AnnotationRef leaves to their text or characters value"""
+    doc = Document.from_json(sample_document_json)
+
+    reference = ReferencePayload(
+        content={
+            "some_cell": AnnotationRef(
+                annotation_id="54339b9d-1571-3211-abe1-898aed89bfad",
+                image_id="72a354a5-6a4b-3240-8310-4cfd9dd2c264",
+            ),
+            "some_word": AnnotationRef(
+                annotation_id="b61e3b00-85cc-3cb4-9cef-cc00f54b1823",
+                image_id="72a354a5-6a4b-3240-8310-4cfd9dd2c264",
+            ),
+        }
+    )
+
+    out = doc.resolve_reference_payload(reference)
+
+    assert out == {"some_cell": "78", "some_word": "Kunden-No"}
 
 
 def test_get_page_and_get_image_return_types(sample_document_json: Path) -> None:
@@ -128,3 +152,27 @@ def test_get_annotation_id_with_given_image_id(sample_document_json: Path) -> No
     page = doc.get_page(image_id="7e154965-1250-3f4f-b1c2-a6e822f0aaa5")
     text_from_page = page.get_annotation(category_names="table")
     assert len(text) == len(text_from_page)
+
+
+def test_export_annotation_with_given_annotation_id(sample_document_json: Path) -> None:
+    """test export annotation with given annotation id"""
+    doc = Document.from_json(sample_document_json)
+    # exporting CategoryAnnotation(annotation_id='c7d70ce6-d01d-3fbe-9b99-7f488554c538') on document.summary -level
+    # and CategoryAnnotation(annotation_id='f6f2b661-1e9c-38be-be7d-213d125f5558') as sub category of an ImageAnnotation
+    output = doc.export_annotations(
+        annotation_ids=["c7d70ce6-d01d-3fbe-9b99-7f488554c538", "f6f2b661-1e9c-38be-be7d-213d125f5558"]
+    )
+    assert len(output) == 2
+
+    assert len(output["c7d70ce6-d01d-3fbe-9b99-7f488554c538"][0]) == 1
+    assert isinstance(output["c7d70ce6-d01d-3fbe-9b99-7f488554c538"][1], ContainerAnnotation)
+    assert output["c7d70ce6-d01d-3fbe-9b99-7f488554c538"][1].annotation_id == "c7d70ce6-d01d-3fbe-9b99-7f488554c538"
+
+    assert len(output["f6f2b661-1e9c-38be-be7d-213d125f5558"][0]) == 1
+    assert isinstance(output["f6f2b661-1e9c-38be-be7d-213d125f5558"][1], CategoryAnnotation)
+    assert output["f6f2b661-1e9c-38be-be7d-213d125f5558"][1].annotation_id == "f6f2b661-1e9c-38be-be7d-213d125f5558"
+
+    annotation = doc.get_annotation(
+        image_id="7e154965-1250-3f4f-b1c2-a6e822f0aaa5", annotation_ids="518264e3-98a8-350f-9e01-4344e35937f2"
+    )[0]
+    assert get_type("reading_order") not in annotation.sub_categories

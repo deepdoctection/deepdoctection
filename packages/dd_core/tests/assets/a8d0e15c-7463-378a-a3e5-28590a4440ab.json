@@ -1070,66 +1070,142 @@
           "score": null,
           "sub_categories": {},
           "relationships": {},
-          "value": [
+          "value": {"_ref_type": "reference_payload",
+          "content":
+          [
             "<table>",
             "<tr>",
             "<td>",
+            {"_ref_type": "annotation_ref",
+            "annotation_id":
             "65d2a3b7-d543-3daa-94cb-85c18245c78e",
+            "image_id": null
+            },
             "</td>",
             "<td>",
+            {"_ref_type":
+            "annotation_ref",
+            "annotation_id":
             "d4c56ab6-62d9-3c24-aba9-9cab92136ada",
+            "image_id": null
+            },
             "</td>",
             "<td>",
+            {"_ref_type":
+            "annotation_ref",
+            "annotation_id":
             "916529b2-c4b0-3c19-849e-ddfa9c677e20",
+            "image_id": null
+            },
             "</td>",
             "</tr>",
             "<tr>",
             "<td>",
+            {"_ref_type":
+            "annotation_ref",
+            "annotation_id":
             "6d385a65-87eb-3361-b440-f88e0c8e1115",
+            "image_id": null
+            },
             "</td>",
             "<td>",
+            {"_ref_type":
+            "annotation_ref",
+            "annotation_id":
             "ad4f0747-93b3-38e5-86a6-d41ccc18736a",
+            "image_id": null
+            },
             "</td>",
             "<td>",
+            {"_ref_type":
+            "annotation_ref",
+            "annotation_id":
             "d544c6db-789c-37e2-a77e-921e02d6e167",
+            "image_id": null
+            },
             "</td>",
             "</tr>",
             "<tr>",
             "<td>",
+            {"_ref_type":
+            "annotation_ref",
+            "annotation_id":
             "b5f65906-2d3b-3118-8d6f-39fb7f298b61",
+            "image_id": null
+            },
             "</td>",
             "<td>",
+            {"_ref_type":
+            "annotation_ref",
+            "annotation_id":
             "fa684f2a-816e-39bf-80f1-a9da5900feb5",
+            "image_id": null
+            },
             "</td>",
             "<td>",
+            {"_ref_type":
+            "annotation_ref",
+            "annotation_id":
             "72b2557d-81cf-329c-a2ce-6d8d6f491122",
+            "image_id": null
+            },
             "</td>",
             "</tr>",
             "<tr>",
             "<td>",
+            {"_ref_type":
+            "annotation_ref",
+            "annotation_id":
             "a71dfeb8-b11a-37b7-a9c4-309b0ecbfb9d",
+            "image_id": null
+            },
             "</td>",
             "<td>",
+            {"_ref_type":
+            "annotation_ref",
+            "annotation_id":
             "adf3e851-517f-3f38-95c9-791390312678",
+            "image_id": null
+            },
             "</td>",
             "<td>",
+            {"_ref_type":
+            "annotation_ref",
+            "annotation_id":
             "598d054b-8eec-3797-b5ef-4b5f1401759d",
+            "image_id": null
+            },
             "</td>",
             "</tr>",
             "<tr>",
             "<td>",
+            {"_ref_type":
+            "annotation_ref",
+            "annotation_id":
             "786470d9-df0f-3874-8d7d-01a3ae0e9c0a",
+            "image_id": null
+            },
             "</td>",
             "<td>",
+            {"_ref_type":
+            "annotation_ref",
+            "annotation_id":
             "95f29cbc-7ed3-3f5f-806d-f129cf426069",
+            "image_id": null
+            },
             "</td>",
             "<td>",
+            {"_ref_type":
+            "annotation_ref",
+            "annotation_id":
             "e79ac04f-f460-351a-83bf-7d0c92ee7230",
+            "image_id": null
+            },
             "</td>",
             "</tr>",
             "</table>"
           ]
-        }
+        }}
       },
       "relationships": {
         "child": [

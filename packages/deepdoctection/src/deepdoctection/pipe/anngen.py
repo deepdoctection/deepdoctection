@@ -25,7 +25,13 @@ from typing import Any, Optional, Sequence, Union
 
 import numpy as np
 
-from dd_core.datapoint.annotation import DEFAULT_CATEGORY_ID, CategoryAnnotation, ContainerAnnotation, ImageAnnotation
+from dd_core.datapoint.annotation import (
+    DEFAULT_CATEGORY_ID,
+    CategoryAnnotation,
+    ContainerAnnotation,
+    ImageAnnotation,
+    ReferencePayload,
+)
 from dd_core.datapoint.box import BoundingBox, local_to_global_coords, rescale_coords
 from dd_core.datapoint.image import Image
 from dd_core.mapper.maputils import MappingContextManager
@@ -446,7 +452,7 @@ class DatapointManager:
         category_id: Optional[int],
         sub_cat_key: ObjectTypes,
         annotation_id: str,
-        value: Union[str, list[str]],
+        value: Union[str, list[str], ReferencePayload],
         score: Optional[float] = None,
     ) -> Optional[str]:
         """

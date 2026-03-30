@@ -12,7 +12,7 @@ from dd_core.utils.env_info import collect_env_info
 from dd_core.utils.file_utils import _LazyModule
 from dd_core.utils.logger import LoggingRecord, logger
 
-__version__ = "1.2.5"
+__version__ = "1.2.6"
 _IMPORT_STRUCTURE = {
     "analyzer": ["config_sanity_checks", "get_dd_analyzer", "ServiceFactory", "update_cfg_from_defaults"],
     "eval": [
@@ -108,7 +108,7 @@ _IMPORT_STRUCTURE = {
         "TextLineService",
         "TextOrderService",
         "TableSegmentationRefinementService",
-        "generate_html_string",
+        "generate_html_payload",
         "pipeline_component_registry",
         "TableSegmentationService",
         "PubtablesSegmentationService",

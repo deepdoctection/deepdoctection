@@ -43,7 +43,13 @@ from ..utils.object_types import (
 from ..utils.transform import ResizeTransform, box_to_point4, point4_to_box
 from ..utils.types import HTML, Chunks, ImageDict, PathLikeOrStr, PixelValues, csv
 from ..utils.viz import draw_boxes, interactive_imshow, viz_handler
-from .annotation import CategoryAnnotation, ContainerAnnotation, ImageAnnotation
+from .annotation import (
+    CategoryAnnotation,
+    ContainerAnnotation,
+    ImageAnnotation,
+    ReferencePayload,
+    maybe_to_annotation_ref,
+)
 from .box import BoundingBox, crop_box_from_image
 from .image import Image
 
@@ -272,9 +278,18 @@ class ImageAnnotationBaseView:
             return np_image
         raise AnnotationError(f"base_page.image is None for {self.annotation_id}")
 
-    def __getattr__(
-        self, item: str
-    ) -> Optional[Union[str, int, float, list[str], dict[str, Any], list[ImageAnnotationBaseView], CategoryAnnotation]]:
+    def __getattr__(self, item: str) -> Optional[
+        Union[
+            str,
+            int,
+            float,
+            list[str],
+            dict[str, Any],
+            list[ImageAnnotationBaseView],
+            CategoryAnnotation,
+            ReferencePayload,
+        ]
+    ]:
         """
         Resolve dynamic attributes (user-facing summary).
 
@@ -772,23 +787,37 @@ class Table(Layout):
     def html(self) -> HTML:
         """
         Returns:
-            The `html` representation of the table
+            The `html` representation of the table.
         """
+        html_fragments: list[Any] = []
 
-        html_list: list[str] = []
         if TableKey.HTML in self.sub_categories:
             ann = self.get_sub_category(TableKey.HTML)
-            if isinstance(ann, ContainerAnnotation):
-                if isinstance(ann.value, list):
-                    html_list = [str(v) for v in ann.value]
-        for cell in self.cells:
-            try:
-                html_index = html_list.index(cell.annotation_id)
-                html_list.pop(html_index)
-                html_list.insert(html_index, cell.text)
-            except ValueError:
-                logger.warning(LoggingRecord("html construction not possible", {"annotation_id": cell.annotation_id}))
-        return "".join(html_list)
+            html_fragments = ann.value.content  # type: ignore
+
+        if not html_fragments:
+            return ""
+
+        cell_text_by_ann_id = {cell.annotation_id: cell.text for cell in self.cells}
+
+        resolved_html: list[str] = []
+        missing_annotation_ids: set[str] = set()
+
+        for fragment in html_fragments:
+            ref = maybe_to_annotation_ref(fragment)
+            if ref is not None:
+                cell_text = cell_text_by_ann_id.get(ref.annotation_id)
+                if cell_text is None:
+                    missing_annotation_ids.add(ref.annotation_id)
+                    continue
+                resolved_html.append(cell_text)
+            else:
+                resolved_html.append(fragment)
+
+        for annotation_id in sorted(missing_annotation_ids):
+            logger.warning(LoggingRecord("html construction not possible", {"annotation_id": annotation_id}))
+
+        return "".join(resolved_html)
 
     def get_attribute_names(self) -> set[str]:
         attr_names = (
