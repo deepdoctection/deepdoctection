@@ -38,7 +38,7 @@ from .dataflow.base import DataFlow
 from .dataflow.common import MapData
 from .dataflow.custom_serialize import SerializerFiles, SerializerPdfDoc
 from .dataflow.serialize import DataFromList
-from .datapoint.annotation import AnnotationMap, CategoryAnnotation, ImageAnnotation
+from .datapoint.annotation import AnnotationMap, CategoryAnnotation, ImageAnnotation, AnnotationRef, ReferencePayload
 from .datapoint.image import Image
 from .datapoint.view import ImageAnnotationBaseView, Page
 from .mapper.maputils import curry
@@ -80,39 +80,45 @@ class PipelineJobs:
     pipeline_info: dict[str, str]
 
 
-def _maybe_to_annpair(obj: Any) -> Any:
-    if isinstance(obj, dict):
-        if "image_id" in obj and "annotation_id" in obj:
-            return AnnPair(image_id=obj["image_id"], annotation_id=obj["annotation_id"])
+def _maybe_to_annotation_ref(obj: Any) -> Any:
+    if isinstance(obj, AnnotationRef):
+        return obj
+    if isinstance(obj, Mapping) and AnnotationRef.is_dict_annotation_ref(obj):
+        return AnnotationRef.from_dict(obj)
     return obj
+
+
+def _unwrap_reference_payload(data: Any) -> Any:
+    if isinstance(data, ReferencePayload):
+        return data.content
+    if isinstance(data, Mapping) and ReferencePayload.is_dict_reference_payload(data):
+        return ReferencePayload.from_dict(data).content
+    return data
 
 
 def _walk(node: Any, path: list[str], ann_to_paths: defaultdict[str, set[str]]) -> None:
     if node is None:
         return
 
+    node = _maybe_to_annotation_ref(node)
+
+    if isinstance(node, AnnotationRef):
+        ann_to_paths[node.annotation_id].add(".".join(path))
+        return
+
     if isinstance(node, Mapping):
-        for k, v in node.items():
-            _walk(v, path + [str(k)], ann_to_paths)
+        for key, value in node.items():
+            _walk(value, path + [str(key)], ann_to_paths)
         return
 
     if isinstance(node, (list, tuple)):
         for item in node:
-            item = _maybe_to_annpair(item)
-            if isinstance(item, AnnPair):
-                ann_to_paths[item.annotation_id].add(".".join(path))
-            else:
-                _walk(item, path, ann_to_paths)
+            _walk(item, path, ann_to_paths)
         return
-
-    node = _maybe_to_annpair(node)
-    if isinstance(node, AnnPair):
-        ann_to_paths[node.annotation_id].add(".".join(path))
-    return
 
 
 def flatten_entity_dict_to_ann_index(
-    data: Mapping[str, Any],
+    data: Mapping[str, Any] | ReferencePayload,
 ) -> dict[str, set[str]]:
     """
     Flattens a nested structure (mapping / list / tuple) of entities into
@@ -120,35 +126,35 @@ def flatten_entity_dict_to_ann_index(
     occurs.
 
     Args:
-        data (Mapping[str, Any]): Arbitrary nested mapping/list structure that may
-            contain annotation reference objects or dictionaries representing
-            annotation pairs.
+        data: Arbitrary nested mapping/list structure that may contain
+            AnnotationRef objects, serialized AnnotationRef dictionaries,
+            ReferencePayload, or serialized ReferencePayload dictionaries.
 
     Returns:
-        dict[str, set[str]]: Mapping where keys are annotation UUID strings and
-        values are sets of dot-separated key paths pointing to occurrences.
+        Mapping where keys are annotation UUID strings and values are sets
+        of dot-separated key paths pointing to occurrences.
     """
-
     ann_to_paths: defaultdict[str, set[str]] = defaultdict(set)
 
-    _walk(data, [], ann_to_paths)
+    root = _unwrap_reference_payload(data)
+    _walk(root, [], ann_to_paths)
     return dict(ann_to_paths)
 
 
 def build_viz_labels_from_nested_entities(
-    entities: Mapping[str, Any],
+    entities: Mapping[str, Any] | ReferencePayload,
 ) -> dict[str, str]:
     """
     Create human-readable labels for annotations found inside a nested entities
     structure. Each annotation id is mapped to a single label composed of
-    sorted leaf key paths joined by \"|\".
+    sorted leaf key paths joined by "|".
 
     Args:
-        entities (Mapping[str, Any]): Nested mapping/list structure containing
-            annotation references.
+        entities: Nested mapping/list structure containing annotation references,
+            or a ReferencePayload wrapping such a structure.
 
     Returns:
-        dict[str, str]: Mapping from annotation UUID to label string.
+        Mapping from annotation UUID to label string.
     """
     ann_index = flatten_entity_dict_to_ann_index(entities)
     return {ann_id: "|".join(sorted(paths)) for ann_id, paths in ann_index.items()}

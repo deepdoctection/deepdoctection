@@ -58,8 +58,8 @@ invoice_rotated_pdf:
   license: Apache-2.0
 page_json:
   path: dd_core/tests/assets/a8d0e15c-7463-378a-a3e5-28590a4440ab.json
-  sha256: ae8e68f2b06624986ef959feb38b7431c8b666927442dbfe9abc263ca00d3286
-  size: 3564716
+  sha256: 2e587998a1509afb0f791daa7ca33f796edd12f9c3747c5b867bd7c0c63b9cd7
+  size: 3566706
   license: Apache-2.0
   description: Sample JSON for generating dd.Page
 pdf_file_two_pages:

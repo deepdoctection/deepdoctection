@@ -29,7 +29,7 @@ from typing import DefaultDict, Optional, Sequence, Union
 
 from lazy_imports import try_import
 
-from dd_core.datapoint.annotation import ImageAnnotation
+from dd_core.datapoint.annotation import ImageAnnotation, AnnotationRef, ReferencePayload
 from dd_core.datapoint.box import merge_boxes
 from dd_core.datapoint.image import Image, MetaAnnotation
 from dd_core.mapper.maputils import MappingContextManager
@@ -45,7 +45,7 @@ with try_import() as import_guard:
     import networkx as nx  # type: ignore
 
 
-__all__ = ["TableSegmentationRefinementService", "generate_html_string"]
+__all__ = ["TableSegmentationRefinementService", "generate_html_payload"]
 
 
 def tiles_to_cells(
@@ -233,8 +233,9 @@ def _tiling_to_cell_position(inputs: set[tuple[int, int]]) -> tuple[int, int, in
 
 
 def _html_cell(
-    cell_position: Union[tuple[int, int, int, int], tuple[()]], position_filled_list: list[tuple[int, int]]
-) -> list[str]:
+    cell_position: tuple[int, int, int, int] | tuple[()],
+    position_filled_list: list[tuple[int, int]],
+) -> list[str | AnnotationRef]:
     """
     Generates an HTML table cell string.
 
@@ -273,7 +274,8 @@ def _html_row(
     this_row: int,
     number_of_cols: int,
     row_ann_id_list: list[str],
-) -> list[str]:
+    image_id: str,
+) -> list[str | AnnotationRef]:
     """
     Generates an HTML table row string.
 
@@ -283,16 +285,17 @@ def _html_row(
         this_row: The current row number.
         number_of_cols: The total number of columns.
         row_ann_id_list: List of annotation ids for the row.
+        image_id: Image id of the table image.
 
     Returns:
-        List of HTML strings representing the row.
+        List of HTML strings and AnnotationRef objects representing the row.
     """
-    html = ["<tr>"]
+    html: list[str | AnnotationRef] = ["<tr>"]
     for idx in range(1, number_of_cols + 1):
         position_filled_this_row = list(filter(lambda x: x[0] == this_row, position_filled_list))
         column_filled_this_row = list(zip(*position_filled_this_row))
         column_filled_this_row = (
-            [column_filled_this_row, column_filled_this_row]  # type:ignore
+            [column_filled_this_row, column_filled_this_row]  # type: ignore
             if not column_filled_this_row
             else column_filled_this_row
         )
@@ -305,7 +308,7 @@ def _html_row(
                 cell_position = cell_position_list[0]
                 cell_id = row_ann_id_list.pop(0)
                 ret_html = _html_cell(cell_position, position_filled_list)
-                ret_html.insert(1, cell_id)
+                ret_html.insert(1, AnnotationRef(image_id=image_id, annotation_id=cell_id))
             else:
                 cell_position = ()  # type: ignore
                 ret_html = _html_cell(cell_position, position_filled_list)
@@ -319,62 +322,62 @@ def _html_table(
     cells_ann_list: list[tuple[int, list[str]]],
     number_of_rows: int,
     number_of_cols: int,
-) -> list[str]:
+    image_id: str | None = None,
+) -> list[str | AnnotationRef]:
     """
-    Generates an HTML table string.
+    Generates an HTML table representation with unresolved AnnotationRef placeholders.
 
     Args:
         table_list: List of tuples with row number and list of cell position tuples.
         cells_ann_list: List of tuples with row number and list of annotation ids.
         number_of_rows: The total number of rows.
         number_of_cols: The total number of columns.
+        image_id: Image id of the table image.
 
     Returns:
-        List of HTML strings representing the table.
+        List of HTML strings and AnnotationRef objects representing the table.
     """
-    html = ["<table>"]
+    html: list[str | AnnotationRef] = ["<table>"]
     position_filled: list[tuple[int, int]] = []
     for idx in range(1, number_of_rows + 1):
         row_idx = list(filter(lambda x: x[0] == idx, table_list))[0][1]  # pylint:disable=W0640
         row_ann_ids = list(filter(lambda x: x[0] == idx, cells_ann_list))[0][1]  # pylint:disable=W0640
-        ret_html = _html_row(row_idx, position_filled, idx, number_of_cols, row_ann_ids)
+        ret_html = _html_row(row_idx, position_filled, idx, number_of_cols, row_ann_ids, image_id)
         html.extend(ret_html)
     html.append("</table>")
     return html
 
 
-def generate_html_string(table: ImageAnnotation, cell_names: Sequence[ObjectTypes]) -> list[str]:
+def generate_html_payload(table: ImageAnnotation, cell_names: Sequence[ObjectTypes]) -> ReferencePayload:
     """
-    Generates an HTML representation of a table using table segmentation by row number, column number, etc.
-
-    Note:
-        It must be ensured that all cells have a row number, column number, row span, and column span, and that the
-        dissection by rows and columns is completely covered by cells.
+    Generates an unresolved HTML representation of a table using AnnotationRef placeholders.
 
     Args:
         table: An annotation that has a not None image and fully segmented cell annotation.
         cell_names: List of cell names that are used for the table segmentation.
 
     Returns:
-        HTML representation of the table.
+        ReferencePayload with HTML fragments and AnnotationRef placeholders.
 
     Raises:
-        `ImageError`: If `table.image` is None.
+        ImageError: If table.image is None.
     """
     if table.image is None:
         raise ImageError("table.image cannot be None")
+
     table_image = table.image
     cells = table_image.get_annotation(category_names=cell_names)
     number_of_rows = table_image.summary.get_sub_category(TableKey.NUMBER_OF_ROWS).category_id
     number_of_cols = table_image.summary.get_sub_category(TableKey.NUMBER_OF_COLUMNS).category_id
+
     table_list = []
     cells_ann_list = []
+
     for row_number in range(1, number_of_rows + 1):
         cells_of_row = list(
             sorted(
                 filter(
-                    lambda cell: cell.get_sub_category(CellKey.ROW_NUMBER).category_id
-                    == row_number,  # pylint: disable=W0640
+                    lambda cell: cell.get_sub_category(CellKey.ROW_NUMBER).category_id == row_number,
                     cells,
                 ),
                 key=lambda cell: cell.get_sub_category(CellKey.COLUMN_NUMBER).category_id,
@@ -392,7 +395,18 @@ def generate_html_string(table: ImageAnnotation, cell_names: Sequence[ObjectType
         ann_list = [cell.annotation_id for cell in cells_of_row]
         table_list.append((row_number, row_list))
         cells_ann_list.append((row_number, ann_list))
-    return _html_table(table_list, cells_ann_list, number_of_rows, number_of_cols)
+
+    html_fragments = _html_table(
+        table_list=table_list,
+        cells_ann_list=cells_ann_list,
+        number_of_rows=number_of_rows,
+        number_of_cols=number_of_cols,
+        image_id=None,
+    )
+
+    return ReferencePayload(
+        content=html_fragments
+    )
 
 
 @pipeline_component_registry.register("TableSegmentationRefinementService")
@@ -543,7 +557,7 @@ class TableSegmentationRefinementService(PipelineComponent):
             self.dp_manager.set_summary_annotation(
                 TableKey.MAX_COL_SPAN, TableKey.MAX_COL_SPAN, max_col_span, annotation_id=table.annotation_id
             )
-            html = generate_html_string(table, self.cell_names)
+            html = generate_html_payload(table, self.cell_names)
             self.dp_manager.set_container_annotation(TableKey.HTML, -1, TableKey.HTML, table.annotation_id, html)
 
     def clone(self) -> TableSegmentationRefinementService:

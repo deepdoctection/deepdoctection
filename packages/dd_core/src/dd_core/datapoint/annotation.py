@@ -25,7 +25,7 @@ import json
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from dataclasses import dataclass, field
-from typing import Any, Callable, Literal, Optional, Type, TypeVar, Union
+from typing import Any, Callable, Literal, Optional, Type, TypeVar, Union, Mapping
 
 import catalogue  # type: ignore
 from pydantic import BaseModel, Field, PrivateAttr, SerializeAsAny, field_validator, model_serializer, model_validator
@@ -36,6 +36,93 @@ from ..utils.logger import LoggingRecord, logger
 from ..utils.object_types import DefaultType, ObjectTypes, TypeOrStr, get_type
 from ..utils.types import AnnotationDict
 from .box import BoundingBox
+
+
+def _to_json_compatible(node: Any) -> Any:
+    if isinstance(node, AnnotationRef):
+        return node.to_dict()
+
+    if isinstance(node, ReferencePayload):
+        return node.to_dict()
+
+    if isinstance(node, list):
+        return [_to_json_compatible(item) for item in node]
+
+    if isinstance(node, dict):
+        return {key: _to_json_compatible(value) for key, value in node.items()}
+
+    return node
+
+
+def _from_json_compatible(node: Any) -> Any:
+    if isinstance(node, list):
+        return [_from_json_compatible(item) for item in node]
+
+    if isinstance(node, dict):
+        if AnnotationRef.is_dict_annotation_ref(node):
+            return AnnotationRef.from_dict(node)
+
+        if ReferencePayload.is_dict_reference_payload(node):
+            return ReferencePayload.from_dict(node)
+
+        return {key: _from_json_compatible(value) for key, value in node.items()}
+
+    return node
+
+
+@dataclass(frozen=True, slots=True)
+class AnnotationRef:
+    image_id: str | None
+    annotation_id: str
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "_ref_type": "annotation_ref",
+            "image_id": self.image_id,
+            "annotation_id": self.annotation_id,
+        }
+
+    @classmethod
+    def from_dict(cls, obj: Mapping[str, Any]) -> AnnotationRef:
+        if obj.get("_ref_type") == "annotation_ref":
+            return cls(image_id=obj["image_id"], annotation_id=obj["annotation_id"])
+        raise TypeError(f"Cannot build AnnotationRef")
+
+    @classmethod
+    def is_dict_annotation_ref(cls, obj: Any) -> bool:
+        return isinstance(obj, dict) and obj.get("_ref_type") == "annotation_ref"
+
+
+def maybe_to_annotation_ref(obj: Any) -> AnnotationRef | None:
+    if isinstance(obj, AnnotationRef):
+        return obj
+    if isinstance(obj, Mapping) and AnnotationRef.is_dict_annotation_ref(obj):
+        return AnnotationRef.from_dict(obj)
+    return None
+
+
+@dataclass(frozen=True, slots=True)
+class ReferencePayload:
+    content: Any
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "_ref_type": "reference_payload",
+            "content": _to_json_compatible(self.content),
+        }
+
+    @classmethod
+    def from_dict(cls, obj: Mapping[str, Any]) -> ReferencePayload:
+        if obj.get("_ref_type") == "reference_payload":
+            content = obj["content"]
+            return cls(content=_from_json_compatible(content))
+        raise TypeError(f"Cannot build AnnotationRef")
+
+
+    @classmethod
+    def is_dict_reference_payload(cls, obj: Any) -> bool:
+        return isinstance(obj, dict) and obj.get("_ref_type") == "reference_payload"
+
 
 
 @dataclass(frozen=True)
@@ -678,15 +765,28 @@ class ContainerAnnotation(CategoryAnnotation):
     """
     Container annotation with typed value.
     Rules:
-    - If initialized with a value and no type is set, infer the type from the value (keep native int/float).
+    - If initialized with a value and no type is set, infer the type from the value.
     - Calling set_type(<type>) enforces that type; existing value is converted if possible.
-    - Calling set_type(None) disables validation and coerces current value to its string (or list[str]) form.
     """
 
-    value: Optional[Union[list[str], str, int, float, dict[str, Any]]] = Field(default=None)
-    value_type: Optional[Literal["str", "int", "float", "list[str]", "dict[str,Any]"]] = Field(
-        default=None, exclude=True
-    )
+    value: Optional[Union[list[str], str, int, float, dict[str, Any], ReferencePayload]] = Field(default=None)
+    value_type: Optional[
+        Literal["str", "int", "float", "list[str]", "dict[str,Any]", "reference_payload"]
+    ] = Field(default=None, exclude=True)
+
+    @field_validator("value", mode="before")
+    @classmethod
+    def _deserialize_reference_value(cls, value: Any) -> Any:
+        if isinstance(value, str):
+            stripped = value.strip()
+            if stripped.startswith("{") or stripped.startswith("["):
+                try:
+                    parsed = json.loads(stripped)
+                except json.JSONDecodeError:
+                    return value
+                return _from_json_compatible(parsed)
+
+        return _from_json_compatible(value)
 
     @model_validator(mode="after")
     def _coerce_or_infer_value_validator(self) -> ContainerAnnotation:
@@ -694,11 +794,13 @@ class ContainerAnnotation(CategoryAnnotation):
 
     def _coerce_or_infer_value(self) -> ContainerAnnotation:
         effective_type = self.value_type
-        # No explicit type: infer once
+
         if effective_type is None:
             if self.value is None:
                 return self
-            if isinstance(self.value, int):
+            if isinstance(self.value, ReferencePayload):
+                self.value_type = "reference_payload"
+            elif isinstance(self.value, int):
                 self.value_type = "int"
             elif isinstance(self.value, float):
                 self.value_type = "float"
@@ -714,16 +816,37 @@ class ContainerAnnotation(CategoryAnnotation):
                 self.value_type = "dict[str,Any]"
             return self
 
-        # Explicit type: enforce / convert
         if self.value is None:
             return self
+
+        if effective_type == "reference_payload":
+            if isinstance(self.value, ReferencePayload):
+                return self
+
+            if isinstance(self.value, Mapping) and ReferencePayload.is_dict_reference_payload(self.value):
+                object.__setattr__(self, "value", ReferencePayload.from_dict(self.value))
+                return self
+
+            if isinstance(self.value, str):
+                try:
+                    parsed = json.loads(self.value)
+                except json.JSONDecodeError as e:
+                    raise TypeError(
+                        "value must be ReferencePayload or JSON object string when type='reference_payload'"
+                    ) from e
+                if not isinstance(parsed, Mapping):
+                    raise TypeError("JSON value must be an object when type='reference_payload'")
+                object.__setattr__(self, "value", ReferencePayload.from_dict(parsed))
+                return self
+
+            raise TypeError(
+                f"value must be ReferencePayload when type='reference_payload', got {type(self.value).__name__}"
+            )
 
         if effective_type == "int":
             if isinstance(self.value, int):
                 return self
-            v = getattr(self, "value", None)
-            if isinstance(v, int):
-                return self
+            v = self.value
             if isinstance(v, str) and v.isdigit():
                 object.__setattr__(self, "value", int(v))
                 return self
@@ -775,21 +898,14 @@ class ContainerAnnotation(CategoryAnnotation):
 
         raise ValueError(f"Unsupported type {effective_type}")
 
-    def set_type(self, value_type: Literal["str", "int", "float", "list[str]", "dict[str,Any]"]) -> None:
-        """
-        Set and enforce the value type for this ContainerAnnotation and coerce the current value.
-
-        Args:
-            value_type: One of `"str"`, `"int"`, `"float"`, `"list[str]"`, or `"dict[str,Any]"`.
-
-        Raises:
-            ValueError: If `type` is `None` or not one of the allowed values.
-            TypeError: May be raised by `_coerce_or_infer_value` if the existing `value` cannot be converted.
-        """
+    def set_type(
+        self,
+        value_type: Literal["str", "int", "float", "list[str]", "dict[str,Any]", "reference_payload"],
+    ) -> None:
         if value_type is None:
             raise ValueError(f"type cannot be None, current value_type is {self.value_type}")
 
-        allowed = {"str", "int", "float", "list[str]", "dict[str,Any]"}
+        allowed = {"str", "int", "float", "list[str]", "dict[str,Any]", "reference_payload"}
         if value_type not in allowed:
             raise ValueError(f"type must be one of {sorted(allowed)}")
         self.value_type = value_type

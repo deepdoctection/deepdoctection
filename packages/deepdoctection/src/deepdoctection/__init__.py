@@ -108,7 +108,7 @@ _IMPORT_STRUCTURE = {
         "TextLineService",
         "TextOrderService",
         "TableSegmentationRefinementService",
-        "generate_html_string",
+        "generate_html_payload",
         "pipeline_component_registry",
         "TableSegmentationService",
         "PubtablesSegmentationService",

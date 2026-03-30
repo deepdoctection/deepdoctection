@@ -67,6 +67,9 @@ _IMPORT_STRUCTURE = {
         "StdFromDataFlow",
     ],
     "datapoint": [
+        "AnnotationRef",
+        "maybe_to_annotation_ref",
+        "ReferencePayload",
         "AnnotationMap",
         "Annotation",
         "CategoryAnnotation",

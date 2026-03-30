@@ -53,7 +53,7 @@ from dd_core.utils.object_types import (
 
 from ..extern.base import DetectionResult
 from .base import PipelineComponent
-from .refine import generate_html_string
+from .refine import generate_html_payload
 from .registry import pipeline_component_registry
 
 __all__ = ["TableSegmentationService", "SegmentationResult", "PubtablesSegmentationService"]
@@ -1350,7 +1350,7 @@ class PubtablesSegmentationService(PipelineComponent):
             self.dp_manager.set_summary_annotation(
                 TableKey.MAX_COL_SPAN, TableKey.MAX_COL_SPAN, max_col_span, annotation_id=table.annotation_id
             )
-            html = generate_html_string(table, self.cell_names + self.spanning_cell_names)
+            html = generate_html_payload(table, self.cell_names + self.spanning_cell_names)
             self.dp_manager.set_container_annotation(TableKey.HTML, -1, TableKey.HTML, table.annotation_id, html)
 
     def clone(self) -> PubtablesSegmentationService:
