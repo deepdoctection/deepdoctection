@@ -194,10 +194,9 @@ class TestReferencePayload:
         """is_dict_reference_payload returns True only for dicts with the correct _ref_type marker."""
         valid = {"_ref_type": "reference_payload", "content": {}}
         invalid_wrong_type = {"_ref_type": "annotation_ref", "content": {}}
-        invalid_no_marker = {"content": {}}
+        invalid_no_marker = {"content": {}}  # type:ignore
 
         assert ReferencePayload.is_dict_reference_payload(valid) is True
         assert ReferencePayload.is_dict_reference_payload(invalid_wrong_type) is False
         assert ReferencePayload.is_dict_reference_payload(invalid_no_marker) is False
         assert ReferencePayload.is_dict_reference_payload("not_a_dict") is False
-

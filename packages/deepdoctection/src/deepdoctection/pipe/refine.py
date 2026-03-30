@@ -25,11 +25,11 @@ from collections import defaultdict
 from copy import copy
 from dataclasses import asdict
 from itertools import chain, product
-from typing import DefaultDict, Optional, Sequence, Union
+from typing import DefaultDict, Optional, Sequence
 
 from lazy_imports import try_import
 
-from dd_core.datapoint.annotation import ImageAnnotation, AnnotationRef, ReferencePayload
+from dd_core.datapoint.annotation import AnnotationRef, ImageAnnotation, ReferencePayload
 from dd_core.datapoint.box import merge_boxes
 from dd_core.datapoint.image import Image, MetaAnnotation
 from dd_core.mapper.maputils import MappingContextManager
@@ -264,7 +264,7 @@ def _html_cell(
             )
     html.append(">")
     str_html = "".join(html)
-    html_list = [str_html, "</td>"]
+    html_list: list[str | AnnotationRef] = [str_html, "</td>"]
     return html_list
 
 
@@ -274,7 +274,7 @@ def _html_row(
     this_row: int,
     number_of_cols: int,
     row_ann_id_list: list[str],
-    image_id: str,
+    image_id: str | None = None,
 ) -> list[str | AnnotationRef]:
     """
     Generates an HTML table row string.
@@ -377,7 +377,8 @@ def generate_html_payload(table: ImageAnnotation, cell_names: Sequence[ObjectTyp
         cells_of_row = list(
             sorted(
                 filter(
-                    lambda cell: cell.get_sub_category(CellKey.ROW_NUMBER).category_id == row_number,
+                    lambda cell: cell.get_sub_category(CellKey.ROW_NUMBER).category_id
+                    == row_number,  # pylint:disable=W0640
                     cells,
                 ),
                 key=lambda cell: cell.get_sub_category(CellKey.COLUMN_NUMBER).category_id,
@@ -404,9 +405,7 @@ def generate_html_payload(table: ImageAnnotation, cell_names: Sequence[ObjectTyp
         image_id=None,
     )
 
-    return ReferencePayload(
-        content=html_fragments
-    )
+    return ReferencePayload(content=html_fragments)
 
 
 @pipeline_component_registry.register("TableSegmentationRefinementService")

@@ -38,24 +38,22 @@ from .dataflow.base import DataFlow
 from .dataflow.common import MapData
 from .dataflow.custom_serialize import SerializerFiles, SerializerPdfDoc
 from .dataflow.serialize import DataFromList
-from .datapoint.annotation import AnnotationMap, CategoryAnnotation, ImageAnnotation, AnnotationRef, ReferencePayload
+from .datapoint.annotation import (
+    AnnotationMap,
+    AnnotationRef,
+    CategoryAnnotation,
+    ImageAnnotation,
+    ReferencePayload,
+    from_json_compatible,
+)
 from .datapoint.image import Image
 from .datapoint.view import ImageAnnotationBaseView, Page
 from .mapper.maputils import curry
 from .utils import get_uuid_from_str
 from .utils.file_utils import mkdir_p, pypdf_available
-from .utils.identifier import is_uuid_like
 from .utils.object_types import DocumentFileLabel, ObjectTypes, SummaryKey, get_type
 from .utils.types import PathLikeOrStr
 from .utils.viz import viz_handler
-
-
-@dataclass(frozen=True)
-class AnnPair:
-    """Lightweight pair referencing an image annotation."""
-
-    image_id: str
-    annotation_id: str
 
 
 @dataclass(frozen=True)
@@ -80,30 +78,16 @@ class PipelineJobs:
     pipeline_info: dict[str, str]
 
 
-def _maybe_to_annotation_ref(obj: Any) -> Any:
-    if isinstance(obj, AnnotationRef):
-        return obj
-    if isinstance(obj, Mapping) and AnnotationRef.is_dict_annotation_ref(obj):
-        return AnnotationRef.from_dict(obj)
-    return obj
-
-
-def _unwrap_reference_payload(data: Any) -> Any:
-    if isinstance(data, ReferencePayload):
-        return data.content
-    if isinstance(data, Mapping) and ReferencePayload.is_dict_reference_payload(data):
-        return ReferencePayload.from_dict(data).content
-    return data
-
-
 def _walk(node: Any, path: list[str], ann_to_paths: defaultdict[str, set[str]]) -> None:
     if node is None:
         return
 
-    node = _maybe_to_annotation_ref(node)
-
     if isinstance(node, AnnotationRef):
         ann_to_paths[node.annotation_id].add(".".join(path))
+        return
+
+    if isinstance(node, ReferencePayload):
+        _walk(node.content, path, ann_to_paths)
         return
 
     if isinstance(node, Mapping):
@@ -136,7 +120,7 @@ def flatten_entity_dict_to_ann_index(
     """
     ann_to_paths: defaultdict[str, set[str]] = defaultdict(set)
 
-    root = _unwrap_reference_payload(data)
+    root = from_json_compatible(data)
     _walk(root, [], ann_to_paths)
     return dict(ann_to_paths)
 
@@ -339,54 +323,53 @@ class Document:
         """get page reference from page number."""
         return self._page_references[page_number]
 
-    def resolve_in_segments(self, obj: Any) -> Any:
+    def resolve_reference_payload(self, payload: ReferencePayload) -> dict[str, Any]:
         """
-        Resolve UUID pairs into annotations.
+        Resolve a ``ReferencePayload`` into a plain dict by replacing every
+        ``AnnotationRef`` leaf with the text of the referenced annotation.
 
-        Supported leaves:
-        - [image_id, annotation_id] -> ImageAnnotationBaseView (via self.get_annotation(...)[0])
-        - [[image_id, annotation_id], ...] -> list[ImageAnnotationBaseView]
+        ``from_json_compatible`` is applied to the payload content first so
+        that both already-instantiated ``AnnotationRef`` objects and their
+        serialised dict representations are handled uniformly.
 
-        Other values pass through unchanged (e.g. None).
+        Args:
+            payload: The ``ReferencePayload`` whose content should be resolved.
+
+        Returns:
+            A nested dict/list structure with every ``AnnotationRef`` replaced
+            by the annotation's ``text`` attribute (empty string when absent).
         """
+        return self._resolve_node(from_json_compatible(payload.content))
 
-        def is_uuid_pair(x: Any) -> bool:
-            return isinstance(x, list) and len(x) == 2 and is_uuid_like(x[0]) and is_uuid_like(x[1])
+    def _resolve_node(self, node: Any) -> Any:
+        if isinstance(node, AnnotationRef):
+            if node.image_id is None:
+                return ValueError(
+                    "image_id cannot be None when resolving ReferencePayload with resolve_reference_payload"
+                )
+            ann = self.get_annotation(image_id=node.image_id, annotation_ids=node.annotation_id)[0]
+            if "text" in ann.get_attribute_names():
+                text = ann.text
+            elif "characters" in ann.get_attribute_names():
+                text = ann.characters
+            else:
+                text = ""
+            return text
 
-        if is_uuid_pair(obj):
-            image_id, ann_id = obj
-            return self.get_annotation(image_id, annotation_ids=ann_id)[0]
+        if isinstance(node, dict):
+            return {key: self._resolve_node(value) for key, value in node.items()}
 
-        if isinstance(obj, list) and obj and all(is_uuid_pair(item) for item in obj):
-            resolved: list[tuple[str, ImageAnnotationBaseView]] = []
-            for image_id, ann_id in obj:
-                resolved.append((image_id, self.get_annotation(image_id, annotation_ids=ann_id)[0]))
-            return resolved
+        if isinstance(node, list):
+            return [self._resolve_node(item) for item in node]
 
-        return obj
-
-    def _walk_structured_output(self, obj: Any) -> Any:
-        """
-        Recursively walk a nested dict/list structure and replace UUID pairs with annotations.
-        Preserves the original container shape.
-        """
-        if isinstance(obj, dict):
-            return {k: self._walk_structured_output(v) for k, v in obj.items()}
-
-        if isinstance(obj, list):
-            resolved = self.resolve_in_segments(obj)
-            if resolved is not obj:
-                return resolved
-            return [self._walk_structured_output(item) for item in obj]
-
-        return self.resolve_in_segments(obj)
+        return node
 
     @property
     def structured_output(self) -> dict[str, Any]:
         """structured output"""
         if "key_values" in self.summary.sub_categories:
-            dict_value = self.summary.get_sub_category(get_type("key_values")).value  # type: ignore
-            return self._walk_structured_output(dict_value)
+            payload = self.summary.get_sub_category(get_type("key_values")).value  # type: ignore
+            return self.resolve_reference_payload(payload)
         return {}
 
     @property

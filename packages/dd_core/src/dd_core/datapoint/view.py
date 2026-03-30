@@ -43,7 +43,13 @@ from ..utils.object_types import (
 from ..utils.transform import ResizeTransform, box_to_point4, point4_to_box
 from ..utils.types import HTML, Chunks, ImageDict, PathLikeOrStr, PixelValues, csv
 from ..utils.viz import draw_boxes, interactive_imshow, viz_handler
-from .annotation import CategoryAnnotation, ContainerAnnotation, ImageAnnotation, maybe_to_annotation_ref
+from .annotation import (
+    CategoryAnnotation,
+    ContainerAnnotation,
+    ImageAnnotation,
+    ReferencePayload,
+    maybe_to_annotation_ref,
+)
 from .box import BoundingBox, crop_box_from_image
 from .image import Image
 
@@ -272,9 +278,18 @@ class ImageAnnotationBaseView:
             return np_image
         raise AnnotationError(f"base_page.image is None for {self.annotation_id}")
 
-    def __getattr__(
-        self, item: str
-    ) -> Optional[Union[str, int, float, list[str], dict[str, Any], list[ImageAnnotationBaseView], CategoryAnnotation]]:
+    def __getattr__(self, item: str) -> Optional[
+        Union[
+            str,
+            int,
+            float,
+            list[str],
+            dict[str, Any],
+            list[ImageAnnotationBaseView],
+            CategoryAnnotation,
+            ReferencePayload,
+        ]
+    ]:
         """
         Resolve dynamic attributes (user-facing summary).
 
@@ -768,7 +783,6 @@ class Table(Layout):
         column_cells.sort(key=lambda c: c.row_number)  # type: ignore
         return column_cells
 
-
     @property
     def html(self) -> HTML:
         """
@@ -779,7 +793,7 @@ class Table(Layout):
 
         if TableKey.HTML in self.sub_categories:
             ann = self.get_sub_category(TableKey.HTML)
-            html_fragments = ann.value.content
+            html_fragments = ann.value.content  # type: ignore
 
         if not html_fragments:
             return ""

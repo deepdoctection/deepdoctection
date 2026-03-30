@@ -25,7 +25,7 @@ import json
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from dataclasses import dataclass, field
-from typing import Any, Callable, Literal, Optional, Type, TypeVar, Union, Mapping
+from typing import Any, Callable, Literal, Mapping, Optional, Type, TypeVar, Union
 
 import catalogue  # type: ignore
 from pydantic import BaseModel, Field, PrivateAttr, SerializeAsAny, field_validator, model_serializer, model_validator
@@ -38,7 +38,15 @@ from ..utils.types import AnnotationDict
 from .box import BoundingBox
 
 
-def _to_json_compatible(node: Any) -> Any:
+def to_json_compatible(node: Any) -> Any:
+    """Recursively convert ``AnnotationRef`` and ``ReferencePayload`` instances to their dict representations.
+
+    Args:
+        node: A node that may be a nested structure of dicts, lists, ``AnnotationRef``, or ``ReferencePayload``.
+
+    Returns:
+        The converted node with every ``AnnotationRef`` and ``ReferencePayload`` replaced by its dict equivalent.
+    """
     if isinstance(node, AnnotationRef):
         return node.to_dict()
 
@@ -46,17 +54,27 @@ def _to_json_compatible(node: Any) -> Any:
         return node.to_dict()
 
     if isinstance(node, list):
-        return [_to_json_compatible(item) for item in node]
+        return [to_json_compatible(item) for item in node]
 
     if isinstance(node, dict):
-        return {key: _to_json_compatible(value) for key, value in node.items()}
+        return {key: to_json_compatible(value) for key, value in node.items()}
 
     return node
 
 
-def _from_json_compatible(node: Any) -> Any:
+def from_json_compatible(node: Any) -> Any:
+    """Recursively convert serialized annotation reference dicts back to ``AnnotationRef`` and ``ReferencePayload``
+    instances.
+
+    Args:
+        node: A node that may be a nested structure of dicts, lists, or plain values.
+
+    Returns:
+        The converted node with every matching dict replaced by the corresponding ``AnnotationRef``
+        or ``ReferencePayload`` instance.
+    """
     if isinstance(node, list):
-        return [_from_json_compatible(item) for item in node]
+        return [from_json_compatible(item) for item in node]
 
     if isinstance(node, dict):
         if AnnotationRef.is_dict_annotation_ref(node):
@@ -65,17 +83,29 @@ def _from_json_compatible(node: Any) -> Any:
         if ReferencePayload.is_dict_reference_payload(node):
             return ReferencePayload.from_dict(node)
 
-        return {key: _from_json_compatible(value) for key, value in node.items()}
+        return {key: from_json_compatible(value) for key, value in node.items()}
 
     return node
 
 
 @dataclass(frozen=True, slots=True)
 class AnnotationRef:
+    """Immutable reference to a single annotation within an image.
+
+    Attributes:
+        image_id: Identifier of the image that owns the annotation, or ``None`` for document-level annotations.
+        annotation_id: Unique identifier of the referenced annotation.
+    """
+
     image_id: str | None
     annotation_id: str
 
     def to_dict(self) -> dict[str, Any]:
+        """Serialize to a dict representation identifiable as an annotation reference.
+
+        Returns:
+            Dict with ``_ref_type``, ``image_id``, and ``annotation_id`` keys.
+        """
         return {
             "_ref_type": "annotation_ref",
             "image_id": self.image_id,
@@ -84,16 +114,43 @@ class AnnotationRef:
 
     @classmethod
     def from_dict(cls, obj: Mapping[str, Any]) -> AnnotationRef:
+        """Build an ``AnnotationRef`` from its dict representation.
+
+        Args:
+            obj: Mapping produced by ``to_dict``.
+
+        Returns:
+            The deserialized ``AnnotationRef`` instance.
+
+        Raises:
+            TypeError: If ``obj`` is not a valid annotation reference dict.
+        """
         if obj.get("_ref_type") == "annotation_ref":
             return cls(image_id=obj["image_id"], annotation_id=obj["annotation_id"])
-        raise TypeError(f"Cannot build AnnotationRef")
+        raise TypeError("Cannot build AnnotationRef")
 
     @classmethod
     def is_dict_annotation_ref(cls, obj: Any) -> bool:
+        """Return ``True`` if *obj* is a dict that encodes an ``AnnotationRef``.
+
+        Args:
+            obj: Any value to test.
+
+        Returns:
+            ``True`` if *obj* has ``_ref_type == "annotation_ref"``, ``False`` otherwise.
+        """
         return isinstance(obj, dict) and obj.get("_ref_type") == "annotation_ref"
 
 
 def maybe_to_annotation_ref(obj: Any) -> AnnotationRef | None:
+    """Convert *obj* to an ``AnnotationRef`` if possible, otherwise return ``None``.
+
+    Args:
+        obj: An ``AnnotationRef`` instance or a matching dict representation.
+
+    Returns:
+        The ``AnnotationRef``, or ``None`` if *obj* cannot be interpreted as one.
+    """
     if isinstance(obj, AnnotationRef):
         return obj
     if isinstance(obj, Mapping) and AnnotationRef.is_dict_annotation_ref(obj):
@@ -103,26 +160,54 @@ def maybe_to_annotation_ref(obj: Any) -> AnnotationRef | None:
 
 @dataclass(frozen=True, slots=True)
 class ReferencePayload:
+    """Wrapper carrying arbitrary nested content that may contain ``AnnotationRef`` leaves.
+
+    Attributes:
+        content: The wrapped payload. May be a dict, list, or any nested combination thereof.
+    """
+
     content: Any
 
     def to_dict(self) -> dict[str, Any]:
+        """Serialize to a dict representation identifiable as a reference payload.
+
+        Returns:
+            Dict with ``_ref_type`` and recursively serialized ``content`` keys.
+        """
         return {
             "_ref_type": "reference_payload",
-            "content": _to_json_compatible(self.content),
+            "content": to_json_compatible(self.content),
         }
 
     @classmethod
     def from_dict(cls, obj: Mapping[str, Any]) -> ReferencePayload:
+        """Build a ``ReferencePayload`` from its dict representation.
+
+        Args:
+            obj: Mapping produced by ``to_dict``.
+
+        Returns:
+            The deserialized ``ReferencePayload`` with its content fully converted.
+
+        Raises:
+            TypeError: If ``obj`` is not a valid reference payload dict.
+        """
         if obj.get("_ref_type") == "reference_payload":
             content = obj["content"]
-            return cls(content=_from_json_compatible(content))
-        raise TypeError(f"Cannot build AnnotationRef")
-
+            return cls(content=from_json_compatible(content))
+        raise TypeError("Cannot build AnnotationRef")
 
     @classmethod
     def is_dict_reference_payload(cls, obj: Any) -> bool:
-        return isinstance(obj, dict) and obj.get("_ref_type") == "reference_payload"
+        """Return ``True`` if *obj* is a dict that encodes a ``ReferencePayload``.
 
+        Args:
+            obj: Any value to test.
+
+        Returns:
+            ``True`` if *obj* has ``_ref_type == "reference_payload"``, ``False`` otherwise.
+        """
+        return isinstance(obj, dict) and obj.get("_ref_type") == "reference_payload"
 
 
 @dataclass(frozen=True)
@@ -607,13 +692,16 @@ class CategoryAnnotation(Annotation):
                 self.relationships[key].clear()
 
     def get_defining_attributes(self) -> list[str]:
+        """Return attributes used to generate the annotation id."""
         return ["category_name", "category_id"]
 
     @staticmethod
     def get_state_attributes() -> list[str]:
+        """Return attributes used to generate the state id."""
         return ["active", "sub_categories", "relationships"]
 
     def __repr__(self) -> str:
+        """Return a developer-readable string representation."""
         return (
             f"CategoryAnnotation(annotation_id={self._annotation_id}, category_name={self.category_name},"
             f"category_id={self.category_id}, score={self.score}, sub_categories={self.sub_categories},"
@@ -621,6 +709,7 @@ class CategoryAnnotation(Annotation):
         )
 
     def __str__(self) -> str:
+        """Return string representation."""
         return repr(self)
 
 
@@ -678,10 +767,12 @@ class ImageAnnotation(CategoryAnnotation):
         raise TypeError("bounding_box must be a BoundingBox or a dict")
 
     def get_defining_attributes(self) -> list[str]:
+        """Return attributes used to generate the annotation id."""
         return ["category_name", "bounding_box"]
 
     @staticmethod
     def get_state_attributes() -> list[str]:
+        """Return attributes used to generate the state id."""
         return ["active", "sub_categories", "relationships", "image"]
 
     def get_bounding_box(self, image_id: Optional[str] = None) -> BoundingBox:
@@ -751,6 +842,7 @@ class ImageAnnotation(CategoryAnnotation):
         return annotation_id_dict
 
     def __repr__(self) -> str:
+        """Return a developer-readable string representation."""
         return (
             f"ImageAnnotation(annotation_id={self._annotation_id}, category_name={self.category_name},"
             f"category_id={self.category_id}, score={self.score}, bounding_box: {self.bounding_box}, "
@@ -758,6 +850,7 @@ class ImageAnnotation(CategoryAnnotation):
         )
 
     def __str__(self) -> str:
+        """Return string representation."""
         return repr(self)
 
 
@@ -770,9 +863,9 @@ class ContainerAnnotation(CategoryAnnotation):
     """
 
     value: Optional[Union[list[str], str, int, float, dict[str, Any], ReferencePayload]] = Field(default=None)
-    value_type: Optional[
-        Literal["str", "int", "float", "list[str]", "dict[str,Any]", "reference_payload"]
-    ] = Field(default=None, exclude=True)
+    value_type: Optional[Literal["str", "int", "float", "list[str]", "dict[str,Any]", "reference_payload"]] = Field(
+        default=None, exclude=True
+    )
 
     @field_validator("value", mode="before")
     @classmethod
@@ -784,9 +877,9 @@ class ContainerAnnotation(CategoryAnnotation):
                     parsed = json.loads(stripped)
                 except json.JSONDecodeError:
                     return value
-                return _from_json_compatible(parsed)
+                return from_json_compatible(parsed)
 
-        return _from_json_compatible(value)
+        return from_json_compatible(value)
 
     @model_validator(mode="after")
     def _coerce_or_infer_value_validator(self) -> ContainerAnnotation:
@@ -902,6 +995,16 @@ class ContainerAnnotation(CategoryAnnotation):
         self,
         value_type: Literal["str", "int", "float", "list[str]", "dict[str,Any]", "reference_payload"],
     ) -> None:
+        """Enforce a value type and coerce the current value to that type.
+
+        Args:
+            value_type: One of ``"str"``, ``"int"``, ``"float"``, ``"list[str]"``,
+                ``"dict[str,Any]"``, or ``"reference_payload"``.
+
+        Raises:
+            ValueError: If ``value_type`` is ``None`` or not one of the accepted values.
+            TypeError: If the current value cannot be coerced to the requested type.
+        """
         if value_type is None:
             raise ValueError(f"type cannot be None, current value_type is {self.value_type}")
 
@@ -912,9 +1015,11 @@ class ContainerAnnotation(CategoryAnnotation):
         self._coerce_or_infer_value()
 
     def get_defining_attributes(self) -> list[str]:
+        """Return attributes used to generate the annotation id."""
         return ["category_name", "value"]
 
     def __repr__(self) -> str:
+        """Return a developer-readable string representation."""
         return (
             f"ContainerAnnotation(annotation_id={self.annotation_id}, category_name={self.category_name},"
             f"category_id={self.category_id}, score={self.score}, sub_categories={self.sub_categories},"

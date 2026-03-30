@@ -23,7 +23,7 @@ from pathlib import Path
 
 import pytest
 
-from dd_core.datapoint.annotation import CategoryAnnotation, ContainerAnnotation
+from dd_core.datapoint.annotation import AnnotationRef, CategoryAnnotation, ContainerAnnotation, ReferencePayload
 from dd_core.datapoint.image import Image
 from dd_core.datapoint.view import Page
 from dd_core.doc import Document, PageReference
@@ -71,6 +71,28 @@ def test_doc_returns_structured_output(sample_document_json: Path) -> None:
     structured_output = doc.structured_output
     assert len(structured_output["buyer"]["buyerReference"]) == 11
     assert structured_output["buyer"]["contact"]["contactName"] is None
+
+
+def test_resolve_reference_payload_returns_text(sample_document_json: Path) -> None:
+    """resolve_reference_payload resolves AnnotationRef leaves to their text or characters value"""
+    doc = Document.from_json(sample_document_json)
+
+    reference = ReferencePayload(
+        content={
+            "some_cell": AnnotationRef(
+                annotation_id="54339b9d-1571-3211-abe1-898aed89bfad",
+                image_id="72a354a5-6a4b-3240-8310-4cfd9dd2c264",
+            ),
+            "some_word": AnnotationRef(
+                annotation_id="b61e3b00-85cc-3cb4-9cef-cc00f54b1823",
+                image_id="72a354a5-6a4b-3240-8310-4cfd9dd2c264",
+            ),
+        }
+    )
+
+    out = doc.resolve_reference_payload(reference)
+
+    assert out == {"some_cell": "78", "some_word": "Kunden-No"}
 
 
 def test_get_page_and_get_image_return_types(sample_document_json: Path) -> None:
