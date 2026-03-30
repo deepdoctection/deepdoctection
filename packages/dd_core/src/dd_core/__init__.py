@@ -306,7 +306,7 @@ _IMPORT_STRUCTURE = {
         "interactive_imshow",
         "viz_handler",
     ],
-    "doc": [],
+    "doc": ["Document"],
 }
 
 if TYPE_CHECKING:

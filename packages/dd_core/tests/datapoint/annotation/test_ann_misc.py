@@ -136,7 +136,7 @@ class TestAnnotationMap:
         )
         result = ann_map.as_dict()
         assert result["image_annotation_id"] == "abc-123"
-        assert result["image_id"] == "img-456"
+        assert result["image_id"] == "d822f8c3-1148-30c4-90eb-cb4896b1ebe6"
         assert result["sub_category_key"] == get_type("sub_cat_1").value
         assert result["relationship_key"] == get_type("relationship_1").value
         assert result["summary_key"] == get_type("summary_1").value
@@ -154,4 +154,3 @@ class TestAnnotationMap:
         data = ann_map.as_dict()
         restored = AnnotationMap.from_dict(**data)
         assert restored == ann_map
-

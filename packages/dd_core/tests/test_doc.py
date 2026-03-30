@@ -23,10 +23,12 @@ from pathlib import Path
 
 import pytest
 
+from dd_core.datapoint.annotation import CategoryAnnotation, ContainerAnnotation
 from dd_core.datapoint.image import Image
 from dd_core.datapoint.view import Page
 from dd_core.doc import Document, PageReference
 from dd_core.utils import file_utils as fu
+from dd_core.utils.object_types import get_type
 
 
 @pytest.mark.skipif(not fu.pypdf_available(), reason="Pypdf is not installed")
@@ -128,3 +130,27 @@ def test_get_annotation_id_with_given_image_id(sample_document_json: Path) -> No
     page = doc.get_page(image_id="7e154965-1250-3f4f-b1c2-a6e822f0aaa5")
     text_from_page = page.get_annotation(category_names="table")
     assert len(text) == len(text_from_page)
+
+
+def test_export_annotation_with_given_annotation_id(sample_document_json: Path) -> None:
+    """test export annotation with given annotation id"""
+    doc = Document.from_json(sample_document_json)
+    # exporting CategoryAnnotation(annotation_id='c7d70ce6-d01d-3fbe-9b99-7f488554c538') on document.summary -level
+    # and CategoryAnnotation(annotation_id='f6f2b661-1e9c-38be-be7d-213d125f5558') as sub category of an ImageAnnotation
+    output = doc.export_annotations(
+        annotation_ids=["c7d70ce6-d01d-3fbe-9b99-7f488554c538", "f6f2b661-1e9c-38be-be7d-213d125f5558"]
+    )
+    assert len(output) == 2
+
+    assert len(output["c7d70ce6-d01d-3fbe-9b99-7f488554c538"][0]) == 1
+    assert isinstance(output["c7d70ce6-d01d-3fbe-9b99-7f488554c538"][1], ContainerAnnotation)
+    assert output["c7d70ce6-d01d-3fbe-9b99-7f488554c538"][1].annotation_id == "c7d70ce6-d01d-3fbe-9b99-7f488554c538"
+
+    assert len(output["f6f2b661-1e9c-38be-be7d-213d125f5558"][0]) == 1
+    assert isinstance(output["f6f2b661-1e9c-38be-be7d-213d125f5558"][1], CategoryAnnotation)
+    assert output["f6f2b661-1e9c-38be-be7d-213d125f5558"][1].annotation_id == "f6f2b661-1e9c-38be-be7d-213d125f5558"
+
+    annotation = doc.get_annotation(
+        image_id="7e154965-1250-3f4f-b1c2-a6e822f0aaa5", annotation_ids="518264e3-98a8-350f-9e01-4344e35937f2"
+    )[0]
+    assert get_type("reading_order") not in annotation.sub_categories

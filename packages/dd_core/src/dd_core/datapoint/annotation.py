@@ -42,13 +42,12 @@ from .box import BoundingBox
 class AnnotationMap:
     """AnnotationMap to store all sub categories, relationship keys and summary keys of an annotation"""
 
-    image_annotation_id: str
+    image_annotation_id: Optional[str] = field(default=None)
     sub_category_key: Optional[ObjectTypes] = field(default=None)
     relationship_key: Optional[ObjectTypes] = field(default=None)
     summary_key: Optional[ObjectTypes] = field(default=None)
     doc_summary_key: Optional[ObjectTypes] = field(default=None)
     image_id: Optional[str] = field(default=None)
-
 
     @classmethod
     def from_dict(cls, **kwargs: Any) -> AnnotationMap:
@@ -63,7 +62,7 @@ class AnnotationMap:
         payload = dict(kwargs)
         for key in ("sub_category_key", "relationship_key", "summary_key", "doc_summary_key"):
             value = payload.get(key)
-            payload[key] = get_type(value)
+            payload[key] = get_type(value) if value is not None else None
         return cls(**payload)
 
     def as_dict(self) -> dict[str, Any]:
@@ -460,7 +459,7 @@ class CategoryAnnotation(Annotation):
         """
 
         if key in self.sub_categories:
-            return self.sub_categories.pop(key)
+            return self.sub_categories.pop(key)  # pylint: disable=E1101
         return None
 
     def dump_relationship(self, key: TypeOrStr, annotation_id: str) -> None:

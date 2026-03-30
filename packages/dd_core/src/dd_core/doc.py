@@ -32,13 +32,13 @@ import os
 from collections import defaultdict
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
-from typing import Any, Mapping, Optional, Sequence, Union
+from typing import Any, Mapping, Optional, Sequence, Union, cast
 
 from .dataflow.base import DataFlow
 from .dataflow.common import MapData
 from .dataflow.custom_serialize import SerializerFiles, SerializerPdfDoc
 from .dataflow.serialize import DataFromList
-from .datapoint.annotation import CategoryAnnotation, AnnotationMap, Annotation
+from .datapoint.annotation import AnnotationMap, CategoryAnnotation, ImageAnnotation
 from .datapoint.image import Image
 from .datapoint.view import ImageAnnotationBaseView, Page
 from .mapper.maputils import curry
@@ -208,7 +208,7 @@ class Document:
     _images: dict[str, Image] = field(default_factory=dict, init=False, repr=False)
     _summary: Optional[CategoryAnnotation] = field(default=None, init=False, repr=False)
     _pdf_bytes: Optional[bytes] = field(default=None, init=False, repr=False)
-    _extras: dict = field(default_factory=dict, init=False, repr=False)
+    _extras: dict[str, str] = field(default_factory=dict, init=False, repr=False)
 
     def __post_init__(self) -> None:
         if self.location is None or self.location == "":
@@ -235,6 +235,7 @@ class Document:
         Leaves `document_type` unchanged if it is already set or cannot be resolved.
         """
         if self.document_type is not None:
+            self.document_type = cast(DocumentFileLabel, get_type(self.document_type))
             return
         if not self.location:
             return
@@ -399,7 +400,7 @@ class Document:
         self._summary = summary_annotation
 
     @property
-    def extras(self) -> dict:
+    def extras(self) -> dict[str, str]:
         """
         Transient key-value store for additional messages or metadata attached to this document.
 
@@ -411,7 +412,7 @@ class Document:
         return self._extras
 
     @extras.setter
-    def extras(self, value: dict) -> None:
+    def extras(self, value: dict[str, str]) -> None:
         """
         Replace the entire extras store.
 
@@ -720,8 +721,12 @@ class Document:
             if all_ann_ids:
                 all_export = self.export_annotations(all_ann_ids)
                 all_exports = [
-                    {"annotation_map": ann_map.as_dict(), "annotation": ann.as_dict()}
-                    for ann_map, ann in all_export.items()
+                    {
+                        "annotation_id": ann_id,
+                        "annotation_maps": [ann_map.as_dict() for ann_map in ann_maps],
+                        "annotation": ann.as_dict(),
+                    }
+                    for ann_id, (ann_maps, ann) in all_export.items()
                 ]
                 extra_path = path_json.replace(".json", "_extra.json")
                 with open(extra_path, "w", encoding="UTF-8") as extra_file_handle:
@@ -845,10 +850,16 @@ class Document:
             with open(extra_path, "r", encoding="UTF-8") as ef:
                 extra_data: list[dict[str, Any]] = json.load(ef)
 
-            for entry in extra_data:
-                ann_map = AnnotationMap.from_dict(**entry["annotation_map"])
-                ann = CategoryAnnotation.from_dict(**entry["annotation"])
-                doc._dump_by_annotation_map(ann_map, ann)
+            for ann_data in extra_data:
+                ann_maps = [AnnotationMap.from_dict(**map_dict) for map_dict in ann_data["annotation_maps"]]
+                ann = CategoryAnnotation.from_dict(**ann_data["annotation"])
+                for ann_map in ann_maps:
+                    if (
+                        ann_map.sub_category_key is not None
+                        or ann_map.summary_key is not None
+                        or ann_map.doc_summary_key is not None
+                    ):
+                        doc._dump_by_annotation_map(ann_map, ann)
 
         return doc
 
@@ -934,13 +945,13 @@ class Document:
         if self._summary is not None:
             for summary_cat_key in self.summary.sub_categories:
                 summary_cat = self.summary.get_sub_category(summary_cat_key)
-                all_ann_id_dict[summary_cat.annotation_id].append(
-                    AnnotationMap(image_annotation_id="", summary_key=summary_cat_key)
-                )
+                all_ann_id_dict[summary_cat.annotation_id].append(AnnotationMap(doc_summary_key=summary_cat_key))
 
         return all_ann_id_dict
 
-    def _pop_by_annotation_id(self, annotation_id: str, location_dict: AnnotationMap) -> Optional[Annotation]:
+    def _pop_by_annotation_id(
+        self, annotation_id: str, location_dict: AnnotationMap
+    ) -> Union[ImageAnnotation, CategoryAnnotation, None]:
         """
         Remove and return the annotation described by ``location_dict``.
 
@@ -958,7 +969,7 @@ class Document:
         if location_dict.image_id is not None:
             return self._images[location_dict.image_id]._pop_by_annotation_id(annotation_id, location_dict)
 
-        summary_key = location_dict.summary_key
+        summary_key = location_dict.doc_summary_key
         if summary_key is not None:
             return self.summary.pop_sub_category(summary_key)
 
@@ -983,31 +994,41 @@ class Document:
             elif ann_map.summary_key is not None:
                 if ann_map.image_annotation_id:
                     parent = image.get_annotation(annotation_ids=ann_map.image_annotation_id)[0]
-                    parent.image.summary.dump_sub_category(ann_map.summary_key, ann)
+                    if parent.image is not None:
+                        parent.image.summary.dump_sub_category(ann_map.summary_key, ann)
                 else:
                     image.summary.dump_sub_category(ann_map.summary_key, ann)
-        elif ann_map.summary_key is not None:
-            self.summary.dump_sub_category(ann_map.summary_key, ann)
+        elif ann_map.doc_summary_key is not None:
+            self.summary.dump_sub_category(ann_map.doc_summary_key, ann)
 
-    def export_annotations(self, annotation_ids: str | list[str]) -> dict[AnnotationMap, Annotation]:
+    def export_annotations(
+        self, annotation_ids: str | list[str]
+    ) -> dict[str, tuple[list[AnnotationMap], Union[ImageAnnotation, CategoryAnnotation]]]:
         """
-        Pop and return annotations identified by ``annotation_ids`` from anywhere in the document.
+        Pop and return annotations identified by `annotation_ids` from anywhere in the document.
 
-        Uses ``get_annotation_id_to_annotation_maps`` to locate each annotation (image-level or
-        document-level).  Only sub-category and summary-key slots are exported; the matching
-        entries are removed in the process.
+        Uses `get_annotation_id_to_annotation_maps` to locate each annotation (image-level or
+        document-level).
 
         Args:
             annotation_ids: One or more annotation UUIDs to export.
 
         Returns:
-            dict[AnnotationMap, Annotation]: Mapping from location descriptor to removed annotation.
+            dict[str, tuple[list[AnnotationMap], Union[ImageAnnotation, CategoryAnnotation]]]:
+            Mapping from location descriptor to removed annotation.
         """
         annotation_maps_dict = self.get_annotation_id_to_annotation_maps()
         annotation_ids = [annotation_ids] if isinstance(annotation_ids, str) else annotation_ids
-        export_dict: dict[AnnotationMap, Annotation] = {}
+        export_dict: dict[str, tuple[list[AnnotationMap], Union[ImageAnnotation, CategoryAnnotation]]] = {}
         for ann_id in annotation_ids:
-            for ann_map in annotation_maps_dict[ann_id]:
-                if ann_map.sub_category_key is not None or ann_map.summary_key is not None:
-                    export_dict[ann_map] = self._pop_by_annotation_id(ann_id, ann_map)
+            ann_maps = annotation_maps_dict[ann_id]
+            for ann_map in ann_maps:
+                if (
+                    ann_map.sub_category_key is not None
+                    or ann_map.summary_key is not None
+                    or ann_map.doc_summary_key is not None
+                ):
+                    annotation = self._pop_by_annotation_id(ann_id, ann_map)
+                    export_dict[ann_id] = (ann_maps, annotation)  # type:ignore
+
         return export_dict
