@@ -966,7 +966,7 @@ class Image(BaseModel):
         image_annotation_id = location_dict.image_annotation_id
         annotations = self.get_annotation(annotation_ids=image_annotation_id)
         if not annotations:
-            raise KeyError(f"annotation with id {annotation_id} not found")
+            return None
         annotation = annotations[0]
         ann: Union[ImageAnnotation, CategoryAnnotation, None] = None
         if (
