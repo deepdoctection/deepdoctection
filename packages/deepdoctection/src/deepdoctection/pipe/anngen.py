@@ -96,6 +96,12 @@ def _set_image_keys_to_none(d: Any) -> None:
 
 
 def image_to_cache_dict(image: Image) -> dict[str, Any]:
+    """
+    Converting image to dict, by adding extras and removing higher hierarchies
+
+    Args:
+        image (Image): The image object to serialize and store.
+    """
     image.remove_image_from_lower_hierarchy()
     export_dict = image.as_dict(add_extras=True)
     _set_image_keys_to_none(export_dict)
