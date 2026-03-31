@@ -46,7 +46,7 @@ from .datapoint.annotation import (
     ReferencePayload,
     from_json_compatible,
 )
-from .datapoint.image import Image
+from .datapoint.image import Extras, Image
 from .datapoint.view import ImageAnnotationBaseView, Page
 from .mapper.maputils import curry
 from .utils import get_uuid_from_str
@@ -198,7 +198,7 @@ class Document:
     _images: dict[str, Image] = field(default_factory=dict, init=False, repr=False)
     _summary: Optional[CategoryAnnotation] = field(default=None, init=False, repr=False)
     _pdf_bytes: Optional[bytes] = field(default=None, init=False, repr=False)
-    _extras: dict[str, str] = field(default_factory=dict, init=False, repr=False)
+    _extras: Extras = field(default_factory=Extras, init=False, repr=False)
 
     def __post_init__(self) -> None:
         if self.location is None or self.location == "":
@@ -389,26 +389,47 @@ class Document:
         self._summary = summary_annotation
 
     @property
-    def extras(self) -> dict[str, str]:
+    def extras(self) -> Extras:
         """
-        Transient key-value store for additional messages or metadata attached to this document.
+        Typed transient key-value store for additional messages or metadata attached to this document.
 
-        The store is never serialized and is silently ignored when present in constructor kwargs.
+        Keys must be registered with :meth:`configure_extras` before values can be stored via
+        :meth:`dump_extra`.  The store is never serialized.
 
         Returns:
-            The `dict` holding the extra entries for this document.
+            The :class:`Extras` instance for this document.
         """
         return self._extras
 
-    @extras.setter
-    def extras(self, value: dict[str, str]) -> None:
+    def configure_extras(self, key: str, value_type: str) -> None:
         """
-        Replace the entire extras store.
+        Register *key* in the extras store with the given *value_type*.
+
+        Must be called before :meth:`dump_extra`.  Calling again with the same type
+        is idempotent; calling with a different type raises ``ValueError``.
 
         Args:
-            value: A `dict` instance that will replace the current extras store.
+            key: The extras key to register.
+            value_type: ``"str"`` for single-value assignment, or
+                ``"list[str]"`` for append-mode storage.
         """
-        self._extras = value
+        self._extras.set_type(key, value_type)  # type: ignore[arg-type]
+
+    def dump_extra(self, key: str, value: str) -> None:
+        """
+        Store *value* for *key* in the extras store.
+
+        * ``"str"`` keys: *value* **replaces** the current entry.
+        * ``"list[str]"`` keys: *value* is **appended** to the list.
+
+        Args:
+            key: A previously configured extras key.
+            value: The string value to store.
+
+        Raises:
+            KeyError: If *key* has not been configured yet via :meth:`configure_extras`.
+        """
+        self._extras.dump(key, value)
 
     def get_image(
         self,
@@ -703,9 +724,9 @@ class Document:
             path_json = os.fspath(path) + ".json"
 
         if extra_file and not dry:
-            all_ann_ids: list[str] = list(self._extras.get("extra_file", []))
+            all_ann_ids: list[str] = list(self._extras._data.get("extra_file", []))
             for image in self._images.values():
-                all_ann_ids.extend(image.extras.get("extra_file", []))
+                all_ann_ids.extend(image.extras._data.get("extra_file", []))
 
             if all_ann_ids:
                 all_export = self.export_annotations(all_ann_ids)

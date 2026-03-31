@@ -25,7 +25,7 @@ from collections import defaultdict
 from dataclasses import dataclass, field
 from os import environ, fspath
 from pathlib import Path
-from typing import Any, Callable, Optional, Sequence, TypedDict, Union
+from typing import Any, Callable, Literal, Optional, Sequence, TypedDict, Union
 
 import numpy as np
 from lazy_imports import try_import
@@ -183,6 +183,55 @@ class ImageFormats:
         self._torch_by_device.clear()
 
 
+class Extras:
+    """Typed transient key-value store for ``Image`` and ``Document``. Never serialized."""
+
+    def __init__(self) -> None:
+        self._schema: dict[str, Literal["str", "list[str]"]] = {}
+        self._data: dict[str, Union[str, list[str]]] = {}
+
+    def set_type(self, key: str, value_type: Literal["str", "list[str]"]) -> None:
+        """Register *key* as ``"str"`` (replace on dump) or ``"list[str]"`` (append on dump)."""
+        if value_type not in ("str", "list[str]"):
+            raise ValueError(f"value_type must be 'str' or 'list[str]', got {value_type!r}")
+        if key in self._schema:
+            if self._schema[key] != value_type:
+                raise ValueError(f"Key {key!r} already registered as {self._schema[key]!r}")
+            return
+        self._schema[key] = value_type
+        if value_type == "list[str]":
+            self._data[key] = []
+
+    def dump(self, key: str, value: str) -> None:
+        """Assign (``"str"``) or append (``"list[str]"``) *value* for *key*."""
+        if key not in self._schema:
+            raise KeyError(f"Key {key!r} not configured. Call configure_extras first.")
+        if not isinstance(value, str):
+            raise TypeError(f"value must be str, got {type(value).__name__!r}")
+        if self._schema[key] == "str":
+            self._data[key] = value
+        else:
+            lst = self._data.setdefault(key, [])
+            lst.append(value)  # type: ignore[union-attr]
+
+    def as_dict(self) -> dict[str, Any]:
+        """Return a JSON-serializable dict that fully represents this ``Extras`` instance."""
+        return {"_schema": dict(self._schema), "_data": dict(self._data)}
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> Extras:
+        """Reconstruct an ``Extras`` instance from a dict produced by :meth:`as_dict`."""
+        obj = cls()
+        obj._schema = data["_schema"]
+        obj._data = data["_data"]
+        return obj
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, Extras):
+            return NotImplemented
+        return self._schema == other._schema and self._data == other._data
+
+
 class Image(BaseModel):
     """
     The image object is the enclosing data class that is used in the core data model to manage, retrieve or store
@@ -251,18 +300,18 @@ class Image(BaseModel):
     _summary: Optional[CategoryAnnotation] = PrivateAttr(default=None)
     _image_id: Optional[str] = PrivateAttr(default=None)
     _pdf_bytes: Optional[bytes] = PrivateAttr(default=None)
-    _extras: dict[str, str] = PrivateAttr(default_factory=dict)
+    _extras: Extras = PrivateAttr(default_factory=Extras)
 
     def __init__(self, **data: Any) -> None:
         """
         Accept private attrs in kwargs (e.g. `_image_id`, `_summary`, `_bbox`, `_annotation_ids`, `_image`,
-         `_pdf_bytes`)
+         `_pdf_bytes`, `_extras`)
         Remove them before BaseModel initialization and set the PrivateAttr values afterwards so that
-        `Image(**inputs)` works when legacy code passes private keys. `_extras` is silently discarded if
-        present in kwargs and is never restored.
+        `Image(**inputs)` works when legacy code passes private keys. `_extras` is restored when a dict
+        produced by ``as_dict(add_extras=True)`` is passed; otherwise a fresh ``Extras`` instance is used.
         """
         private_keys = ["_image", "_bbox", "_annotation_ids", "_summary", "_image_id", "_pdf_bytes"]
-        data.pop("_extras", None)
+        extras_raw = data.pop("_extras", None)
         priv: dict[str, Any] = {}
         for key in private_keys:
             if key in data:
@@ -282,6 +331,9 @@ class Image(BaseModel):
             else:
                 # assign even if value is None to preserve explicit input
                 object.__setattr__(self, key, val)
+
+        if isinstance(extras_raw, dict):
+            object.__setattr__(self, "_extras", Extras.from_dict(extras_raw))
 
     @field_validator("embeddings", mode="before")
     @classmethod
@@ -439,27 +491,47 @@ class Image(BaseModel):
             self._pdf_bytes = pdf_bytes
 
     @property
-    def extras(self) -> dict[str, str]:
+    def extras(self) -> Extras:
         """
-        Transient key-value store for additional messages or metadata attached to this image.
+        Typed transient key-value store for additional messages or metadata attached to this image.
 
-        The store is never serialized and is silently ignored when a caller passes `_extras` as a
-        constructor keyword argument.
+        Keys must be registered with :meth:`configure_extras` before values can be stored via
+        :meth:`dump_extra`.  The store is never serialized.
 
         Returns:
-            The `dict` holding the extra entries for this image.
+            The :class:`Extras` instance for this image.
         """
         return self._extras
 
-    @extras.setter
-    def extras(self, value: dict[str, str]) -> None:
+    def configure_extras(self, key: str, value_type: str) -> None:
         """
-        Replace the entire extras store.
+        Register *key* in the extras store with the given *value_type*.
+
+        Must be called before :meth:`dump_extra`.  Calling again with the same type
+        is idempotent; calling with a different type raises ``ValueError``.
 
         Args:
-            value: A `dict` instance that will replace the current extras store.
+            key: The extras key to register.
+            value_type: ``"str"`` for single-value assignment, or
+                ``"list[str]"`` for append-mode storage.
         """
-        object.__setattr__(self, "_extras", value)
+        self._extras.set_type(key, value_type)  # type: ignore[arg-type]
+
+    def dump_extra(self, key: str, value: str) -> None:
+        """
+        Store *value* for *key* in the extras store.
+
+        * ``"str"`` keys: *value* **replaces** the current entry.
+        * ``"list[str]"`` keys: *value* is **appended** to the list.
+
+        Args:
+            key: A previously configured extras key.
+            value: The string value to store.
+
+        Raises:
+            KeyError: If *key* has not been configured yet via :meth:`configure_extras`.
+        """
+        self._extras.dump(key, value)
 
     @property
     def width(self) -> BoxCoordinate:
@@ -701,16 +773,21 @@ class Image(BaseModel):
 
         return data
 
-    def as_dict(self) -> dict[str, Any]:
+    def as_dict(self, add_extras: bool = False) -> dict[str, Any]:
         """
-        Returns the full image dataclass as dict. Uses the custom `convert.as_dict` to disregard attributes
-        defined by `remove_keys`.
+        Returns the full image dataclass as dict.
+
+        Args:
+            add_extras: When ``True``, the ``_extras`` store is included under the ``"_extras"`` key.
+                        Defaults to ``False`` so that normal serialization is unchanged.
 
         Returns:
             A custom `dict`.
         """
-        # Uses Pydantic core serializer path
-        return self.model_dump(by_alias=True, exclude_none=False)
+        result = self.model_dump(by_alias=True, exclude_none=False)
+        if add_extras:
+            result["_extras"] = self._extras.as_dict()
+        return result
 
     def as_json(self) -> str:
         """
