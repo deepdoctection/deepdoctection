@@ -95,9 +95,9 @@ def _set_image_keys_to_none(d: Any) -> None:
             _set_image_keys_to_none(item)
 
 
-def _image_to_cache_dict(image: Image) -> dict[str, Any]:
+def image_to_cache_dict(image: Image) -> dict[str, Any]:
     image.remove_image_from_lower_hierarchy()
-    export_dict = image.as_dict()
+    export_dict = image.as_dict(add_extras=True)
     _set_image_keys_to_none(export_dict)
     return export_dict
 
@@ -158,7 +158,7 @@ class LocalDataPointCacheStore(DataPointCacheStore):
         if pages is None:
             pages = {}
             self._pages[cache_key] = pages
-        pages[page_number] = _image_to_cache_dict(image)
+        pages[page_number] = image_to_cache_dict(image)
         if self._max_pages > 0 and len(pages) > self._max_pages:
             for k in sorted(pages.keys())[: -self._max_pages]:
                 pages.pop(k, None)

@@ -161,22 +161,28 @@ def test_datapoint_cache_fifo_and_bounded() -> None:
     # Cache img1 when it leaves
     mgr.datapoint = img1
     mgr.maybe_cache_datapoint(mgr.datapoint)
-    assert list(mgr._cache_store._pages.values()) == [{0: img1.as_dict()}]  # noqa: SLF001
+    assert list(mgr._cache_store._pages.values()) == [{0: img1.as_dict(add_extras=True)}]  # noqa: SLF001
 
     # Cache img2 when it leaves
     mgr.datapoint = img2
     mgr.maybe_cache_datapoint(mgr.datapoint)
-    assert list(mgr._cache_store._pages.values()) == [{0: img1.as_dict(), 1: img2.as_dict()}]  # noqa: SLF001
+    assert list(mgr._cache_store._pages.values()) == [
+        {0: img1.as_dict(add_extras=True), 1: img2.as_dict(add_extras=True)}
+    ]  # noqa: SLF001
 
     # Cache img3 when it leaves, img1 gets evicted (max_pages=2)
     mgr.datapoint = img3
     mgr.maybe_cache_datapoint(mgr.datapoint)
-    assert list(mgr._cache_store._pages.values()) == [{1: img2.as_dict(), 2: img3.as_dict()}]  # noqa: SLF001
+    assert list(mgr._cache_store._pages.values()) == [
+        {1: img2.as_dict(add_extras=True), 2: img3.as_dict(add_extras=True)}
+    ]  # noqa: SLF001
 
     # Cache img4 when it leaves, img2 gets evicted
     mgr.datapoint = img4
     mgr.maybe_cache_datapoint(mgr.datapoint)
-    assert list(mgr._cache_store._pages.values()) == [{2: img3.as_dict(), 3: img4.as_dict()}]  # noqa: SLF001
+    assert list(mgr._cache_store._pages.values()) == [
+        {2: img3.as_dict(add_extras=True), 3: img4.as_dict(add_extras=True)}
+    ]  # noqa: SLF001
 
 
 def test_datapoint_cache_does_not_store_none() -> None:
@@ -198,13 +204,13 @@ def test_datapoint_cache_calls_pixel_cleanup_when_enabled() -> None:
     # Cache img1 when it leaves - should clear pixel values
     mgr.datapoint = img1
     mgr.maybe_cache_datapoint(mgr.datapoint)
-    assert list(mgr._cache_store._pages.values()) == [{0: img1.as_dict()}]  # noqa: SLF001
+    assert list(mgr._cache_store._pages.values()) == [{0: img1.as_dict(add_extras=True)}]  # noqa: SLF001
     assert img1.image is None
 
     # Cache img2 when it leaves, img1 gets evicted (max_pages=1)
     mgr.datapoint = img2
     mgr.maybe_cache_datapoint(mgr.datapoint)
-    assert list(mgr._cache_store._pages.values()) == [{1: img2.as_dict()}]  # noqa: SLF001
+    assert list(mgr._cache_store._pages.values()) == [{1: img2.as_dict(add_extras=True)}]  # noqa: SLF001
     assert img2.image is None
 
 
@@ -224,14 +230,14 @@ def test_datapoint_cache_no_pixel_cleanup_when_disabled() -> None:
 
     # Now manually clear img1.image to match the expected cached dict
     img1.image = None
-    img1_dict = img1.as_dict()
+    img1_dict = img1.as_dict(add_extras=True)
     assert list(mgr._cache_store._pages.values()) == [{0: img1_dict}]  # noqa: SLF001
 
     # Cache img2 when it leaves, img1 gets evicted (max_pages=1)
     mgr.datapoint = img2
     mgr.maybe_cache_datapoint(mgr.datapoint)
     img2.image = None
-    img2_dict = img2.as_dict()
+    img2_dict = img2.as_dict(add_extras=True)
     assert list(mgr._cache_store._pages.values()) == [{1: img2_dict}]  # noqa: SLF001
 
 
@@ -262,7 +268,7 @@ def test_get_cached_datapoints_returns_last_k_without_mutating_queue() -> None:
     # Cache contains [img1, img2, img3]
 
     assert list(mgr._cache_store._pages.values()) == [
-        {1: img1.as_dict(), 2: img2.as_dict(), 3: img3.as_dict()}
+        {1: img1.as_dict(add_extras=True), 2: img2.as_dict(add_extras=True), 3: img3.as_dict(add_extras=True)}
     ]  # noqa: SLF001
 
     before = list(mgr._cache_store._pages.values())
@@ -289,7 +295,9 @@ def test_get_cached_datapoints_last_k_exceeds_size_returns_all_and_does_not_muta
     # img3 is current, not cached yet in this test scenario
     # Cache contains [img1, img2]
 
-    assert list(mgr._cache_store._pages.values()) == [{1: img1.as_dict(), 2: img2.as_dict()}]  # noqa: SLF001
+    assert list(mgr._cache_store._pages.values()) == [
+        {1: img1.as_dict(add_extras=True), 2: img2.as_dict(add_extras=True)}
+    ]  # noqa: SLF001
 
     before = list(mgr._cache_store._pages.values())
     got = mgr.get_cached_datapoints(999)
@@ -312,7 +320,7 @@ def test_get_cached_datapoints_zero_returns_empty_and_does_not_mutate() -> None:
     # img2 is current, not cached yet in this test scenario
     # Cache contains [img1]
 
-    assert list(mgr._cache_store._pages.values()) == [{1: img1.as_dict()}]  # noqa: SLF001
+    assert list(mgr._cache_store._pages.values()) == [{1: img1.as_dict(add_extras=True)}]  # noqa: SLF001
 
     before = list(mgr._cache_store._pages.values())
     got = mgr.get_cached_datapoints(0)
@@ -335,7 +343,7 @@ def test_get_cached_datapoints_negative_raises_and_does_not_mutate() -> None:
     # img2 is current, not cached yet in this test scenario
     # Cache contains [img1]
 
-    assert list(mgr._cache_store._pages.values()) == [{1: img1.as_dict()}]  # noqa: SLF001
+    assert list(mgr._cache_store._pages.values()) == [{1: img1.as_dict(add_extras=True)}]  # noqa: SLF001
 
     before = list(mgr._cache_store._pages.values())
     with pytest.raises(ValueError, match="last_k must be >= 0"):

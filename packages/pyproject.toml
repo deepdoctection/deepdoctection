@@ -8,6 +8,11 @@
 #addopts = "-p tests._shared.plugin_testtypes -p no:warnings -ra"
 testpaths = ["tests", "dd_datapoint/tests", "dd_datasets/tests"]
 xfail_strict = true
+markers = [
+    "basic: basic tests",
+    "integration: integration tests",
+    "slow: slow tests",
+  ]
 
 [tool.black]
 line-length = 120
