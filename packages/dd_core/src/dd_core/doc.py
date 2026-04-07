@@ -863,13 +863,14 @@ class Document:
             for ann_data in extra_data:
                 ann_maps = [AnnotationMap.from_dict(**map_dict) for map_dict in ann_data["annotation_maps"]]
                 ann = CategoryAnnotation.from_dict(**ann_data["annotation"])
-                for ann_map in ann_maps:
-                    if (
-                        ann_map.sub_category_key is not None
-                        or ann_map.summary_key is not None
-                        or ann_map.doc_summary_key is not None
-                    ):
-                        doc._dump_by_annotation_map(ann_map, ann)
+                if ann.active:
+                    for ann_map in ann_maps:
+                        if (
+                            ann_map.sub_category_key is not None
+                            or ann_map.summary_key is not None
+                            or ann_map.doc_summary_key is not None
+                        ):
+                            doc._dump_by_annotation_map(ann_map, ann)
 
         return doc
 
