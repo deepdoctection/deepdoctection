@@ -494,7 +494,7 @@ class Document:
             page_number = 0
 
         if page_number < 0 or page_number > self.number_of_pages:
-            raise IndexError(f"Page number {page_number} out of range (1-{self.number_of_pages})")
+            raise IndexError(f"Page number {page_number} out of range (0-{self.number_of_pages}-1)")
 
         ref = self._page_references.get(page_number)
         if ref is not None and ref.image_id and ref.image_id in self._images:
@@ -863,13 +863,14 @@ class Document:
             for ann_data in extra_data:
                 ann_maps = [AnnotationMap.from_dict(**map_dict) for map_dict in ann_data["annotation_maps"]]
                 ann = CategoryAnnotation.from_dict(**ann_data["annotation"])
-                for ann_map in ann_maps:
-                    if (
-                        ann_map.sub_category_key is not None
-                        or ann_map.summary_key is not None
-                        or ann_map.doc_summary_key is not None
-                    ):
-                        doc._dump_by_annotation_map(ann_map, ann)
+                if ann.active:
+                    for ann_map in ann_maps:
+                        if (
+                            ann_map.sub_category_key is not None
+                            or ann_map.summary_key is not None
+                            or ann_map.doc_summary_key is not None
+                        ):
+                            doc._dump_by_annotation_map(ann_map, ann)
 
         return doc
 
