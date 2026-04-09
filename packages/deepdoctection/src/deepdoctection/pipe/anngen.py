@@ -127,7 +127,7 @@ class LocalDataPointCacheStore(DataPointCacheStore):
         Args:
             max_pages (int): Maximum number of pages to keep per document.
         """
-        self._max_pages = max_pages
+        self.max_pages = max_pages
         self._pages: dict[str, dict[int, dict[str, Any]]] = {}
 
     def _get_cache_key(self, document_id: str, job_id: str | None) -> str:
@@ -165,8 +165,8 @@ class LocalDataPointCacheStore(DataPointCacheStore):
             pages = {}
             self._pages[cache_key] = pages
         pages[page_number] = image_to_cache_dict(image)
-        if self._max_pages > 0 and len(pages) > self._max_pages:
-            for k in sorted(pages.keys())[: -self._max_pages]:
+        if self.max_pages > 0 and len(pages) > self.max_pages:
+            for k in sorted(pages.keys())[: -self.max_pages]:
                 pages.pop(k, None)
 
     def get_datapoints(self, document_id: str, last_d: int, job_id: str | None = None) -> tuple[Image, ...]:
@@ -230,10 +230,10 @@ class DatapointManager:
 
         if num_cached_datapoints < 0:
             raise ValueError("num_cached_datapoints must be >= 0")
-        self.num_cached_datapoints = num_cached_datapoints
         self.remove_pixel_values_from_cache = remove_pixel_values_from_cache
 
         self._cache_store = cache_store or LocalDataPointCacheStore(max_pages=num_cached_datapoints)
+        self.num_cached_datapoints = self._cache_store.max_pages
 
     def maybe_cache_datapoint(self, image: Optional[Image], job_id: str | None = None) -> None:
         """

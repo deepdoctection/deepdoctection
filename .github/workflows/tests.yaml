@@ -19,17 +19,17 @@ jobs:
       fail-fast: true
       matrix:
         include:
-          # py{310,312}-core-test
+          # py{310,313}-core-test
           - { name: 'py310-core-test', python: '3.10', pip: '25.3', tox: '4.32.0', os: 'ubuntu-latest', poppler: false, tesseract: false }
-          - { name: 'py312-core-test', python: '3.12', pip: '25.3', tox: '4.32.0', os: 'ubuntu-latest', poppler: false, tesseract: false }
+          - { name: 'py313-core-test', python: '3.13', pip: '25.3', tox: '4.32.0', os: 'ubuntu-latest', poppler: false, tesseract: false }
 
           # py{310,312}-core-full
           - { name: 'py310-core-full', python: '3.10', pip: '25.3', tox: '4.32.0', os: 'ubuntu-latest', poppler: false, tesseract: false }
-          - { name: 'py312-core-full', python: '3.12', pip: '25.3', tox: '4.32.0', os: 'ubuntu-latest', poppler: false, tesseract: false }
+          - { name: 'py313-core-full', python: '3.13', pip: '25.3', tox: '4.32.0', os: 'ubuntu-latest', poppler: false, tesseract: false }
 
           # py{310,312}-datasets-test
           - { name: 'py310-datasets-test', python: '3.10', pip: '25.3', tox: '4.32.0', os: 'ubuntu-latest', poppler: false, tesseract: false }
-          - { name: 'py312-datasets-test', python: '3.12', pip: '25.3', tox: '4.32.0', os: 'ubuntu-latest', poppler: false, tesseract: false }
+          - { name: 'py313-datasets-test', python: '3.13', pip: '25.3', tox: '4.32.0', os: 'ubuntu-latest', poppler: false, tesseract: false }
 
     steps:
       - name: Checkout repository (with LFS)
@@ -79,11 +79,11 @@ jobs:
         include:
           # py{310,312}-deepdoctection-test
           - { name: 'py310-deepdoctection-test', python: '3.10', pip: '25.3', tox: '4.32.0', os: 'ubuntu-latest', poppler: false, tesseract: false }
-          - { name: 'py312-deepdoctection-test', python: '3.12', pip: '25.3', tox: '4.32.0', os: 'ubuntu-latest', poppler: false, tesseract: false }
+          - { name: 'py313-deepdoctection-test', python: '3.13', pip: '25.3', tox: '4.32.0', os: 'ubuntu-latest', poppler: false, tesseract: false }
 
           # py{310,312}-deepdoctection-full
           - { name: 'py310-deepdoctection-full', python: '3.10', pip: '25.3', tox: '4.32.0', os: 'ubuntu-latest', poppler: false, tesseract: false }
-          - { name: 'py312-deepdoctection-full', python: '3.12', pip: '25.3', tox: '4.32.0', os: 'ubuntu-latest', poppler: false, tesseract: false }
+          - { name: 'py313-deepdoctection-full', python: '3.13', pip: '25.3', tox: '4.32.0', os: 'ubuntu-latest', poppler: false, tesseract: false }
 
     steps:
       - name: Checkout repository (with LFS)
@@ -133,11 +133,11 @@ jobs:
         include:
           # py{310,312}-all-test-full (needs poppler + tesseract)
           - { name: 'py310-all-test-full', python: '3.10', pip: '25.3', tox: '4.32.0', os: 'ubuntu-latest', poppler: true,  tesseract: true }
-          - { name: 'py312-all-test-full', python: '3.12', pip: '25.3', tox: '4.32.0', os: 'ubuntu-latest', poppler: true,  tesseract: true }
+          - { name: 'py313-all-test-full', python: '3.13', pip: '25.3', tox: '4.32.0', os: 'ubuntu-latest', poppler: true,  tesseract: true }
 
           # py{310,312}-deepdoctection-slow (tesseract only)
           - { name: 'py310-deepdoctection-slow', python: '3.10', pip: '25.3', tox: '4.32.0', os: 'ubuntu-latest', poppler: false, tesseract: true }
-          - { name: 'py312-deepdoctection-slow', python: '3.12', pip: '25.3', tox: '4.32.0', os: 'ubuntu-latest', poppler: false, tesseract: true }
+          - { name: 'py313-deepdoctection-slow', python: '3.13', pip: '25.3', tox: '4.32.0', os: 'ubuntu-latest', poppler: false, tesseract: true }
 
     steps:
       - name: Checkout repository (with LFS)

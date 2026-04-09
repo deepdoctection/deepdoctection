@@ -494,7 +494,7 @@ class Document:
             page_number = 0
 
         if page_number < 0 or page_number > self.number_of_pages:
-            raise IndexError(f"Page number {page_number} out of range (1-{self.number_of_pages})")
+            raise IndexError(f"Page number {page_number} out of range (0-{self.number_of_pages}-1)")
 
         ref = self._page_references.get(page_number)
         if ref is not None and ref.image_id and ref.image_id in self._images:
