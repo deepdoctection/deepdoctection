@@ -112,10 +112,10 @@ class TestLoadBytesFromPdfFile:
     """Test load_bytes_from_pdf_file"""
 
     @staticmethod
-    @pytest.mark.parametrize("page_number", [0])
+    @pytest.mark.parametrize("page_number", [1, 2])
     @pytest.mark.skipif(not fu.pypdf_available(), reason="Pypdf is not installed")
     def test_load_bytes_from_pdf_file(pdf_file_path_two_pages: Path, page_number: int) -> None:
-        """Test loading bytes from PDF file"""
+        """Test loading bytes from PDF file (1-based page numbers)"""
 
         pdf_bytes = load_bytes_from_pdf_file(pdf_file_path_two_pages, page_number=page_number)
         assert isinstance(pdf_bytes, bytes)

@@ -153,35 +153,35 @@ def test_datapoint_cache_fifo_and_bounded() -> None:
     """test datapoint caching fifo and bounded size"""
     mgr = DatapointManager(service_id="svc", num_cached_datapoints=2, remove_pixel_values_from_cache=False)
 
-    img1 = Image(file_name="img1.jpg", document_id="doc1", page_number=0)
-    img2 = Image(file_name="img2.jpg", document_id="doc1", page_number=1)
-    img3 = Image(file_name="img3.jpg", document_id="doc1", page_number=2)
-    img4 = Image(file_name="img4.jpg", document_id="doc1", page_number=3)
+    img1 = Image(file_name="img1.jpg", document_id="doc1", page_number=1)
+    img2 = Image(file_name="img2.jpg", document_id="doc1", page_number=2)
+    img3 = Image(file_name="img3.jpg", document_id="doc1", page_number=3)
+    img4 = Image(file_name="img4.jpg", document_id="doc1", page_number=4)
 
     # Cache img1 when it leaves
     mgr.datapoint = img1
     mgr.maybe_cache_datapoint(mgr.datapoint)
-    assert list(mgr._cache_store._pages.values()) == [{0: img1.as_dict(add_extras=True)}]  # type: ignore
+    assert list(mgr._cache_store._pages.values()) == [{1: img1.as_dict(add_extras=True)}]  # type: ignore
 
     # Cache img2 when it leaves
     mgr.datapoint = img2
     mgr.maybe_cache_datapoint(mgr.datapoint)
     assert list(mgr._cache_store._pages.values()) == [  # type: ignore
-        {0: img1.as_dict(add_extras=True), 1: img2.as_dict(add_extras=True)}
+        {1: img1.as_dict(add_extras=True), 2: img2.as_dict(add_extras=True)}
     ]  # noqa: SLF001
 
     # Cache img3 when it leaves, img1 gets evicted (max_pages=2)
     mgr.datapoint = img3
     mgr.maybe_cache_datapoint(mgr.datapoint)
     assert list(mgr._cache_store._pages.values()) == [  # type: ignore
-        {1: img2.as_dict(add_extras=True), 2: img3.as_dict(add_extras=True)}
+        {2: img2.as_dict(add_extras=True), 3: img3.as_dict(add_extras=True)}
     ]  # noqa: SLF001
 
     # Cache img4 when it leaves, img2 gets evicted
     mgr.datapoint = img4
     mgr.maybe_cache_datapoint(mgr.datapoint)
     assert list(mgr._cache_store._pages.values()) == [  # type: ignore
-        {2: img3.as_dict(add_extras=True), 3: img4.as_dict(add_extras=True)}
+        {3: img3.as_dict(add_extras=True), 4: img4.as_dict(add_extras=True)}
     ]  # noqa: SLF001
 
 
@@ -196,8 +196,8 @@ def test_datapoint_cache_calls_pixel_cleanup_when_enabled() -> None:
     """test datapoint caching calls pixel cleanup when enabled"""
     mgr = DatapointManager(service_id="svc", num_cached_datapoints=1, remove_pixel_values_from_cache=True)
 
-    img1 = Image(file_name="img1.jpg", document_id="doc1", page_number=0)
-    img2 = Image(file_name="img2.jpg", document_id="doc1", page_number=1)
+    img1 = Image(file_name="img1.jpg", document_id="doc1", page_number=1)
+    img2 = Image(file_name="img2.jpg", document_id="doc1", page_number=2)
     img1.image = np.ones([400, 600, 3], dtype=np.float32)
     img2.image = np.ones([400, 600, 3], dtype=np.float32)
 
@@ -205,14 +205,14 @@ def test_datapoint_cache_calls_pixel_cleanup_when_enabled() -> None:
     mgr.datapoint = img1
     mgr.maybe_cache_datapoint(mgr.datapoint)
     assert list(mgr._cache_store._pages.values()) == [  # type: ignore  # noqa: SLF001
-        {0: img1.as_dict(add_extras=True)}
+        {1: img1.as_dict(add_extras=True)}
     ]
     assert img1.image is None
 
     # Cache img2 when it leaves, img1 gets evicted (max_pages=1)
     mgr.datapoint = img2
     mgr.maybe_cache_datapoint(mgr.datapoint)
-    assert list(mgr._cache_store._pages.values()) == [{1: img2.as_dict(add_extras=True)}]  # noqa: SLF001
+    assert list(mgr._cache_store._pages.values()) == [{2: img2.as_dict(add_extras=True)}]  # noqa: SLF001
     assert img2.image is None
 
 
@@ -220,8 +220,8 @@ def test_datapoint_cache_no_pixel_cleanup_when_disabled() -> None:
     """test datapoint caching does not call pixel cleanup when disabled"""
     mgr = DatapointManager(service_id="svc", num_cached_datapoints=1, remove_pixel_values_from_cache=False)
 
-    img1 = Image(file_name="img1.jpg", document_id="doc1", page_number=0)
-    img2 = Image(file_name="img2.jpg", document_id="doc1", page_number=1)
+    img1 = Image(file_name="img1.jpg", document_id="doc1", page_number=1)
+    img2 = Image(file_name="img2.jpg", document_id="doc1", page_number=2)
 
     img1.image = np.ones([400, 600, 3], dtype=np.float32)
     img2.image = np.ones([400, 600, 3], dtype=np.float32)
@@ -233,14 +233,14 @@ def test_datapoint_cache_no_pixel_cleanup_when_disabled() -> None:
     # Now manually clear img1.image to match the expected cached dict
     img1.image = None
     img1_dict = img1.as_dict(add_extras=True)
-    assert list(mgr._cache_store._pages.values()) == [{0: img1_dict}]  # type: ignore  # noqa: SLF001
+    assert list(mgr._cache_store._pages.values()) == [{1: img1_dict}]  # type: ignore  # noqa: SLF001
 
     # Cache img2 when it leaves, img1 gets evicted (max_pages=1)
     mgr.datapoint = img2
     mgr.maybe_cache_datapoint(mgr.datapoint)
     img2.image = None
     img2_dict = img2.as_dict(add_extras=True)
-    assert list(mgr._cache_store._pages.values()) == [{1: img2_dict}]  # type: ignore  # noqa: SLF001
+    assert list(mgr._cache_store._pages.values()) == [{2: img2_dict}]  # type: ignore  # noqa: SLF001
 
 
 def test_num_cached_datapoints_must_be_non_negative() -> None:

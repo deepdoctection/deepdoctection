@@ -498,13 +498,13 @@ class PDFStreamer:
         try:
             for k, page in enumerate(reader.pages):
                 if self._cache_pages and k in self._page_cache:
-                    yield self._page_cache[k], k
+                    yield self._page_cache[k], k + 1
                     continue
 
                 page_bytes = self._page_to_bytes(page)
                 if self._cache_pages:
                     self._page_cache[k] = page_bytes
-                yield page_bytes, k
+                yield page_bytes, k + 1
         finally:
             self._close_reader(reader)
 
@@ -694,7 +694,7 @@ def split_pdf(
 
     with open(pdf_path, "rb") as file:
         pdf = PdfReader(file)
-        for i, page in enumerate(pdf.pages):
+        for i, page in enumerate(pdf.pages, start=1):
             writer = PdfWriter()
             writer.add_page(page)
             if file_type == ".pdf":
@@ -710,19 +710,19 @@ def split_pdf(
                     writer.close()
 
 
-def load_bytes_from_pdf_file(path: PathLikeOrStr, page_number: int = 0) -> B64:
+def load_bytes_from_pdf_file(path: PathLikeOrStr, page_number: int = 1) -> B64:
     """
     Loads a PDF file with a single page and returns a bytes representation of this file. Can be converted into a numpy
     array or passed directly to the `image` attribute of `Image`.
 
     Example:
         ```python
-        load_bytes_from_pdf_file('document.pdf', page_number=0)
+        load_bytes_from_pdf_file('document.pdf', page_number=1)
         ```
 
     Args:
         path: The path to a PDF file. If more pages are available, it will take the first page.
-        page_number: The page number to load. Raises `IndexError` if the document has fewer pages.
+        page_number: The 1-based page number to load. Raises `IndexError` if the document has fewer pages.
 
     Returns:
         A bytes representation of the file.
@@ -734,6 +734,6 @@ def load_bytes_from_pdf_file(path: PathLikeOrStr, page_number: int = 0) -> B64:
     file_reader = get_pdf_file_reader(path)
     buffer = BytesIO()
     writer = get_pdf_file_writer()
-    writer.add_page(file_reader.pages[page_number])
+    writer.add_page(file_reader.pages[page_number - 1])
     writer.write(buffer)
     return buffer.getvalue()

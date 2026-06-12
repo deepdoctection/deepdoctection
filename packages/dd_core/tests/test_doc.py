@@ -44,10 +44,10 @@ def test_pdf_get_page_reference_returns_valid_objects(pdf_file_path_two_pages: P
     """test that PageReference has all attributes filled"""
 
     doc = Document(location=pdf_file_path_two_pages)
-    ref = doc.get_page_reference(0)
+    ref = doc.get_page_reference(1)
 
     assert isinstance(ref, PageReference)
-    assert ref.image_id == "f05529d3-5d55-3f99-866d-311f5f539358"
+    assert ref.image_id == "682a88af-630a-3160-b89b-4d8c2e0472f5"
     assert ref.source_path == os.fspath(pdf_file_path_two_pages)
 
 
@@ -56,7 +56,7 @@ def test_from_json_restores_internal_structures(sample_document_json: Path) -> N
     doc = Document.from_json(sample_document_json)
 
     assert doc.document_id == "108e9e00-58cd-3c19-a900-38177f66fd87"
-    assert isinstance(doc.get_page_reference(0), PageReference)
+    assert isinstance(doc.get_page_reference(1), PageReference)
 
 
 def test_len_equals_number_of_pages(sample_document_json: Path) -> None:
@@ -98,8 +98,8 @@ def test_resolve_reference_payload_returns_text(sample_document_json: Path) -> N
 def test_get_page_and_get_image_return_types(sample_document_json: Path) -> None:
     """test get page by given page number"""
     doc = Document.from_json(sample_document_json)
-    page0 = doc.get_page(0)
-    assert isinstance(page0, Page)
+    page1 = doc.get_page(1)
+    assert isinstance(page1, Page)
 
 
 def test_get_page_by_image_id_returns_page(sample_document_json: Path) -> None:
@@ -126,12 +126,12 @@ def test_set_image_updates_references_and_images() -> None:
     doc = Document(file_name="plain", location=Path(), compute_metadata=False)
     img = Image(file_name="test.png", location="/fake/location", page_number=5)
 
-    doc.set_image(img, page_number=0)
+    doc.set_image(img, page_number=1)
 
     assert img.image_id in doc._images
     assert doc._images[img.image_id] is img
 
-    ref = doc.get_page_reference(0)
+    ref = doc.get_page_reference(1)
     assert isinstance(ref, PageReference)
 
     fetched = doc.get_image(image_id=img.image_id)
@@ -176,3 +176,62 @@ def test_export_annotation_with_given_annotation_id(sample_document_json: Path) 
         image_id="7e154965-1250-3f4f-b1c2-a6e822f0aaa5", annotation_ids="518264e3-98a8-350f-9e01-4344e35937f2"
     )[0]
     assert get_type("reading_order") not in annotation.sub_categories
+
+
+@pytest.mark.skipif(not fu.pypdf_available(), reason="Pypdf is not installed")
+def test_pdf_first_page_number_is_1(pdf_file_path_two_pages: Path) -> None:
+    """first page of a PDF document has page_number == 1"""
+    doc = Document(location=pdf_file_path_two_pages)
+    ref = doc.get_page_reference(1)
+    assert ref.page_number == 1
+
+
+@pytest.mark.skipif(not fu.pypdf_available(), reason="Pypdf is not installed")
+def test_pdf_first_page_file_name_suffix_is_1(pdf_file_path_two_pages: Path) -> None:
+    """first PDF page file_name ends with _1"""
+    doc = Document(location=pdf_file_path_two_pages)
+    img = doc.get_image(page_number=1)
+    assert img.file_name.endswith("_1.pdf")
+
+
+@pytest.mark.skipif(not fu.pypdf_available(), reason="Pypdf is not installed")
+def test_pdf_get_image_page_number_1_returns_first_page(pdf_file_path_two_pages: Path) -> None:
+    """get_image(page_number=1) returns the first page image"""
+    doc = Document(location=pdf_file_path_two_pages)
+    img = doc.get_image(page_number=1)
+    assert img.page_number == 1
+
+
+@pytest.mark.skipif(not fu.pypdf_available(), reason="Pypdf is not installed")
+def test_pdf_get_image_page_number_0_raises(pdf_file_path_two_pages: Path) -> None:
+    """get_image(page_number=0) raises IndexError"""
+    doc = Document(location=pdf_file_path_two_pages)
+    with pytest.raises(IndexError):
+        doc.get_image(page_number=0)
+
+
+@pytest.mark.skipif(not fu.pypdf_available(), reason="Pypdf is not installed")
+def test_pdf_get_image_out_of_range_raises(pdf_file_path_two_pages: Path) -> None:
+    """get_image(page_number=N+1) raises IndexError"""
+    doc = Document(location=pdf_file_path_two_pages)
+    with pytest.raises(IndexError):
+        doc.get_image(page_number=doc.number_of_pages + 1)
+
+
+@pytest.mark.skipif(not fu.pypdf_available(), reason="Pypdf is not installed")
+def test_pdf_iteration_yields_pages_in_order(pdf_file_path_two_pages: Path) -> None:
+    """iterating a PDF Document yields N pages with page_numbers 1..N in order"""
+
+    doc = Document(location=pdf_file_path_two_pages)
+    pages = list(doc)
+    assert len(pages) == doc.number_of_pages
+    for i, page in enumerate(pages, start=1):
+        assert isinstance(page, Page)
+        assert page.page_number == i
+
+
+@pytest.mark.skipif(not fu.pypdf_available(), reason="Pypdf is not installed")
+def test_pdf_images_dict_non_empty_after_init(pdf_file_path_two_pages: Path) -> None:
+    """_images is populated after Document init for a PDF"""
+    doc = Document(location=pdf_file_path_two_pages)
+    assert len(doc._images) > 0

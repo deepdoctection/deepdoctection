@@ -24,12 +24,12 @@ from pathlib import Path
 from typing import List, Mapping, Optional, Sequence, Tuple, Union
 
 from dd_core.dataflow import CustomDataFromIterable, DataFlow, DataFromList, MapData, SerializerFiles, SerializerPdfDoc
+from dd_core.dataflow.custom_serialize import make_pdf_page_mapper
 from dd_core.datapoint.image import Image
 from dd_core.datapoint.view import IMAGE_DEFAULTS
 from dd_core.mapper.maputils import curry
 from dd_core.mapper.misc import to_image
 from dd_core.utils.fs import maybe_path_or_pdf
-from dd_core.utils.identifier import get_uuid_from_str
 from dd_core.utils.logger import LoggingRecord, logger
 from dd_core.utils.pdf_utils import PDFStreamer
 from dd_core.utils.types import PathLikeOrStr
@@ -336,16 +336,7 @@ class DoctectionPipe(Pipeline):
                 prefix, suffix = os.path.splitext(file_name)
                 df: DataFlow
                 df = CustomDataFromIterable(PDFStreamer(path_or_bytes=b_bytes), max_datapoints=max_datapoints)
-                df = MapData(
-                    df,
-                    lambda dp: {
-                        "path": path,
-                        "file_name": prefix + f"_{dp[1]}" + suffix,
-                        "pdf_bytes": dp[0],
-                        "page_number": dp[1],
-                        "document_id": document_id or get_uuid_from_str(prefix),
-                    },
-                )
+                df = MapData(df, make_pdf_page_mapper(path, prefix, suffix, document_id))
             else:
                 df = DataFromList(lst=[{"path": path, "file_name": file_name, "image_bytes": b_bytes}])
             return df

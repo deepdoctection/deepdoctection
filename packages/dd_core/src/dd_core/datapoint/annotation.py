@@ -1025,3 +1025,41 @@ class ContainerAnnotation(CategoryAnnotation):
             f"category_id={self.category_id}, score={self.score}, sub_categories={self.sub_categories},"
             f" relationships={self.relationships})"
         )
+
+
+@container_annotation_registry.register("llm")
+class LLMContainerAnnotation(ContainerAnnotation):
+    """
+    Container annotation for LLM pipeline components
+    """
+
+    task_id: str
+    prompt_id: str
+    output_format_id: str
+
+    @model_serializer(mode="wrap")
+    def _serialize(self, handler: Any) -> Any:
+        data = handler(self)
+        data["_container_type"] = "llm"
+
+        # Ensure private id is present in exported dict
+        data["_annotation_id"] = self._annotation_id
+        return data
+
+
+@container_annotation_registry.register("review")
+class ReviewAnnotation(ContainerAnnotation):
+    """
+    Container annotation for Reviews
+    """
+
+    user_id: str
+
+    @model_serializer(mode="wrap")
+    def _serialize(self, handler: Any) -> Any:
+        data = handler(self)
+        data["_container_type"] = "review"
+
+        # Ensure private id is present in exported dict
+        data["_annotation_id"] = self._annotation_id
+        return data
