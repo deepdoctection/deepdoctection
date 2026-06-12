@@ -69,10 +69,10 @@ def to_image(
     if isinstance(dp, str):
         _, file_name = os.path.split(dp)
         location = dp
-        page_number = 0
+        page_number = 1
     elif isinstance(dp, dict):
         file_name = str(dp.get("file_name", ""))
-        page_number = int(dp.get("page_number", 0))
+        page_number = int(dp.get("page_number", 1))
         location = str(dp.get("location", ""))
         document_id = dp.get("document_id") or document_id
         if location == "":

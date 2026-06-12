@@ -223,7 +223,8 @@ def test_serializer_pdf_doc_load(pdf_file_path_two_pages: Path) -> None:
     assert "page_number" in first_page
     assert "document_id" in first_page
     assert isinstance(first_page["pdf_bytes"], bytes)
-    assert first_page["page_number"] == 0
+    assert first_page["page_number"] == 1
+    assert first_page["file_name"].endswith("_1.pdf")
 
 
 @pytest.mark.skipif(not fu.pypdf_available(), reason="Pypdf is not installed")

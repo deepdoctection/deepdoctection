@@ -32,7 +32,7 @@ import os
 from collections import defaultdict
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
-from typing import Any, Mapping, Optional, Sequence, Union, cast
+from typing import Any, Iterator, Mapping, Optional, Sequence, Union, cast
 
 from .dataflow.base import DataFlow
 from .dataflow.common import MapData
@@ -173,15 +173,15 @@ class Document:
             document_type=DocumentType.PDF
         )
 
-        # Iterate pages (lazy loaded)
-        for page in doc.pages:
+        # Iterate pages (lazy loaded, 1-based page numbers)
+        for page in doc:
             print(page.text)
 
         # Save processed document
         doc.save("/output/dir")
 
         # Load from saved JSON
-        doc = Document.from_directory("/output/dir")
+        doc = Document.from_json("/output/dir/document_id.json")
         ```
     """
 
@@ -275,7 +275,7 @@ class Document:
         refs: dict[int, PageReference] = {}
         loaded: dict[str, Image] = {}
 
-        for page_number, dp in enumerate(df):
+        for page_number, dp in enumerate(df, start=1):
             location = Path(dp)
             image = Image(
                 file_name=location.name,
@@ -284,7 +284,7 @@ class Document:
             )
             loaded[image.image_id] = image
 
-            refs[page_number] = PageReference(source_path=dp, image_id=image.image_id)
+            refs[page_number] = PageReference(source_path=dp, page_number=page_number, image_id=image.image_id)
 
         self._page_references = refs
         self._images = loaded
@@ -298,7 +298,7 @@ class Document:
         df.reset_state()
 
         refs: dict[int, PageReference] = {}
-        loaded: dict[int, Image] = {}
+        loaded: dict[str, Image] = {}
 
         for dp in df:
             image = Image(
@@ -315,9 +315,10 @@ class Document:
                 source_path=os.fspath(location_path),
                 image_id=image.image_id,
             )
-            loaded[dp["page_number"]] = image
+            loaded[image.image_id] = image
 
         self._page_references = refs
+        self._images = loaded
 
     def get_page_reference(self, page_number: int) -> PageReference:
         """get page reference from page number."""
@@ -344,7 +345,7 @@ class Document:
     def _resolve_node(self, node: Any) -> Any:
         if isinstance(node, AnnotationRef):
             if node.image_id is None:
-                return ValueError(
+                raise ValueError(
                     "image_id cannot be None when resolving ReferencePayload with resolve_reference_payload"
                 )
             ann = self.get_annotation(image_id=node.image_id, annotation_ids=node.annotation_id)[0]
@@ -446,7 +447,7 @@ class Document:
         3) load/clear pixel payload based on `load_pixels` and `document_type`
 
         Args:
-            page_number: 0-based page index to fetch.
+            page_number: 1-based page number to fetch (first page = 1).
             image_id: Image UUID to fetch directly.
             load_pixels: If True, ensure the image pixels/pdf bytes are loaded.
 
@@ -491,10 +492,10 @@ class Document:
             self._initialize_page_references()
 
         if page_number is None:
-            page_number = 0
+            page_number = 1
 
-        if page_number < 0 or page_number > self.number_of_pages:
-            raise IndexError(f"Page number {page_number} out of range (0-{self.number_of_pages}-1)")
+        if page_number < 1 or page_number > self.number_of_pages:
+            raise IndexError(f"Page number {page_number} out of range (1-{self.number_of_pages})")
 
         ref = self._page_references.get(page_number)
         if ref is not None and ref.image_id and ref.image_id in self._images:
@@ -512,7 +513,7 @@ class Document:
         This is a thin wrapper around `get_image` and converts the returned Image to a Page.
 
         Args:
-            page_number (Optional[int]): 0-based page index.
+            page_number (Optional[int]): 1-based page number (first page = 1).
             image_id (Optional[str]): Image UUID to fetch directly.
             load_image (bool): Whether to load pixel data for this page.
 
@@ -538,11 +539,11 @@ class Document:
         """
 
         @curry
-        def get_image(page_number: int, load_pixels: bool) -> Image:
+        def _fetch_image(page_number: int, load_pixels: bool) -> Image:
             return self.get_image(page_number=page_number, load_pixels=load_pixels)
 
-        df = DataFromList(lst=list(range(self.number_of_pages)), shuffle=False)
-        return MapData(df, get_image(load_pixels=load_pixels))
+        df = DataFromList(lst=list(range(1, self.number_of_pages + 1)), shuffle=False)
+        return MapData(df, _fetch_image(load_pixels=load_pixels))
 
     def set_image(self, image: Image, page_number: int) -> None:
         """
@@ -650,8 +651,13 @@ class Document:
     def __len__(self) -> int:
         return self.number_of_pages
 
+    def __iter__(self) -> Iterator[Page]:
+        """Iterate pages in order, yielding Page objects for page numbers 1..N."""
+        for page_number in range(1, self.number_of_pages + 1):
+            yield self.get_page(page_number)
+
     def __getitem__(self, index: int) -> Page:
-        """Get page by 0-indexed position."""
+        """Get page by 1-based page number (first page = 1)."""
         return self.get_page(index)
 
     def save(
@@ -771,8 +777,8 @@ class Document:
 
         The dict is **not** mutated.  Private fields (``_summary``,
         ``_images``, ``_page_references``) and composite fields
-        (``pipeline_jobs``) that cannot be passed directly to the dataclass
-        constructor are extracted and restored after construction.
+        (``pipeline_jobs``) that are not constructor parameters are extracted
+        and restored after construction.
 
         Args:
             inputs: Dict with the same keys as produced by :meth:`as_dict`.
@@ -839,7 +845,7 @@ class Document:
         Create `Document` instance from `.json` file.
 
         Restores private attrs (e.g. `_images`, `_page_references`, `_summary`, `_processing_state`)
-        that are not populated automatically by pydantic from input data.
+        that are not populated automatically by the dataclass constructor from input data.
 
         Args:
             file_path: Path to the `.json` file produced by :meth:`save`.

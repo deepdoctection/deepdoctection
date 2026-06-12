@@ -26,7 +26,7 @@ import json
 import os
 from collections import defaultdict
 from pathlib import Path
-from typing import Any, DefaultDict, Dict, Iterator, List, Optional, Sequence, TextIO, Union
+from typing import Any, Callable, DefaultDict, Dict, Iterator, List, Optional, Sequence, TextIO, Tuple, Union
 
 from lazy_imports import try_import
 from tabulate import tabulate
@@ -54,6 +54,7 @@ __all__ = [
     "SerializerPdfDoc",
     "SerializerTabsepFiles",
     "FileClosingIterator",
+    "make_pdf_page_mapper",
 ]
 
 
@@ -616,6 +617,44 @@ class SerializerCoco:
         raise NotImplementedError()
 
 
+def make_pdf_page_mapper(
+    path: PathLikeOrStr,
+    prefix: str,
+    suffix: str,
+    document_id: Optional[str],
+) -> Callable[[Tuple[bytes, int]], Dict[str, Any]]:
+    """
+    Build a mapping function that converts a ``(pdf_bytes, page_number)`` tuple from
+    ``PDFStreamer`` into the standard page datapoint dict.
+
+    ``page_number`` is already 1-based (``PDFStreamer`` guarantees this).  Both
+    ``SerializerPdfDoc.load`` and ``DoctectionPipe.bytes_to_dataflow`` use this
+    helper so the two ingestion routes stay identical.
+
+    Args:
+        path: Full path (or logical path) to the source PDF.
+        prefix: Filename stem (no extension).
+        suffix: Filename extension, e.g. ``".pdf"``.
+        document_id: Optional explicit document UUID; falls back to a deterministic
+            UUID derived from ``prefix``.
+
+    Returns:
+        A callable that maps ``(bytes, int)`` → ``dict``.
+    """
+    _doc_id = document_id or get_uuid_from_str(prefix)
+
+    def _mapper(dp: Tuple[bytes, int]) -> Dict[str, Any]:
+        return {
+            "path": path,
+            "file_name": prefix + f"_{dp[1]}" + suffix,
+            "pdf_bytes": dp[0],
+            "page_number": dp[1],
+            "document_id": _doc_id,
+        }
+
+    return _mapper
+
+
 class SerializerPdfDoc:
     """
     Serialize a pdf document with an arbitrary number of pages.
@@ -650,16 +689,7 @@ class SerializerPdfDoc:
         prefix, suffix = os.path.splitext(file_name)
         df: DataFlow
         df = CustomDataFromIterable(PDFStreamer(path_or_bytes=path), max_datapoints=max_datapoints)
-        df = MapData(
-            df,
-            lambda dp: {
-                "path": path,
-                "file_name": prefix + f"_{dp[1]}" + suffix,
-                "pdf_bytes": dp[0],
-                "page_number": dp[1],
-                "document_id": document_id or get_uuid_from_str(prefix),
-            },
-        )
+        df = MapData(df, make_pdf_page_mapper(path, prefix, suffix, document_id))
         return df
 
     @staticmethod

@@ -265,7 +265,7 @@ class Image(BaseModel):
                    the document file and its page number.
         location: Full path to the document or to the physical file. Loading functions from disk use this attribute.
         document_id: A unique identifier for the document. If not set, it will be set to the `image_id`.
-        page_number: The page number of the image in the document. If not set, it will be set to 0.
+        page_number: The 1-based page number of the image in the document (first page = 1). If not set, defaults to 1.
         external_id: A string or integer value for generating an `image_id`.
         _image_id: A unique identifier for the image. If not set, it will be set to a generated `uuid`.
         _image: The image as a numpy array. If not set, it will be set to None. Do not set this attribute directly.
@@ -289,7 +289,7 @@ class Image(BaseModel):
     location: str = ""
     external_id: Optional[Union[str, int]] = None
     document_id: str = ""
-    page_number: int = 0
+    page_number: int = 1
 
     embeddings: dict[str, BoundingBox] = Field(default_factory=dict)
     annotations: list[ImageAnnotation] = Field(default_factory=list)
