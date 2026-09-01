@@ -32,7 +32,7 @@ import os
 from collections import defaultdict
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
-from typing import Any, Iterator, Mapping, Optional, Sequence, Union, cast
+from typing import Any, ClassVar, Iterator, Mapping, Optional, Sequence, Union, cast
 
 from .dataflow.base import DataFlow
 from .dataflow.common import MapData
@@ -42,6 +42,7 @@ from .datapoint.annotation import (
     AnnotationMap,
     AnnotationRef,
     CategoryAnnotation,
+    ContainerAnnotation,
     ImageAnnotation,
     ReferencePayload,
     from_json_compatible,
@@ -199,6 +200,13 @@ class Document:
     _summary: Optional[CategoryAnnotation] = field(default=None, init=False, repr=False)
     _pdf_bytes: Optional[bytes] = field(default=None, init=False, repr=False)
     _extras: Extras = field(default_factory=Extras, init=False, repr=False)
+
+    _attribute_names: ClassVar[set[str]] = {
+        "number_of_pages",
+        "structured_output",
+        SummaryKey.DOCUMENT_SUMMARY.value,
+        SummaryKey.DOCUMENT_MAPPING.value,
+    }
 
     def __post_init__(self) -> None:
         if self.location is None or self.location == "":
@@ -431,6 +439,25 @@ class Document:
             KeyError: If *key* has not been configured yet via :meth:`configure_extras`.
         """
         self._extras.dump(key, value)
+
+    def get_attribute_names(self) -> set[str]:
+        """
+        Returns:
+            A set of registered attributes. Includes sub-categories of `summary`.
+        """
+        return self._attribute_names.union({cat.value for cat in self.summary.sub_categories})
+
+    def __getattr__(self, item: str) -> Any:
+        if item not in self.get_attribute_names():
+            raise AttributeError(f"Attribute {item} is not supported for {type(self)}")
+        if item in self.summary.sub_categories:
+            sub_cat = self.summary.get_sub_category(get_type(item))
+            if item != sub_cat.category_name:
+                return sub_cat.category_name
+            if isinstance(sub_cat, ContainerAnnotation):
+                return sub_cat.value
+            return sub_cat.category_id
+        return None
 
     def get_image(
         self,

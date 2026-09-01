@@ -409,11 +409,17 @@ class DocumentFileLabel(ObjectTypes):
     TIFF = "tiff"
 
 
+@object_types_registry.register("DocumentKey")
+class DocumentKey(ObjectTypes):
+    """Type for document level properties"""
+
+    DOCUMENT_TYPE = "document_type"
+
+
 @object_types_registry.register("PageKey")
 class PageKey(ObjectTypes):
     """Type for document page properties"""
 
-    DOCUMENT_TYPE = "document_type"
     LANGUAGE = "language"
     ANGLE = "angle"
     SIZE = "size"
@@ -436,6 +442,8 @@ class SummaryKey(ObjectTypes):
     SUMMARY = "summary"
     DOCUMENT_SUMMARY = "document_summary"
     DOCUMENT_MAPPING = "document_mapping"
+    PAGE_SUMMARY = "page_summary"
+    PAGE_MAPPING = "page_mapping"
     KEY_VALUES = "key_values"
     SPLIT_NEXT = "split_next"
 

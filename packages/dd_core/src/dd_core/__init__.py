@@ -250,6 +250,7 @@ _IMPORT_STRUCTURE = {
         "ObjectTypes",
         "object_types_registry",
         "DefaultType",
+        "DocumentKey",
         "PageKey",
         "ImagePadKey",
         "SummaryKey",

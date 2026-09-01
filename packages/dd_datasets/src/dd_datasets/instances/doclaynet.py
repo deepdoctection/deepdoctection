@@ -40,10 +40,10 @@ from dd_core.mapper.cocostruct import coco_to_image
 from dd_core.utils.fs import load_image_from_file
 from dd_core.utils.object_types import (
     DatasetKind,
+    DocumentKey,
     DocumentLabel,
     LayoutLabel,
     ObjectTypes,
-    PageKey,
     SummaryKey,
     TypeOrStr,
 )
@@ -281,7 +281,7 @@ class DocLayNetSeqBuilder(DataFlowBaseBuilder):
             categories_dict = self.categories.get_categories(init=True, name_as_key=True)
             category_name = label_to_category_name[dp["doc_category"]]
             summary.dump_sub_category(
-                PageKey.DOCUMENT_TYPE,
+                DocumentKey.DOCUMENT_TYPE,
                 CategoryAnnotation(category_name=category_name, category_id=categories_dict[category_name]),
             )
             image.summary = summary
@@ -295,13 +295,15 @@ class DocLayNetSeqBuilder(DataFlowBaseBuilder):
         if self.categories.is_filtered():
             df = MapData(
                 df,
-                filter_summary({PageKey.DOCUMENT_TYPE: self.categories.get_categories(as_dict=False, filtered=True)}),
+                filter_summary(
+                    {DocumentKey.DOCUMENT_TYPE: self.categories.get_categories(as_dict=False, filtered=True)}
+                ),
             )
 
             @curry
             def _re_map_cat_ids(dp: Image, filtered_categories_name_as_key: Mapping[TypeOrStr, int]) -> Image:
-                if PageKey.DOCUMENT_TYPE in dp.summary.sub_categories:
-                    summary_cat = dp.summary.get_sub_category(PageKey.DOCUMENT_TYPE)
+                if DocumentKey.DOCUMENT_TYPE in dp.summary.sub_categories:
+                    summary_cat = dp.summary.get_sub_category(DocumentKey.DOCUMENT_TYPE)
                     summary_cat.category_id = filtered_categories_name_as_key[summary_cat.category_name]
                 return dp
 

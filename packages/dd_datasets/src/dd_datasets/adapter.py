@@ -28,7 +28,7 @@ from dd_core.dataflow import CustomDataFromList, MapData, RepeatedData
 from dd_core.datapoint.image import Image
 from dd_core.mapper import LabelSummarizer
 from dd_core.utils.logger import LoggingRecord, log_once, logger
-from dd_core.utils.object_types import DatasetKind, LayoutLabel, ObjectTypes, PageKey, WordKey
+from dd_core.utils.object_types import DatasetKind, DocumentKey, LayoutLabel, ObjectTypes, WordKey
 from dd_core.utils.tqdm import get_tqdm
 from dd_core.utils.types import DP, JsonDict
 
@@ -136,7 +136,7 @@ class DatasetAdapter(IterableDataset):
                         cat_ids = [ann.category_id for ann in anns]
 
                     elif self.dataset.dataset_info.type == DatasetKind.SEQUENCE_CLASSIFICATION:
-                        cat_ids = dp.summary.get_sub_category(PageKey.DOCUMENT_TYPE).category_id
+                        cat_ids = dp.summary.get_sub_category(DocumentKey.DOCUMENT_TYPE).category_id
 
                     elif self.dataset.dataset_info.type == DatasetKind.TOKEN_CLASSIFICATION:
                         anns = dp.get_annotation(category_names=LayoutLabel.WORD)

@@ -28,7 +28,9 @@ from dd_core.datapoint.image import Image
 from dd_core.datapoint.view import Page
 from dd_core.doc import Document, PageReference
 from dd_core.utils import file_utils as fu
-from dd_core.utils.object_types import get_type
+from dd_core.utils.object_types import SummaryKey, get_type
+
+from .conftest import ObjectTestType
 
 
 @pytest.mark.skipif(not fu.pypdf_available(), reason="Pypdf is not installed")
@@ -272,3 +274,48 @@ def test_pdf_images_dict_non_empty_after_init(pdf_file_path_two_pages: Path) -> 
     """_images is populated after Document init for a PDF"""
     doc = Document(location=pdf_file_path_two_pages)
     assert len(doc._images) > 0
+
+
+def test_document_get_attribute_names_contains_defaults() -> None:
+    """Document.get_attribute_names returns number_of_pages/structured_output/document summary keys"""
+    doc = Document(compute_metadata=False)
+    attr_names = doc.get_attribute_names()
+    assert "number_of_pages" in attr_names
+    assert "structured_output" in attr_names
+    assert SummaryKey.DOCUMENT_SUMMARY.value in attr_names
+    assert SummaryKey.DOCUMENT_MAPPING.value in attr_names
+
+
+def test_document_get_attribute_names_includes_custom_summary_sub_category() -> None:
+    """A custom key dumped into doc.summary is picked up by get_attribute_names"""
+    doc = Document(compute_metadata=False)
+    doc.summary.dump_sub_category(
+        ObjectTestType.SUMMARY_1, CategoryAnnotation(category_name=ObjectTestType.SUMMARY_1, category_id=1)
+    )
+    assert ObjectTestType.SUMMARY_1.value in doc.get_attribute_names()
+
+
+def test_document_custom_summary_sub_category_accessible_via_getattr() -> None:
+    """doc.my_custom_key resolves to the category_id of a custom summary sub category"""
+    doc = Document(compute_metadata=False)
+    doc.summary.dump_sub_category(
+        ObjectTestType.SUMMARY_1, CategoryAnnotation(category_name=ObjectTestType.SUMMARY_1, category_id=1)
+    )
+    assert doc.summary_1 == 1
+
+
+def test_document_custom_summary_sub_category_container_value_accessible_via_getattr() -> None:
+    """doc.my_custom_key resolves to the value of a custom summary ContainerAnnotation"""
+    doc = Document(compute_metadata=False)
+    doc.summary.dump_sub_category(
+        ObjectTestType.SUMMARY_1,
+        ContainerAnnotation(category_name=ObjectTestType.SUMMARY_1, value="my_value"),
+    )
+    assert doc.summary_1 == "my_value"
+
+
+def test_document_getattr_raises_for_unregistered_attribute() -> None:
+    """Attributes that are neither properties nor summary sub categories still raise"""
+    doc = Document(compute_metadata=False)
+    with pytest.raises(AttributeError):
+        _ = doc.some_completely_unknown_attribute

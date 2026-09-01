@@ -1055,7 +1055,12 @@ class Page:
     """
 
     _attribute_names: set[str] = {
+        "image_id",
+        "width",
+        "height",
+        "image",
         "text",
+        "text_no_line_break",
         "chunks",
         "tables",
         "layouts",
@@ -1067,8 +1072,9 @@ class Page:
         "angle",
         "figures",
         "residual_layouts",
-        "document_summary",
-        "document_mapping",
+        "document_type",
+        "page_summary",
+        "page_mapping",
         "b64_image",
     }
 
@@ -1662,38 +1668,15 @@ class Page:
             return img
         return None
 
-    @classmethod
-    def get_attribute_names(cls) -> set[str]:
+    def get_attribute_names(self) -> set[str]:
         """
         Returns:
-            A set of registered attributes.
+            A set of registered attributes. Includes sub-categories of `summary`.
         """
-        attr_names = set(PageKey).union(cls._attribute_names)
+        attr_names: set[Union[str, ObjectTypes]] = set(PageKey).union(self._attribute_names)
+        attr_names = attr_names.union({cat.value for cat in self.summary.sub_categories})
         return {attr_name.value if isinstance(attr_name, ObjectTypes) else attr_name for attr_name in attr_names}
 
-    @classmethod
-    def add_attribute_name(cls, attribute_name: Union[str, ObjectTypes]) -> None:
-        """
-        Adding a custom attribute name to a Page class.
-
-        Example:
-
-            ```python
-            Page.add_attribute_name("foo")
-
-            page = Page.from_image(...)
-            print(page.foo)
-            ```
-
-        Note:
-            The attribute must be registered as a valid `ObjectTypes`
-
-        Args:
-            attribute_name: attribute name to add
-        """
-
-        attribute_name = get_type(attribute_name)
-        cls._attribute_names.add(attribute_name.value)
 
     def save(
         self,

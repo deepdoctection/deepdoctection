@@ -26,7 +26,7 @@ from typing import TYPE_CHECKING, Any, Callable, Literal, Optional, Sequence, Un
 
 from dd_core.datapoint.image import Image, MetaAnnotation
 from dd_core.mapper.laylmstruct import image_to_layoutlm_features, image_to_lm_features
-from dd_core.utils.object_types import BioTagLabel, LayoutLabel, ObjectTypes, PageKey, TokenClassLabel, WordKey
+from dd_core.utils.object_types import BioTagLabel, DocumentKey, LayoutLabel, ObjectTypes, TokenClassLabel, WordKey
 
 from ..extern.base import SequenceClassResult
 from .base import PipelineComponent
@@ -389,7 +389,7 @@ class LMSequenceClassifierService(PipelineComponent):
             lm_output = self.language_model.predict(**lm_input)
         if lm_output:
             self.dp_manager.set_summary_annotation(
-                PageKey.DOCUMENT_TYPE, lm_output.class_name, lm_output.class_id, None, lm_output.score
+                DocumentKey.DOCUMENT_TYPE, lm_output.class_name, lm_output.class_id, None, lm_output.score
             )
 
     def clone(self) -> LMSequenceClassifierService:
@@ -403,7 +403,7 @@ class LMSequenceClassifierService(PipelineComponent):
 
     def get_meta_annotation(self) -> MetaAnnotation:
         return MetaAnnotation(
-            image_annotations=(), sub_categories={}, relationships={}, summaries=(PageKey.DOCUMENT_TYPE,)
+            image_annotations=(), sub_categories={}, relationships={}, summaries=(DocumentKey.DOCUMENT_TYPE,)
         )
 
     def _get_name(self) -> str:
