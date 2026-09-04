@@ -191,6 +191,57 @@ def test_save_load_round_trip_preserves_reference_payload(sample_document_json: 
     assert reloaded.structured_output == expected
 
 
+def test_document_extras_without_persist_do_not_survive_save_load(tmp_path: Path) -> None:
+    """Document-level extras registered without persist=True stay transient across save -> from_json."""
+    doc = Document(file_name="plain", location=Path(), compute_metadata=False)
+    doc.configure_extras("scratch", "str")
+    doc.dump_extra("scratch", "not kept")
+
+    exported = doc.save(dry=True)
+    assert isinstance(exported, dict)
+    assert "_extras" not in exported
+
+    saved_path = doc.save(path=tmp_path)
+    assert isinstance(saved_path, str)
+    reloaded = Document.from_json(saved_path)
+
+    with pytest.raises(AttributeError):
+        _ = reloaded.extras.scratch
+
+
+def test_document_extras_with_persist_survive_save_load(tmp_path: Path) -> None:
+    """Document-level extras registered with persist=True survive a full save -> from_json round trip."""
+    doc = Document(file_name="plain", location=Path(), compute_metadata=False)
+    doc.configure_extras("message", "str", persist=True)
+    doc.dump_extra("message", "e-mail body text")
+
+    saved_path = doc.save(path=tmp_path)
+    assert isinstance(saved_path, str)
+    reloaded = Document.from_json(saved_path)
+
+    assert reloaded.extras.message == "e-mail body text"
+
+
+def test_image_persisted_extras_survive_document_save_load(tmp_path: Path) -> None:
+    """A persist=True extras key configured on a page Image survives a Document save -> from_json round trip."""
+    doc = Document(file_name="plain", location=Path(), compute_metadata=False)
+    img = Image(file_name="test.png", location="/fake/location", page_number=1)
+    img.configure_extras("subject", "str", persist=True)
+    img.dump_extra("subject", "Re: invoice")
+    img.configure_extras("scratch", "str")
+    img.dump_extra("scratch", "not kept")
+    doc.set_image(img, page_number=1)
+
+    saved_path = doc.save(path=tmp_path)
+    assert isinstance(saved_path, str)
+    reloaded = Document.from_json(saved_path)
+
+    reloaded_img = reloaded.get_image(image_id=img.image_id)
+    assert reloaded_img.extras.subject == "Re: invoice"
+    with pytest.raises(AttributeError):
+        _ = reloaded_img.extras.scratch
+
+
 def test_get_annotation_id_with_given_image_id(sample_document_json: Path) -> None:
     """test get annotation id with given image id"""
     doc = Document.from_json(sample_document_json)

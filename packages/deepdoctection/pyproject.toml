@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "deepdoctection"
-version = "1.2.14"
+version = "1.3.0"
 authors = [
     {name = "Dr. Janis Meyer"}
 ]

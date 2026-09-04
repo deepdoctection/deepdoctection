@@ -184,21 +184,39 @@ class ImageFormats:
 
 
 class Extras:
-    """Typed transient key-value store for ``Image`` and ``Document``. Never serialized."""
+    """Typed key-value store for ``Image`` and ``Document``. Transient by default; keys registered with
+    ``persist=True`` on :meth:`set_type` survive ``as_dict()``/``as_json()``/``save()`` round trips.
+
+    Registered values are also readable as plain attributes, e.g. ``extras.foo`` for a key ``"foo"``.
+    """
 
     def __init__(self) -> None:
         self._schema: dict[str, Literal["str", "list[str]"]] = {}
+        self._persist: dict[str, bool] = {}
         self._data: dict[str, Union[str, list[str]]] = {}
 
-    def set_type(self, key: str, value_type: Literal["str", "list[str]"]) -> None:
-        """Register *key* as ``"str"`` (replace on dump) or ``"list[str]"`` (append on dump)."""
+    def set_type(self, key: str, value_type: Literal["str", "list[str]"], persist: bool = False) -> None:
+        """Register *key* as ``"str"`` (replace on dump) or ``"list[str]"`` (append on dump).
+
+        Args:
+            key: The extras key to register. Must not start with ``"_"`` or collide with an existing
+                 ``Extras`` attribute/method name (both would be shadowed by attribute-style read access).
+            value_type: ``"str"`` or ``"list[str]"``.
+            persist: If ``True``, this key's value survives ``as_dict()``/``as_json()``/``save()`` round
+                      trips. If ``False`` (default), it remains transient, matching prior behavior.
+        """
         if value_type not in ("str", "list[str]"):
             raise ValueError(f"value_type must be 'str' or 'list[str]', got {value_type!r}")
         if key in self._schema:
             if self._schema[key] != value_type:
                 raise ValueError(f"Key {key!r} already registered as {self._schema[key]!r}")
+            if self._persist[key] != persist:
+                raise ValueError(f"Key {key!r} already registered with persist={self._persist[key]!r}")
             return
+        if key.startswith("_") or hasattr(type(self), key):
+            raise ValueError(f"Key {key!r} is reserved and cannot be used as an extras key")
         self._schema[key] = value_type
+        self._persist[key] = persist
         if value_type == "list[str]":
             self._data[key] = []
 
@@ -214,22 +232,43 @@ class Extras:
             lst = self._data.setdefault(key, [])
             lst.append(value)  # type: ignore[union-attr]
 
-    def as_dict(self) -> dict[str, Any]:
-        """Return a JSON-serializable dict that fully represents this ``Extras`` instance."""
-        return {"_schema": dict(self._schema), "_data": dict(self._data)}
+    def as_dict(self, add_extras: bool = False) -> dict[str, Any]:
+        """Return a JSON-serializable dict representing this ``Extras`` instance.
+
+        Args:
+            add_extras: If ``True``, return every registered key regardless of its ``persist`` flag
+                        (full/debug dump). If ``False`` (default), return only keys registered with
+                        ``persist=True`` — this is what standard ``Image``/``Document`` serialization uses.
+        """
+        if add_extras:
+            keys = list(self._schema)
+        else:
+            keys = [key for key, persist in self._persist.items() if persist]
+        return {
+            "_schema": {key: self._schema[key] for key in keys},
+            "_persist": {key: self._persist[key] for key in keys},
+            "_data": {key: self._data[key] for key in keys if key in self._data},
+        }
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> Extras:
         """Reconstruct an ``Extras`` instance from a dict produced by :meth:`as_dict`."""
         obj = cls()
         obj._schema = data["_schema"]
+        obj._persist = dict(data.get("_persist", {}))
         obj._data = data["_data"]
         return obj
+
+    def __getattr__(self, name: str) -> Any:
+        schema = self.__dict__.get("_schema", {})
+        if name in schema:
+            return self.__dict__.get("_data", {}).get(name)
+        raise AttributeError(f"{type(self).__name__!r} object has no attribute {name!r}")
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, Extras):
             return NotImplemented
-        return self._schema == other._schema and self._data == other._data
+        return self._schema == other._schema and self._persist == other._persist and self._data == other._data
 
 
 class Image(BaseModel):
@@ -274,8 +313,8 @@ class Image(BaseModel):
         annotations: A list of `ImageAnnotation` objects. Use `get_annotation` to retrieve annotations.
         _annotation_ids: A list of `annotation_id`s. Used internally to ensure uniqueness of annotations.
         _summary: A `CategoryAnnotation` for image-level informations. If not set, it will be set to None.
-        _extras: A `dict` for storing additional transient messages or metadata. Not persisted in
-                 serialization and silently ignored when present in constructor kwargs.
+        _extras: An `Extras` store for additional messages or metadata. Transient by default; keys
+                 registered with `persist=True` via `configure_extras` survive serialization.
 
     """
 
@@ -307,8 +346,9 @@ class Image(BaseModel):
         Accept private attrs in kwargs (e.g. `_image_id`, `_summary`, `_bbox`, `_annotation_ids`, `_image`,
          `_pdf_bytes`, `_extras`)
         Remove them before BaseModel initialization and set the PrivateAttr values afterwards so that
-        `Image(**inputs)` works when legacy code passes private keys. `_extras` is restored when a dict
-        produced by ``as_dict(add_extras=True)`` is passed; otherwise a fresh ``Extras`` instance is used.
+        `Image(**inputs)` works when legacy code passes private keys. `_extras` is restored whenever a
+        dict is present under that key (whether produced by ``as_dict()``'s persisted-only default or by
+        ``as_dict(add_extras=True)``'s full dump); otherwise a fresh ``Extras`` instance is used.
         """
         private_keys = ["_image", "_bbox", "_annotation_ids", "_summary", "_image_id", "_pdf_bytes"]
         extras_raw = data.pop("_extras", None)
@@ -493,17 +533,19 @@ class Image(BaseModel):
     @property
     def extras(self) -> Extras:
         """
-        Typed transient key-value store for additional messages or metadata attached to this image.
+        Typed key-value store for additional messages or metadata attached to this image.
 
         Keys must be registered with :meth:`configure_extras` before values can be stored via
-        :meth:`dump_extra`.  The store is never serialized.
+        :meth:`dump_extra`.  By default the store is transient; keys registered with ``persist=True``
+        survive ``as_json()``/``save()`` round trips.  Values are readable as attributes,
+        e.g. ``image.extras.foo``.
 
         Returns:
             The :class:`Extras` instance for this image.
         """
         return self._extras
 
-    def configure_extras(self, key: str, value_type: str) -> None:
+    def configure_extras(self, key: str, value_type: str, persist: bool = False) -> None:
         """
         Register *key* in the extras store with the given *value_type*.
 
@@ -514,8 +556,10 @@ class Image(BaseModel):
             key: The extras key to register.
             value_type: ``"str"`` for single-value assignment, or
                 ``"list[str]"`` for append-mode storage.
+            persist: If ``True``, the value stored under *key* survives ``as_json()``/``save()``
+                     round trips. Defaults to ``False`` (transient, matching prior behavior).
         """
-        self._extras.set_type(key, value_type)  # type: ignore[arg-type]
+        self._extras.set_type(key, value_type, persist)  # type: ignore[arg-type]
 
     def dump_extra(self, key: str, value: str) -> None:
         """
@@ -771,6 +815,10 @@ class Image(BaseModel):
 
         data.pop("_annotation_ids", None)
 
+        persisted_extras = self._extras.as_dict()
+        if persisted_extras["_schema"]:
+            data["_extras"] = persisted_extras
+
         return data
 
     def as_dict(self, add_extras: bool = False) -> dict[str, Any]:
@@ -778,15 +826,16 @@ class Image(BaseModel):
         Returns the full image dataclass as dict.
 
         Args:
-            add_extras: When ``True``, the ``_extras`` store is included under the ``"_extras"`` key.
-                        Defaults to ``False`` so that normal serialization is unchanged.
+            add_extras: When ``True``, the full ``_extras`` store (regardless of each key's ``persist``
+                        flag) is included under the ``"_extras"`` key. Defaults to ``False``, in which case
+                        only keys registered with ``persist=True`` are included (and only if there are any).
 
         Returns:
             A custom `dict`.
         """
         result = self.model_dump(by_alias=True, exclude_none=False)
         if add_extras:
-            result["_extras"] = self._extras.as_dict()
+            result["_extras"] = self._extras.as_dict(add_extras=True)
         return result
 
     def as_json(self) -> str:

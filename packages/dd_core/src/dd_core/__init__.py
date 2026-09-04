@@ -32,7 +32,7 @@ from typing import TYPE_CHECKING
 
 from .utils.file_utils import _LazyModule
 
-__version__ = "1.2.14"
+__version__ = "1.3.0"
 _IMPORT_STRUCTURE = {
     "dataflow": [
         "DataFlowReentrantGuard",

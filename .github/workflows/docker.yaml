@@ -14,6 +14,19 @@ jobs:
     steps:
       - name: Check out the repo
         uses: actions/checkout@v4
+        with:
+          # workflow_run always runs in the context of the default branch, so
+          # github.ref does NOT point at the release tag that triggered it.
+          # Check out the exact commit the Release workflow ran on instead.
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Determine release version
+        id: release
+        run: |
+          tag=$(git describe --tags --exact-match HEAD 2>/dev/null || true)
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
 
       - name: Docker metadata
         id: meta
@@ -23,11 +36,8 @@ jobs:
           tags: |
             # branch event
             type=ref,event=branch
-            # tag event
-            type=ref,event=tag
-            # pull request event
-            # minimal
-            type=semver,pattern={{major}}.{{minor}}
+            # explicit release version, resolved from the checked-out commit
+            type=raw,value=${{ steps.release.outputs.tag }},enable=${{ steps.release.outputs.tag != '' }}
 
       - name: Login to DockerHub
         uses: docker/login-action@v3

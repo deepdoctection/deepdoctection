@@ -480,7 +480,8 @@ class ModelDownloadManager:
     def _load_from_hf_hub(
         repo_id: str, file_name: str, cache_directory: PathLikeOrStr, force_download: bool = False
     ) -> int:
-        token = os.environ.get("HF_CREDENTIALS", None)
+        # Read the token from the settings object: it is a secret and is never written to `os.environ`.
+        token = SETTINGS.HF_CREDENTIALS.get_secret_value() if SETTINGS.HF_CREDENTIALS is not None else None
         f_path = hf_hub_download(
             repo_id,
             file_name,

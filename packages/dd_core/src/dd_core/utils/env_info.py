@@ -45,9 +45,6 @@ Exported environment variables (names and meaning)
     Increase verbosity for stdout output (default: `False`). Especially useful to
     understand, if the `DatapointManager` has issues to add `Annotation`s to an `Image`.
 
-- `HF_CREDENTIALS` (Secret / sensitive)
-    Hugging Face credentials used by the `ModelDownloadManager`. Treated as a secret.
-
 - `MODEL_CATALOG` (str / path)
     Optional path to a `.jsonl` model catalog (default: `None`). This will add your (custom)
     models to the `ModelCatalog`. Do not confuse with `MODEL_CATALOG_BASE`.
@@ -119,14 +116,23 @@ Exported environment variables (names and meaning)
 - `PATH_DD_PACKAGE` (path)
     Filesystem path to the installed deepdoctection package root.
 
+Environment variables that are read but never exported (secrets)
+- `HF_CREDENTIALS` (Secret / sensitive)
+    Hugging Face credentials used by the `ModelDownloadManager`. Set it in your shell or in the `.env`
+    file as usual, but consume it as `SETTINGS.HF_CREDENTIALS.get_secret_value()`. An empty value is treated
+    like an unset one, i.e. downloads fall back to anonymous access.
+
+- `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` (Secret / sensitive)
+    Same handling as `HF_CREDENTIALS`..
+
 Notes and behavior
 - The pydantic settings loader reads `.env` by default (see `EnvSettings.model_config`).
 - If a user explicitly sets a setting via environment or `.env`, that value is respected;
   otherwise runtime detection (e.g., presence of PyTorch, OpenCV, pdf backends) will
   determine defaults.
 - When exporting, boolean values are written as the strings `True`/`False`. `None` is not exported.
-- Secret values (e.g., `HF_CREDENTIALS`) are treated as sensitive and are redacted by helper
-  text-dumping utilities.
+- Secret values (e.g., `HF_CREDENTIALS`) are treated as sensitive: they are never exported to
+  `os.environ`. Exporting a `SecretStr` raises.
 - To customize behavior you may set any of the above variables in your shell, for example:
 
     export LOG_LEVEL=DEBUG
@@ -147,7 +153,7 @@ from pathlib import Path
 from typing import Any, Optional
 
 import numpy as np
-from pydantic import Field, SecretStr, model_validator
+from pydantic import Field, SecretStr, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from tabulate import tabulate
 
@@ -381,6 +387,22 @@ class EnvSettings(BaseSettings):
         extra="ignore",
     )
 
+    # ---- Field level normalization ----
+    @field_validator("HF_CREDENTIALS", "AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY", mode="before")
+    @classmethod
+    def _empty_secret_to_none(cls, value: Any) -> Any:
+        """
+        Treat an empty secret (e.g. `HF_CREDENTIALS=` in a `.env` file) exactly like an unset one.
+
+        An empty token is not a valid credential and would, e.g., make `hf_hub_download` send an empty
+        `Bearer` header instead of falling back to anonymous access.
+        """
+        if isinstance(value, SecretStr):
+            value = value.get_secret_value()
+        if isinstance(value, str) and not value.strip():
+            return None
+        return value
+
     # ---- Post-load reconciliation and rule application ----
     @model_validator(mode="after")
     def _apply_runtime_rules(self) -> EnvSettings:
@@ -468,6 +490,11 @@ class EnvSettings(BaseSettings):
         """
 
         def _set(k: str, v: Any) -> None:
+            if isinstance(v, SecretStr):
+                raise TypeError(
+                    f"{k} is a SecretStr and must not be exported to os.environ. Read it from "
+                    f"`SETTINGS.{k}.get_secret_value()` instead."
+                )
             if isinstance(v, bool):
                 os.environ[k] = "True" if v else "False"
             elif v is None:
@@ -482,8 +509,6 @@ class EnvSettings(BaseSettings):
             "LOG_PROPAGATE": self.LOG_PROPAGATE,
             "FILTER_THIRD_PARTY_LIB": self.FILTER_THIRD_PARTY_LIB,
             "STD_OUT_VERBOSE": self.STD_OUT_VERBOSE,
-            # hf / catalog
-            "HF_CREDENTIALS": self.HF_CREDENTIALS,
             "MODEL_CATALOG": self.MODEL_CATALOG,
             "ENABLE_DYNAMIC_OBJECT_TYPES": self.ENABLE_DYNAMIC_OBJECT_TYPES,
             # dl flags

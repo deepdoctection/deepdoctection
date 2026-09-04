@@ -42,7 +42,9 @@ with your variables in your workdir.
     understand, if the `DatapointManager` has issues to add `Annotation`s to an `Image`.
 
 - `HF_CREDENTIALS` (Secret / sensitive)
-    Hugging Face credentials used by the `ModelDownloadManager`. Treated as a secret.
+    Hugging Face credentials used by the `ModelDownloadManager`. Treated as a secret: it is read into
+    `SETTINGS.HF_CREDENTIALS`. Setting it empty is the same as
+    not setting it at all.
 
 - `MODEL_CATALOG` (str / path)
     Optional path to a `.jsonl` model catalog (default: `None`). This will add your (custom)
@@ -106,7 +108,9 @@ paths below are relative to the cache root (default: ~/.cache/deepdoctection) un
 ### How models are downloaded and saved
 
 The model download manager writes into MODEL_DIR (by default DEEPDOCTECTION_CACHE/weights).
-Authentication (when required) uses the `HF_CREDENTIALS` environment variable for Hugging Face downloads.
+Authentication (when required) uses the `HF_CREDENTIALS` environment variable (or the corresponding `.env`
+entry) for Hugging Face downloads. The value is consumed via `SETTINGS.HF_CREDENTIALS`. If it is unset or 
+empty, the download is anonymous.
 
 Where models are downloaded from and where they are cached is encoded in the `ModelCatalog`.
 

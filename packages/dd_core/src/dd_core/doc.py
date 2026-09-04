@@ -432,17 +432,19 @@ class Document:
     @property
     def extras(self) -> Extras:
         """
-        Typed transient key-value store for additional messages or metadata attached to this document.
+        Typed key-value store for additional messages or metadata attached to this document.
 
         Keys must be registered with :meth:`configure_extras` before values can be stored via
-        :meth:`dump_extra`.  The store is never serialized.
+        :meth:`dump_extra`.  By default the store is transient; keys registered with ``persist=True``
+        survive ``as_json()``/``save()`` round trips.  Values are readable as attributes,
+        e.g. ``doc.extras.foo``.
 
         Returns:
             The :class:`Extras` instance for this document.
         """
         return self._extras
 
-    def configure_extras(self, key: str, value_type: str) -> None:
+    def configure_extras(self, key: str, value_type: str, persist: bool = False) -> None:
         """
         Register *key* in the extras store with the given *value_type*.
 
@@ -453,8 +455,10 @@ class Document:
             key: The extras key to register.
             value_type: ``"str"`` for single-value assignment, or
                 ``"list[str]"`` for append-mode storage.
+            persist: If ``True``, the value stored under *key* survives ``as_json()``/``save()``
+                     round trips. Defaults to ``False`` (transient, matching prior behavior).
         """
-        self._extras.set_type(key, value_type)  # type: ignore[arg-type]
+        self._extras.set_type(key, value_type, persist)  # type: ignore[arg-type]
 
     def dump_extra(self, key: str, value: str) -> None:
         """
@@ -695,7 +699,7 @@ class Document:
 
     def as_dict(self) -> dict[str, Any]:
         """Return document metadata as dict."""
-        return {
+        result = {
             "file_name": self.file_name,
             "location": os.fspath(self.location) if self.location is not None else None,
             "file_type": self.file_type,
@@ -707,6 +711,10 @@ class Document:
             "_images": {key: val.as_dict() for key, val in self._images.items()},
             "_page_references": {key: asdict(value) for key, value in self._page_references.items()},
         }
+        persisted_extras = self._extras.as_dict()
+        if persisted_extras["_schema"]:
+            result["_extras"] = persisted_extras
+        return result
 
     def as_json(self) -> str:
         """Return document metadata as JSON string."""
@@ -746,7 +754,7 @@ class Document:
             path: Path to save the `.json` file to. If `None`, uses `self.location`.
                   If a directory is provided, saves as `<dir>/<document_id>.json`.
             dry: If `True`, do not write files; return the export dict.
-            extra_file: If `True`, annotations flagged via ``image.extras["extra_file"]`` (a
+            extra_file: If `True`, annotations flagged via ``image.extras.extra_file`` (a
                 ``list[str]`` of annotation ids) are popped from each image and from the document
                 summary, then written to a sidecar file named
                 ``<path_without_.json>_extra.json``.  The main JSON will not contain those
@@ -797,9 +805,9 @@ class Document:
             path_json = os.fspath(path) + ".json"
 
         if extra_file and not dry:
-            all_ann_ids: list[str] = list(self._extras._data.get("extra_file", []))
+            all_ann_ids: list[str] = list(getattr(self._extras, "extra_file", None) or [])
             for image in self._images.values():
-                all_ann_ids.extend(image.extras._data.get("extra_file", []))
+                all_ann_ids.extend(getattr(image.extras, "extra_file", None) or [])
 
             if all_ann_ids:
                 all_export = self.export_annotations(all_ann_ids)
@@ -861,7 +869,7 @@ class Document:
         pipeline_jobs = raw.pop("pipeline_jobs", {})
 
         raw.pop("_processing_state", None)
-        raw.pop("_extras", None)
+        extras_raw = raw.pop("_extras", None)
 
         if "document_type" in raw:
             raw["file_type"] = raw.pop("document_type")
@@ -869,6 +877,9 @@ class Document:
         raw["compute_metadata"] = False
 
         doc = cls(**raw)
+
+        if isinstance(extras_raw, dict):
+            doc._extras = Extras.from_dict(extras_raw)
 
         if pipeline_jobs:
             doc.pipeline_jobs = {
