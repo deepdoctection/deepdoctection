@@ -273,3 +273,49 @@ class TestContainerAnnotationReferencePayloadSerialization:
         leaf = reloaded.value.content["h"]["num"][0]  # pylint: disable=E1101
         assert isinstance(leaf, AnnotationRef)
         assert leaf == AnnotationRef(image_id="img1", annotation_id="ann1")
+
+
+class TestContainerAnnotationMixedReferencePayload:
+    """A payload whose leaves mix annotation references with values that are not quoted from the document"""
+
+    @staticmethod
+    def _mixed_payload() -> ReferencePayload:
+        """Payload with every leaf shape a structured output task can produce"""
+        return ReferencePayload(
+            content={
+                "quoted_matched": [
+                    AnnotationRef(image_id="img1", annotation_id="ann1"),
+                    AnnotationRef(image_id="img1", annotation_id="ann2"),
+                ],
+                "quoted_unmatched": [],
+                "quoted_null": None,
+                "inferred_str": "not written on the page",
+                "inferred_int": 42,
+                "inferred_float": 3.14,
+                "inferred_bool": True,
+                "inferred_none": None,
+                "inferred_obj": {"flag": False, "nested": {"n": 1}},
+                "inferred_arr": [1, 2, {"k": "v"}],
+                "mixed_in_array": [{"quoted": [AnnotationRef(image_id="img1", annotation_id="ann3")], "count": 7}],
+            }
+        )
+
+    def test_mixed_payload_round_trips_through_json(self) -> None:
+        """Non reference leaves must survive as_dict -> json -> reload unchanged, next to the references"""
+        payload = self._mixed_payload()
+        container = ContainerAnnotation(category_name="test_cat_1", value=payload)
+        assert container.value_type == "reference_payload"
+
+        reloaded = build_container_annotation(json.loads(json.dumps(container.as_dict())))
+
+        assert isinstance(reloaded.value, ReferencePayload)
+        assert reloaded.value == payload
+
+        content = reloaded.value.content  # pylint: disable=E1101
+        assert isinstance(content["quoted_matched"][0], AnnotationRef)
+        assert content["inferred_bool"] is True
+        assert content["inferred_int"] == 42
+        assert content["inferred_none"] is None
+        assert content["inferred_obj"] == {"flag": False, "nested": {"n": 1}}
+        assert content["inferred_arr"] == [1, 2, {"k": "v"}]
+        assert isinstance(content["mixed_in_array"][0]["quoted"][0], AnnotationRef)

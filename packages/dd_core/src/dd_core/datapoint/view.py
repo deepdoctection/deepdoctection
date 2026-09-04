@@ -22,7 +22,7 @@ Dataclass `Page`, `ImageAnnotationBaseView` and derived classes
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Dict, Mapping, Optional, Sequence, Tuple, Type, Union, no_type_check
+from typing import Any, Callable, Dict, Mapping, Optional, Sequence, Tuple, Type, Union, no_type_check
 
 import numpy as np
 
@@ -44,10 +44,12 @@ from ..utils.transform import ResizeTransform, box_to_point4, point4_to_box
 from ..utils.types import HTML, Chunks, ImageDict, PathLikeOrStr, PixelValues, csv
 from ..utils.viz import draw_boxes, interactive_imshow, viz_handler
 from .annotation import (
+    AnnotationRef,
     CategoryAnnotation,
     ContainerAnnotation,
     ImageAnnotation,
     ReferencePayload,
+    from_json_compatible,
     maybe_to_annotation_ref,
 )
 from .box import BoundingBox, crop_box_from_image
@@ -1035,6 +1037,55 @@ def ann_obj_view_factory(
     return layout_class(image_annotation=annotation, base_page=base_page, text_container=text_container)
 
 
+def resolve_reference_payload(
+    payload: ReferencePayload,
+    get_annotation: Callable[[AnnotationRef], ImageAnnotationBaseView],
+) -> Any:
+    """
+    Resolve a `ReferencePayload` by replacing every `AnnotationRef` leaf with the text of the referenced
+    annotation.
+
+    Only `AnnotationRef` leaves are touched. Every other leaf - `str`, `int`, `float`, `bool`, `None`, an
+    empty list, or a plain nested dict/list - is returned unchanged, so a payload whose content mixes
+    references with values that are not quoted from the document resolves without special casing.
+
+    `from_json_compatible` is applied to the payload content first, so that both already-instantiated
+    `AnnotationRef` objects and their serialised dict representations are handled uniformly. How an
+    `AnnotationRef` is turned into an annotation is left to `get_annotation`: a `Page` looks the annotation
+    up among its own annotations, whereas a `doc.Document` routes the lookup to the image the reference
+    points to.
+
+    Args:
+        payload: The `ReferencePayload` whose content should be resolved.
+        get_annotation: Callable returning the annotation an `AnnotationRef` points to.
+
+    Returns:
+        The payload content with every `AnnotationRef` replaced by the annotation's `text` attribute (empty
+        string when absent). The shape mirrors `payload.content`, i.e. usually a dict, but a list or a
+        scalar for a payload whose content is one.
+    """
+    return _resolve_node(from_json_compatible(payload.content), get_annotation)
+
+
+def _resolve_node(node: Any, get_annotation: Callable[[AnnotationRef], ImageAnnotationBaseView]) -> Any:
+    if isinstance(node, AnnotationRef):
+        ann = get_annotation(node)
+        attribute_names = ann.get_attribute_names()
+        if "text" in attribute_names:
+            return ann.text
+        if "characters" in attribute_names:
+            return ann.characters
+        return ""
+
+    if isinstance(node, dict):
+        return {key: _resolve_node(value, get_annotation) for key, value in node.items()}
+
+    if isinstance(node, list):
+        return [_resolve_node(item, get_annotation) for item in node]
+
+    return node
+
+
 class Page:
     """
     Consumer class for its super `Image` class. It comes with some `@property`s as well as
@@ -1076,6 +1127,7 @@ class Page:
         "page_summary",
         "page_mapping",
         "b64_image",
+        "structured_output",
     }
 
     def __init__(
@@ -1164,6 +1216,41 @@ class Page:
     def base_image(self) -> Image:
         """property base_image"""
         return self._base_image
+
+    def resolve_reference_payload(self, payload: ReferencePayload) -> Any:
+        """
+        Resolve a `ReferencePayload` by replacing every `AnnotationRef` leaf with the text of the referenced
+        annotation of this page. Leaves that are not annotation references are returned unchanged.
+
+        Args:
+            payload: The `ReferencePayload` whose content should be resolved.
+
+        Returns:
+            The payload content with every `AnnotationRef` replaced by the annotation's text.
+
+        Raises:
+            AnnotationError: If a reference points to another image or to an annotation this page does not
+                             have.
+        """
+        return resolve_reference_payload(payload, self._get_annotation_by_ref)
+
+    def _get_annotation_by_ref(self, ref: AnnotationRef) -> ImageAnnotationBaseView:
+        if ref.image_id is not None and ref.image_id != self.image_id:
+            raise AnnotationError(
+                f"AnnotationRef points to image {ref.image_id} and cannot be resolved on page {self.image_id}"
+            )
+        anns = self.get_annotation(annotation_ids=ref.annotation_id)
+        if not anns:
+            raise AnnotationError(f"annotation_id {ref.annotation_id} does not exist on page {self.image_id}")
+        return anns[0]
+
+    @property
+    def structured_output(self) -> dict[str, Any]:
+        """structured output"""
+        if "structured_output" in self.summary.sub_categories:
+            payload = self.summary.get_sub_category(get_type("structured_output")).value  # type: ignore
+            return self.resolve_reference_payload(payload)
+        return {}
 
     def get_annotation(
         self,
@@ -1676,7 +1763,6 @@ class Page:
         attr_names: set[Union[str, ObjectTypes]] = set(PageKey).union(self._attribute_names)
         attr_names = attr_names.union({cat.value for cat in self.summary.sub_categories})
         return {attr_name.value if isinstance(attr_name, ObjectTypes) else attr_name for attr_name in attr_names}
-
 
     def save(
         self,

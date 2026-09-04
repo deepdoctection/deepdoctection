@@ -18,17 +18,24 @@
 """
 Testing module for doc.py
 """
+
 import os
 from pathlib import Path
 
 import pytest
 
-from dd_core.datapoint.annotation import AnnotationRef, CategoryAnnotation, ContainerAnnotation, ReferencePayload
+from dd_core.datapoint.annotation import (
+    DEFAULT_CATEGORY_ID,
+    AnnotationRef,
+    CategoryAnnotation,
+    ContainerAnnotation,
+    ReferencePayload,
+)
 from dd_core.datapoint.image import Image
 from dd_core.datapoint.view import Page
-from dd_core.doc import Document, PageReference
+from dd_core.doc import Document, PageReference, re_assign_document_summary_cat_ids
 from dd_core.utils import file_utils as fu
-from dd_core.utils.object_types import SummaryKey, get_type
+from dd_core.utils.object_types import DocumentFileLabel, DocumentKey, DocumentLabel, SummaryKey, get_type
 
 from .conftest import ObjectTestType
 
@@ -158,7 +165,7 @@ def test_save_load_round_trip_preserves_reference_payload(sample_document_json: 
     assert expected  # sanity: the sample document carries a ReferencePayload summary value
 
     # document-level summary value must be a ReferencePayload in memory
-    doc_summary_value = doc.summary.get_sub_category(get_type("key_values")).value  # type:ignore
+    doc_summary_value = doc.summary.get_sub_category(get_type("structured_output")).value  # type:ignore
     assert isinstance(doc_summary_value, ReferencePayload)
 
     saved_path = doc.save(path=tmp_path)
@@ -167,7 +174,7 @@ def test_save_load_round_trip_preserves_reference_payload(sample_document_json: 
     reloaded = Document.from_json(saved_path)
 
     # value survives the round trip as a ReferencePayload (not a plain dict)
-    reloaded_value = reloaded.summary.get_sub_category(get_type("key_values")).value  # type:ignore
+    reloaded_value = reloaded.summary.get_sub_category(get_type("structured_output")).value  # type:ignore
     assert isinstance(reloaded_value, ReferencePayload)
 
     # AnnotationRef leaves are reconstructed as AnnotationRef instances, not plain dicts
@@ -319,3 +326,111 @@ def test_document_getattr_raises_for_unregistered_attribute() -> None:
     doc = Document(compute_metadata=False)
     with pytest.raises(AttributeError):
         _ = doc.some_completely_unknown_attribute
+
+
+@pytest.mark.parametrize(
+    "suffix,expected_file_type",
+    [
+        (".png", DocumentFileLabel.PNG),
+        (".jpg", DocumentFileLabel.JPG),
+        (".jpeg", DocumentFileLabel.JPEG),
+        (".tif", DocumentFileLabel.TIFF),
+        (".tiff", DocumentFileLabel.TIFF),
+    ],
+)
+def test_single_image_resolves_file_type_from_suffix(
+    sample_document_image_path: Path, tmp_path: Path, suffix: str, expected_file_type: DocumentFileLabel
+) -> None:
+    """test that a document backed by a single image file resolves its file type from the suffix"""
+
+    location = tmp_path / f"sample{suffix}"
+    location.write_bytes(sample_document_image_path.read_bytes())
+
+    doc = Document(location=location)
+
+    assert doc.file_type == expected_file_type
+    assert doc.file_name == location.name
+
+
+def test_single_image_reports_one_page(sample_document_image_path: Path) -> None:
+    """test that a document backed by a single image file has exactly one page"""
+
+    doc = Document(location=sample_document_image_path)
+
+    assert doc.number_of_pages == 1
+    assert doc.get_page_reference(1).source_path == os.fspath(sample_document_image_path)
+
+
+def test_single_image_get_image_loads_pixels(sample_document_image_path: Path) -> None:
+    """test that a document backed by a single image file reloads its pixels"""
+
+    doc = Document(location=sample_document_image_path)
+
+    image = doc.get_image(page_number=1, load_pixels=True)
+
+    assert image.page_number == 1
+    assert image.image is not None
+
+
+def test_single_image_save_load_round_trip(sample_document_image_path: Path, tmp_path: Path) -> None:
+    """test that a document backed by a single image file survives a save/load round trip"""
+
+    location = tmp_path / "sample.png"
+    location.write_bytes(sample_document_image_path.read_bytes())
+    doc = Document(location=location)
+    saved_path = doc.save(image_to_json=False, path=tmp_path)
+
+    doc = Document.from_json(str(saved_path))
+
+    assert doc.file_type == DocumentFileLabel.PNG
+    assert doc.number_of_pages == 1
+    assert doc.get_image(page_number=1, load_pixels=True).image is not None
+
+
+def test_legacy_document_type_key_still_loads() -> None:
+    """test that a document saved before `document_type` was renamed to `file_type` still loads"""
+
+    inputs = Document(file_name="sample.png", file_type=DocumentFileLabel.PNG, compute_metadata=False).as_dict()
+    inputs["document_type"] = inputs.pop("file_type")
+
+    doc = Document.from_dict(inputs)
+
+    assert doc.file_type == DocumentFileLabel.PNG
+
+
+def test_re_assign_document_summary_cat_ids() -> None:
+    """test that summary sub categories of a document are assigned the ids of the categories passed"""
+
+    doc = Document(compute_metadata=False)
+    doc.summary.dump_sub_category(DocumentKey.DOCUMENT_TYPE, CategoryAnnotation(category_name=DocumentLabel.INVOICE))
+
+    doc = re_assign_document_summary_cat_ids(  # pylint: disable=E1120
+        {DocumentKey.DOCUMENT_TYPE: {DocumentLabel.LETTER: 1, DocumentLabel.INVOICE: 2}}
+    )(doc)
+
+    assert doc.summary.get_sub_category(DocumentKey.DOCUMENT_TYPE).category_id == 2
+
+
+def test_re_assign_document_summary_cat_ids_with_unknown_category() -> None:
+    """test that an unknown category name falls back to the default category id"""
+
+    doc = Document(compute_metadata=False)
+    doc.summary.dump_sub_category(DocumentKey.DOCUMENT_TYPE, CategoryAnnotation(category_name=DocumentLabel.INVOICE))
+
+    doc = re_assign_document_summary_cat_ids(  # pylint: disable=E1120
+        {DocumentKey.DOCUMENT_TYPE: {DocumentLabel.LETTER: 1}}
+    )(doc)
+
+    assert doc.summary.get_sub_category(DocumentKey.DOCUMENT_TYPE).category_id == DEFAULT_CATEGORY_ID
+
+
+def test_re_assign_document_summary_cat_ids_skips_missing_keys() -> None:
+    """test that a summary sub category key that is not dumped is skipped"""
+
+    doc = Document(compute_metadata=False)
+
+    doc = re_assign_document_summary_cat_ids(  # pylint: disable=E1120
+        {DocumentKey.DOCUMENT_TYPE: {DocumentLabel.LETTER: 1}}
+    )(doc)
+
+    assert DocumentKey.DOCUMENT_TYPE not in doc.summary.sub_categories

@@ -19,7 +19,12 @@
 Testing Page class methods
 """
 
+import pytest
+
+from dd_core.datapoint.annotation import AnnotationRef, ContainerAnnotation, ReferencePayload
 from dd_core.datapoint.view import Page
+from dd_core.utils.error import AnnotationError
+from dd_core.utils.object_types import SummaryKey
 
 
 class TestPageMethods:
@@ -60,3 +65,102 @@ class TestPageMethods:
         """save() returns dict when dry=True"""
         result = page.save(dry=True)
         assert isinstance(result, dict)
+
+
+class TestPageResolveReferencePayload:
+    """Test resolving a `ReferencePayload` on page level"""
+
+    def test_resolve_reference_payload_returns_text(self, page: Page) -> None:
+        """resolve_reference_payload resolves AnnotationRef leaves to the text of the page annotation"""
+        word = page.words[0]
+
+        payload = ReferencePayload(
+            content={"some_word": AnnotationRef(annotation_id=word.annotation_id, image_id=page.image_id)}
+        )
+
+        assert page.resolve_reference_payload(payload) == {"some_word": word.characters}
+
+    def test_resolve_reference_payload_without_image_id(self, page: Page) -> None:
+        """An AnnotationRef without image_id is resolved on the page itself"""
+        word = page.words[0]
+
+        payload = ReferencePayload(
+            content={"some_word": AnnotationRef(annotation_id=word.annotation_id, image_id=None)}
+        )
+
+        assert page.resolve_reference_payload(payload) == {"some_word": word.characters}
+
+    def test_resolve_reference_payload_of_foreign_image_raises(self, page: Page) -> None:
+        """An AnnotationRef pointing to another image cannot be resolved on this page"""
+        word = page.words[0]
+
+        payload = ReferencePayload(
+            content={"some_word": AnnotationRef(annotation_id=word.annotation_id, image_id="some_other_image")}
+        )
+
+        with pytest.raises(AnnotationError):
+            page.resolve_reference_payload(payload)
+
+    def test_structured_output_is_empty_without_summary_sub_category(self, page: Page) -> None:
+        """structured_output returns an empty dict, if the page summary has no structured_output"""
+        assert "structured_output" not in page.summary.sub_categories
+        assert page.structured_output == {}
+
+    def test_structured_output_resolves_summary_payload(self, page: Page) -> None:
+        """structured_output resolves the ReferencePayload dumped into the page summary"""
+        word = page.words[0]
+        page.summary.dump_sub_category(
+            SummaryKey.STRUCTURED_OUTPUT,
+            ContainerAnnotation(
+                category_name=SummaryKey.STRUCTURED_OUTPUT,
+                value=ReferencePayload(
+                    content={"some_word": AnnotationRef(annotation_id=word.annotation_id, image_id=page.image_id)}
+                ),
+            ),
+        )
+
+        assert page.structured_output == {"some_word": word.characters}
+
+    def test_resolve_mixed_payload_passes_non_reference_leaves_through(self, page: Page) -> None:
+        """Only AnnotationRef leaves are resolved, every other leaf is returned unchanged"""
+        word = page.words[0]
+
+        payload = ReferencePayload(
+            content={
+                "quoted": [AnnotationRef(annotation_id=word.annotation_id, image_id=page.image_id)],
+                "quoted_unmatched": [],
+                "quoted_null": None,
+                "inferred_str": "not written on the page",
+                "inferred_int": 42,
+                "inferred_bool": True,
+                "inferred_obj": {"flag": False, "arr": [1, "two", None]},
+            }
+        )
+
+        assert page.resolve_reference_payload(payload) == {
+            "quoted": [word.characters],
+            "quoted_unmatched": [],
+            "quoted_null": None,
+            "inferred_str": "not written on the page",
+            "inferred_int": 42,
+            "inferred_bool": True,
+            "inferred_obj": {"flag": False, "arr": [1, "two", None]},
+        }
+
+    def test_structured_output_resolves_mixed_summary_payload(self, page: Page) -> None:
+        """The same holds for a mixed payload dumped into the page summary"""
+        word = page.words[0]
+        page.summary.dump_sub_category(
+            SummaryKey.STRUCTURED_OUTPUT,
+            ContainerAnnotation(
+                category_name=SummaryKey.STRUCTURED_OUTPUT,
+                value=ReferencePayload(
+                    content={
+                        "quoted": [AnnotationRef(annotation_id=word.annotation_id, image_id=page.image_id)],
+                        "inferred": {"is_signed": True, "pages": 3},
+                    }
+                ),
+            ),
+        )
+
+        assert page.structured_output == {"quoted": [word.characters], "inferred": {"is_signed": True, "pages": 3}}

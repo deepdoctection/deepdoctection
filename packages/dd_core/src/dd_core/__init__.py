@@ -41,6 +41,7 @@ _IMPORT_STRUCTURE = {
         "ProxyDataFlow",
         "TestDataSpeed",
         "FlattenData",
+        "FlattenDocumentImages",
         "MapData",
         "MapDataComponent",
         "RepeatedData",
@@ -111,6 +112,7 @@ _IMPORT_STRUCTURE = {
         "IMAGE_DEFAULTS",
         "ann_obj_view_factory",
         "Page",
+        "resolve_reference_payload",
     ],
     "mapper": [
         "cat_to_sub_cat",
@@ -312,7 +314,7 @@ _IMPORT_STRUCTURE = {
         "interactive_imshow",
         "viz_handler",
     ],
-    "doc": ["Document"],
+    "doc": ["Document", "re_assign_document_summary_cat_ids"],
 }
 
 if TYPE_CHECKING:

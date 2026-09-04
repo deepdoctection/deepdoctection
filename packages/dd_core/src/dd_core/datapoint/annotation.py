@@ -80,7 +80,8 @@ def from_json_compatible(node: Any) -> Any:
 
     Returns:
         The converted node with every matching dict replaced by the corresponding ``AnnotationRef``
-        or ``ReferencePayload`` instance.
+        or ``ReferencePayload`` instance. Nodes carrying no ``_ref_type`` marker are returned unchanged,
+        so plain scalars and plain nested dicts/lists survive verbatim.
     """
     if isinstance(node, list):
         return [from_json_compatible(item) for item in node]
@@ -171,8 +172,12 @@ def maybe_to_annotation_ref(obj: Any) -> AnnotationRef | None:
 class ReferencePayload:
     """Wrapper carrying arbitrary nested content that may contain ``AnnotationRef`` leaves.
 
+    Leaves are not required to be references: a payload may mix ``AnnotationRef`` leaves with plain
+    ``str``/``int``/``float``/``bool``/``None`` values and plain nested dicts/lists at any depth.
+
     Attributes:
-        content: The wrapped payload. May be a dict, list, or any nested combination thereof.
+        content: The wrapped payload. Any JSON-like value, i.e. a dict, a list, a scalar, or any nested
+                 combination thereof.
     """
 
     content: Any
@@ -204,7 +209,7 @@ class ReferencePayload:
         if obj.get("_ref_type") == "reference_payload":
             content = obj["content"]
             return cls(content=from_json_compatible(content))
-        raise TypeError("Cannot build AnnotationRef")
+        raise TypeError("Cannot build ReferencePayload")
 
     @classmethod
     def is_dict_reference_payload(cls, obj: Any) -> bool:
@@ -907,8 +912,9 @@ class ContainerAnnotation(CategoryAnnotation):
     @field_serializer("value")
     def _serialize_value(self, value: Any, _info: Any) -> Any:
         """Serialize ``value`` so that any nested ``ReferencePayload``/``AnnotationRef`` instances are written
-        with their ``_ref_type`` discriminator markers. ``to_json_compatible`` is a no-op for plain
-        ``str``/``int``/``float``/``list[str]``/``dict[str, Any]`` values.
+        with their ``_ref_type`` discriminator markers. ``to_json_compatible`` dispatches on Python type and
+        returns everything else verbatim, so plain values - ``str``/``int``/``float``/``bool``/``None``,
+        lists and dicts, including such leaves nested inside a ``ReferencePayload`` - pass through unchanged.
         """
         return to_json_compatible(value)
 

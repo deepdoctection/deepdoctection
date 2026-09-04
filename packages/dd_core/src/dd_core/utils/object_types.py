@@ -444,7 +444,7 @@ class SummaryKey(ObjectTypes):
     DOCUMENT_MAPPING = "document_mapping"
     PAGE_SUMMARY = "page_summary"
     PAGE_MAPPING = "page_mapping"
-    KEY_VALUES = "key_values"
+    STRUCTURED_OUTPUT = "structured_output"
     SPLIT_NEXT = "split_next"
 
 

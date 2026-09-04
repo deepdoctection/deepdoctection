@@ -97,6 +97,41 @@ class FlattenData(ProxyDataFlow):
                     yield [dpp] if isinstance(dp, list) else tuple(dpp)
 
 
+class FlattenDocumentImages(ProxyDataFlow):
+    """
+    FlattenDocumentImages flattens a DataFlow of documents into a DataFlow of their pages.
+
+    Each incoming datapoint must expose a `get_image_dataflow(load_pixels)` method that returns a
+    DataFlow over the pages of that datapoint, e.g. `dd_core.doc.Document`. Pages are yielded in
+    page order, one document after the other.
+
+    Example:
+        ```python
+        df = ... # a DataFlow yielding two Document instances with 2 and 3 pages
+        df = FlattenDocumentImages(df, load_image=True)
+
+        yields: 5 Image datapoints
+        ```
+    """
+
+    def __init__(self, df: DataFlow, load_image: bool = False) -> None:
+        """
+        Args:
+            df: Input DataFlow yielding datapoints with a `get_image_dataflow` method.
+            load_image: Whether the yielded page images should carry pixel data.
+        """
+        super().__init__(df)
+        self.load_image = load_image
+
+    def __iter__(self) -> Iterator[Any]:
+        if not self._reset_called:
+            raise DataFlowResetStateNotCalledError()
+        for dp in self.df:
+            df = dp.get_image_dataflow(load_pixels=self.load_image)
+            df.reset_state()
+            yield from df
+
+
 class MapData(ProxyDataFlow):
     """
     MapData applies a mapper/filter on the datapoints of a DataFlow.

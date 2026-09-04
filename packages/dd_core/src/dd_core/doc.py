@@ -39,6 +39,7 @@ from .dataflow.common import MapData
 from .dataflow.custom_serialize import SerializerFiles, SerializerPdfDoc
 from .dataflow.serialize import DataFromList
 from .datapoint.annotation import (
+    DEFAULT_CATEGORY_ID,
     AnnotationMap,
     AnnotationRef,
     CategoryAnnotation,
@@ -48,13 +49,23 @@ from .datapoint.annotation import (
     from_json_compatible,
 )
 from .datapoint.image import Extras, Image
-from .datapoint.view import ImageAnnotationBaseView, Page
+from .datapoint.view import ImageAnnotationBaseView, Page, resolve_reference_payload
 from .mapper.maputils import curry
 from .utils import get_uuid_from_str
+from .utils.error import AnnotationError
 from .utils.file_utils import mkdir_p, pypdf_available
-from .utils.object_types import DocumentFileLabel, ObjectTypes, SummaryKey, get_type
+from .utils.object_types import DocumentFileLabel, ObjectTypes, SummaryKey, TypeOrStr, get_type
 from .utils.types import PathLikeOrStr
 from .utils.viz import viz_handler
+
+_SUFFIX_TO_DOCUMENT_TYPE: Mapping[str, DocumentFileLabel] = {
+    ".pdf": DocumentFileLabel.PDF,
+    ".png": DocumentFileLabel.PNG,
+    ".jpg": DocumentFileLabel.JPG,
+    ".jpeg": DocumentFileLabel.JPEG,
+    ".tif": DocumentFileLabel.TIFF,
+    ".tiff": DocumentFileLabel.TIFF,
+}
 
 
 @dataclass(frozen=True)
@@ -114,6 +125,8 @@ def flatten_entity_dict_to_ann_index(
         data: Arbitrary nested mapping/list structure that may contain
             AnnotationRef objects, serialized AnnotationRef dictionaries,
             ReferencePayload, or serialized ReferencePayload dictionaries.
+            Leaves that are none of these, e.g. scalars or plain nested
+            dicts/lists, carry no annotation and are skipped.
 
     Returns:
         Mapping where keys are annotation UUID strings and values are sets
@@ -136,7 +149,8 @@ def build_viz_labels_from_nested_entities(
 
     Args:
         entities: Nested mapping/list structure containing annotation references,
-            or a ReferencePayload wrapping such a structure.
+            or a ReferencePayload wrapping such a structure. Leaves that are not
+            annotation references contribute no label.
 
     Returns:
         Mapping from annotation UUID to label string.
@@ -159,7 +173,7 @@ class Document:
     Attributes:
         file_name: Name of the document file
         location: Path to the document or directory containing images
-        document_type: Type of document (PDF or image collection)
+        file_type: Type of document (PDF or image collection)
         external_id: Optional external identifier
         document_id: UUID-like identifier used to identify the document instance.
         compute_metadata: Whether to compute page references during initialization.
@@ -171,7 +185,7 @@ class Document:
         doc = Document(
             file_name="report.pdf",
             location="/path/to/report.pdf",
-            document_type=DocumentType.PDF
+            file_type=DocumentFileLabel.PDF
         )
 
         # Iterate pages (lazy loaded, 1-based page numbers)
@@ -188,7 +202,7 @@ class Document:
 
     file_name: str = ""
     location: Path = field(default_factory=Path)
-    document_type: Optional[DocumentFileLabel] = None
+    file_type: Optional[DocumentFileLabel] = None
     external_id: Optional[str] = None
     document_id: str = ""
     compute_metadata: bool = True
@@ -204,8 +218,8 @@ class Document:
     _attribute_names: ClassVar[set[str]] = {
         "number_of_pages",
         "structured_output",
-        SummaryKey.DOCUMENT_SUMMARY.value,
-        SummaryKey.DOCUMENT_MAPPING.value,
+        "document_summary",
+        "document_mapping",
     }
 
     def __post_init__(self) -> None:
@@ -214,7 +228,7 @@ class Document:
         elif not isinstance(self.location, Path):
             self.location = Path(self.location)
 
-        self._resolve_document_type()
+        self._resolve_file_type()
 
         if not self.document_id:
             self.document_id = get_uuid_from_str(str(self.location))
@@ -222,29 +236,33 @@ class Document:
         if self.compute_metadata:
             self._initialize_page_references()
 
-    def _resolve_document_type(self) -> None:
+    def _resolve_file_type(self) -> None:
         """
-        Infer `document_type` from `location`.
+        Infer `file_type` from `location`.
 
         Rules:
-        - If `location` is a directory: `DocumentFileType.IMAGE_COLLECTION`
-        - If `location` is a file with suffix `.pdf`: `DocumentFileType.PDF`
+        - If `location` is a directory: `DocumentFileLabel.VAR`
+        - If `location` is a file with suffix `.pdf`: `DocumentFileLabel.PDF`
+        - If `location` is a file with suffix `.png`, `.jpg`, `.jpeg`, `.tif` or `.tiff`: the
+          corresponding single image label, e.g. `DocumentFileLabel.PNG`
 
-        Leaves `document_type` unchanged if it is already set or cannot be resolved.
+        Leaves `file_type` unchanged if it is already set or cannot be resolved.
         """
-        if self.document_type is not None:
-            self.document_type = cast(DocumentFileLabel, get_type(self.document_type))
+        if self.file_type is not None:
+            self.file_type = cast(DocumentFileLabel, get_type(self.file_type))
             return
         if not self.location:
             return
 
         if self.location.exists() and self.location.is_dir():
-            self.document_type = DocumentFileLabel.VAR
+            self.file_type = DocumentFileLabel.VAR
             return
 
-        if self.location.exists() and self.location.is_file() and self.location.suffix.lower() == ".pdf":
-            self.document_type = DocumentFileLabel.PDF
-            self.file_name = self.location.name
+        if self.location.exists() and self.location.is_file():
+            file_type = _SUFFIX_TO_DOCUMENT_TYPE.get(self.location.suffix.lower())
+            if file_type is not None:
+                self.file_type = file_type
+                self.file_name = self.location.name
             return
 
     def _initialize_page_references(self) -> None:
@@ -252,16 +270,27 @@ class Document:
         if not self.location:
             return
 
-        if self.document_type == DocumentFileLabel.PDF:
+        if self.file_type == DocumentFileLabel.PDF:
             if not self.location.exists():
                 raise FileNotFoundError(f"Document location does not exist: {self.location}")
             self._load_pdf_metadata()
             return
 
-        if self.document_type == DocumentFileLabel.VAR:
+        if self.file_type == DocumentFileLabel.VAR:
             if not self.location.exists():
                 raise FileNotFoundError(f"Document location does not exist: {self.location}")
             self._load_image_metadata()
+            return
+
+        if self.file_type in (
+            DocumentFileLabel.PNG,
+            DocumentFileLabel.JPG,
+            DocumentFileLabel.JPEG,
+            DocumentFileLabel.TIFF,
+        ):
+            if not self.location.exists():
+                raise FileNotFoundError(f"Document location does not exist: {self.location}")
+            self._load_single_image_metadata()
             return
 
     @property
@@ -270,7 +299,7 @@ class Document:
         if self._page_references:
             return len(self._page_references)
 
-        if self.document_type == DocumentFileLabel.PDF:
+        if self.file_type == DocumentFileLabel.PDF:
             self._load_pdf_metadata()
 
         return len(self._page_references)
@@ -296,6 +325,19 @@ class Document:
 
         self._page_references = refs
         self._images = loaded
+
+    def _load_single_image_metadata(self) -> None:
+
+        image = Image(
+            file_name=self.location.name,
+            location=os.fspath(self.location),
+            page_number=1,
+        )
+
+        self._page_references = {
+            1: PageReference(source_path=os.fspath(self.location), page_number=1, image_id=image.image_id)
+        }
+        self._images = {image.image_id: image}
 
     def _load_pdf_metadata(self) -> None:
         location_path = Path(self.location)
@@ -332,52 +374,42 @@ class Document:
         """get page reference from page number."""
         return self._page_references[page_number]
 
-    def resolve_reference_payload(self, payload: ReferencePayload) -> dict[str, Any]:
+    def resolve_reference_payload(self, payload: ReferencePayload) -> Any:
         """
-        Resolve a ``ReferencePayload`` into a plain dict by replacing every
-        ``AnnotationRef`` leaf with the text of the referenced annotation.
+        Resolve a ``ReferencePayload`` by replacing every ``AnnotationRef`` leaf
+        with the text of the referenced annotation. Leaves that are not
+        annotation references are returned unchanged.
 
-        ``from_json_compatible`` is applied to the payload content first so
-        that both already-instantiated ``AnnotationRef`` objects and their
-        serialised dict representations are handled uniformly.
+        The same mechanism is available on page level, cf.
+        ``datapoint.view.Page.resolve_reference_payload``. Each ``AnnotationRef``
+        is looked up on the image it points to.
 
         Args:
             payload: The ``ReferencePayload`` whose content should be resolved.
 
         Returns:
-            A nested dict/list structure with every ``AnnotationRef`` replaced
-            by the annotation's ``text`` attribute (empty string when absent).
+            The payload content with every ``AnnotationRef`` replaced by the
+            annotation's ``text`` attribute (empty string when absent).
+
+        Raises:
+            ValueError: If a reference does not carry an ``image_id``.
+            AnnotationError: If a reference points to an annotation the image does not have.
         """
-        return self._resolve_node(from_json_compatible(payload.content))
+        return resolve_reference_payload(payload, self._get_annotation_by_ref)
 
-    def _resolve_node(self, node: Any) -> Any:
-        if isinstance(node, AnnotationRef):
-            if node.image_id is None:
-                raise ValueError(
-                    "image_id cannot be None when resolving ReferencePayload with resolve_reference_payload"
-                )
-            ann = self.get_annotation(image_id=node.image_id, annotation_ids=node.annotation_id)[0]
-            if "text" in ann.get_attribute_names():
-                text = ann.text
-            elif "characters" in ann.get_attribute_names():
-                text = ann.characters
-            else:
-                text = ""
-            return text
-
-        if isinstance(node, dict):
-            return {key: self._resolve_node(value) for key, value in node.items()}
-
-        if isinstance(node, list):
-            return [self._resolve_node(item) for item in node]
-
-        return node
+    def _get_annotation_by_ref(self, ref: AnnotationRef) -> ImageAnnotationBaseView:
+        if ref.image_id is None:
+            raise ValueError("image_id cannot be None when resolving ReferencePayload with resolve_reference_payload")
+        anns = self.get_annotation(image_id=ref.image_id, annotation_ids=ref.annotation_id)
+        if not anns:
+            raise AnnotationError(f"annotation_id {ref.annotation_id} does not exist on image {ref.image_id}")
+        return anns[0]
 
     @property
     def structured_output(self) -> dict[str, Any]:
         """structured output"""
-        if "key_values" in self.summary.sub_categories:
-            payload = self.summary.get_sub_category(get_type("key_values")).value  # type: ignore
+        if "structured_output" in self.summary.sub_categories:
+            payload = self.summary.get_sub_category(get_type("structured_output")).value  # type: ignore
             return self.resolve_reference_payload(payload)
         return {}
 
@@ -471,7 +503,7 @@ class Document:
         Resolution order:
         1) fetch by `image_id` from `_images`
         2) ensure `_page_references` initialized, then fetch by `page_number`
-        3) load/clear pixel payload based on `load_pixels` and `document_type`
+        3) load/clear pixel payload based on `load_pixels` and `file_type`
 
         Args:
             page_number: 1-based page number to fetch (first page = 1).
@@ -501,11 +533,17 @@ class Document:
                 img.clear_image()
                 return img
 
-            if load_pixels and self.document_type == DocumentFileLabel.VAR:
+            if load_pixels and self.file_type in (
+                DocumentFileLabel.VAR,
+                DocumentFileLabel.PNG,
+                DocumentFileLabel.JPG,
+                DocumentFileLabel.JPEG,
+                DocumentFileLabel.TIFF,
+            ):
                 img.image = viz_handler.read_image(img.location)
                 return img
 
-            if load_pixels and self.document_type == DocumentFileLabel.PDF:
+            if load_pixels and self.file_type == DocumentFileLabel.PDF:
                 img.image = _load_pdf_page_bytes(target_page_number)
                 return img
 
@@ -629,9 +667,11 @@ class Document:
 
     def __repr__(self) -> str:
         return (
-            f"Document(file_name={self.file_name!r}, "
-            f"document_type={self.document_type.value if self.document_type else ''}, "
-            f"pages={self.number_of_pages}, "
+            f"Document(file_name={self.file_name}, "
+            f"file_type={self.file_type.value if self.file_type else ''}, "
+            f"pages={self.number_of_pages},"
+            f"location={self.location}, "
+            f"document_id={self.document_id}) "
         )
 
     def remove_page(self, page_number: int) -> None:
@@ -658,7 +698,7 @@ class Document:
         return {
             "file_name": self.file_name,
             "location": os.fspath(self.location) if self.location is not None else None,
-            "document_type": self.document_type,
+            "file_type": self.file_type,
             "external_id": self.external_id,
             "document_id": self.document_id,
             "compute_metadata": self.compute_metadata,
@@ -822,6 +862,9 @@ class Document:
 
         raw.pop("_processing_state", None)
         raw.pop("_extras", None)
+
+        if "document_type" in raw:
+            raw["file_type"] = raw.pop("document_type")
 
         raw["compute_metadata"] = False
 
@@ -1076,3 +1119,41 @@ class Document:
                     export_dict[ann_id] = (ann_maps, annotation)  # type:ignore
 
         return export_dict
+
+
+@curry
+def re_assign_document_summary_cat_ids(
+    document: Document,
+    summary_key_to_categories: Mapping[TypeOrStr, Mapping[TypeOrStr, int]],
+) -> Document:
+    """
+    Re-assign `category_id`s of the sub categories of `Document.summary`.
+
+    `mapper.cats.re_assign_cat_ids` covers the summary of an `Image`, but it cannot be used on a
+    `Document`: it calls `get_annotation` without an `image_id` and `remove`, neither of which a
+    `Document` provides. This mapper closes that gap and does nothing else.
+
+    Example:
+        ```python
+        document = re_assign_document_summary_cat_ids(
+            {DocumentKey.DOCUMENT_TYPE: {DocumentType.INVOICE: 1, DocumentType.BANK_STATEMENT: 2}}
+        )(document)
+        ```
+
+    Args:
+        document: Document datapoint
+        summary_key_to_categories: A dict mapping a summary sub category key to a dict of category
+                                   names and their ids. Sub category keys that are not dumped to the
+                                   summary are skipped, unknown category names will be assigned
+                                   `DEFAULT_CATEGORY_ID`.
+
+    Returns:
+        The same document instance with updated summary `category_id`s.
+    """
+    for summary_key, name_to_id in summary_key_to_categories.items():
+        key = get_type(summary_key)
+        if key not in document.summary.sub_categories:
+            continue
+        sub_category = document.summary.get_sub_category(key)
+        sub_category.category_id = name_to_id.get(get_type(sub_category.category_name), DEFAULT_CATEGORY_ID)
+    return document

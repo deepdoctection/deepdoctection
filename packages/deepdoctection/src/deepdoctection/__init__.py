@@ -57,7 +57,6 @@ _IMPORT_STRUCTURE = {
         "DoctrTextRecognizer",
         "DocTrRotationTransformer",
         "HFDetrDerivedDetector",
-        "get_tokenizer_from_architecture",
         "HFLayoutLmTokenClassifierBase",
         "HFLayoutLmTokenClassifier",
         "HFLayoutLmv2TokenClassifier",
@@ -83,9 +82,6 @@ _IMPORT_STRUCTURE = {
     "pipe": [
         "DatapointManager",
         "PipelineComponent",
-        "PredictorPipelineComponent",
-        "LanguageModelPipelineComponent",
-        "ImageTransformPipelineComponent",
         "Pipeline",
         "DetectResultGenerator",
         "SubImageLayoutService",
