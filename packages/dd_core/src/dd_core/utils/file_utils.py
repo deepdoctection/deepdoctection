@@ -452,6 +452,7 @@ def get_cocotools_requirement() -> Requirement:
 
 # scipy dependency
 _SCIPY_AVAILABLE = importlib.util.find_spec("scipy") is not None
+_SCIPY_ERR_MSG = f"scipy must be installed. {_GENERIC_ERR_MSG}"
 
 
 def scipy_available() -> bool:
@@ -462,6 +463,16 @@ def scipy_available() -> bool:
         bool: `True` if `scipy` is installed, `False` otherwise.
     """
     return bool(_SCIPY_AVAILABLE)
+
+
+def get_scipy_requirement() -> Requirement:
+    """
+    Returns the `scipy` requirement.
+
+    Returns:
+        tuple: A tuple containing the package name, whether the requirement is satisfied, and an error message.
+    """
+    return "scipy", scipy_available(), _SCIPY_ERR_MSG
 
 
 # jdeskew dependency

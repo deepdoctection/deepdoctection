@@ -311,7 +311,7 @@ class TestContainerAnnotationMixedReferencePayload:
         assert isinstance(reloaded.value, ReferencePayload)
         assert reloaded.value == payload
 
-        content = reloaded.value.content  # pylint: disable=E1101
+        content = reloaded.value.content
         assert isinstance(content["quoted_matched"][0], AnnotationRef)
         assert content["inferred_bool"] is True
         assert content["inferred_int"] == 42

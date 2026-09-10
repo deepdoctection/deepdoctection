@@ -37,7 +37,7 @@ from dd_core.doc import Document, PageReference, re_assign_document_summary_cat_
 from dd_core.utils import file_utils as fu
 from dd_core.utils.object_types import DocumentFileLabel, DocumentKey, DocumentLabel, SummaryKey, get_type
 
-from .conftest import ObjectTestType
+from .conftest import ObjectTestType  # pylint: disable=E0611
 
 
 @pytest.mark.skipif(not fu.pypdf_available(), reason="Pypdf is not installed")
@@ -455,7 +455,7 @@ def test_re_assign_document_summary_cat_ids() -> None:
     doc = Document(compute_metadata=False)
     doc.summary.dump_sub_category(DocumentKey.DOCUMENT_TYPE, CategoryAnnotation(category_name=DocumentLabel.INVOICE))
 
-    doc = re_assign_document_summary_cat_ids(  # pylint: disable=E1120
+    doc = re_assign_document_summary_cat_ids(  # pylint: disable=E1102
         {DocumentKey.DOCUMENT_TYPE: {DocumentLabel.LETTER: 1, DocumentLabel.INVOICE: 2}}
     )(doc)
 
@@ -468,7 +468,7 @@ def test_re_assign_document_summary_cat_ids_with_unknown_category() -> None:
     doc = Document(compute_metadata=False)
     doc.summary.dump_sub_category(DocumentKey.DOCUMENT_TYPE, CategoryAnnotation(category_name=DocumentLabel.INVOICE))
 
-    doc = re_assign_document_summary_cat_ids(  # pylint: disable=E1120
+    doc = re_assign_document_summary_cat_ids(  # pylint: disable=E1102
         {DocumentKey.DOCUMENT_TYPE: {DocumentLabel.LETTER: 1}}
     )(doc)
 
@@ -480,7 +480,7 @@ def test_re_assign_document_summary_cat_ids_skips_missing_keys() -> None:
 
     doc = Document(compute_metadata=False)
 
-    doc = re_assign_document_summary_cat_ids(  # pylint: disable=E1120
+    doc = re_assign_document_summary_cat_ids(  # pylint: disable=E1102
         {DocumentKey.DOCUMENT_TYPE: {DocumentLabel.LETTER: 1}}
     )(doc)
 

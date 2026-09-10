@@ -32,7 +32,7 @@ from typing import TYPE_CHECKING
 
 from .utils.file_utils import _LazyModule
 
-__version__ = "1.3.0"
+__version__ = "1.4.0"
 _IMPORT_STRUCTURE = {
     "dataflow": [
         "DataFlowReentrantGuard",
@@ -205,6 +205,7 @@ _IMPORT_STRUCTURE = {
         "cocotools_available",
         "get_cocotools_requirement",
         "scipy_available",
+        "get_scipy_requirement",
         "jdeskew_available",
         "get_jdeskew_requirement",
         "sklearn_available",
@@ -304,12 +305,12 @@ _IMPORT_STRUCTURE = {
         "PadTransform",
         "RotationTransform",
         "delete_keys_from_dict",
-        "split_string",
+        "as_string",
+        "is_leaf",
+        "flatten",
         "string_to_dict",
-        "to_bool",
         "call_only_once",
         "is_file_extension",
-        "partition_list",
         "draw_boxes",
         "interactive_imshow",
         "viz_handler",

@@ -12,7 +12,7 @@ from dd_core.utils.env_info import collect_env_info
 from dd_core.utils.file_utils import _LazyModule
 from dd_core.utils.logger import LoggingRecord, logger
 
-__version__ = "1.3.0"
+__version__ = "1.4.0"
 _IMPORT_STRUCTURE = {
     "analyzer": ["config_sanity_checks", "get_dd_analyzer", "ServiceFactory", "update_cfg_from_defaults"],
     "eval": [
@@ -29,6 +29,17 @@ _IMPORT_STRUCTURE = {
         "Evaluator",
         "metric_registry",
         "get_metric",
+        "bag_similarity",
+        "align",
+        "Counts",
+        "field_counts",
+        "RecordAlignMetric",
+        "RecordAlignPrecisionMetric",
+        "RecordAlignRecallMetric",
+        "RecordAlignF1Metric",
+        "RecordAlignPrecisionMetricMicro",
+        "RecordAlignRecallMetricMicro",
+        "RecordAlignF1MetricMicro",
         "TableTree",
         "CustomConfig",
         "TEDS",
