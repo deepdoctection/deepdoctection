@@ -104,6 +104,16 @@ class TestIsLeaf:
         assert is_leaf(value) is expected
 
 
+EMPTY_RECORDS: list[Any] = [
+    {},
+    [],
+    None,
+    "",
+    {"valueDate": None, "postings": []},
+    {"a": {"b": ["", "   ", None]}},
+]
+
+
 class TestFlatten:
     """Test flatten"""
 
@@ -135,17 +145,7 @@ class TestFlatten:
         }
 
     @staticmethod
-    @pytest.mark.parametrize(
-        "record",
-        [
-            {},
-            [],
-            None,
-            "",
-            {"valueDate": None, "postings": []},
-            {"a": {"b": ["", "   ", None]}},
-        ],
-    )
+    @pytest.mark.parametrize("record", EMPTY_RECORDS)
     def test_flatten_discards_empty_leaves(record: Any) -> None:
         """Test flatten drops empty leaves so that empty on both sides is not a match"""
         assert not flatten(record)

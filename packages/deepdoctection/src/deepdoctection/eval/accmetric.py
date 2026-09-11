@@ -33,7 +33,7 @@ from tabulate import tabulate
 from termcolor import colored
 
 from dd_core.dataflow import DataFlow
-from dd_core.mapper import image_to_cat_id
+from dd_core.mapper import image_or_docs_to_cat_id
 from dd_core.utils.file_utils import Requirement
 from dd_core.utils.logger import LoggingRecord, logger
 from dd_core.utils.object_types import ObjectTypes, TypeOrStr, get_type
@@ -234,7 +234,7 @@ class ClassificationMetric(MetricBase):
         _summary_sub_cats: Optional sequence of `ObjectTypes` for summary
     """
 
-    mapper = image_to_cat_id
+    mapper = image_or_docs_to_cat_id
     _cats: Optional[Sequence[ObjectTypes]] = None
     _sub_cats: Optional[Union[Mapping[ObjectTypes, ObjectTypes], Mapping[ObjectTypes, Sequence[ObjectTypes]]]] = None
     _summary_sub_cats: Optional[Sequence[ObjectTypes]] = None

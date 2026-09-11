@@ -35,7 +35,7 @@ from __future__ import annotations
 
 from collections import Counter, defaultdict
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Callable, Optional
+from typing import TYPE_CHECKING, Any, Literal, Mapping, Optional, Sequence, Union
 
 import numpy as np
 from lazy_imports import try_import
@@ -43,8 +43,10 @@ from tabulate import tabulate
 from termcolor import colored
 
 from dd_core.dataflow import DataFlow
+from dd_core.mapper import image_or_docs_to_cat_id
 from dd_core.utils.file_utils import Requirement, get_scipy_requirement
 from dd_core.utils.logger import LoggingRecord, logger
+from dd_core.utils.object_types import ObjectTypes, TypeOrStr, get_type
 from dd_core.utils.types import MetricResults
 from dd_core.utils.utils import as_string, flatten
 
@@ -78,10 +80,6 @@ def _value_bag(record: Any) -> Counter[tuple[str, str]]:
     """
     Reduces a record to the multiset of its `(field_path, value)` pairs.
 
-    Keying by field path as well as by value keeps a value from matching an equal value that sits
-    under a different field path, while the multiset keeps a repeated value matchable as often as it
-    occurs.
-
     Args:
         record: An arbitrarily nested structure of mappings, sequences and scalars.
 
@@ -97,8 +95,7 @@ def bag_similarity(record_gt: Any, record_pred: Any) -> float:
 
     Both records are flattened into `{field_path: [values]}` first. Values are then matched per field
     path as multisets, so that neither the ordering of sub-records nor the ordering of the field paths
-    has any influence on the score. Two records that are both empty are considered identical and score
-    `1.0`.
+    has any influence on the score.
 
     Args:
         record_gt: The ground truth record. An arbitrarily nested structure of mappings, sequences and
@@ -136,9 +133,7 @@ def align(
 
     The cost of pairing two records is `1.0 - bag_similarity(...)`, so that identical records cost
     zero and records without any common value cost one. Solving the linear sum assignment problem on
-    that cost matrix yields the pairing with the lowest total cost. Pairs whose similarity stays below
-    `min_similarity` are dropped again, so that two records without meaningful overlap are reported as
-    one missing and one spurious record rather than as one badly matched pair.
+    that cost matrix yields the pairing with the lowest total cost.
 
     Args:
         records_gt: Ground truth records, e.g. the elements of `bookings`.
@@ -148,9 +143,7 @@ def align(
 
     Returns:
         A tuple of three items. The first holds the accepted pairs as `(gt_index, pred_index)`, sorted
-        by ground truth index. The second holds the indices of ground truth records left without a
-        partner, whose values are all false negatives. The third holds the indices of predicted
-        records left without a partner, whose values are all false positives.
+        by ground truth index.
 
     Note:
         Requires `scipy`.
@@ -166,8 +159,6 @@ def align(
     if not records_gt or not records_pred:
         return [], list(range(len(records_gt))), list(range(len(records_pred)))
 
-    # flatten every record once instead of once per pair, which is what a separate cost matrix helper
-    # calling bag_similarity would do
     bags_gt = [_value_bag(record) for record in records_gt]
     bags_pred = [_value_bag(record) for record in records_pred]
     sizes_gt = [sum(bag.values()) for bag in bags_gt]
@@ -176,15 +167,12 @@ def align(
     cost = np.empty((len(bags_gt), len(bags_pred)), dtype=np.float64)
     for row, (bag_gt, size_gt) in enumerate(zip(bags_gt, sizes_gt)):
         for column, (bag_pred, size_pred) in enumerate(zip(bags_pred, sizes_pred)):
-            # counting the multiset intersection directly avoids building an intermediate Counter,
-            # otherwise this is the Jaccard index of bag_similarity
             matches = sum(min(count, bag_pred[value]) for value, count in bag_gt.items())
             total = size_gt + size_pred - matches
             cost[row, column] = 1.0 - (matches / total if total else 1.0)
 
     rows, columns = linear_sum_assignment(cost)
 
-    # tolist keeps the indices builtin ints instead of numpy integers
     max_cost = 1.0 - min_similarity
     pairs: list[tuple[int, int]] = [
         (row, column) for row, column in zip(rows.tolist(), columns.tolist()) if cost[row, column] <= max_cost
@@ -308,8 +296,7 @@ def field_counts(node_gt: Any, node_pred: Any) -> dict[str, Counts]:
 
     Dicts are compared key by key, which is unambiguous because the schema fixes the keys. Arrays of
     records are aligned first, so that a missing record costs only its own values instead of shifting
-    every following record against the wrong partner. Leaves are compared as strings after
-    normalization; a pair that is empty on both sides is skipped rather than counted as a match.
+    every following record against the wrong partner.
 
     Args:
         node_gt: Ground truth structure, normally the whole document.
@@ -336,101 +323,148 @@ class RecordAlignMetric(MetricBase):
     """
     Base metric class for comparing structured outputs of two dataflows.
 
-    The metric is undefined until an accessor has been registered with `set_accessor`. The accessor
-    receives one datapoint of the dataflow and returns the structured output together with the
-    `image_id`, because ground truth and predictions do not necessarily arrive in the same order.
-
     Attributes:
         metric: The function that turns two structured outputs into counts per field path.
-        _accessor: Callable that extracts the structured output from a datapoint.
-        _score: Which of `precision`, `recall` or `f1` is reported as `val`.
-        _micro: If True, a single micro averaged row is returned instead of one row per field path.
+        mapper: Function to map images to `category_id`
+        _cats: Optional sequence of `ObjectTypes`
+        _sub_cats: Optional mapping of object types to object types or sequences of `ObjectTypes`
+        _summary_sub_cats: Optional sequence of `ObjectTypes` for summary
+        _id_name_or_value: Which of `id`, `name` or `value` `mapper` extracts for a sub category or a
+                           summary sub category. Use `value` to compare a `ContainerAnnotation`'s value,
+                           e.g. a `structured_output` summary sub category.
     """
 
-    name = "RecordAlignMetric"
     # a plain function assigned as a class attribute is returned unbound via cls.metric, which is why
     # field_counts takes no cls. mypy assumes a method here and binds the first argument away.
     metric = field_counts  # type: ignore[assignment]
-    _accessor: Optional[Callable[[Any], tuple[Any, str]]] = None
-    _score: str = "f1"
-    _micro: bool = False
-
-    @classmethod
-    def set_accessor(cls, accessor: Callable[[Any], tuple[Any, str]]) -> None:
-        """
-        Register the function that extracts the structured output from a datapoint.
-
-        Args:
-            accessor: Callable that maps a datapoint to a tuple of structured output and `image_id`.
-
-        Example:
-            ```python
-            RecordAlignF1Metric.set_accessor(lambda dp: (dp.summary.get_summary(PageType.json_output), dp.image_id))
-            ```
-        """
-        cls._accessor = accessor
+    mapper = image_or_docs_to_cat_id
+    _cats: Optional[Sequence[ObjectTypes]] = None
+    _sub_cats: Optional[Union[Mapping[ObjectTypes, ObjectTypes], Mapping[ObjectTypes, Sequence[ObjectTypes]]]] = None
+    _summary_sub_cats: Optional[Sequence[ObjectTypes]] = None
+    _id_name_or_value: Literal["id", "name", "value"] = "id"
 
     @classmethod
     def dump(
         cls, dataflow_gt: DataFlow, dataflow_predictions: DataFlow, categories: DatasetCategories
     ) -> tuple[dict[str, Any], dict[str, Any]]:
-        if cls._accessor is None:
-            raise ValueError(
-                f"{cls.name} has no accessor. Call set_accessor to define how the structured output is "
-                f"read from a datapoint."
-            )
         dataflow_gt.reset_state()
         dataflow_predictions.reset_state()
 
+        cls._category_sanity_checks(categories)
+        if cls._cats is None and cls._sub_cats is None:
+            cls._cats = categories.get_categories(as_dict=False, filtered=True)
+        mapper_with_setting = cls.mapper(cls._cats, cls._sub_cats, cls._summary_sub_cats, cls._id_name_or_value)
+
         # returned images of gt and predictions are likely not in the same order. We therefore first
         # stream all data into a dict and pair them by image_id thereafter.
+        structured_per_image_gt: dict[str, Any] = {}
+        structured_per_image_predictions: dict[str, Any] = {}
+        for dp_gt, dp_pd in zip(dataflow_gt, dataflow_predictions):
+            node_gt, image_id_gt = mapper_with_setting(dp_gt)  # pylint: disable=E1102
+            structured_per_image_gt[image_id_gt] = node_gt
+            node_pd, image_id_pd = mapper_with_setting(dp_pd)  # pylint: disable=E1102
+            structured_per_image_predictions[image_id_pd] = node_pd
+
         structured_gt: dict[str, Any] = {}
         structured_predictions: dict[str, Any] = {}
-        for dp_gt, dp_pd in zip(dataflow_gt, dataflow_predictions):
-            node_gt, image_id_gt = cls._accessor(dp_gt)  # pylint: disable=E1102
-            structured_gt[image_id_gt] = node_gt
-            node_pd, image_id_pd = cls._accessor(dp_pd)  # pylint: disable=E1102
-            structured_predictions[image_id_pd] = node_pd
+        for image_id, node_gt in structured_per_image_gt.items():
+            structured_gt[image_id] = node_gt
+            structured_predictions[image_id] = structured_per_image_predictions.get(image_id, {})
 
         return structured_gt, structured_predictions
 
     @classmethod
-    def get_distance(
+    def _get_counts_per_path(
         cls, dataflow_gt: DataFlow, dataflow_predictions: DataFlow, categories: DatasetCategories
-    ) -> list[MetricResults]:
+    ) -> dict[str, Counts]:
         structured_gt, structured_predictions = cls.dump(dataflow_gt, dataflow_predictions, categories)
 
         counts_per_path: dict[str, Counts] = defaultdict(Counts)
         for image_id, node_gt in structured_gt.items():
-            node_pd = structured_predictions.get(image_id, {})
-            for path, entry in cls.metric(node_gt, node_pd).items():
+            for path, entry in cls.metric(node_gt, structured_predictions[image_id]).items():
                 counts_per_path[path] = counts_per_path[path] + entry
+        return counts_per_path
 
-        results = []
-        if cls._micro:
-            summed = Counts()
-            for entry in counts_per_path.values():
-                summed = summed + entry
-            results.append(
-                {
-                    "key": "total",
-                    "val": float(getattr(summed, cls._score)),
-                    "num_samples": summed.tp + summed.fn,
-                }
+    @classmethod
+    def set_categories(
+        cls,
+        category_names: Optional[Union[TypeOrStr, Sequence[TypeOrStr]]] = None,
+        sub_category_names: Optional[
+            Union[Mapping[TypeOrStr, TypeOrStr], Mapping[TypeOrStr, Sequence[TypeOrStr]]]
+        ] = None,
+        summary_sub_category_names: Optional[Union[TypeOrStr, Sequence[TypeOrStr]]] = None,
+        id_name_or_value: Optional[Literal["id", "name", "value"]] = None,
+    ) -> None:
+        """
+        Set categories that are supposed to be evaluated.
+
+        If `sub_categories` have to be considered, they need to be passed explicitly.
+
+        Example:
+            ```python
+            # Evaluate sub_cat1, sub_cat2 of cat1 and sub_cat3 of cat2
+            set_categories(sub_category_names={cat1: [sub_cat1, sub_cat2], cat2: sub_cat3})
+            ```
+
+        Args:
+            category_names: List of category names
+            sub_category_names: Dict of categories and their sub categories to be evaluated
+            summary_sub_category_names: String or list of summary sub categories
+            id_name_or_value: Which of `id`, `name` or `value` `mapper` extracts for a sub category or a
+                              summary sub category. Use `value` to compare a `ContainerAnnotation`'s value,
+                              e.g. a `structured_output` summary sub category.
+        """
+
+        if category_names is not None:
+            cls._cats = (
+                [get_type(category_names)]
+                if isinstance(category_names, str)
+                else [get_type(category) for category in category_names]
             )
-        else:
-            for path in sorted(counts_per_path):
-                entry = counts_per_path[path]
-                results.append(
-                    {
-                        "key": path,
-                        "val": float(getattr(entry, cls._score)),
-                        "num_samples": entry.tp + entry.fn,
-                    }
-                )
+        if sub_category_names is not None:
+            _sub_cats = {}
+            if isinstance(list(sub_category_names.values())[0], list):
+                for key, _ in sub_category_names.items():
+                    _sub_cats[get_type(key)] = [get_type(item) for item in sub_category_names[key]]
+            else:
+                for key, _ in sub_category_names.items():
+                    _sub_cats[get_type(key)] = get_type(sub_category_names[key])  # type: ignore
+            cls._sub_cats = _sub_cats
+        if summary_sub_category_names is not None:
+            cls._summary_sub_cats = (
+                [get_type(summary_sub_category_names)]
+                if isinstance(summary_sub_category_names, str)
+                else [get_type(category) for category in summary_sub_category_names]
+            )
+        if id_name_or_value is not None:
+            cls._id_name_or_value = id_name_or_value
 
-        cls._results = results
-        return results
+    @classmethod
+    def _category_sanity_checks(cls, categories: DatasetCategories) -> None:
+        cats = categories.get_categories(as_dict=False, filtered=True)
+        if cats:
+            sub_cats = categories.get_sub_categories(cats)
+        else:
+            sub_cats = categories.get_sub_categories()
+
+        if cls._cats:
+            for cat in cls._cats:
+                if cat not in cats:
+                    raise ValueError(f"{cat} must be in {cats}")
+                assert cat in cats
+
+        if cls._sub_cats:
+            for key, val in cls._sub_cats.items():
+                if set(val) > set(sub_cats[key]):
+                    raise ValueError(f"set(val) = {set(val)} must be a sub set of sub_cats[{key}]={sub_cats[key]}")
+
+        if cls._cats is None and cls._sub_cats is None and cls._summary_sub_cats is None:
+            logger.warning(
+                LoggingRecord(
+                    "RecordAlign metric has not correctly been set up: No category, sub category or summary has "
+                    "been defined, therefore it is undefined what to evaluate."
+                )
+            )
 
     @classmethod
     def get_requirements(cls) -> list[Requirement]:
@@ -455,7 +489,25 @@ class RecordAlignPrecisionMetric(RecordAlignMetric):
     """
 
     name = "Record Align Precision"
-    _score = "precision"
+
+    @classmethod
+    def get_distance(
+        cls, dataflow_gt: DataFlow, dataflow_predictions: DataFlow, categories: DatasetCategories
+    ) -> list[MetricResults]:
+        counts_per_path = cls._get_counts_per_path(dataflow_gt, dataflow_predictions, categories)
+
+        results = []
+        for path in sorted(counts_per_path):
+            entry = counts_per_path[path]
+            results.append(
+                {
+                    "key": path,
+                    "val": float(entry.precision),
+                    "num_samples": entry.tp + entry.fn,
+                }
+            )
+        cls._results = results
+        return results
 
 
 @metric_registry.register("record_align_recall")
@@ -465,7 +517,25 @@ class RecordAlignRecallMetric(RecordAlignMetric):
     """
 
     name = "Record Align Recall"
-    _score = "recall"
+
+    @classmethod
+    def get_distance(
+        cls, dataflow_gt: DataFlow, dataflow_predictions: DataFlow, categories: DatasetCategories
+    ) -> list[MetricResults]:
+        counts_per_path = cls._get_counts_per_path(dataflow_gt, dataflow_predictions, categories)
+
+        results = []
+        for path in sorted(counts_per_path):
+            entry = counts_per_path[path]
+            results.append(
+                {
+                    "key": path,
+                    "val": float(entry.recall),
+                    "num_samples": entry.tp + entry.fn,
+                }
+            )
+        cls._results = results
+        return results
 
 
 @metric_registry.register("record_align_f1")
@@ -475,7 +545,25 @@ class RecordAlignF1Metric(RecordAlignMetric):
     """
 
     name = "Record Align F1"
-    _score = "f1"
+
+    @classmethod
+    def get_distance(
+        cls, dataflow_gt: DataFlow, dataflow_predictions: DataFlow, categories: DatasetCategories
+    ) -> list[MetricResults]:
+        counts_per_path = cls._get_counts_per_path(dataflow_gt, dataflow_predictions, categories)
+
+        results = []
+        for path in sorted(counts_per_path):
+            entry = counts_per_path[path]
+            results.append(
+                {
+                    "key": path,
+                    "val": float(entry.f1),
+                    "num_samples": entry.tp + entry.fn,
+                }
+            )
+        cls._results = results
+        return results
 
 
 @metric_registry.register("record_align_precision_micro")
@@ -485,8 +573,23 @@ class RecordAlignPrecisionMetricMicro(RecordAlignMetric):
     """
 
     name = "Record Align Micro Precision"
-    _score = "precision"
-    _micro = True
+
+    @classmethod
+    def get_distance(
+        cls, dataflow_gt: DataFlow, dataflow_predictions: DataFlow, categories: DatasetCategories
+    ) -> list[MetricResults]:
+        counts_per_path = cls._get_counts_per_path(dataflow_gt, dataflow_predictions, categories)
+
+        summed = sum(counts_per_path.values(), Counts())
+        results = [
+            {
+                "key": "total",
+                "val": float(summed.precision),
+                "num_samples": summed.tp + summed.fn,
+            }
+        ]
+        cls._results = results
+        return results
 
 
 @metric_registry.register("record_align_recall_micro")
@@ -496,8 +599,23 @@ class RecordAlignRecallMetricMicro(RecordAlignMetric):
     """
 
     name = "Record Align Micro Recall"
-    _score = "recall"
-    _micro = True
+
+    @classmethod
+    def get_distance(
+        cls, dataflow_gt: DataFlow, dataflow_predictions: DataFlow, categories: DatasetCategories
+    ) -> list[MetricResults]:
+        counts_per_path = cls._get_counts_per_path(dataflow_gt, dataflow_predictions, categories)
+
+        summed = sum(counts_per_path.values(), Counts())
+        results = [
+            {
+                "key": "total",
+                "val": float(summed.recall),
+                "num_samples": summed.tp + summed.fn,
+            }
+        ]
+        cls._results = results
+        return results
 
 
 @metric_registry.register("record_align_f1_micro")
@@ -507,5 +625,20 @@ class RecordAlignF1MetricMicro(RecordAlignMetric):
     """
 
     name = "Record Align Micro F1"
-    _score = "f1"
-    _micro = True
+
+    @classmethod
+    def get_distance(
+        cls, dataflow_gt: DataFlow, dataflow_predictions: DataFlow, categories: DatasetCategories
+    ) -> list[MetricResults]:
+        counts_per_path = cls._get_counts_per_path(dataflow_gt, dataflow_predictions, categories)
+
+        summed = sum(counts_per_path.values(), Counts())
+        results = [
+            {
+                "key": "total",
+                "val": float(summed.f1),
+                "num_samples": summed.tp + summed.fn,
+            }
+        ]
+        cls._results = results
+        return results

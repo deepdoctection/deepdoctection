@@ -28,6 +28,19 @@ doclaynet:
   size: 11345
   license: Apache-2.0
   description: Doclaynet annotations, two samples
+eval_doc:
+  path: dd_core/tests/assets/eval_doc/eval_doc.json
+  sha256: 8f525fc79a277ac622a1a249c47973c61e8116b7d49989f27a9e2084c0147422
+  size: 488085
+  license: Apache-2.0
+  description: Two-page bank statement doc.Document with a resolvable structured_output, for eval and doc_factory tests
+eval_doc_pred:
+  path: dd_core/tests/assets/eval_doc_pred/eval_doc_pred.json
+  sha256: 416460f44b1a60676880da88057462781c5e3c3076a428b5d5609a575edf5236
+  size: 488089
+  license: Apache-2.0
+  description: Predicted counterpart of eval_doc with two structured_output value changes (page 1 and page
+    2), for Evaluator predictions_dataset tests
 fintabnet:
   path: dd_datasets/tests/assets/datasets/fintabnet/FinTabNet_1.0.0_table_val.jsonl
   sha256: 68f0682e3b658a78ea815d6a0a2e2289dde1cec0bd61ec13c1704b7fcf6e221c

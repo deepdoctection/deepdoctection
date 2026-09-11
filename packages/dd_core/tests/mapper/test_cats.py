@@ -23,7 +23,7 @@ These tests validate the correctness of the following core operations:
 - Mapping categories to subcategories using `cat_to_sub_cat`.
 - Reassigning or filtering category IDs with `re_assign_cat_ids` and `filter_cat`.
 - Extracting and filtering summary data using `filter_summary`.
-- Mapping image annotations to category IDs with `image_to_cat_id`.
+- Mapping image annotations to category IDs with `image_or_docs_to_cat_id`.
 - Removing specific categories from annotations with `remove_cats`.
 """
 
@@ -33,7 +33,7 @@ from dd_core.mapper.cats import (
     cat_to_sub_cat,
     filter_cat,
     filter_summary,
-    image_to_cat_id,
+    image_or_docs_to_cat_id,
     re_assign_cat_ids,
     remove_cats,
 )
@@ -170,9 +170,10 @@ def test_filter_summary_columns_name_none(table_image: Image) -> None:
     assert result is None
 
 
-def test_image_to_cat_id_basic_categories(table_image: Image) -> None:
+def test_image_or_docs_to_cat_id_basic_categories(table_image: Image) -> None:
     """Extract ids for column, row, cell categories."""
-    result, img_id = image_to_cat_id(category_names=["column", "row", "cell"])(table_image)  # pylint:disable=E1102
+    mapper = image_or_docs_to_cat_id(category_names=["column", "row", "cell"])
+    result, img_id = mapper(table_image)  # pylint:disable=E1102
     assert result == {
         "column": [2] * 3,
         "row": [3] * 5,
@@ -181,9 +182,9 @@ def test_image_to_cat_id_basic_categories(table_image: Image) -> None:
     assert img_id == table_image.image_id
 
 
-def test_image_to_cat_id_subcategory_ids(table_image: Image) -> None:
+def test_image_or_docs_to_cat_id_subcategory_ids(table_image: Image) -> None:
     """Extract sub-category ids for column_number."""
-    result, img_id = image_to_cat_id(  # pylint:disable=E1102
+    result, img_id = image_or_docs_to_cat_id(  # pylint:disable=E1102
         category_names=["column"],
         sub_categories={"column": "column_number"},
     )(table_image)
@@ -194,9 +195,9 @@ def test_image_to_cat_id_subcategory_ids(table_image: Image) -> None:
     assert img_id == table_image.image_id
 
 
-def test_image_to_cat_id_subcategory_names(table_image: Image) -> None:
+def test_image_or_docs_to_cat_id_subcategory_names(table_image: Image) -> None:
     """Extract sub-category names for column_number."""
-    result, img_id = image_to_cat_id(  # pylint:disable=E1102
+    result, img_id = image_or_docs_to_cat_id(  # pylint:disable=E1102
         category_names=["column"],
         sub_categories={"column": "column_number"},
         id_name_or_value="name",
@@ -208,9 +209,9 @@ def test_image_to_cat_id_subcategory_names(table_image: Image) -> None:
     assert img_id == table_image.image_id
 
 
-def test_image_to_cat_id_summary_ids(table_image: Image) -> None:
+def test_image_or_docs_to_cat_id_summary_ids(table_image: Image) -> None:
     """Extract summary sub-category ids."""
-    result, img_id = image_to_cat_id(  # pylint:disable=E1102
+    result, img_id = image_or_docs_to_cat_id(  # pylint:disable=E1102
         summary_sub_category_names=[
             "number_of_rows",
             "number_of_columns",
@@ -227,9 +228,9 @@ def test_image_to_cat_id_summary_ids(table_image: Image) -> None:
     assert img_id == table_image.image_id
 
 
-def test_image_to_cat_id_summary_names(table_image: Image) -> None:
+def test_image_or_docs_to_cat_id_summary_names(table_image: Image) -> None:
     """Extract summary sub-category names."""
-    result, img_id = image_to_cat_id(  # pylint:disable=E1102
+    result, img_id = image_or_docs_to_cat_id(  # pylint:disable=E1102
         summary_sub_category_names=[
             "number_of_rows",
             "number_of_columns",

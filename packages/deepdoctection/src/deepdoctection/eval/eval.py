@@ -69,6 +69,11 @@ class Evaluator:
     erasing process and after that passing the predictor. Predicted and gt datapoints will be converted into the
     required metric input format and dumped into lists. Both lists will be passed to `MetricBase.get_distance`.
 
+    Alternatively, if predictions have already been generated elsewhere and saved as a dataset (e.g. via
+    `DocumentDatasetFactory.make` reading back saved `doc.Document` JSON), pass that dataset as `predictions_dataset`
+    instead of `component_or_pipeline`. In this mode no prediction step is run: both datasets' dataflows are built
+    and passed directly to the metric.
+
     Note:
         You can evaluate the predictor on a subset of categories by filtering the ground truth dataset. When using
         the coco metric all predicted objects that are not in the set of filtered objects will be not taken into
@@ -90,53 +95,85 @@ class Evaluator:
         output = evaluator.run(max_datapoints=10)
         ```
 
+    Example (evaluating against predictions saved elsewhere):
+        ```python
+        gt_dataset = get_dataset("publaynet")
+        predictions_dataset = DocumentDatasetFactory.make(
+            name="my_predictions", location="my_predictions_dir",
+            dataset_type=DatasetKind.OBJECT_DETECTION, init_categories=[...],
+        )
+        coco_metric = metric_registry.get("coco")
+        evaluator = Evaluator(gt_dataset, metric=coco_metric, predictions_dataset=predictions_dataset)
+
+        output = evaluator.run()
+        ```
+
     For another example check the script in `Evaluation` of table recognition`
     """
 
     def __init__(
         self,
         dataset: DatasetBase,
-        component_or_pipeline: Union[PipelineComponent, DoctectionPipe],
-        metric: Union[Type[MetricBase], MetricBase],
+        component_or_pipeline: Optional[Union[PipelineComponent, DoctectionPipe]] = None,
+        metric: Union[Type[MetricBase], MetricBase] = None,  # type: ignore[assignment]
         num_threads: int = 2,
         run: Optional[wandb.sdk.wandb_run.Run] = None,
+        predictions_dataset: Optional[DatasetBase] = None,
     ) -> None:
         """
-        Evaluating a pipeline component on a dataset with a given metric.
+        Evaluating a pipeline component on a dataset with a given metric, or evaluating a dataset of
+        precomputed predictions against a ground truth dataset.
 
         Args:
-            dataset: dataset
-            component_or_pipeline: A pipeline component with predictor and annotation factory.
+            dataset: Ground truth dataset.
+            component_or_pipeline: A pipeline component with predictor and annotation factory. Mutually
+                                   exclusive with `predictions_dataset`.
             metric: metric
+            predictions_dataset: A dataset of already computed predictions, e.g. built via
+                                 `DocumentDatasetFactory.make` from saved `doc.Document` JSON. When given, no
+                                 prediction step is run: both dataflows are passed directly to the metric.
+                                 Mutually exclusive with `component_or_pipeline`.
+
+        Raises:
+            ValueError: If both or neither of `component_or_pipeline` and `predictions_dataset` are given.
         """
+
+        if component_or_pipeline is not None and predictions_dataset is not None:
+            raise ValueError("Pass either component_or_pipeline or predictions_dataset, but not both")
+        if component_or_pipeline is None and predictions_dataset is None:
+            raise ValueError("component_or_pipeline or predictions_dataset must be provided")
 
         self.dataset = dataset
         self.pipe_component: Optional[MultiThreadPipelineComponent] = None
         self.pipe: Optional[DoctectionPipe] = None
+        self.predictions_dataset: Optional[DatasetBase] = None
 
-        # when passing a component, we will process prediction on num_threads
-        if isinstance(component_or_pipeline, PipelineComponent):
-            logger.info(
-                LoggingRecord(
-                    f"Building multi threading pipeline component to increase prediction throughput. "
-                    f"Using {num_threads} threads"
+        if component_or_pipeline is not None:
+            # when passing a component, we will process prediction on num_threads
+            if isinstance(component_or_pipeline, PipelineComponent):
+                logger.info(
+                    LoggingRecord(
+                        f"Building multi threading pipeline component to increase prediction throughput. "
+                        f"Using {num_threads} threads"
+                    )
                 )
-            )
-            pipeline_components: list[PipelineComponent] = []
+                pipeline_components: list[PipelineComponent] = []
 
-            for _ in range(num_threads - 1):
-                copy_pipe_component = component_or_pipeline.clone()
-                pipeline_components.append(copy_pipe_component)
+                for _ in range(num_threads - 1):
+                    copy_pipe_component = component_or_pipeline.clone()
+                    pipeline_components.append(copy_pipe_component)
 
-            pipeline_components.append(component_or_pipeline)
+                pipeline_components.append(component_or_pipeline)
 
-            self.pipe_component = MultiThreadPipelineComponent(
-                pipeline_components=pipeline_components,
-                pre_proc_func=maybe_load_image,  # type:ignore
-                post_proc_func=maybe_remove_image,  # type:ignore
-            )
+                self.pipe_component = MultiThreadPipelineComponent(
+                    pipeline_components=pipeline_components,
+                    pre_proc_func=maybe_load_image,  # type:ignore
+                    post_proc_func=maybe_remove_image,  # type:ignore
+                )
+            else:
+                self.pipe = component_or_pipeline
         else:
-            self.pipe = component_or_pipeline
+            self.predictions_dataset = predictions_dataset
 
         self.metric = metric
         if not isinstance(metric, MetricBase):
@@ -199,18 +236,27 @@ class Evaluator:
         Args:
             output_as_dict: Return result in a list or dict.
             dataflow_build_kwargs: Pass the necessary arguments in order to build the dataflow, e.g. `split`,
-                                  `build_mode`, `max_datapoints` etc.
+                                  `build_mode`, `max_datapoints` etc. When `predictions_dataset` was passed to
+                                  the constructor, the same kwargs are passed to both dataflow builds; a
+                                  builder ignores keys it does not recognize.
 
         Returns:
             dict with metric results.
         """
 
         df_gt = self.dataset.dataflow.build(**dataflow_build_kwargs)
-        df_pr = self.dataset.dataflow.build(**dataflow_build_kwargs)
 
-        df_pr = MapData(df_pr, deepcopy)
-        df_pr = self._clean_up_predict_dataflow_annotations(df_pr)
-        df_pr = self._run_pipe_or_component(df_pr)
+        if self.predictions_dataset is not None:
+            df_pr = self.predictions_dataset.dataflow.build(**dataflow_build_kwargs)
+            if self.wandb_table_agent is not None:
+                df_pr_list = CacheData(df_pr).get_cache()
+                df_pr_list = [self.wandb_table_agent.dump(dp) for dp in df_pr_list]
+                df_pr = DataFromList(df_pr_list)
+        else:
+            df_pr = self.dataset.dataflow.build(**dataflow_build_kwargs)
+            df_pr = MapData(df_pr, deepcopy)
+            df_pr = self._clean_up_predict_dataflow_annotations(df_pr)
+            df_pr = self._run_pipe_or_component(df_pr)
 
         logger.info(LoggingRecord("Starting evaluation..."))
         result = self.metric.get_distance(df_gt, df_pr, self.dataset.dataflow.categories)
@@ -226,6 +272,17 @@ class Evaluator:
 
     def _sanity_checks(self) -> None:
         assert self.dataset.dataflow.categories is not None
+        if self.predictions_dataset is not None:
+            assert self.predictions_dataset.dataflow.categories is not None
+            gt_cats = set(self.dataset.dataflow.categories.get_categories(as_dict=False, filtered=True))
+            pr_cats = set(self.predictions_dataset.dataflow.categories.get_categories(as_dict=False, filtered=True))
+            if gt_cats != pr_cats:
+                logger.warning(
+                    LoggingRecord(
+                        f"Category mismatch between ground truth and predictions dataset. "
+                        f"gt only: {gt_cats - pr_cats}, predictions only: {pr_cats - gt_cats}"
+                    )
+                )
 
     def _run_pipe_or_component(self, df_pr: DataFlow) -> DataFlow:
         if self.pipe_component:
@@ -296,6 +353,12 @@ class Evaluator:
             Image as `np.array`
         """
 
+        if self.pipe_component is None and self.pipe is None:
+            raise ValueError(
+                "Neither pipe_component nor pipe has been defined; compare() is not supported when "
+                "Evaluator was constructed with predictions_dataset"
+            )
+
         show_tables = kwargs.pop("show_tables", True)
         show_layouts = kwargs.pop("show_layouts", True)
         show_table_structure = kwargs.pop("show_table_structure", True)
@@ -323,11 +386,8 @@ class Evaluator:
             pipe_component = self.pipe_component.pipe_components[0]
             df_pr = pipe_component.predict_dataflow(df_pr)
             df_pr = page_parsing_component.predict_dataflow(df_pr)
-
-        elif self.pipe:
-            df_pr = self.pipe.analyze(dataset_dataflow=df_pr)
         else:
-            raise ValueError("Neither pipe_component nor pipe has been defined")
+            df_pr = self.pipe.analyze(dataset_dataflow=df_pr)  # type: ignore
 
         df_pr.reset_state()
         df_gt.reset_state()

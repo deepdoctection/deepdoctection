@@ -119,7 +119,7 @@ _IMPORT_STRUCTURE = {
         "re_assign_cat_ids",
         "filter_cat",
         "filter_summary",
-        "image_to_cat_id",
+        "image_or_docs_to_cat_id",
         "remove_cats",
         "add_summary",
         "coco_to_image",
