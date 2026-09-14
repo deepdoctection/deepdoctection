@@ -53,7 +53,7 @@ with try_import() as pt_import_guard:
     import pypdfium2
 
 with try_import() as pikepdf_import_guard:
-    import pikepdf  # pylint: disable=E0401
+    import pikepdf
 
 __all__ = [
     "PdfDecryptStatus",

@@ -23,7 +23,8 @@ from __future__ import annotations
 import functools
 import inspect
 import os
-from collections.abc import MutableMapping
+from collections import defaultdict
+from collections.abc import Mapping, MutableMapping
 from datetime import datetime
 from typing import Any, Callable, Sequence, Union
 
@@ -67,17 +68,119 @@ def delete_keys_from_dict(
     return modified_dict
 
 
-def split_string(input_string: str) -> list[str]:
+def as_string(value: Any) -> str:
     """
-    Splits an `input_string` by commas and returns a list of the split components.
+    Converts a leaf value into exactly one whitespace-normalized string.
+
+    `None`, empty sequences and empty strings all map to the empty string. Nested token sequences are
+    joined recursively with a single blank so that one field remains one unit, i.e.
+    `["DE95", "5135"]` becomes `"DE95 5135"` and not two separate values.
 
     Args:
-        input_string: The input string.
+        value: A leaf value, i.e. a scalar, a string or an arbitrarily nested sequence of those.
 
     Returns:
-        A list of string components.
+        The string representation of the leaf.
+
+    Example:
+        ```python
+        as_string(["DE95", ["5135", "0000"]])
+        # Output: 'DE95 5135 0000'
+        ```
     """
-    return input_string.split(",")
+    if value is None:
+        return ""
+    if isinstance(value, str):
+        return " ".join(value.split())
+    if isinstance(value, (list, tuple)):
+        return " ".join(part for part in map(as_string, value) if part)
+    return str(value)
+
+
+def is_leaf(value: Any) -> bool:
+    """
+    Checks if a `value` does not decompose into further records.
+
+    A mapping is never a leaf. A sequence is a leaf if and only if it contains no mapping. A sequence
+    holding at least one mapping is an array of records and has to be unfolded. Plain token sequences
+    are leaves.
+
+    Args:
+        value: The value to check.
+
+    Returns:
+        True if the value is a leaf, False otherwise.
+
+    Example:
+        ```python
+        is_leaf(["DE95", "5135"])
+        # Output: True
+
+        is_leaf([{"postingType": ["tax"]}])
+        # Output: False
+        ```
+    """
+    if isinstance(value, Mapping):
+        return False
+    if isinstance(value, (list, tuple)):
+        return not any(isinstance(item, Mapping) for item in value)
+    return True
+
+
+def _flatten_walk(value: Any, path: str, flat: defaultdict[str, list[str]]) -> None:
+    """
+    Recursively collects the leaves of `value` into `flat`, keyed by their dot separated field path.
+
+    Args:
+        value: The current node of the record.
+        path: The dot separated field path of the current node. Empty for the root node.
+        flat: The accumulator that maps a field path to all leaf values found under it.
+    """
+    if isinstance(value, Mapping):
+        for key, child in value.items():
+            _flatten_walk(child, f"{path}.{key}" if path else str(key), flat)
+    elif is_leaf(value):
+        text = as_string(value)
+        if text:
+            flat[path].append(text)
+    else:
+        for item in value:
+            _flatten_walk(item, path, flat)
+
+
+def flatten(record: Any) -> dict[str, list[str]]:
+    """
+    Flattens a nested `record` into a mapping `{field_path: [values]}` with list indices discarded.
+
+    Two records sharing the same field path end up as two entries of the same list. This is what makes
+    a subsequent comparison independent of the ordering. Empty leaves are discarded so that
+    "empty on both sides" does not count as a match.
+
+    Args:
+        record: An arbitrarily nested structure of mappings, sequences and scalars.
+
+    Returns:
+        A dictionary mapping the dot separated field path to the list of non-empty leaf values found
+        under it.
+
+    Example:
+        ```python
+        record = {
+            "amount": ["197,66-"],
+            "postings": [
+                {"postingType": ["tax"], "postingAmount": ["31,55-"]},
+                {"postingType": ["net"], "postingAmount": ["166,11-"]},
+            ],
+        }
+        flatten(record)
+        # Output: {'amount': ['197,66-'],
+        #          'postings.postingType': ['tax', 'net'],
+        #          'postings.postingAmount': ['31,55-', '166,11-']}
+        ```
+    """
+    flat: defaultdict[str, list[str]] = defaultdict(list)
+    _flatten_walk(record, "", flat)
+    return dict(flat)
 
 
 def string_to_dict(input_string: str) -> dict[str, str]:
@@ -96,23 +199,6 @@ def string_to_dict(input_string: str) -> dict[str, str]:
         pair = pair.split("=")  # type: ignore
         output_dict[pair[0]] = pair[1]
     return output_dict
-
-
-def to_bool(inputs: Union[str, bool, int]) -> bool:
-    """
-    Converts a string "True" or "False" to its boolean value.
-
-    Args:
-        inputs: Input string, boolean, or integer.
-
-    Returns:
-        The boolean value.
-    """
-    if isinstance(inputs, bool):
-        return inputs
-    if inputs == "False":
-        return False
-    return True
 
 
 # Copyright (c) Tensorpack Contributors
@@ -187,45 +273,3 @@ def is_file_extension(file_name: PathLikeOrStr, extension: Union[str, Sequence[s
     if isinstance(extension, str):
         return os.path.splitext(file_name)[-1].lower() == extension
     return os.path.splitext(file_name)[-1].lower() in extension
-
-
-def partition_list(base_list: list[str], stop_value: str) -> list[list[str]]:
-    """
-    Partitions a list of strings into sublists, where each sublist starts with the first occurrence of the `stop_value`.
-    Consecutive `stop_value` elements are grouped together in the same sublist.
-
-    Args:
-        base_list: The list of strings to be partitioned.
-        stop_value: The string value that indicates the start of a new partition.
-
-    Returns:
-        A list of lists, where each sublist is a partition of the original list.
-
-    Example:
-        ```python
-        strings = ['a', 'a', 'c', 'c', 'b', 'd', 'c', 'c', 'a', 'b', 'a', 'b', 'a', 'a']
-        stop_string = 'a'
-        partition_list(strings, stop_string)
-        # Output: [['a', 'a', 'c', 'c', 'b', 'd', 'c', 'c'], ['a', 'b'], ['a', 'b'], ['a', 'a']]
-        ```
-    """
-
-    partitions = []
-    current_partition: list[str] = []
-    stop_found = False
-
-    for s in base_list:
-        if s == stop_value:
-            if not stop_found and current_partition:
-                partitions.append(current_partition)
-                current_partition = []
-            current_partition.append(s)
-            stop_found = True
-        else:
-            current_partition.append(s)
-            stop_found = False
-
-    if current_partition:
-        partitions.append(current_partition)
-
-    return partitions

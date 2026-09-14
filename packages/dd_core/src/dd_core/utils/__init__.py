@@ -53,7 +53,7 @@ def _global_import(
 
 _global_import("file_utils", suffix=("_available", "_requirement", "mkdir_p", "copy_file_to_target"))
 _global_import("metacfg", prefix=("set_config_by_yaml", "save_config_to_yaml", "config_to_cli_str"))
-_global_import("utils", prefix=("delete_keys_from_dict", "split_string", "string_to_dict"))
+_global_import("utils", prefix=("delete_keys_from_dict", "as_string", "is_leaf", "flatten", "string_to_dict"))
 _global_import(
     "object_types",
     suffix=(

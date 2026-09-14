@@ -33,6 +33,7 @@ from .nms import *
 from .pascalstruct import *
 from .prodigystruct import *
 from .pubstruct import *
+from .structured_output import *
 from .wandbstruct import *
 from .xfundstruct import *
 

@@ -38,13 +38,13 @@
     "category_id": -1,
     "score": null,
     "sub_categories": {
-      "key_values": {
+      "structured_output": {
         "active": true,
         "external_id": null,
         "service_id": null,
         "model_id": null,
         "session_id": null,
-        "category_name": "key_values",
+        "category_name": "structured_output",
         "category_id": -1,
         "score": null,
         "sub_categories": {},
@@ -64250,13 +64250,13 @@
         "category_id": -1,
         "score": null,
         "sub_categories": {
-          "key_values": {
+          "structured_output": {
             "active": true,
             "external_id": null,
             "service_id": "ce7518d4",
             "model_id": "b078d0bc",
             "session_id": "c009ac26-f56d-4bd5-bb27-49fcb3a0b419",
-            "category_name": "key_values",
+            "category_name": "structured_output",
             "category_id": -1,
             "score": null,
             "sub_categories": {},
@@ -114246,13 +114246,13 @@
         "category_id": -1,
         "score": null,
         "sub_categories": {
-          "key_values": {
+          "structured_output": {
             "active": true,
             "external_id": null,
             "service_id": "ce7518d4",
             "model_id": "b078d0bc",
             "session_id": "c009ac26-f56d-4bd5-bb27-49fcb3a0b419",
-            "category_name": "key_values",
+            "category_name": "structured_output",
             "category_id": -1,
             "score": null,
             "sub_categories": {},
@@ -182323,13 +182323,13 @@
         "category_id": -1,
         "score": null,
         "sub_categories": {
-          "key_values": {
+          "structured_output": {
             "active": true,
             "external_id": null,
             "service_id": "ce7518d4",
             "model_id": "b078d0bc",
             "session_id": "c009ac26-f56d-4bd5-bb27-49fcb3a0b419",
-            "category_name": "key_values",
+            "category_name": "structured_output",
             "category_id": -1,
             "score": null,
             "sub_categories": {},
@@ -234462,13 +234462,13 @@
         "category_id": -1,
         "score": null,
         "sub_categories": {
-          "key_values": {
+          "structured_output": {
             "active": true,
             "external_id": null,
             "service_id": "ce7518d4",
             "model_id": "b078d0bc",
             "session_id": "c009ac26-f56d-4bd5-bb27-49fcb3a0b419",
-            "category_name": "key_values",
+            "category_name": "structured_output",
             "category_id": -1,
             "score": null,
             "sub_categories": {},
@@ -295985,13 +295985,13 @@
         "category_id": -1,
         "score": null,
         "sub_categories": {
-          "key_values": {
+          "structured_output": {
             "active": true,
             "external_id": null,
             "service_id": "ce7518d4",
             "model_id": "b078d0bc",
             "session_id": "c009ac26-f56d-4bd5-bb27-49fcb3a0b419",
-            "category_name": "key_values",
+            "category_name": "structured_output",
             "category_id": -1,
             "score": null,
             "sub_categories": {},
@@ -355922,13 +355922,13 @@
         "category_id": -1,
         "score": null,
         "sub_categories": {
-          "key_values": {
+          "structured_output": {
             "active": true,
             "external_id": null,
             "service_id": "ce7518d4",
             "model_id": "b078d0bc",
             "session_id": "c009ac26-f56d-4bd5-bb27-49fcb3a0b419",
-            "category_name": "key_values",
+            "category_name": "structured_output",
             "category_id": -1,
             "score": null,
             "sub_categories": {},

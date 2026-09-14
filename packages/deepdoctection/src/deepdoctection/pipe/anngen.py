@@ -637,7 +637,7 @@ class DatapointManager:
         summary_key: ObjectTypes,
         summary_name: ObjectTypes,
         summary_number: Optional[int] = None,
-        summary_value: Optional[Union[str, int, float, list[str], dict[str, Any]]] = None,
+        summary_value: Optional[Union[str, int, float, bool, list[str], dict[str, Any], ReferencePayload]] = None,
         summary_score: Optional[float] = None,
         annotation_id: Optional[str] = None,
         job_id: str | None = None,
@@ -651,7 +651,9 @@ class DatapointManager:
             summary_key: Stores the category annotation as a subcategory.
             summary_name: Creates the summary name as the category name.
             summary_number: Stores the value in `category_id`.
-            summary_value: Creates a `ContainerAnnotation` and stores the corresponding value.
+            summary_value: Creates a `ContainerAnnotation` and stores the corresponding value. A
+                           `ReferencePayload`, e.g. the structured output of an LLM task, is stored as
+                           is and can be resolved later with `Page.resolve_reference_payload`.
             summary_score: Stores the score.
             annotation_id: The id of the parent annotation. Note that the parent annotation must have `image` not None.
             job_id: Optional job identifier for async routing.

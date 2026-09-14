@@ -27,7 +27,10 @@ import uuid
 import pytest
 
 from dd_core.utils.object_types import (
+    DocumentKey,
     ObjectTypes,
+    PageKey,
+    SummaryKey,
     get_type,
     object_types_registry,
     register_custom_token_tag,
@@ -380,3 +383,24 @@ def test_register_custom_token_tag_extends_existing_registered_tag_type() -> Non
     assert get_type(f"B-{CustomTokenTypeV2.TOKEN_B.value}").value == f"B-{CustomTokenTypeV2.TOKEN_B.value}"
     assert get_type(f"I-{CustomTokenTypeV2.TOKEN_B.value}").value == f"I-{CustomTokenTypeV2.TOKEN_B.value}"
     assert get_type(f"E-{CustomTokenTypeV2.TOKEN_B.value}").value == f"E-{CustomTokenTypeV2.TOKEN_B.value}"
+
+
+def test_document_key_has_document_type_member() -> None:
+    """DocumentKey owns DOCUMENT_TYPE and get_type resolves it to that enum."""
+    assert DocumentKey.DOCUMENT_TYPE.value == "document_type"
+    assert get_type("document_type") is DocumentKey.DOCUMENT_TYPE
+    assert get_type("document_type").__class__ is DocumentKey
+
+
+def test_page_key_no_longer_has_document_type_member() -> None:
+    """DOCUMENT_TYPE has been moved off of PageKey and onto DocumentKey."""
+    assert "DOCUMENT_TYPE" not in PageKey.__members__
+    assert set(PageKey) == {PageKey.LANGUAGE, PageKey.ANGLE, PageKey.SIZE}
+
+
+def test_summary_key_has_page_summary_and_page_mapping_members() -> None:
+    """SummaryKey gained PAGE_SUMMARY/PAGE_MAPPING while keeping DOCUMENT_SUMMARY/DOCUMENT_MAPPING."""
+    assert SummaryKey.PAGE_SUMMARY.value == "page_summary"
+    assert SummaryKey.PAGE_MAPPING.value == "page_mapping"
+    assert SummaryKey.DOCUMENT_SUMMARY.value == "document_summary"
+    assert SummaryKey.DOCUMENT_MAPPING.value == "document_mapping"

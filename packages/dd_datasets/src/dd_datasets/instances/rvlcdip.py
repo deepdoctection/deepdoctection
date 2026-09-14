@@ -41,7 +41,14 @@ from dd_core.datapoint.image import Image
 from dd_core.mapper import curry
 from dd_core.mapper.cats import filter_summary
 from dd_core.utils.fs import load_image_from_file
-from dd_core.utils.object_types import CharacterTypeLabel, DatasetKind, DocumentLabel, PageKey, SummaryKey, TypeOrStr
+from dd_core.utils.object_types import (
+    CharacterTypeLabel,
+    DatasetKind,
+    DocumentKey,
+    DocumentLabel,
+    SummaryKey,
+    TypeOrStr,
+)
 
 from ..base import _BuiltInDataset
 from ..dataflow_builder import DataFlowBaseBuilder
@@ -157,7 +164,7 @@ class RvlcdipBuilder(DataFlowBaseBuilder):
             summary = CategoryAnnotation(category_name=SummaryKey.SUMMARY)
             categories_dict = self.categories.get_categories(init=True)
             summary.dump_sub_category(
-                PageKey.DOCUMENT_TYPE, CategoryAnnotation(category_name=categories_dict[label], category_id=label)
+                DocumentKey.DOCUMENT_TYPE, CategoryAnnotation(category_name=categories_dict[label], category_id=label)
             )
             image.summary = summary
             if not load_img:
@@ -169,13 +176,15 @@ class RvlcdipBuilder(DataFlowBaseBuilder):
         if self.categories.is_filtered():
             df = MapData(
                 df,
-                filter_summary({PageKey.DOCUMENT_TYPE: self.categories.get_categories(as_dict=False, filtered=True)}),
+                filter_summary(
+                    {DocumentKey.DOCUMENT_TYPE: self.categories.get_categories(as_dict=False, filtered=True)}
+                ),
             )
 
             @curry
             def _re_map_cat_ids(dp: Image, filtered_categories_name_as_key: Mapping[TypeOrStr, int]) -> Image:
-                if PageKey.DOCUMENT_TYPE in dp.summary.sub_categories:
-                    summary_cat = dp.summary.get_sub_category(PageKey.DOCUMENT_TYPE)
+                if DocumentKey.DOCUMENT_TYPE in dp.summary.sub_categories:
+                    summary_cat = dp.summary.get_sub_category(DocumentKey.DOCUMENT_TYPE)
                     summary_cat.category_id = filtered_categories_name_as_key[summary_cat.category_name]
                 return dp
 

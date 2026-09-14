@@ -22,8 +22,8 @@ Init module for train package
 from dd_core.utils.file_utils import detectron2_available, transformers_available
 
 if detectron2_available():
-    from .d2_frcnn_train import train_d2_faster_rcnn
+    from .d2_frcnn_train import D2Trainer, train_d2_faster_rcnn
 
 if transformers_available():
-    from .hf_detr_train import train_hf_detr
-    from .hf_layoutlm_train import train_hf_layoutlm
+    from .hf_detr_train import DetrDerivedTrainer, train_hf_detr
+    from .hf_layoutlm_train import LayoutLMTrainer, train_hf_layoutlm

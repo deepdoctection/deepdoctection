@@ -10,3 +10,5 @@ packages/deepdoctection/tests/assets/deskew/skewed_gt_pil.png filter=lfs diff=lf
 packages/deepdoctection/tests/assets/deskew/skewed_input.png filter=lfs diff=lfs merge=lfs -text
 # Existing root rule
 packages/deepdoctection/tests/assets/image_dir/* filter=lfs diff=lfs merge=lfs -text
+packages/dd_core/tests/assets/eval_doc/eval_doc.json filter=lfs diff=lfs merge=lfs -text
+packages/dd_core/tests/assets/eval_doc_pred/eval_doc_pred.json filter=lfs diff=lfs merge=lfs -text

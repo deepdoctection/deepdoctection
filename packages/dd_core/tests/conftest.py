@@ -92,6 +92,12 @@ def fixture_sample_document_json() -> Path:
     return stu.asset_path("sample_document_json")
 
 
+@pytest.fixture(name="sample_document_image_path")
+def fixture_sample_document_image_path() -> Path:
+    """Provide path to a sample png file with one page."""
+    return stu.asset_path("sample_document_image")
+
+
 @pytest.hookimpl(tryfirst=True)
 def pytest_sessionstart() -> None:
     """Pre configuration before testing starts"""

@@ -41,6 +41,11 @@ class DataFlowBaseBuilder(ABC):
     specific further transformations, such as cutting and returning an annotation as a sub image. Within this method,
     checks and consistency checks should also be carried out so that a curated data flow is available as return value.
     Such specific transformations should be implemented by transferring a value of the argument `build_mode`.
+
+    A builder is not restricted to `datapoint.Image` datapoints: it may as well return whole, page lazy
+    `doc.Document` datapoints or, driven by a `mode` argument, a mix of both. The builder that
+    `doc_factory.DocumentDatasetFactory` generates is an example of the latter. The only contract that must hold
+    is that `build(**kwargs)` returns a `DataFlow`.
     """
 
     def __init__(

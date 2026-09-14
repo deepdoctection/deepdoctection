@@ -33,7 +33,7 @@ from lazy_imports import try_import
 from ..datapoint.annotation import ContainerAnnotation
 from ..datapoint.image import Image
 from ..datapoint.view import Page
-from ..utils.object_types import DatasetKind, LayoutLabel, PageKey, RelationshipKey, WordKey
+from ..utils.object_types import DatasetKind, DocumentKey, LayoutLabel, RelationshipKey, WordKey
 from ..utils.transform import ResizeTransform, box_to_point4, normalize_image, point4_to_box
 from ..utils.types import JsonDict
 from .maputils import curry
@@ -164,7 +164,7 @@ def image_to_raw_layoutlm_features(
                 all_labels.append(ann.get_sub_category(WordKey.TOKEN_CLASS).category_id - 1)
 
     if dataset_type == DatasetKind.SEQUENCE_CLASSIFICATION:
-        all_labels.append(dp.summary.get_sub_category(PageKey.DOCUMENT_TYPE).category_id - 1)
+        all_labels.append(dp.summary.get_sub_category(DocumentKey.DOCUMENT_TYPE).category_id - 1)
 
     boxes = np.asarray(all_boxes, dtype="float32")
     if boxes.ndim == 1:
@@ -821,7 +821,7 @@ def image_to_raw_lm_features(
     elif text_.token_classes:
         raw_features["labels"] = text_.token_classes
     elif page.document_type is not None:
-        document_type_id = page.image_orig.summary.get_sub_category(PageKey.DOCUMENT_TYPE).category_id - 1
+        document_type_id = page.image_orig.summary.get_sub_category(DocumentKey.DOCUMENT_TYPE).category_id - 1
         raw_features["labels"] = [document_type_id]
 
     raw_features["dataset_type"] = dataset_type

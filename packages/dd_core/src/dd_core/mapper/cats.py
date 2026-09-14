@@ -19,6 +19,8 @@
 Mapping functions for handling categories
 """
 
+from __future__ import annotations
+
 from collections import defaultdict
 from typing import Any, Literal, Mapping, Optional, Sequence, Union
 
@@ -209,6 +211,27 @@ def filter_summary(
     return None
 
 
+def _append_summary_sub_cats(
+    dp: Image,
+    summary_sub_category_names: Sequence[TypeOrStr],
+    id_name_or_value: Literal["id", "name", "value"],
+    cat_container: dict[TypeOrStr, list[Any]],
+) -> None:
+    for sub_cat_name in summary_sub_category_names:
+        sub_cat = dp.summary.get_sub_category(get_type(sub_cat_name))
+        if id_name_or_value == "id":
+            cat_container[sub_cat_name].append(sub_cat.category_id)
+        if id_name_or_value == "name":
+            cat_container[sub_cat_name].append(sub_cat.category_name)
+        if id_name_or_value == "value":
+            if not isinstance(sub_cat, ContainerAnnotation):
+                raise ValueError(
+                    f"sub category {sub_cat_name} does not have a ContainerAnnotation. Choose another"
+                    f"value for argument id_name_or_value"
+                )
+            cat_container[sub_cat_name].append(sub_cat.value)
+
+
 @curry
 def image_to_cat_id(
     dp: Image,
@@ -268,10 +291,9 @@ def image_to_cat_id(
         summary_sub_category_names: A list of summary sub categories
 
     Returns:
-        A defaultdict of lists
+        A defaultdict of lists, and the `image_id`
     """
-
-    cat_container = defaultdict(list)
+    cat_container: dict[TypeOrStr, list[Any]] = defaultdict(list)
 
     if isinstance(category_names, str):
         category_names = [category_names]
@@ -283,6 +305,9 @@ def image_to_cat_id(
     if not summary_sub_category_names:
         summary_sub_category_names = []
 
+    if id_name_or_value not in ("id", "name", "value"):
+        raise ValueError(f"id_name_or_value must be in ('id', 'name', 'value') but is {id_name_or_value}")
+
     tmp_sub_category_names: dict[str, Sequence[str]] = {}
 
     if sub_categories is not None:
@@ -290,9 +315,6 @@ def image_to_cat_id(
             if isinstance(val, str):
                 val = [val]
             tmp_sub_category_names[key] = val
-
-    if id_name_or_value not in ("id", "name", "value"):
-        raise ValueError(f"id_name_or_value must be in ('id', 'name', 'value') but is {id_name_or_value}")
 
     if category_names or sub_categories:
         for ann in dp.get_annotation():
@@ -305,29 +327,17 @@ def image_to_cat_id(
                         if id_name_or_value == "id":
                             cat_container[sub_cat_name].append(sub_cat.category_id)
                         if id_name_or_value == "name":
-                            cat_container[sub_cat_name].append(sub_cat.category_name)  # type: ignore
+                            cat_container[sub_cat_name].append(sub_cat.category_name)
                         if id_name_or_value == "value":
                             if not isinstance(sub_cat, ContainerAnnotation):
                                 raise ValueError(
                                     f"sub category {sub_cat_name} does not have a ContainerAnnotation. Choose another"
                                     f"value for argument id_name_or_value"
                                 )
-                            cat_container[sub_cat_name].append(sub_cat.value)  # type: ignore
+                            cat_container[sub_cat_name].append(sub_cat.value)
 
     if summary_sub_category_names:
-        for sub_cat_name in summary_sub_category_names:
-            sub_cat = dp.summary.get_sub_category(get_type(sub_cat_name))
-            if id_name_or_value == "id":
-                cat_container[sub_cat_name].append(sub_cat.category_id)
-            if id_name_or_value == "name":
-                cat_container[sub_cat_name].append(sub_cat.category_name)  # type: ignore
-            if id_name_or_value == "value":
-                if not isinstance(sub_cat, ContainerAnnotation):
-                    raise ValueError(
-                        f"sub category {sub_cat_name} does not have a ContainerAnnotation. Choose another"
-                        f"value for argument id_name_or_value"
-                    )
-                cat_container[sub_cat_name].append(sub_cat.value)  # type: ignore
+        _append_summary_sub_cats(dp, summary_sub_category_names, id_name_or_value, cat_container)
 
     return cat_container, dp.image_id
 

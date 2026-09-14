@@ -42,7 +42,8 @@ def test_metric_registry_has_all_build_in_metric_registered() -> None:
     test metric registry has all metrics registered
     """
 
-    assert len(metric_registry.get_all()) in {9, 10}
+    # the lower bound applies when apted is missing and TedsMetric is therefore not registered
+    assert len(metric_registry.get_all()) in {15, 16}
 
 
 def test_metric_registry_registered_new_metric() -> None:

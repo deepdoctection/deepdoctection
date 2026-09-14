@@ -24,12 +24,13 @@ from typing import TYPE_CHECKING
 
 from dd_core.utils.file_utils import _LazyModule, pytorch_available
 
-__version__ = "1.3.0"
+__version__ = "1.4.0"
 _IMPORT_STRUCTURE = {
     "base": ["DatasetBase", "SplitDataFlow", "MergeDataset", "DatasetCard", "CustomDataset"],
     "dataflow_builder": [
         "DataFlowBaseBuilder",
     ],
+    "doc_factory": ["DocumentDatasetFactory", "rebase_document_location"],
     "info": ["DatasetInfo", "DatasetCategories", "get_merged_categories"],
     "registry": ["get_dataset", "print_dataset_infos"],
     "save": ["dataflow_to_json"],
@@ -57,6 +58,7 @@ if TYPE_CHECKING:
     from .adapter import *
     from .base import *
     from .dataflow_builder import *
+    from .doc_factory import *
     from .info import *
     from .instances import *
     from .registry import *

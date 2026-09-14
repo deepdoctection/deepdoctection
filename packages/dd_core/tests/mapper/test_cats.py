@@ -172,7 +172,8 @@ def test_filter_summary_columns_name_none(table_image: Image) -> None:
 
 def test_image_to_cat_id_basic_categories(table_image: Image) -> None:
     """Extract ids for column, row, cell categories."""
-    result, img_id = image_to_cat_id(category_names=["column", "row", "cell"])(table_image)  # pylint:disable=E1102
+    mapper = image_to_cat_id(category_names=["column", "row", "cell"])
+    result, img_id = mapper(table_image)  # pylint:disable=E1102
     assert result == {
         "column": [2] * 3,
         "row": [3] * 5,
