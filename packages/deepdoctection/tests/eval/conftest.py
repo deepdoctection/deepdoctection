@@ -102,7 +102,8 @@ def eval_doc_structured_output(monkeypatch: pytest.MonkeyPatch) -> dict[str, Any
 def eval_doc_dataset(monkeypatch: pytest.MonkeyPatch) -> CustomDataset:
     """
     `CustomDataset` built from the `eval_doc` fixture document. `init_categories` covers `table`, `text` and
-    `title`, the categories `RecordAlignMetric`'s default `image_or_docs_to_cat_id` mapper compares.
+    `title`; `RecordAlignMetric` itself only compares `structured_output`, these categories are only
+    needed to build a valid `DatasetCategories`/dataflow.
 
     `location` is passed as the absolute path to the fixture directory: `SETTINGS.DATASET_DIR / location`
     then resolves to that absolute path regardless of `SETTINGS.DATASET_DIR`, so nothing needs to be

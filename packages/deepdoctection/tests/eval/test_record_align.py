@@ -34,8 +34,9 @@ from typing import Any
 import pytest
 
 from dd_core.dataflow import MapData
-from dd_core.mapper.cats import remove_cats
-from dd_core.utils.object_types import LayoutLabel
+from dd_core.datapoint.annotation import ContainerAnnotation
+from dd_core.datapoint.image import Image
+from dd_core.utils.object_types import get_type
 from dd_datasets.base import CustomDataset
 from deepdoctection.eval.record_align import (
     Counts,
@@ -265,7 +266,7 @@ class TestFieldCountsOnRealStructuredOutput:
         assert counts["bookings.bookingDate"] == Counts(tp=4, fp=0, fn=1)
         assert counts["bookings.description"] == Counts(tp=5, fp=0, fn=1)
         assert counts["bookings.valueDate"] == Counts(tp=2, fp=0, fn=1)
-        # every other field path is unaffected by the two changes made above
+
         unaffected_paths = {
             path
             for path in counts
@@ -301,32 +302,43 @@ class TestFieldCountsOnRealStructuredOutput:
         # Assert
         assert unmatched_gt == [removed_index]
         assert unmatched_pred == []
-        # every pair after the removed booking is shifted by one position in pred_bookings, but each gt
-        # booking is still paired with the pred_booking holding the same content
+
         for gt_index, pred_index in pairs:
             assert bag_similarity(gt_bookings[gt_index], pred_bookings[pred_index]) == 1.0
+
+
+def _drop_balances(dp: Image) -> Image:
+    """Removes the `balances` field from a page's `structured_output`, simulating a missed field."""
+    sub_cat = dp.summary.get_sub_category(get_type("structured_output"))
+    mutated_value = copy.deepcopy(sub_cat.value)
+    mutated_value.pop("balances", None)
+    dp.summary.pop_sub_category(get_type("structured_output"))
+    dp.summary.dump_sub_category(
+        get_type("structured_output"),
+        ContainerAnnotation(category_name=get_type("structured_output"), value=mutated_value),
+    )
+    return dp
 
 
 @pytest.mark.skipif(CustomDataset is None, reason="dd_datasets is not installed; CustomDataset unavailable")
 class TestRecordAlignMetric:
     """
     Test the `RecordAlignMetric` family end to end against a `CustomDataset` built from the `eval_doc`
-    fixture document
+    fixture document, comparing `structured_output` - the only thing `RecordAlignMetric` evaluates.
     """
 
     @staticmethod
     def _reset(metric_cls: type[RecordAlignMetric]) -> None:
-        metric_cls._cats = None  # pylint: disable=W0212
-        metric_cls._sub_cats = None  # pylint: disable=W0212
         metric_cls._summary_sub_cats = None  # pylint: disable=W0212
 
     @staticmethod
     def test_f1_metric_returns_perfect_score_against_itself(eval_doc_dataset: CustomDataset) -> None:
         """
-        When testing a dataflow against itself, every category reaches an F1 of 1.0
+        When testing a dataflow against itself, every structured_output field reaches an F1 of 1.0
         """
 
         # Arrange
+        RecordAlignF1Metric.set_categories(summary_sub_category_names="structured_output")
         dataflow_gt = eval_doc_dataset.dataflow_builder.build(mode="image")
         dataflow_pred = eval_doc_dataset.dataflow_builder.build(mode="image")
 
@@ -334,90 +346,89 @@ class TestRecordAlignMetric:
         output = RecordAlignF1Metric.get_distance(dataflow_gt, dataflow_pred, eval_doc_dataset.dataflow.categories)
 
         # Assert
-        assert output == [
-            {"key": LayoutLabel.TABLE, "val": 1.0, "num_samples": 2},
-            {"key": LayoutLabel.TEXT, "val": 1.0, "num_samples": 2},
-            {"key": LayoutLabel.TITLE, "val": 1.0, "num_samples": 2},
-        ]
+        assert output
+        assert all(row["val"] == 1.0 for row in output)
+        assert len(output) == 13
 
         # Clean-up
         TestRecordAlignMetric._reset(RecordAlignF1Metric)
 
     @staticmethod
-    def test_precision_recall_f1_isolate_the_missed_category(eval_doc_dataset: CustomDataset) -> None:
+    def test_precision_recall_f1_isolate_the_missed_field(eval_doc_dataset: CustomDataset) -> None:
         """
-        A prediction that never detects `table` scores 0.0 on `table` only, `text` and `title` are
-        unaffected
+        A prediction that drops the whole `balances` field scores 0.0 on `balances.openingBalance` and
+        `balances.closingBalance` only, every other field is unaffected
         """
 
         # Arrange
-        dataflow_gt = eval_doc_dataset.dataflow_builder.build(mode="image")
-        dataflow_pred = eval_doc_dataset.dataflow_builder.build(mode="image")
-        dataflow_pred = MapData(dataflow_pred, remove_cats(category_names=[LayoutLabel.TABLE]))
         categories = eval_doc_dataset.dataflow.categories
+        changed = {"structured_output.balances.closingBalance", "structured_output.balances.openingBalance"}
 
         # Act
+        RecordAlignPrecisionMetric.set_categories(summary_sub_category_names="structured_output")
+        dataflow_gt = eval_doc_dataset.dataflow_builder.build(mode="image")
+        dataflow_pred = MapData(eval_doc_dataset.dataflow_builder.build(mode="image"), _drop_balances)
         precision = RecordAlignPrecisionMetric.get_distance(dataflow_gt, dataflow_pred, categories)
         TestRecordAlignMetric._reset(RecordAlignPrecisionMetric)
-        dataflow_pred = eval_doc_dataset.dataflow_builder.build(mode="image")
-        dataflow_pred = MapData(dataflow_pred, remove_cats(category_names=[LayoutLabel.TABLE]))
+
+        RecordAlignRecallMetric.set_categories(summary_sub_category_names="structured_output")
+        dataflow_gt = eval_doc_dataset.dataflow_builder.build(mode="image")
+        dataflow_pred = MapData(eval_doc_dataset.dataflow_builder.build(mode="image"), _drop_balances)
         recall = RecordAlignRecallMetric.get_distance(dataflow_gt, dataflow_pred, categories)
         TestRecordAlignMetric._reset(RecordAlignRecallMetric)
-        dataflow_pred = eval_doc_dataset.dataflow_builder.build(mode="image")
-        dataflow_pred = MapData(dataflow_pred, remove_cats(category_names=[LayoutLabel.TABLE]))
+
+        RecordAlignF1Metric.set_categories(summary_sub_category_names="structured_output")
+        dataflow_gt = eval_doc_dataset.dataflow_builder.build(mode="image")
+        dataflow_pred = MapData(eval_doc_dataset.dataflow_builder.build(mode="image"), _drop_balances)
         f1 = RecordAlignF1Metric.get_distance(dataflow_gt, dataflow_pred, categories)
 
         # Assert
-        assert precision == [
-            {"key": LayoutLabel.TABLE, "val": 0.0, "num_samples": 2},
-            {"key": LayoutLabel.TEXT, "val": 1.0, "num_samples": 2},
-            {"key": LayoutLabel.TITLE, "val": 1.0, "num_samples": 2},
-        ]
-        assert recall == [
-            {"key": LayoutLabel.TABLE, "val": 0.0, "num_samples": 2},
-            {"key": LayoutLabel.TEXT, "val": 1.0, "num_samples": 2},
-            {"key": LayoutLabel.TITLE, "val": 1.0, "num_samples": 2},
-        ]
-        assert f1 == [
-            {"key": LayoutLabel.TABLE, "val": 0.0, "num_samples": 2},
-            {"key": LayoutLabel.TEXT, "val": 1.0, "num_samples": 2},
-            {"key": LayoutLabel.TITLE, "val": 1.0, "num_samples": 2},
-        ]
+        for output in (precision, recall, f1):
+            by_key = {str(row["key"]): row["val"] for row in output}
+            assert by_key["structured_output.balances.closingBalance"] == 0.0
+            assert by_key["structured_output.balances.openingBalance"] == 0.0
+            unaffected = {key: val for key, val in by_key.items() if key not in changed}
+            assert unaffected
+            assert all(val == 1.0 for val in unaffected.values())
 
         # Clean-up
         TestRecordAlignMetric._reset(RecordAlignF1Metric)
 
     @staticmethod
-    def test_micro_variants_average_over_all_categories(eval_doc_dataset: CustomDataset) -> None:
+    def test_micro_variants_average_over_all_fields(eval_doc_dataset: CustomDataset) -> None:
         """
-        The micro variants report a single row that averages counts over all three categories instead of
-        one row per category
+        The micro variants report a single row that averages counts over all fields instead of one row
+        per field
         """
 
         # Arrange
         categories = eval_doc_dataset.dataflow.categories
 
         def build_pred() -> Any:
-            dataflow_pred = eval_doc_dataset.dataflow_builder.build(mode="image")
-            return MapData(dataflow_pred, remove_cats(category_names=[LayoutLabel.TABLE]))
+            return MapData(eval_doc_dataset.dataflow_builder.build(mode="image"), _drop_balances)
 
         # Act
+        RecordAlignPrecisionMetricMicro.set_categories(summary_sub_category_names="structured_output")
         precision = RecordAlignPrecisionMetricMicro.get_distance(
             eval_doc_dataset.dataflow_builder.build(mode="image"), build_pred(), categories
         )
         TestRecordAlignMetric._reset(RecordAlignPrecisionMetricMicro)
+
+        RecordAlignRecallMetricMicro.set_categories(summary_sub_category_names="structured_output")
         recall = RecordAlignRecallMetricMicro.get_distance(
             eval_doc_dataset.dataflow_builder.build(mode="image"), build_pred(), categories
         )
         TestRecordAlignMetric._reset(RecordAlignRecallMetricMicro)
+
+        RecordAlignF1MetricMicro.set_categories(summary_sub_category_names="structured_output")
         f1 = RecordAlignF1MetricMicro.get_distance(
             eval_doc_dataset.dataflow_builder.build(mode="image"), build_pred(), categories
         )
 
         # Assert
-        assert precision == [{"key": "total", "val": 1.0, "num_samples": 6}]
-        assert recall == [{"key": "total", "val": 2 / 3, "num_samples": 6}]
-        assert f1 == [{"key": "total", "val": 0.8, "num_samples": 6}]
+        assert precision == [{"key": "total", "val": 1.0, "num_samples": 31}]
+        assert recall == [{"key": "total", "val": pytest.approx(29 / 31), "num_samples": 31}]
+        assert f1 == [{"key": "total", "val": pytest.approx(58 / 60), "num_samples": 31}]
 
         # Clean-up
         TestRecordAlignMetric._reset(RecordAlignF1MetricMicro)

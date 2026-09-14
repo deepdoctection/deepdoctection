@@ -121,6 +121,25 @@ class TestPageResolveReferencePayload:
 
         assert page.structured_output == {"some_word": word.characters}
 
+    def test_structured_output_returns_plain_dict_value_without_resolving(self, page: Page) -> None:
+        """
+        A structured_output value that is already a plain dict (not a ReferencePayload) is returned as-is;
+        before the isinstance guard this only worked by accident because resolve_reference_payload's
+        `payload.content` raised AttributeError inside the property getter, which Python's attribute
+        protocol silently reinterpreted as "no such attribute" and fell through to Page.__getattr__
+        """
+        plain_value = {"some_field": "some_value"}
+        page.summary.dump_sub_category(
+            SummaryKey.STRUCTURED_OUTPUT,
+            ContainerAnnotation(category_name=SummaryKey.STRUCTURED_OUTPUT, value=plain_value),
+        )
+
+        assert page.structured_output == plain_value
+        # resolve_reference_payload called directly on the same non-ReferencePayload value still raises,
+        # proving the property's own isinstance guard - not the __getattr__ fallback - is what makes it work
+        with pytest.raises(AttributeError):
+            page.resolve_reference_payload(plain_value)  # type: ignore[arg-type]
+
     def test_resolve_mixed_payload_passes_non_reference_leaves_through(self, page: Page) -> None:
         """Only AnnotationRef leaves are resolved, every other leaf is returned unchanged"""
         word = page.words[0]

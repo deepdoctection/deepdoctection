@@ -158,8 +158,9 @@ class TestEvaluatorWithPredictionsDataset:
     values changed: `accountHolder.company` on page 1 and `balances.closingBalance` on page 2.
 
     The real `RecordAlignMetric` family is used unmodified, configured via `set_categories` to compare
-    the `structured_output` summary sub category by value: `mapper` stays `image_or_docs_to_cat_id`, only
-    `_summary_sub_cats` and the new `_id_name_or_value` attribute are set.
+    the `structured_output` summary sub category: `dump()` always routes through the
+    `image_or_doc_to_structured_output` mapper, which resolves any `ReferencePayload` value explicitly for
+    both `Image` (`mode="image"`) and `doc.Document` (`mode="doc"`) datapoints.
     """
 
     @pytest.fixture
@@ -186,10 +187,7 @@ class TestEvaluatorWithPredictionsDataset:
 
     @staticmethod
     def _reset(metric_cls: type[RecordAlignMetric]) -> None:
-        metric_cls._cats = None  # pylint: disable=W0212
-        metric_cls._sub_cats = None  # pylint: disable=W0212
         metric_cls._summary_sub_cats = None  # pylint: disable=W0212
-        metric_cls._id_name_or_value = "id"  # pylint: disable=W0212
 
     @pytest.mark.parametrize("metric_cls", [RecordAlignPrecisionMetric, RecordAlignRecallMetric, RecordAlignF1Metric])
     def test_evaluator_detects_structured_output_differences(
@@ -201,9 +199,7 @@ class TestEvaluatorWithPredictionsDataset:
         """
 
         # Arrange
-        metric_cls.set_categories(
-            category_names=[], summary_sub_category_names="structured_output", id_name_or_value="value"
-        )
+        metric_cls.set_categories(summary_sub_category_names="structured_output")
         evaluator = Evaluator(self._gt_dataset, metric=metric_cls, predictions_dataset=self._predictions_dataset)
 
         # Act
@@ -236,9 +232,7 @@ class TestEvaluatorWithPredictionsDataset:
         """
 
         # Arrange
-        metric_cls.set_categories(
-            category_names=[], summary_sub_category_names="structured_output", id_name_or_value="value"
-        )
+        metric_cls.set_categories(summary_sub_category_names="structured_output")
         evaluator = Evaluator(self._gt_dataset, metric=metric_cls, predictions_dataset=self._predictions_dataset)
 
         # Act
@@ -248,6 +242,61 @@ class TestEvaluatorWithPredictionsDataset:
         assert len(out) == 1
         assert out[0]["key"] == "total"
         assert 0.0 < out[0]["val"] < 1.0
+
+        # Clean-up
+        self._reset(metric_cls)
+
+    @pytest.mark.parametrize("metric_cls", [RecordAlignPrecisionMetric, RecordAlignRecallMetric, RecordAlignF1Metric])
+    def test_evaluator_detects_structured_output_differences_mode_doc(
+        self, setup_method: None, metric_cls: type[RecordAlignMetric]  # pylint: disable=W0613
+    ) -> None:
+        """
+        mode="doc" runs the comparison on the real doc.Document objects (not flattened per-page Images),
+        exercising the ReferencePayload resolution path: image_or_doc_to_structured_output must resolve
+        the document-level structured_output, which is a genuine ReferencePayload full of AnnotationRefs,
+        rather than the already-resolved plain dict every page happens to carry in mode="image"
+        """
+
+        # Arrange
+        metric_cls.set_categories(summary_sub_category_names="structured_output")
+        evaluator = Evaluator(self._gt_dataset, metric=metric_cls, predictions_dataset=self._predictions_dataset)
+
+        # Act
+        out = evaluator.run(mode="doc")
+
+        # Assert
+        by_key = {str(row["key"]): row["val"] for row in out}
+        changed = {"structured_output.accountHolder.company", "structured_output.balances.closingBalance"}
+        assert by_key["structured_output.accountHolder.company"] == 0.0
+        assert by_key["structured_output.balances.closingBalance"] == 0.0
+        unaffected = {key: val for key, val in by_key.items() if key not in changed}
+        assert unaffected  # sanity: there are other fields besides the two changed ones
+        assert all(val == 1.0 for val in unaffected.values())
+        assert len(by_key) == 13
+
+        # Clean-up
+        self._reset(metric_cls)
+
+    @pytest.mark.parametrize(
+        "metric_cls", [RecordAlignPrecisionMetricMicro, RecordAlignRecallMetricMicro, RecordAlignF1MetricMicro]
+    )
+    def test_evaluator_micro_variants_detect_structured_output_differences_mode_doc(
+        self, setup_method: None, metric_cls: type[RecordAlignMetric]  # pylint: disable=W0613
+    ) -> None:
+        """
+        The micro variants also honor mode="doc": a single row below 1.0 since two of the 28 document-level
+        values differ
+        """
+
+        # Arrange
+        metric_cls.set_categories(summary_sub_category_names="structured_output")
+        evaluator = Evaluator(self._gt_dataset, metric=metric_cls, predictions_dataset=self._predictions_dataset)
+
+        # Act
+        out = evaluator.run(mode="doc")
+
+        # Assert
+        assert out == [{"key": "total", "val": pytest.approx(26 / 28), "num_samples": 28}]
 
         # Clean-up
         self._reset(metric_cls)

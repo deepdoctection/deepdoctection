@@ -35,7 +35,7 @@ from __future__ import annotations
 
 from collections import Counter, defaultdict
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Literal, Mapping, Optional, Sequence, Union
+from typing import TYPE_CHECKING, Any, Optional, Sequence, Union
 
 import numpy as np
 from lazy_imports import try_import
@@ -43,7 +43,7 @@ from tabulate import tabulate
 from termcolor import colored
 
 from dd_core.dataflow import DataFlow
-from dd_core.mapper import image_or_docs_to_cat_id
+from dd_core.mapper import image_or_doc_to_structured_output
 from dd_core.utils.file_utils import Requirement, get_scipy_requirement
 from dd_core.utils.logger import LoggingRecord, logger
 from dd_core.utils.object_types import ObjectTypes, TypeOrStr, get_type
@@ -325,23 +325,17 @@ class RecordAlignMetric(MetricBase):
 
     Attributes:
         metric: The function that turns two structured outputs into counts per field path.
-        mapper: Function to map images to `category_id`
-        _cats: Optional sequence of `ObjectTypes`
-        _sub_cats: Optional mapping of object types to object types or sequences of `ObjectTypes`
-        _summary_sub_cats: Optional sequence of `ObjectTypes` for summary
-        _id_name_or_value: Which of `id`, `name` or `value` `mapper` extracts for a sub category or a
-                           summary sub category. Use `value` to compare a `ContainerAnnotation`'s value,
-                           e.g. a `structured_output` summary sub category.
+        mapper: Function to map an `Image` or `doc.Document` to its resolved structured output. Works
+                the same way for both `mode="image"` and `mode="doc"` dataflows.
+        _summary_sub_cats: Sequence of `ObjectTypes` naming the summary sub categories to compare, e.g.
+                           `structured_output`.
     """
 
     # a plain function assigned as a class attribute is returned unbound via cls.metric, which is why
     # field_counts takes no cls. mypy assumes a method here and binds the first argument away.
     metric = field_counts  # type: ignore[assignment]
-    mapper = image_or_docs_to_cat_id
-    _cats: Optional[Sequence[ObjectTypes]] = None
-    _sub_cats: Optional[Union[Mapping[ObjectTypes, ObjectTypes], Mapping[ObjectTypes, Sequence[ObjectTypes]]]] = None
+    mapper = image_or_doc_to_structured_output
     _summary_sub_cats: Optional[Sequence[ObjectTypes]] = None
-    _id_name_or_value: Literal["id", "name", "value"] = "id"
 
     @classmethod
     def dump(
@@ -351,9 +345,7 @@ class RecordAlignMetric(MetricBase):
         dataflow_predictions.reset_state()
 
         cls._category_sanity_checks(categories)
-        if cls._cats is None and cls._sub_cats is None:
-            cls._cats = categories.get_categories(as_dict=False, filtered=True)
-        mapper_with_setting = cls.mapper(cls._cats, cls._sub_cats, cls._summary_sub_cats, cls._id_name_or_value)
+        mapper_with_setting = cls.mapper(cls._summary_sub_cats)
 
         # returned images of gt and predictions are likely not in the same order. We therefore first
         # stream all data into a dict and pair them by image_id thereafter.
@@ -386,83 +378,26 @@ class RecordAlignMetric(MetricBase):
         return counts_per_path
 
     @classmethod
-    def set_categories(
-        cls,
-        category_names: Optional[Union[TypeOrStr, Sequence[TypeOrStr]]] = None,
-        sub_category_names: Optional[
-            Union[Mapping[TypeOrStr, TypeOrStr], Mapping[TypeOrStr, Sequence[TypeOrStr]]]
-        ] = None,
-        summary_sub_category_names: Optional[Union[TypeOrStr, Sequence[TypeOrStr]]] = None,
-        id_name_or_value: Optional[Literal["id", "name", "value"]] = None,
-    ) -> None:
+    def set_categories(cls, summary_sub_category_names: Union[TypeOrStr, Sequence[TypeOrStr]]) -> None:
         """
-        Set categories that are supposed to be evaluated.
-
-        If `sub_categories` have to be considered, they need to be passed explicitly.
-
-        Example:
-            ```python
-            # Evaluate sub_cat1, sub_cat2 of cat1 and sub_cat3 of cat2
-            set_categories(sub_category_names={cat1: [sub_cat1, sub_cat2], cat2: sub_cat3})
-            ```
+        Set the summary sub categories that are supposed to be evaluated, e.g. `structured_output`.
 
         Args:
-            category_names: List of category names
-            sub_category_names: Dict of categories and their sub categories to be evaluated
             summary_sub_category_names: String or list of summary sub categories
-            id_name_or_value: Which of `id`, `name` or `value` `mapper` extracts for a sub category or a
-                              summary sub category. Use `value` to compare a `ContainerAnnotation`'s value,
-                              e.g. a `structured_output` summary sub category.
         """
-
-        if category_names is not None:
-            cls._cats = (
-                [get_type(category_names)]
-                if isinstance(category_names, str)
-                else [get_type(category) for category in category_names]
-            )
-        if sub_category_names is not None:
-            _sub_cats = {}
-            if isinstance(list(sub_category_names.values())[0], list):
-                for key, _ in sub_category_names.items():
-                    _sub_cats[get_type(key)] = [get_type(item) for item in sub_category_names[key]]
-            else:
-                for key, _ in sub_category_names.items():
-                    _sub_cats[get_type(key)] = get_type(sub_category_names[key])  # type: ignore
-            cls._sub_cats = _sub_cats
-        if summary_sub_category_names is not None:
-            cls._summary_sub_cats = (
-                [get_type(summary_sub_category_names)]
-                if isinstance(summary_sub_category_names, str)
-                else [get_type(category) for category in summary_sub_category_names]
-            )
-        if id_name_or_value is not None:
-            cls._id_name_or_value = id_name_or_value
+        cls._summary_sub_cats = (
+            [get_type(summary_sub_category_names)]
+            if isinstance(summary_sub_category_names, str)
+            else [get_type(category) for category in summary_sub_category_names]
+        )
 
     @classmethod
-    def _category_sanity_checks(cls, categories: DatasetCategories) -> None:
-        cats = categories.get_categories(as_dict=False, filtered=True)
-        if cats:
-            sub_cats = categories.get_sub_categories(cats)
-        else:
-            sub_cats = categories.get_sub_categories()
-
-        if cls._cats:
-            for cat in cls._cats:
-                if cat not in cats:
-                    raise ValueError(f"{cat} must be in {cats}")
-                assert cat in cats
-
-        if cls._sub_cats:
-            for key, val in cls._sub_cats.items():
-                if set(val) > set(sub_cats[key]):
-                    raise ValueError(f"set(val) = {set(val)} must be a sub set of sub_cats[{key}]={sub_cats[key]}")
-
-        if cls._cats is None and cls._sub_cats is None and cls._summary_sub_cats is None:
+    def _category_sanity_checks(cls, categories: DatasetCategories) -> None:  # pylint: disable=W0613
+        if cls._summary_sub_cats is None:
             logger.warning(
                 LoggingRecord(
-                    "RecordAlign metric has not correctly been set up: No category, sub category or summary has "
-                    "been defined, therefore it is undefined what to evaluate."
+                    "RecordAlign metric has not correctly been set up: No summary sub category has been "
+                    "defined, therefore it is undefined what to evaluate."
                 )
             )
 

@@ -82,6 +82,20 @@ def test_doc_returns_structured_output(sample_document_json: Path) -> None:
     assert structured_output["buyer"]["contact"]["contactName"] is None
 
 
+def test_document_structured_output_returns_plain_dict_value_without_resolving() -> None:
+    """A Document-level structured_output value that is already a plain dict is returned as-is, instead of
+    tripping resolve_reference_payload's `payload.content` AttributeError and silently falling back to
+    Document.__getattr__"""
+    doc = Document(file_name="plain", location=Path(), compute_metadata=False)
+    plain_value = {"some_field": "some_value"}
+    doc.summary.dump_sub_category(
+        get_type("structured_output"),
+        ContainerAnnotation(category_name=get_type("structured_output"), value=plain_value),
+    )
+
+    assert doc.structured_output == plain_value
+
+
 def test_resolve_reference_payload_returns_text(sample_document_json: Path) -> None:
     """resolve_reference_payload resolves AnnotationRef leaves to their text or characters value"""
     doc = Document.from_json(sample_document_json)

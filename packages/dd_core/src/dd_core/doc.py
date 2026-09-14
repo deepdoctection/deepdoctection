@@ -410,7 +410,9 @@ class Document:
         """structured output"""
         if "structured_output" in self.summary.sub_categories:
             payload = self.summary.get_sub_category(get_type("structured_output")).value  # type: ignore
-            return self.resolve_reference_payload(payload)
+            if isinstance(payload, ReferencePayload):
+                return self.resolve_reference_payload(payload)
+            return payload if payload is not None else {}
         return {}
 
     @property
