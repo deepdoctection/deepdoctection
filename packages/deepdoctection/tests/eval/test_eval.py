@@ -35,8 +35,6 @@ from dd_core.dataflow import DataFromList
 from dd_core.datapoint import BoundingBox, Image, ImageAnnotation
 from dd_core.utils import DatasetKind, get_type
 from dd_core.utils.object_types import LayoutLabel
-from dd_datasets.base import DatasetCategories
-from dd_datasets.doc_factory import DocumentDatasetFactory
 from deepdoctection.eval import CocoMetric, Evaluator
 from deepdoctection.eval.record_align import (
     RecordAlignF1Metric,
@@ -51,6 +49,13 @@ from deepdoctection.extern.base import DetectionResult
 from deepdoctection.extern.hfdetr import HFDetrDerivedDetector
 from deepdoctection.extern.model import ModelCatalog, ModelDownloadManager
 from deepdoctection.pipe.layout import ImageLayoutService
+
+try:
+    from dd_datasets.base import DatasetCategories
+    from dd_datasets.doc_factory import DocumentDatasetFactory
+except ImportError:
+    DatasetCategories = None  # type: ignore
+    DocumentDatasetFactory = None  # type: ignore
 
 
 @pytest.mark.skipif(DatasetCategories is None, reason="dd_datasets is not installed; DatasetCategories unavailable")
@@ -150,6 +155,9 @@ class TestEvaluator:
         assert len(out) == 12
 
 
+@pytest.mark.skipif(
+    DocumentDatasetFactory is None, reason="dd_datasets is not installed; DocumentDatasetFactory unavailable"
+)
 class TestEvaluatorWithPredictionsDataset:
     """
     Test Evaluator evaluates a ground truth dataset against a precomputed predictions dataset holding

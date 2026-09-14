@@ -37,7 +37,6 @@ from dd_core.dataflow import MapData
 from dd_core.datapoint.annotation import ContainerAnnotation
 from dd_core.datapoint.image import Image
 from dd_core.utils.object_types import get_type
-from dd_datasets.base import CustomDataset
 from deepdoctection.eval.record_align import (
     Counts,
     RecordAlignF1Metric,
@@ -51,6 +50,11 @@ from deepdoctection.eval.record_align import (
     bag_similarity,
     field_counts,
 )
+
+try:
+    from dd_datasets.base import CustomDataset
+except ImportError:
+    CustomDataset = None  # type: ignore
 
 
 class TestCounts:
