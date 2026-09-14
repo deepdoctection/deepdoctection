@@ -44,10 +44,13 @@ from dd_core.utils.object_types import LayoutLabel, ObjectTypes, get_type
 
 try:
     from dd_datasets.base import CustomDataset, DatasetCategories
-    from dd_datasets.doc_factory import DocumentDatasetFactory
 except ImportError:
     DatasetCategories = None  # type: ignore
     CustomDataset = None  # type: ignore
+
+try:
+    from dd_datasets.doc_factory import DocumentDatasetFactory
+except ImportError:
     DocumentDatasetFactory = None  # type: ignore
 
 if TYPE_CHECKING:

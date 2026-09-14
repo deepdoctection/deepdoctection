@@ -56,6 +56,11 @@ try:
 except ImportError:
     CustomDataset = None  # type: ignore
 
+try:
+    from dd_datasets.doc_factory import DocumentDatasetFactory
+except ImportError:
+    DocumentDatasetFactory = None  # type: ignore
+
 
 class TestCounts:
     """
@@ -324,7 +329,10 @@ def _drop_balances(dp: Image) -> Image:
     return dp
 
 
-@pytest.mark.skipif(CustomDataset is None, reason="dd_datasets is not installed; CustomDataset unavailable")
+@pytest.mark.skipif(
+    CustomDataset is None or DocumentDatasetFactory is None,
+    reason="dd_datasets is not installed; CustomDataset or DocumentDatasetFactory unavailable",
+)
 class TestRecordAlignMetric:
     """
     Test the `RecordAlignMetric` family end to end against a `CustomDataset` built from the `eval_doc`

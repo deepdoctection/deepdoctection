@@ -52,9 +52,12 @@ from deepdoctection.pipe.layout import ImageLayoutService
 
 try:
     from dd_datasets.base import DatasetCategories
-    from dd_datasets.doc_factory import DocumentDatasetFactory
 except ImportError:
     DatasetCategories = None  # type: ignore
+
+try:
+    from dd_datasets.doc_factory import DocumentDatasetFactory
+except ImportError:
     DocumentDatasetFactory = None  # type: ignore
 
 
