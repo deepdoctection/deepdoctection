@@ -24,7 +24,7 @@ import pytest
 from dd_core.datapoint.annotation import CategoryAnnotation, ContainerAnnotation
 from dd_core.datapoint.view import Page
 
-from ...conftest import ObjectTestType
+from ...conftest import ObjectTestType  # pylint: disable=E0611
 
 
 class TestPageAttributeNames:

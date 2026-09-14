@@ -19,6 +19,8 @@
 Unit tests for `dd_core.mapper.structured_output.image_or_doc_to_structured_output`.
 """
 
+# pylint: disable=E1102
+
 import pytest
 
 import shared_test_utils as stu

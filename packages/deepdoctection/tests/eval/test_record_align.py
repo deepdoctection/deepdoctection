@@ -310,7 +310,7 @@ class TestFieldCountsOnRealStructuredOutput:
 def _drop_balances(dp: Image) -> Image:
     """Removes the `balances` field from a page's `structured_output`, simulating a missed field."""
     sub_cat = dp.summary.get_sub_category(get_type("structured_output"))
-    mutated_value = copy.deepcopy(sub_cat.value)
+    mutated_value = copy.deepcopy(sub_cat.value)  # type: ignore
     mutated_value.pop("balances", None)
     dp.summary.pop_sub_category(get_type("structured_output"))
     dp.summary.dump_sub_category(

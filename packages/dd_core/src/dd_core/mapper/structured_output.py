@@ -79,9 +79,7 @@ def image_or_doc_to_structured_output(
     if isinstance(summary_sub_category_names, str):
         summary_sub_category_names = [summary_sub_category_names]
     if not summary_sub_category_names:
-        raise ValueError(
-            "summary_sub_category_names must be given (e.g. 'structured_output'); there is no default."
-        )
+        raise ValueError("summary_sub_category_names must be given (e.g. 'structured_output'); there is no default.")
 
     if isinstance(dp, Document):
         target: Union[Document, Page] = dp

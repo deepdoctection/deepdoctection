@@ -212,7 +212,7 @@ def filter_summary(
 
 
 def _append_summary_sub_cats(
-    dp: Union[Image, Document],
+    dp: Image,
     summary_sub_category_names: Sequence[TypeOrStr],
     id_name_or_value: Literal["id", "name", "value"],
     cat_container: dict[TypeOrStr, list[Any]],
