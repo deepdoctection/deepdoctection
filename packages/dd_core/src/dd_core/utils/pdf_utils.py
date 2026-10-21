@@ -635,8 +635,15 @@ def pdf_to_np_array_pdfmium(pdf_bytes: bytes, dpi: Optional[int] = None) -> Pixe
     """
     if dpi is None:
         raise ValueError("dpi must be provided.")
-    page = pypdfium2.PdfDocument(pdf_bytes)[0]
-    return page.render(scale=dpi * 1 / 72).to_numpy().astype(uint8)
+    pdf = pypdfium2.PdfDocument(pdf_bytes)
+    page = pdf[0]
+    bitmap = page.render(scale=dpi * 1 / 72)
+    try:
+        return bitmap.to_numpy().astype(uint8)
+    finally:
+        bitmap.close()
+        page.close()
+        pdf.close()
 
 
 def pdf_to_np_array(pdf_bytes: bytes, size: Optional[tuple[int, int]] = None, dpi: Optional[int] = None) -> PixelValues:
