@@ -51,7 +51,13 @@ class OrderGenerator:
      (by detecting gaps between words), as well as ordering text blocks (e.g., titles, tables, etc.).
     """
 
-    def __init__(self, starting_point_tolerance: float, broken_line_tolerance: float, height_tolerance: float):
+    def __init__(
+        self,
+        starting_point_tolerance: float,
+        broken_line_tolerance: float,
+        height_tolerance: float,
+        right_to_left: bool = False,
+    ):
         """
         Args:
             starting_point_tolerance: Threshold to identify if two text blocks belong to one column. To check if two
@@ -61,16 +67,19 @@ class OrderGenerator:
                                    different sub-lines (because they belong to two different text columns).
             height_tolerance: Threshold to identify if two columns lying over each other belong together or need to be
                               separated. Scaling factor of relative text block height.
+            right_to_left: If `True`, words within a line and columns lying next to each other are read from right to
+                           left (e.g. for Hebrew or Arabic). Lines and blocks are still read from top to bottom.
         """
         self.starting_point_tolerance = starting_point_tolerance
         self.broken_line_tolerance = broken_line_tolerance
         self.height_tolerance = height_tolerance
+        self.right_to_left = right_to_left
         self.ioa_column_threshold = 0.9
         self.columns_detect_result: Optional[Sequence[DetectionResult]] = None
 
     @staticmethod
     def group_words_into_lines(
-        word_anns: Sequence[ImageAnnotation], image_id: Optional[str] = None
+        word_anns: Sequence[ImageAnnotation], image_id: Optional[str] = None, right_to_left: bool = False
     ) -> list[tuple[int, int, str]]:
         """
         Arranges words into horizontal text lines and sorts text lines vertically to provide an enumeration of words
@@ -87,6 +96,7 @@ class OrderGenerator:
         Args:
             word_anns: Sequence of `ImageAnnotation` representing words.
             image_id: Optional image ID.
+            right_to_left: If `True`, words within a line are read from right to left.
 
         Returns:
             List of triplets for every word annotation: (word reading order position, text line position, word
@@ -120,7 +130,7 @@ class OrderGenerator:
             idx: key[0]  # type:ignore
             for idx, key in enumerate(sorted(rows_dict.items(), key=lambda it: it[1]["upper"]))
         }
-        reading_lines.sort(key=lambda x: (rows_dict[x[0]], x[2]))
+        reading_lines.sort(key=lambda x: (rows_dict[x[0]], -x[2] if right_to_left else x[2]))
         number_rows = len(rows_dict)
         if logger.isEnabledFor(DEBUG):
             logger.debug(
@@ -162,7 +172,7 @@ class OrderGenerator:
         return [(idx + 1, idx + 1, line[1]) for idx, line in enumerate(reading_lines)]
 
     @staticmethod
-    def _connected_components(columns: list[BoundingBox]) -> list[dict[str, Any]]:
+    def _connected_components(columns: list[BoundingBox], right_to_left: bool = False) -> list[dict[str, Any]]:
         # building connected components of columns
         connected_components: list[dict[str, Any]] = []
         for idx, col in enumerate(columns):
@@ -184,16 +194,26 @@ class OrderGenerator:
             if not component_found:
                 connected_components.append({"top": col.uly, "bottom": col.lry, "left": col.ulx, "column": [col_dict]})
 
-            # next, sorting columns in connected components by increasing x-value. In order to be tolerant to
-            # nearby values we are rounding values we want to sort
+            # next, sorting columns in connected components by increasing x-value (or by decreasing right x-value for
+            # right-to-left reading order). In order to be tolerant to nearby values we are rounding values we want to
+            # sort
             for comp in connected_components:
                 for column in comp["column"]:
                     column["box"].ulx = round(column["box"].ulx, 2)
                     column["box"].uly = round(column["box"].uly, 2)
-                comp["column"].sort(key=lambda x: (x["box"].ulx, x["box"].uly))
+                if right_to_left:
+                    comp["column"].sort(key=lambda x: (-round(x["box"].lrx, 2), x["box"].uly))
+                else:
+                    comp["column"].sort(key=lambda x: (x["box"].ulx, x["box"].uly))
 
-            # finally, sorting connected components by increasing y-value
-            connected_components.sort(key=lambda x: x["top"])
+            # finally, sorting connected components by increasing y-value. For right-to-left reading order,
+            # components starting at the same height are sorted by decreasing right x-value.
+            if right_to_left:
+                connected_components.sort(
+                    key=lambda x: (x["top"], -max(round(column["box"].lrx, 2) for column in x["column"]))
+                )
+            else:
+                connected_components.sort(key=lambda x: x["top"])
         if logger.isEnabledFor(DEBUG):
             logger.debug(LoggingRecord("_connected_components", {"connected_components": str(connected_components)}))
         return connected_components
@@ -299,7 +319,7 @@ class OrderGenerator:
 
         reading_blocks = [(consoldiated_cols.get(x[0], x[0]), x[1]) for x in reading_blocks]
 
-        connected_components = self._connected_components(consolidated_columns)
+        connected_components = self._connected_components(consolidated_columns, self.right_to_left)
         columns_box = list(chain(*[comp["column"] for comp in connected_components]))
 
         # old to new mapping
@@ -312,7 +332,9 @@ class OrderGenerator:
         for idx in range(max_block_number + 1):
             filtered_blocks = list(filter(lambda x: x[0] == idx, blocks))  # type: ignore # pylint: disable=W0640
             sorted_blocks.extend(
-                self._sort_anns_grouped_by_blocks(filtered_blocks, anns, image_width, image_height, image_id)
+                self._sort_anns_grouped_by_blocks(
+                    filtered_blocks, anns, image_width, image_height, image_id, self.right_to_left
+                )
             )
         reading_blocks = [(idx + 1, block[1]) for idx, block in enumerate(sorted_blocks)]
 
@@ -355,6 +377,7 @@ class OrderGenerator:
         image_width: float,
         image_height: float,
         image_id: Optional[str] = None,
+        right_to_left: bool = False,
     ) -> list[tuple[int, str]]:
         if not block:
             return []
@@ -362,12 +385,20 @@ class OrderGenerator:
         ann_ids = anns_and_blocks_numbers[1]
         block_number = anns_and_blocks_numbers[0][0]
         block_anns = [ann for ann in anns if ann.annotation_id in ann_ids]
-        block_anns.sort(
-            key=lambda x: (
-                round(x.get_bounding_box(image_id).transform(image_width, image_height).uly, 2),
-                round(x.get_bounding_box(image_id).transform(image_width, image_height).ulx, 2),
+        if right_to_left:
+            block_anns.sort(
+                key=lambda x: (
+                    round(x.get_bounding_box(image_id).transform(image_width, image_height).uly, 2),
+                    -round(x.get_bounding_box(image_id).transform(image_width, image_height).lrx, 2),
+                )
             )
-        )
+        else:
+            block_anns.sort(
+                key=lambda x: (
+                    round(x.get_bounding_box(image_id).transform(image_width, image_height).uly, 2),
+                    round(x.get_bounding_box(image_id).transform(image_width, image_height).ulx, 2),
+                )
+            )
         return [(block_number, ann.annotation_id) for ann in block_anns]
 
     @staticmethod
@@ -637,7 +668,9 @@ class TextOrderService(TextLineServiceMixin):
     belong to floating text that encircle a table. They are rather an element that is supposed to be read independently.
 
     A heuristic argument for its ordering is used where the underlying assumption is the reading order from left
-    to right.
+    to right. For scripts that are read from right to left (e.g. Hebrew or Arabic), set `right_to_left=True`: words
+    within a line and columns lying next to each other are then ordered from right to left, while lines and blocks
+    are still read from top to bottom.
 
     - For the reading order within a text block, text containers (i.e., image annotations that contain character
       sub-annotations) are sorted based on their bounding box center and then lines are formed: Each word induces a new
@@ -681,6 +714,7 @@ class TextOrderService(TextLineServiceMixin):
         broken_line_tolerance: float = 0.003,
         height_tolerance: float = 2.0,
         paragraph_break: Optional[float] = 0.035,
+        right_to_left: bool = False,
     ):
         """
         Args:
@@ -708,6 +742,8 @@ class TextOrderService(TextLineServiceMixin):
                               separated. Scaling factor of relative text block height.
             paragraph_break: Threshold of two consecutive words. If distance is larger than threshold, two sublines
                              will be built.
+            right_to_left: If `True`, words within a line and columns lying next to each other are read from right
+                           to left (e.g. for Hebrew or Arabic). Defaults to `False` (left to right).
         """
         self.text_container = get_type(text_container)
         if isinstance(text_block_categories, (str, ObjectTypes)):
@@ -723,7 +759,9 @@ class TextOrderService(TextLineServiceMixin):
         if include_residual_text_container:
             self.floating_text_block_categories = self.floating_text_block_categories + (LayoutLabel.LINE,)
         self.include_residual_text_container = include_residual_text_container
-        self.order_generator = OrderGenerator(starting_point_tolerance, broken_line_tolerance, height_tolerance)
+        self.order_generator = OrderGenerator(
+            starting_point_tolerance, broken_line_tolerance, height_tolerance, right_to_left
+        )
         self.text_line_generator = TextLineGenerator(self.include_residual_text_container, paragraph_break)
         super().__init__(
             name="text_order",
@@ -777,7 +815,7 @@ class TextOrderService(TextLineServiceMixin):
         )
         if self.text_container == LayoutLabel.WORD:
             word_order_list = self.order_generator.group_words_into_lines(
-                text_container_ann, self.dp_manager.datapoint.image_id
+                text_container_ann, self.dp_manager.datapoint.image_id, self.order_generator.right_to_left
             )
         else:
             word_order_list = self.order_generator.group_lines_into_lines(
@@ -847,6 +885,7 @@ class TextOrderService(TextLineServiceMixin):
             self.order_generator.broken_line_tolerance,
             self.order_generator.height_tolerance,
             self.text_line_generator.paragraph_break,
+            self.order_generator.right_to_left,
         )
 
     def clear_predictor(self) -> None:

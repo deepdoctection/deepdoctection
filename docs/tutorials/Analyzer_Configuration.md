@@ -537,6 +537,10 @@ The `TextOrderService` can be configured using four key parameters:
 * `TEXT_ORDERING.INCLUDE_RESIDUAL_TEXT_CONTAINER`: controls whether *orphan words* (those not assigned to any layout 
    segment) should be included in the output.
 
+For documents written in a right-to-left script such as Hebrew or Arabic, set `TEXT_ORDERING.RIGHT_TO_LEFT=True`. 
+Words within a line and columns lying next to each other are then read from **right to left**, while lines and blocks 
+are still read from top to bottom.
+
 !!! note
 
     Let’s revisit the topic of **orphan words**:
