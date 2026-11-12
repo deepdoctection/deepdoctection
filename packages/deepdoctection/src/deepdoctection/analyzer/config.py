@@ -404,6 +404,10 @@ The following weights configure each stage for TensorFlow and PyTorch.
         Defines the spacing threshold that indicates a paragraph break in vertically
         arranged text blocks. Helps determine reading order in multi-column, broken layouts.
 
+    TEXT_ORDERING.RIGHT_TO_LEFT:
+        If set to True, words within a line and columns lying next to each other are read from right to left
+        (e.g. for Hebrew or Arabic documents). Lines and text blocks are still read from top to bottom.
+
 ---
 ## Layout Linking Configuration
 
@@ -833,6 +837,10 @@ cfg.TEXT_ORDERING.HEIGHT_TOLERANCE = 2.0
 # Defines the spacing threshold that indicates a paragraph break in vertically arranged text blocks.
 # Helps determine reading order in multi-column, broken layouts.
 cfg.TEXT_ORDERING.PARAGRAPH_BREAK = 0.035
+
+# If set to True, words within a line and columns lying next to each other are read from right to left
+# (e.g. for Hebrew or Arabic documents). Lines and text blocks are still read from top to bottom.
+cfg.TEXT_ORDERING.RIGHT_TO_LEFT = False
 
 # Configuration for linking spatially related layout sections
 # (e.g., associating figures with their captions) based on proximity.

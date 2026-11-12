@@ -1194,6 +1194,7 @@ class ServiceFactory:
             "broken_line_tolerance": config.TEXT_ORDERING.BROKEN_LINE_TOLERANCE,
             "height_tolerance": config.TEXT_ORDERING.HEIGHT_TOLERANCE,
             "paragraph_break": config.TEXT_ORDERING.PARAGRAPH_BREAK,
+            "right_to_left": config.TEXT_ORDERING.RIGHT_TO_LEFT,
         }
 
     @staticmethod
@@ -1206,6 +1207,7 @@ class ServiceFactory:
         broken_line_tolerance: float,
         height_tolerance: float,
         paragraph_break: float,
+        right_to_left: bool = False,
     ) -> TextOrderService:
         """
         Building a text order service.
@@ -1219,6 +1221,7 @@ class ServiceFactory:
             broken_line_tolerance: Broken line tolerance for text ordering.
             height_tolerance: Height tolerance for text ordering.
             paragraph_break: Paragraph break threshold.
+            right_to_left: Whether words within a line and neighbouring columns are read from right to left.
 
         Returns:
             TextOrderService: Text order service instance.
@@ -1232,6 +1235,7 @@ class ServiceFactory:
             broken_line_tolerance=broken_line_tolerance,
             height_tolerance=height_tolerance,
             paragraph_break=paragraph_break,
+            right_to_left=right_to_left,
         )
 
     @staticmethod
