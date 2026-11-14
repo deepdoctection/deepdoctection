@@ -24,7 +24,7 @@ classifiers = [
 ]
 
 dependencies = [
-    "catalogue==2.0.10",
+    "catalogue>=2.0.10",
     "lazy-imports==0.3.1",
     "numpy>2.0",
     "packaging>=20.0",
@@ -43,7 +43,7 @@ full = [
     "pypdf>=6.6.2",
     "jsonlines==3.1.0",
     "scipy>=1.13.1",
-    "pypdfium2>=4.30.0,<5.0"
+    "pypdfium2>=5.0"
 ]
 
 types = [

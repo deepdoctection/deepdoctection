@@ -189,7 +189,7 @@ class Pdfmium2TextDetector(PdfMiner):
         words = []
         height = page.get_height()
         for obj in page.get_objects((pypdfium_c.FPDF_PAGEOBJ_TEXT,)):
-            box = obj.get_pos()
+            box = obj.get_bounds()
             if all(x > 0 for x in box):
                 words.append(
                     {
